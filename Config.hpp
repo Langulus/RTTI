@@ -1,5 +1,4 @@
 #pragma once
-#include <Langulus.Core.hpp>
 #include <Langulus.Logger.hpp>
 
 /// Reflections will be registered in a centralized location, allowing for		
