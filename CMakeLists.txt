@@ -29,12 +29,11 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} SOURCE_FILES)
 add_library(Langulus.RTTI ${SOURCE_FILES})
 
 target_include_directories(Langulus.RTTI
-	PRIVATE   ${CMAKE_CURRENT_SOURCE_DIR}
-	PUBLIC	  ${CMAKE_CURRENT_SOURCE_DIR}/include
+	INTERFACE   include/
 )
 
 target_link_libraries(Langulus.RTTI
-	PUBLIC   Langulus.Core Langulus.Logger
+	PUBLIC      Langulus.Core Langulus.Logger
 )
 
 if (MSVC)
