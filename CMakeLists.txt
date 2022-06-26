@@ -9,9 +9,14 @@ if(PROJECT_IS_TOP_LEVEL)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
     fetch_langulus_module(Core)
+    fetch_langulus_module(Logger)
 
 	enable_testing()
 	add_subdirectory(test)
+endif()
+
+if(LANGULUS_FEATURE_MANAGED_REFLECTION)
+    add_definitions(-DLANGULUS_ENABLE_MANAGED_REFLECTION)
 endif()
 
 # Build and install RTTI library
@@ -24,7 +29,7 @@ target_include_directories(Langulus.RTTI
 )
 
 target_link_libraries(Langulus.RTTI
-	PUBLIC   Langulus.Core
+	PUBLIC   Langulus.Core Langulus.Logger
 )
 
 if (MSVC)
