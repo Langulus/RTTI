@@ -8,6 +8,7 @@
 /// Include this only when building standalone											
 #pragma once
 #include "DataState.hpp"
+#include "NameOf.hpp"
 
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
 	LANGULUS_EXCEPTION(Meta);
@@ -52,8 +53,7 @@
 /// Reflect a list of verbs																	
 #define LANGULUS_VERBS(...) public: using CTTI_Verbs = ::Langulus::TTypeList<__VA_ARGS__>
 
-
-namespace Langulus::Anyness
+namespace Langulus::RTTI
 {
 
 	/// A simple request for allocating memory											
@@ -169,7 +169,7 @@ namespace Langulus::Anyness
 
 	/// The class type function, wrapped in a lambda expression						
 	/// Returns the typed memory block of the class instance							
-	using FResolve = TFunctor<Block(const void*)>;
+	using FResolve = TFunctor<::Langulus::Anyness::Block(const void*)>;
 
 	/// The hash getter, wrapped in a lambda expression								
 	/// Takes the pointer to the instance for hashing									
@@ -500,107 +500,100 @@ namespace Langulus::Anyness
 		#endif
 	};
 	
-} //namespace Langulus::Anyness
+	template<CT::Data T, bool ADVANCED = false>
+	NOD() bool CastsTo(DMeta);
+	template<CT::Data T>
+	NOD() bool CastsTo(DMeta, Count);
 
-namespace Langulus
+} // namespace Langulus::RTTI
+
+namespace Langulus::A
 {
-	namespace RTTI
-	{
-		template<CT::Data T, bool ADVANCED = false>
-		NOD() bool CastsTo(Anyness::DMeta);
-		template<CT::Data T>
-		NOD() bool CastsTo(Anyness::DMeta, Count);
-	}
+	///																								
+	/// The following abstract types are implicitly added as bases					
+	/// when reflecting fundamental types. They are linked to their				
+	/// corresponding concepts, so you can use them at runtime, to check if		
+	/// a type is compatible with the given concept via type->CastsTo				
+	///																								
 
+	/// Check if a type is compatible with CT::Number									
+	/// concept at runtime, via meta->InterpretsAs<ANumber>							
+	class Number {
+		LANGULUS(ABSTRACT) true;
+		LANGULUS(CONCRETIZABLE) ::Langulus::Real;
+		~Number() = delete;
+	};
 
-	namespace A
-	{
-		///																							
-		/// The following abstract types are implicitly added as bases				
-		/// when reflecting fundamental types. They are linked to their			
-		/// corresponding concepts, so you can use them at runtime, to check if	
-		/// a type is compatible with the given concept via type->CastsTo			
-		///																							
+	/// Check if a type is compatible with CT::Integer									
+	/// concept at runtime, via meta->InterpretsAs<AInteger>							
+	class Integer {
+		LANGULUS(ABSTRACT) true;
+		LANGULUS(CONCRETIZABLE) ::std::intptr_t;
+		LANGULUS_BASES(Number);
+		~Integer() = delete;
+	};
 
-		/// Check if a type is compatible with CT::Number								
-		/// concept at runtime, via meta->InterpretsAs<ANumber>						
-		class Number {
-			LANGULUS(ABSTRACT) true;
-			LANGULUS(CONCRETIZABLE) ::Langulus::Real;
-			~Number() = delete;
-		};
+	/// Check if a type is compatible with CT::Signed									
+	/// concept at runtime, via meta->InterpretsAs<ASigned>							
+	class Signed {
+		LANGULUS(ABSTRACT) true;
+		LANGULUS(CONCRETIZABLE) ::Langulus::Real;
+		LANGULUS_BASES(Number);
+		~Signed() = delete;
+	};
 
-		/// Check if a type is compatible with CT::Integer								
-		/// concept at runtime, via meta->InterpretsAs<AInteger>						
-		class Integer {
-			LANGULUS(ABSTRACT) true;
-			LANGULUS(CONCRETIZABLE) ::std::intptr_t;
-			LANGULUS_BASES(Number);
-			~Integer() = delete;
-		};
+	/// Check if a type is compatible with IsUnsigned									
+	/// concept at runtime, via meta->InterpretsAs<AUnsigned>						
+	class Unsigned {
+		LANGULUS(ABSTRACT) true;
+		LANGULUS(CONCRETIZABLE) ::std::uintptr_t;
+		LANGULUS_BASES(Number);
+		~Unsigned() = delete;
+	};
 
-		/// Check if a type is compatible with CT::Signed								
-		/// concept at runtime, via meta->InterpretsAs<ASigned>						
-		class Signed {
-			LANGULUS(ABSTRACT) true;
-			LANGULUS(CONCRETIZABLE) ::Langulus::Real;
-			LANGULUS_BASES(Number);
-			~Signed() = delete;
-		};
+	/// Check if a type is compatible with CT::UnsignedInteger concept at		
+	/// runtime, via meta->InterpretsAs<AUnsignedInteger>								
+	class UnsignedInteger {
+		LANGULUS(ABSTRACT) true;
+		LANGULUS(CONCRETIZABLE) ::std::uintptr_t;
+		LANGULUS_BASES(Unsigned, Integer);
+		~UnsignedInteger() = delete;
+	};
 
-		/// Check if a type is compatible with IsUnsigned								
-		/// concept at runtime, via meta->InterpretsAs<AUnsigned>					
-		class Unsigned {
-			LANGULUS(ABSTRACT) true;
-			LANGULUS(CONCRETIZABLE) ::std::uintptr_t;
-			LANGULUS_BASES(Number);
-			~Unsigned() = delete;
-		};
+	/// Check if a type is compatible with CT::Real										
+	/// concept at runtime, via meta->InterpretsAs<AReal>								
+	class Real {
+		LANGULUS(ABSTRACT) true;
+		LANGULUS(CONCRETIZABLE) ::Langulus::Real;
+		LANGULUS_BASES(Signed);
+		~Real() = delete;
+	};
 
-		/// Check if a type is compatible with CT::UnsignedInteger concept at	
-		/// runtime, via meta->InterpretsAs<AUnsignedInteger>							
-		class UnsignedInteger {
-			LANGULUS(ABSTRACT) true;
-			LANGULUS(CONCRETIZABLE) ::std::uintptr_t;
-			LANGULUS_BASES(Unsigned, Integer);
-			~UnsignedInteger() = delete;
-		};
+	/// Check if a type is compatible with CT::SignedInteger							
+	/// concept at runtime, via meta->InterpretsAs<ASignedInteger>					
+	class SignedInteger {
+		LANGULUS(ABSTRACT) true;
+		LANGULUS(CONCRETIZABLE) ::std::intptr_t;
+		LANGULUS_BASES(Signed, Integer);
+		~SignedInteger() = delete;
+	};
 
-		/// Check if a type is compatible with CT::Real									
-		/// concept at runtime, via meta->InterpretsAs<AReal>							
-		class Real {
-			LANGULUS(ABSTRACT) true;
-			LANGULUS(CONCRETIZABLE) ::Langulus::Real;
-			LANGULUS_BASES(Signed);
-			~Real() = delete;
-		};
+	/// Check if a type is compatible with CT::Character								
+	/// concept at runtime, via meta->InterpretsAs<AText>								
+	class Text {
+		LANGULUS(ABSTRACT) true;
+		LANGULUS(CONCRETIZABLE) char8_t;
+		~Text() = delete;
+	};
 
-		/// Check if a type is compatible with CT::SignedInteger						
-		/// concept at runtime, via meta->InterpretsAs<ASignedInteger>				
-		class SignedInteger {
-			LANGULUS(ABSTRACT) true;
-			LANGULUS(CONCRETIZABLE) ::std::intptr_t;
-			LANGULUS_BASES(Signed, Integer);
-			~SignedInteger() = delete;
-		};
+	/// Check if a type is compatible with CT::Bool										
+	/// concept at runtime, via meta->InterpretsAs<ABool>								
+	class Bool {
+		LANGULUS(ABSTRACT) true;
+		LANGULUS(CONCRETIZABLE) bool;
+		~Bool() = delete;
+	};
 
-		/// Check if a type is compatible with CT::Character							
-		/// concept at runtime, via meta->InterpretsAs<AText>							
-		class Text {
-			LANGULUS(ABSTRACT) true;
-			LANGULUS(CONCRETIZABLE) char8_t;
-			~Text() = delete;
-		};
-
-		/// Check if a type is compatible with CT::Bool									
-		/// concept at runtime, via meta->InterpretsAs<ABool>							
-		class Bool {
-			LANGULUS(ABSTRACT) true;
-			LANGULUS(CONCRETIZABLE) bool;
-			~Bool() = delete;
-		};
-	}
-
-} // namespace Langulus
+} // namespace Langulus::A
 
 #include "Reflection.inl"

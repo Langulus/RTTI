@@ -8,10 +8,9 @@
 #pragma once
 #include "Reflection.hpp"
 #include "NameOf.hpp"
-#include "Hashing.hpp"
 #include <memory>
 
-namespace Langulus::Anyness
+namespace Langulus::RTTI
 {
    
    ///                                                                        
@@ -143,7 +142,7 @@ namespace Langulus::Anyness
 	///	@return the hash of the type														
 	template<CT::Data T>
 	constexpr Hash Meta::GetHash() noexcept {
-		const auto name = Inner::NameOf<T>();
+		const auto name = NameOf<T>();
 		return ::std::hash<Token>()(name);
 	}
    
@@ -151,7 +150,7 @@ namespace Langulus::Anyness
 	///	@return the hash of the type														
 	template<CT::Data T>
 	constexpr Token Meta::GetName() noexcept {
-		return Inner::NameOf<T>();
+		return NameOf<T>();
 	}
 
 
@@ -722,24 +721,18 @@ namespace Langulus::Anyness
 	constexpr bool MetaVerb::Is() const {
 		return Is(MetaVerb::Of<T>());
 	}
-	
-} // namespace Langulus::Anyness
-
-
-namespace Langulus::RTTI
-{
 
 	/// A freestanding type compatibility check											
 	/// Purely cosmetic, to avoid typing `template` before member function		
 	template<CT::Data T, bool ADVANCED>
-	bool CastsTo(Anyness::DMeta from) {
+	bool CastsTo(DMeta from) {
 		return from->template CastsTo<T, ADVANCED>();
 	}
 
 	/// A freestanding type compatibility check											
 	/// Purely cosmetic, to avoid typing `template` before member function		
 	template<CT::Data T>
-	bool CastsTo(Anyness::DMeta from, Count count) {
+	bool CastsTo(DMeta from, Count count) {
 		return from->template CastsTo<T>(count);
 	}
 	

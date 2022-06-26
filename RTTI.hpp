@@ -7,6 +7,7 @@
 ///																									
 #pragma once
 #include <Langulus.Core.hpp>
+#include "Reflection.hpp"
 #include <stack>
 #include <list>
 #include <string_view>

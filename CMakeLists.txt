@@ -2,6 +2,14 @@ cmake_minimum_required(VERSION 3.20)
 include(cmake/FetchLangulusModule.cmake)
 project(Langulus_RTTI)
 
+option(LANGULUS_FEATURE_MANAGED_REFLECTION
+    "Reflections will be kept in a centralized location, when reflected, which speeds up \
+    type comparisons, and allows you to dynamically modify the reflection at runtime")
+
+if(LANGULUS_FEATURE_MANAGED_REFLECTION)
+    add_definitions(-DLANGULUS_ENABLE_MANAGED_REFLECTION)
+endif()
+
 # Check if this project is built as standalone, or a part of something else
 if(PROJECT_IS_TOP_LEVEL)
     # We're building it as standalone
@@ -15,9 +23,6 @@ if(PROJECT_IS_TOP_LEVEL)
 	add_subdirectory(test)
 endif()
 
-if(LANGULUS_FEATURE_MANAGED_REFLECTION)
-    add_definitions(-DLANGULUS_ENABLE_MANAGED_REFLECTION)
-endif()
 
 # Build and install RTTI library
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} SOURCE_FILES)
