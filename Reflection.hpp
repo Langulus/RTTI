@@ -1,5 +1,5 @@
 ///																									
-/// Langulus::Anyness																			
+/// Langulus::RTTI																				
 /// Copyright(C) 2012 Dimo Markov <langulusteam@gmail.com>							
 ///																									
 /// Distributed under GNU General Public License v3+									
@@ -55,62 +55,6 @@
 
 namespace Langulus::RTTI
 {
-
-	/// A simple request for allocating memory											
-	/// It is used as optimization to avoid divisions by stride						
-	struct AllocationRequest {
-		Size mByteSize;
-		Count mElementCount;
-	};
-
-   /// Round to the upper power-of-two														
-	///	@tparam SAFE - set to true if you want it to throw on overflow			
-	///	@tparam T - the unsigned integer type (deducible)							
-	///	@param x - the unsigned integer to round up									
-	///	@return the closest upper power-of-two to x									
-   template<bool SAFE = false, CT::Unsigned T>
-	constexpr T Roof2(const T& x) noexcept(!SAFE) {
-		if constexpr (SAFE) {
-			constexpr T lastPowerOfTwo = T{1} << T{sizeof(T) * 8 - 1};
-			if (x > lastPowerOfTwo)
-				Throw<Except::Overflow>("Roof2 overflowed");
-		}
-
-		return x <= 1 ? x : T {1} << (
-			T {sizeof(size_t) * 8} - CountLeadingZeroes<size_t>(x - T {1})
-		);
-	}
-
-   /// Round to the upper power-of-two (constexpr variant)							
-	///	@tparam SAFE - set to true if you want it to throw on overflow			
-	///	@tparam T - the unsigned integer type (deducible)							
-	///	@param x - the unsigned integer to round up									
-	///	@return the closest upper power-of-two to x									
-   template<bool SAFE = false, CT::Unsigned T>
-	constexpr T Roof2cexpr(const T& x) noexcept(!SAFE) {
-		if constexpr (SAFE) {
-			constexpr T lastPowerOfTwo = T{1} << T{sizeof(T) * 8 - 1};
-			if (x > lastPowerOfTwo)
-				Throw<Except::Overflow>("Roof2 overflowed");
-		}
-
-		T n = x;
-		--n;
-		n |= n >> 1;
-		n |= n >> 2;
-		n |= n >> 4;
-		if constexpr (sizeof(T) > 1)
-			n |= n >> 8;
-		if constexpr (sizeof(T) > 2)
-			n |= n >> 16;
-		if constexpr (sizeof(T) > 4)
-			n |= n >> 32;
-		if constexpr (sizeof(T) > 8)
-			TODO();
-
-		++n;
-		return n;
-	}
 
 	/// Get the minimum allocation page size of the type (in bytes)				
 	/// This guarantees two things:															

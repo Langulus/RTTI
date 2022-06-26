@@ -12,6 +12,7 @@
 #include <vector>
 
 using namespace Langulus;
+using namespace Langulus::RTTI;
 
 //#define LANGULUS_STD_BENCHMARK
 

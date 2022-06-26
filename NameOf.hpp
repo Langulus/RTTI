@@ -1,5 +1,5 @@
 ///																									
-/// Langulus::Anyness																			
+/// Langulus::RTTI																			   
 /// Copyright(C) 2012 Dimo Markov <langulusteam@gmail.com>							
 ///																									
 /// Distributed under GNU General Public License v3+									
@@ -91,13 +91,9 @@ namespace Langulus::RTTI
       #endif
 
       auto original = Inner::TypeAsTemplateArgument<Decay<T>>();
-      //printf("Original: %s\n", std::u8string(original).c_str());
-      SkipPrefix(original, Prefix);
-      //printf("No prefix: %s\n", std::u8string(original).c_str());
-      SkipSuffix(original, Suffix);
-      //printf("No suffix: %s\n", std::u8string(original).c_str());
-      SkipDecorations(original);
-      //printf("No decorations: %s\n", std::u8string(original).c_str());
+      Inner::SkipPrefix(original, Prefix);
+      Inner::SkipSuffix(original, Suffix);
+      Inner::SkipDecorations(original);
       return original;
    }
 
