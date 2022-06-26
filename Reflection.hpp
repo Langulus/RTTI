@@ -386,11 +386,6 @@ namespace Langulus::RTTI
 		template<CT::Data T>
 		NOD() constexpr bool Is() const;
 
-		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-			NOD() bool operator == (const MetaData&) const noexcept;
-			NOD() bool operator != (const MetaData&) const noexcept;
-		#endif
-
 		AllocationRequest RequestSize(const Size&) const noexcept;
 	};
 
@@ -411,11 +406,6 @@ namespace Langulus::RTTI
 		NOD() bool constexpr Is(TMeta) const;
 		template<CT::Trait T>
 		NOD() bool constexpr Is() const;
-		
-		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-			NOD() bool operator == (const MetaTrait&) const noexcept;
-			NOD() bool operator != (const MetaTrait&) const noexcept;
-		#endif
 	};
 
 
@@ -437,11 +427,6 @@ namespace Langulus::RTTI
 		NOD() bool constexpr Is(VMeta) const;
 		template<CT::Verb T>
 		NOD() bool constexpr Is() const;
-		
-		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-			NOD() bool operator == (const MetaVerb&) const noexcept;
-			NOD() bool operator != (const MetaVerb&) const noexcept;
-		#endif
 	};
 	
 	template<CT::Data T, bool ADVANCED = false>

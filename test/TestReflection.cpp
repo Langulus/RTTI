@@ -8,6 +8,32 @@
 #include "Main.hpp"
 #include <catch2/catch.hpp>
 
+namespace One::Two::Three
+{
+	struct TypeDeepIntoNamespaces;
+}
+
+SCENARIO("NameOf", "[nameof]") {
+	GIVEN("Type uint16_t") {
+		WHEN("Taken the name of") {
+			auto name = NameOf<uint16_t>();
+
+			THEN("Name should be correct") {
+				REQUIRE(name == "unsigned short"); //TODO make names consistent somehow
+			}
+		}
+	}
+	GIVEN("Type One::Two::Three::TypeDeepIntoNamespaces") {
+		WHEN("Taken the name of") {
+			auto name = NameOf<One::Two::Three::TypeDeepIntoNamespaces>();
+
+			THEN("Name should be correct") {
+				REQUIRE(name == "One::Two::Three::TypeDeepIntoNamespaces");
+			}
+		}
+	}
+}
+
 TEMPLATE_TEST_CASE("Unsigned integer RTTI interpretation", "[metadata]", /*uint8_t,*/ uint16_t, uint32_t, uint64_t) {
 	GIVEN("An unsigned integer type") {
 		auto meta = MetaData::Of<TestType>();

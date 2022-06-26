@@ -7,7 +7,6 @@
 ///																									
 #pragma once
 #include "Reflection.hpp"
-#include "NameOf.hpp"
 #include <memory>
 
 namespace Langulus::RTTI
@@ -643,16 +642,6 @@ namespace Langulus::RTTI
 	constexpr bool MetaData::Is() const {
 		return Is(MetaData::Of<Decay<T>>());
 	}
-
-#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-	inline bool MetaData::operator == (const MetaData&) const noexcept {
-		
-	}
-	
-	inline bool MetaData::operator != (const MetaData&) const noexcept {
-		
-	}
-#endif
 
 	/// Get a size based on reflected allocation page and count (unsafe)			
 	///	@attention assumes byteSize is not zero										

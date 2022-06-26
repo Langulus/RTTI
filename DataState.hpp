@@ -92,7 +92,6 @@ namespace Langulus::RTTI
 
 		explicit constexpr operator bool() const noexcept;
 		constexpr bool operator == (const DataState&) const noexcept = default;
-		constexpr bool operator != (const DataState&) const noexcept = default;
 		
 		NOD() constexpr DataState operator + (const DataState&) const noexcept;
 		NOD() constexpr DataState operator - (const DataState&) const noexcept;

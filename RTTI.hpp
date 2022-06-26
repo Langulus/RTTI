@@ -6,12 +6,7 @@
 /// See LICENSE file, or https://www.gnu.org/licenses									
 ///																									
 #pragma once
-#include <Langulus.Core.hpp>
 #include "Reflection.hpp"
-#include <stack>
-#include <list>
-#include <string_view>
-#include <string>
 
 namespace Langulus::RTTI
 {

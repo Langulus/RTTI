@@ -15,30 +15,30 @@ namespace Langulus::RTTI
 	/// Zero initialized at load time, guaranteed										
 	static int NiftyCounter;
 
-	/// Memory for the logger instance														
+	/// Memory for the meta database instance												
 	static ::std::aligned_storage_t<sizeof(Interface), alignof(Interface)> InstanceBuffer;
 
 	/// The global handle shall point to the buffer										
 	Interface& Instance = reinterpret_cast<Interface&> (InstanceBuffer);
 
-	/// Initialize logger together with the first include of the header			
+	/// Initialize database together with the first include of the header		
 	Inner::InterfaceInitializer::InterfaceInitializer() {
 		if (NiftyCounter++ == 0)
 			new (&Instance) Interface();
 	}
 
-	/// Destroy logger with the last destruction of the initializer				
+	/// Destroy database with the last destruction of the initializer				
 	Inner::InterfaceInitializer::~InterfaceInitializer() {
 		if (--NiftyCounter == 0)
 			Instance.~Interface();
 	}
 
-	/// Logger construction																		
+	/// Database construction																	
 	Interface::Interface() {
 
 	}
 
-	/// Logger destruction																		
+	/// Database destruction																	
 	Interface::~Interface() { }
 
 } // namespace Langulus::RTTI
