@@ -21,3 +21,8 @@ using namespace Langulus::RTTI;
 using uint = unsigned int;
 template<class T>
 using some = std::vector<T>;
+
+namespace One::Two::Three
+{
+	struct TypeDeepIntoNamespaces;
+}

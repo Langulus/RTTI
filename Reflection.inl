@@ -7,11 +7,33 @@
 ///																									
 #pragma once
 #include "Reflection.hpp"
-#include <memory>
+
+#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+	#include "RTTI.hpp"
+#endif
 
 namespace Langulus::RTTI
 {
    
+	/// Get the minimum allocation page size of the type (in bytes)				
+	/// This guarantees two things:															
+	///	1. The byte size is always a power-of-two										
+	///	2. The byte size is never smaller than LANGULUS(ALIGN)					
+	template<class T>
+	constexpr Size GetAllocationPageOf() noexcept {
+		if constexpr (requires {{Decay<T>::CTTI_AllocationPage} -> CT::Same<Size>;}) {
+			constexpr Size candidate = Decay<T>::CTTI_AllocationPage * sizeof(T);
+			if constexpr (candidate < Alignment)
+				return Alignment;
+			else 
+				return Roof2cexpr(candidate);
+		}
+		else if constexpr (sizeof(T) < Alignment)
+			return Alignment;
+		else 
+			return Roof2cexpr(sizeof(T));
+	}
+
    ///                                                                        
    ///   Member implementation                                                
    ///                                                                        
@@ -23,6 +45,18 @@ namespace Langulus::RTTI
       return mType->Is<T>();
    }
    
+	/// Compare members																			
+	///	@param rhs - the member to compare against									
+	///	@return true if members match														
+	constexpr bool Member::operator == (const Member& rhs) const noexcept {
+		return mType == rhs.mType
+			&& mState == rhs.mState
+			&& mOffset == rhs.mOffset
+			&& mCount == rhs.mCount
+			&& (mTrait == rhs.mTrait || (mTrait && mTrait->Is(rhs.mTrait)))
+			&& mName == rhs.mName;
+	}
+
    /// Reinterpret the member as a given type and access it (const, unsafe)   
    ///   @param instance - pointer to the beginning of the owning type        
    ///   @return a reinterpreted constant reference to member                 
@@ -55,19 +89,20 @@ namespace Langulus::RTTI
    
 
 	///                                                                        
+	///   Ability implementation																
+	///                                                                        
+	constexpr bool Ability::operator == (const Ability& rhs) const noexcept {
+		return mVerb->Is(rhs.mVerb);
+	}
+
+
+	///                                                                        
    ///   Base implementation																	
    ///                                                                        
 
 	/// Compare bases for equality															
 	constexpr bool Base::operator == (const Base& other) const noexcept {
 		return mType == other.mType && mCount == other.mCount;
-
-	}
-
-	/// Compare bases for inequality															
-	constexpr bool Base::operator != (const Base& other) const noexcept {
-		return !(*this == other);
-
 	}
 
 	/// Create a base descriptor for the derived type T								
@@ -132,7 +167,6 @@ namespace Langulus::RTTI
 	}
 
 
-
 	///                                                                        
    ///   Meta implementation																	
    ///                                                                        
@@ -185,7 +219,7 @@ namespace Langulus::RTTI
 			// Try to get the definition, type might have been reflected	
 			// previously in another translation unit. This is available	
 			// only if MANAGED_REFLECTION feature is enabled					
-			meta = TODO();
+			meta = Database.GetMetaData(Meta::GetName<T>());
 			if (meta)
 				return meta;
 		#endif
@@ -196,43 +230,48 @@ namespace Langulus::RTTI
 		if constexpr (CT::Reflectable<T>) {
 			// The type is explicitly reflected with a custom function		
 			// Let's call it...															
-			meta = ::std::make_unique<MetaData>(T::Reflect());
-			return meta.get();
+			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+				meta = Database.Register(T::Reflect());
+				return meta;
+			#else
+				meta = ::std::make_unique<MetaData>(T::Reflect());
+				return meta.get();
+			#endif
 		}
 		else {
 			// Type is implicitly reflected, so let's do our best				
-			meta = ::std::make_unique<MetaData>();
-			meta->mToken = Meta::GetName<T>();
-			meta->mInfo = "<no info provided due to implicit reflection>";
-			meta->mName = Meta::GetName<T>();
-			meta->mHash = Meta::GetHash<T>();
-			meta->mIsAbstract = CT::Abstract<T>;
-			meta->mIsNullifiable = CT::Nullifiable<T>;
-			meta->mSize = CT::Abstract<T> ? 0 : sizeof(T);
-			meta->mAlignment = alignof(T);
-			meta->mAllocationPage = GetAllocationPageOf<T>();
+			MetaData generated;
+			generated.mToken = Meta::GetName<T>();
+			generated.mInfo = "<no info provided due to implicit reflection>";
+			generated.mName = Meta::GetName<T>();
+			generated.mHash = Meta::GetHash<T>();
+			generated.mIsAbstract = CT::Abstract<T>;
+			generated.mIsNullifiable = CT::Nullifiable<T>;
+			generated.mSize = CT::Abstract<T> ? 0 : sizeof(T);
+			generated.mAlignment = alignof(T);
+			generated.mAllocationPage = GetAllocationPageOf<T>();
 			constexpr auto minElements = GetAllocationPageOf<T>() / sizeof(T);
 			for (Size bit = 0; bit < sizeof(Size) * 8; ++bit) {
 				const Size threshold = Size {1} << bit;
 				const Size elements = threshold / sizeof(T);
-				meta->mAllocationTable[bit] = ::std::max(minElements, elements);
+				generated.mAllocationTable[bit] = ::std::max(minElements, elements);
 			}
-			meta->mIsPOD = CT::POD<T>;
-			meta->mIsDeep = CT::Deep<T>;
+			generated.mIsPOD = CT::POD<T>;
+			generated.mIsDeep = CT::Deep<T>;
 			
 			if constexpr (CT::Concretizable<T>)
-				meta->mConcrete = MetaData::Of<Decay<typename T::CTTI_Concrete>>();
+				generated.mConcrete = MetaData::Of<Decay<typename T::CTTI_Concrete>>();
 
 			// Wrap the default constructor of the type inside a lambda		
 			if constexpr (CT::Defaultable<T>) {
-				meta->mDefaultConstructor = [](void* at) {
+				generated.mDefaultConstructor = [](void* at) {
 					new (at) T {};
 				};
 			}
 
 			// Wrap the copy constructor of the type inside a lambda			
 			if constexpr (CT::CopyMakable<T>) {
-				meta->mCopyConstructor = [](void* at, const void* from) {
+				generated.mCopyConstructor = [](void* at, const void* from) {
 					auto fromInstance = static_cast<const T*>(from);
 					new (at) T {*fromInstance};
 				};
@@ -240,7 +279,7 @@ namespace Langulus::RTTI
 
 			// Wrap the move constructor of the type inside a lambda			
 			if constexpr (CT::MoveMakable<T>) {
-				meta->mMoveConstructor = [](void* at, void* from) {
+				generated.mMoveConstructor = [](void* at, void* from) {
 					auto fromInstance = static_cast<T*>(from);
 					new (at) T {Forward<T>(*fromInstance)};
 				};
@@ -248,7 +287,7 @@ namespace Langulus::RTTI
 
 			// Wrap the destructor of the type inside a lambda					
 			if constexpr (CT::Destroyable<T>) {
-				meta->mDestructor = [](void* at) {
+				generated.mDestructor = [](void* at) {
 					auto instance = static_cast<T*>(at);
 					instance->~T();
 				};
@@ -256,14 +295,14 @@ namespace Langulus::RTTI
 
 			// Wrap the cloners of the type inside a lambda						
 			if constexpr (CT::CloneMakable<T>) {
-				meta->mCloneInUninitilizedMemory = [](const void* from, void* to) {
+				generated.mCloneInUninitilizedMemory = [](const void* from, void* to) {
 					auto fromInstance = static_cast<const T*>(from);
 					new (to) T {fromInstance->Clone()};
 				};
 			}
 
 			if constexpr (CT::CloneCopyable<T>) {
-				meta->mCloneInInitializedMemory = [](const void* from, void* to) {
+				generated.mCloneInInitializedMemory = [](const void* from, void* to) {
 					auto toInstance = static_cast<T*>(to);
 					auto fromInstance = static_cast<const T*>(from);
 					*toInstance = fromInstance->Clone();
@@ -272,7 +311,7 @@ namespace Langulus::RTTI
 
 			// Wrap the == operator of the type inside a lambda				
 			if constexpr (CT::Comparable<T>) {
-				meta->mComparer = [](const void* t1, const void* t2) {
+				generated.mComparer = [](const void* t1, const void* t2) {
 					auto t1Instance = static_cast<const T*>(t1);
 					auto t2Instance = static_cast<const T*>(t2);
 					return *t1Instance == *t2Instance;
@@ -281,7 +320,7 @@ namespace Langulus::RTTI
 
 			// Wrap the copy operator of the type inside a lambda				
 			if constexpr (CT::Copyable<T>) {
-				meta->mCopier = [](const void* from, void* to) {
+				generated.mCopier = [](const void* from, void* to) {
 					auto toInstance = static_cast<T*>(to);
 					auto fromInstance = static_cast<const T*>(from);
 					*toInstance = *fromInstance;
@@ -290,7 +329,7 @@ namespace Langulus::RTTI
 
 			// Wrap the move operator of the type inside a lambda				
 			if constexpr (CT::Movable<T>) {
-				meta->mMover = [](void* from, void* to) {
+				generated.mMover = [](void* from, void* to) {
 					auto toInstance = static_cast<T*>(to);
 					auto fromInstance = static_cast<T*>(from);
 					*toInstance = Move(*fromInstance);
@@ -299,7 +338,7 @@ namespace Langulus::RTTI
 
 			// Wrap the GetBlock method of the type inside a lambda			
 			if constexpr (CT::Resolvable<T>) {
-				meta->mResolver = [](const void* at) {
+				generated.mResolver = [](const void* at) {
 					auto instance = static_cast<const T*>(at);
 					return instance->GetBlock();
 				};
@@ -307,7 +346,7 @@ namespace Langulus::RTTI
 
 			// Wrap the GetHash() method inside a lambda							
 			if constexpr (CT::Hashable<T> || CT::Number<T> || CT::POD<T>) {
-				meta->mHasher = [](const void* at) {
+				generated.mHasher = [](const void* at) {
 					auto instance = static_cast<const T*>(at);
 					return HashData(*instance);
 				};
@@ -315,7 +354,7 @@ namespace Langulus::RTTI
 
 			// Wrap the Do verb method inside a lambda							
 			if constexpr (CT::Dispatcher<T>) {
-				meta->mDispatcher = [](void* at, Flow::Verb& verb) {
+				generated.mDispatcher = [](void* at, Flow::Verb& verb) {
 					auto instance = static_cast<T*>(at);
 					instance->Do(verb);
 				};
@@ -323,17 +362,23 @@ namespace Langulus::RTTI
 
 			// Set reflected bases														
 			if constexpr (requires { typename T::CTTI_Bases; })
-				meta->SetBases<T>(typename T::CTTI_Bases {});
+				generated.SetBases<T>(typename T::CTTI_Bases {});
 
 			// Set reflected abilities													
 			if constexpr (requires { typename T::CTTI_Verbs; })
-				meta->SetAbilities<T>(typename T::CTTI_Verbs {});
+				generated.SetAbilities<T>(typename T::CTTI_Verbs {});
 
 			// Set some additional stuff if T is fundamental					
 			if constexpr (CT::Fundamental<T>)
-				meta->ReflectFundamentalType<T>();
+				generated.ReflectFundamentalType<T>();
 
-			return meta.get();
+			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+				meta = Database.Register(Move(generated));
+				return meta;
+			#else
+				meta = ::std::make_unique<MetaData>(Move(generated));
+				return meta.get();
+			#endif
 		}
 	}
 
@@ -655,6 +700,45 @@ namespace Langulus::RTTI
 		return result;
 	}
 
+	#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+		/// Compare definitions																	
+		///	@param rhs - definition to compare against								
+		///	@return true if definitions match fully									
+		bool MetaData::operator == (const MetaData& rhs) const noexcept {
+			if (mMembers.size() != rhs.mMembers.size()
+				|| mAbilities.size() != rhs.mAbilities.size()
+				|| mBases.size() != rhs.mBases.size())
+				return false;
+
+			for (int i = 0; i < mMembers.size(); ++i) {
+				if (mMembers[i] != rhs.mMembers[i])
+					return false;
+			}
+			for (int i = 0; i < mAbilities.size(); ++i) {
+				if (mAbilities[i] != rhs.mAbilities[i])
+					return false;
+			}
+			for (int i = 0; i < mBases.size(); ++i) {
+				if (mBases[i] != rhs.mBases[i])
+					return false;
+			}
+
+			return mToken == rhs.mToken
+				&& mInfo == rhs.mInfo
+				&& mName == rhs.mName
+				&& mConcrete == rhs.mConcrete
+				&& mProducer == rhs.mProducer
+				&& mIsPOD == rhs.mIsPOD
+				&& mIsNullifiable == rhs.mIsNullifiable
+				&& mIsAbstract == rhs.mIsAbstract
+				&& mIsDeep == rhs.mIsDeep
+				&& mSize == rhs.mSize
+				&& mAlignment == rhs.mAlignment
+				&& mAllocationPage == rhs.mAllocationPage
+				&& mFileExtension == rhs.mFileExtension;
+		}
+	#endif
+
 	
 	///                                                                        
    ///   MetaTrait implementation															
@@ -683,6 +767,18 @@ namespace Langulus::RTTI
 		return Is(MetaTrait::Of<T>());
 	}	
 	
+	#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+		/// Compare definitions																	
+		///	@param rhs - definition to compare against								
+		///	@return true if definitions match fully									
+		bool MetaTrait::operator == (const MetaTrait& rhs) const noexcept {
+			return mToken == rhs.mToken
+				&& mInfo == rhs.mInfo
+				&& mName == rhs.mName
+				&& mDataType == rhs.mDataType;
+		}
+	#endif
+
 	
 	///                                                                        
    ///   MetaVerb implementation																
@@ -710,6 +806,18 @@ namespace Langulus::RTTI
 	constexpr bool MetaVerb::Is() const {
 		return Is(MetaVerb::Of<T>());
 	}
+
+	#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+		/// Compare definitions																	
+		///	@param rhs - definition to compare against								
+		///	@return true if definitions match fully									
+		bool MetaVerb::operator == (const MetaVerb& rhs) const noexcept {
+			return mToken == rhs.mToken
+				&& mInfo == rhs.mInfo
+				&& mName == rhs.mName
+				&& mTokenReverse == rhs.mTokenReverse;
+		}
+	#endif
 
 	/// A freestanding type compatibility check											
 	/// Purely cosmetic, to avoid typing `template` before member function		

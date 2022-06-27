@@ -6,7 +6,8 @@
 /// See LICENSE file, or https://www.gnu.org/licenses									
 ///																									
 #pragma once
-#include "Reflection.hpp"
+#include "Config.hpp"
+#include <unordered_map>
 
 namespace Langulus::RTTI
 {
@@ -29,11 +30,32 @@ namespace Langulus::RTTI
 	private:
 		Interface();
 		~Interface();
+
+		// Database for meta data definitions										
+		::std::unordered_map<Token, DMeta> mMetaData;
+		// Database for meta trait definitions										
+		::std::unordered_map<Token, TMeta> mMetaTraits;
+		// Database for meta verb definitions										
+		::std::unordered_map<Token, VMeta> mMetaVerbs;
+		::std::unordered_map<Token, VMeta> mMetaVerbsAlt;
+
+	public:
+		NOD() DMeta GetMetaData(const Token&) const noexcept;
+		NOD() TMeta GetMetaTrait(const Token&) const noexcept;
+		NOD() VMeta GetMetaVerb(const Token&) const noexcept;
+
+		NOD() DMeta Register(MetaData&&) noexcept;
+		NOD() TMeta Register(MetaTrait&&) noexcept;
+		NOD() VMeta Register(MetaVerb&&) noexcept;
+
+		void Unregister(DMeta) noexcept;
+		void Unregister(TMeta) noexcept;
+		void Unregister(VMeta) noexcept;
 	};
 
 	///																								
 	/// The global RTTI instance, initialized via a schwarz counter				
 	///																								
-	extern Interface& Instance;
+	extern Interface& Database;
 
 } // namespace Langulus::RTTI

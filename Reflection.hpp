@@ -17,63 +17,93 @@
 
 /// You can mark types as deep by using LANGULUS(DEEP) true / false inside		
 /// class, but to fit into CT::Deep concept, your type must also inherit Block
-#define LANGULUS_DEEP() public: static constexpr bool CTTI_Deep = 
+#define LANGULUS_DEEP() \
+	public: static constexpr bool CTTI_Deep = 
 
 /// You can mark types as POD (Plain Old Data) by using LANGULUS(POD) true or	
 /// false inside class. POD types are batch-copied via memcpy, and do not		
 /// call constructors or destructors when contained (unless nullifiable)		
-#define LANGULUS_POD() public: static constexpr bool CTTI_POD = 
+#define LANGULUS_POD() \
+	public: static constexpr bool CTTI_POD = 
 
 /// You can mark types as nullifiable, by using LANGULUS(NULLIFIABLE) true or	
 /// false inside class. Nullifiable classes are batch-constructed and			
 /// batch-destroyed via memset(0)															
-#define LANGULUS_NULLIFIABLE() public: static constexpr bool CTTI_Nullifiable = 
+#define LANGULUS_NULLIFIABLE() \
+	public: static constexpr bool CTTI_Nullifiable = 
+
+/// You can choose how a given type is pooled, if managed memory is enabled	
+/// See RTTI::PoolTactic for options														
+#define LANGULUS_POOL_TACTIC() \
+	public: static constexpr ::Langulus::RTTI::PoolTactic CTTI_Pool = 
 
 /// You can make types concretizable, by using LANGULUS(CONCRETIZABLE) Type	
 /// When dynamically creating objects of your type, the most concrete type		
 /// in the chain will be used instead														
-#define LANGULUS_CONCRETIZABLE() public: using CTTI_Concretizable = 
+#define LANGULUS_CONCRETIZABLE() \
+	public: using CTTI_Concretizable = 
+
+/// You can make types not insertable to Anyness containers, such as some		
+/// intermediate types, like Block::KnownPointer. These types will produce		
+/// a compile-time error when a push is attempted. All reflected types are		
+/// insertable by default																		
+#define LANGULUS_INSERTABLE() \
+	public: using CTTI_Insertable = 
 
 /// You can define an allocation page (number of elements) by using				
 /// LANGULUS(ALLOCATION_PAGE) X. When allocating memory for your type, X		
 /// will be the minimum amount of elements to allocate, aligned to the			
 /// nearest upper power-of-two amount of bytes. By default, allocation page	
-/// size	is never lower than LANGULUS(ALIGN)												
-#define LANGULUS_ALLOCATION_PAGE() public: constexpr Count CTTI_AllocationPage = 
+/// size	is never lower than Alignment														
+#define LANGULUS_ALLOCATION_PAGE() \
+	public: constexpr Count CTTI_AllocationPage = 
 
 /// Make a type abstract																		
-#define LANGULUS_ABSTRACT() public: static constexpr bool CTTI_Abstract = 
+#define LANGULUS_ABSTRACT() \
+	public: static constexpr bool CTTI_Abstract = 
 
 /// Reflect a list of members																	
-#define LANGULUS_MEMBERS(...) public: using CTTI_Members = ::Langulus::TTypeList<__VA_ARGS__>
+#define LANGULUS_MEMBERS(...) \
+	public: using CTTI_Members = ::Langulus::TTypeList<__VA_ARGS__>
 
 /// Reflect a list of bases																	
-#define LANGULUS_BASES(...) public: using CTTI_Bases = ::Langulus::TTypeList<__VA_ARGS__>
+#define LANGULUS_BASES(...) \
+	public: using CTTI_Bases = ::Langulus::TTypeList<__VA_ARGS__>
 
 /// Reflect a list of verbs																	
-#define LANGULUS_VERBS(...) public: using CTTI_Verbs = ::Langulus::TTypeList<__VA_ARGS__>
+#define LANGULUS_VERBS(...) \
+	public: using CTTI_Verbs = ::Langulus::TTypeList<__VA_ARGS__>
+
 
 namespace Langulus::RTTI
 {
 
-	/// Get the minimum allocation page size of the type (in bytes)				
-	/// This guarantees two things:															
-	///	1. The byte size is always a power-of-two										
-	///	2. The byte size is never smaller than LANGULUS(ALIGN)					
+	///																								
+	/// Different pool tactics you can assign to your data types					
+	/// Used primarily for advanced tweaking of a final product						
+	/// Pooling works only if managed memory feature is enabled						
+	///																								
+	enum class PoolTactic {
+		// Data instances will be pooled in the default pool chain			
+		// If that pool chain becomes too long, it becomes costly to find	
+		// entries. Works both with managed and non-managed reflection		
+		Default = 0,
+
+		// Data instances will be pooled based on their allocation page	
+		// There will be pools dedicated for each allocation page size		
+		// This effectively narrows the search for entries a bit				
+		// This works both with managed and non-managed reflection			
+		Size,
+
+		// Data instances will be pooled based on their type					
+		// Each meta definition will have its own pool chain					
+		// This works only with managed reflection, otherwise acts as		
+		// the PoolTactic::Size option												
+		Type
+	};
+
 	template<class T>
-	constexpr Size GetAllocationPageOf() noexcept {
-		if constexpr (requires {{Decay<T>::CTTI_AllocationPage} -> CT::Same<Size>;}) {
-			constexpr Size candidate = Decay<T>::CTTI_AllocationPage * sizeof(T);
-			if constexpr (candidate < Alignment)
-				return Alignment;
-			else 
-				return Roof2cexpr(candidate);
-		}
-		else if constexpr (sizeof(T) < Alignment)
-			return Alignment;
-		else 
-			return Roof2cexpr(sizeof(T));
-	}
+	constexpr Size GetAllocationPageOf() noexcept;
 
 	
 	///																								
@@ -150,10 +180,9 @@ namespace Langulus::RTTI
 		constexpr Member() noexcept = default;
 
 		template<CT::Data OWNER, CT::Data DATA>
-		NOD() static Member From(Offset, const Token& = {}, TMeta trait = {});
+		NOD() static Member From(Offset, const Token& = {}, TMeta = {});
 
 		NOD() constexpr bool operator == (const Member&) const noexcept;
-		NOD() constexpr bool operator != (const Member&) const noexcept;
 		
 		template<CT::Data T>
 		NOD() constexpr bool Is() const noexcept;
@@ -183,7 +212,6 @@ namespace Langulus::RTTI
 		constexpr Ability() noexcept = default;
 
 		NOD() constexpr bool operator == (const Ability&) const noexcept;
-		NOD() constexpr bool operator != (const Ability&) const noexcept;
 
 		template<CT::Dense T, CT::Dense VERB>
 		NOD() static Ability From() noexcept;
@@ -215,7 +243,6 @@ namespace Langulus::RTTI
 		constexpr Base() noexcept = default;
 
 		NOD() constexpr bool operator == (const Base&) const noexcept;
-		NOD() constexpr bool operator != (const Base&) const noexcept;
 
 		template<CT::Dense T, CT::Dense BASE>
 		NOD() static Base From() SAFETY_NOEXCEPT();
@@ -226,15 +253,15 @@ namespace Langulus::RTTI
 
 	using BaseList = ::std::span<const Base>;
 
-	namespace Inner
+	/*namespace Inner
 	{
 		template<class DERIVED, class BASE>
-		struct DBPair {
+		struct DBPair { //TODO can't even remember what that is... remove it?
 			NOD() static Base Get() noexcept {
 				return Base::From<DERIVED, BASE>();
 			}
 		};
-	}
+	}*/
 
 
 	///																								
@@ -243,6 +270,13 @@ namespace Langulus::RTTI
 	/// Base for meta definitions																
 	///																								
 	struct Meta {
+	protected:
+		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+			friend class Interface;
+			Count mReferences {1};
+		#endif
+
+	public:
 		// Each reflection primitive has a unique token, but that			
 		// uniqueness is checked only if MANAGED_REFLECTION feature is		
 		// enabled																			
@@ -265,6 +299,10 @@ namespace Langulus::RTTI
 	///	Meta data																				
 	///																								
 	struct MetaData : public Meta {
+		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+			friend class Interface;
+		#endif
+
 		enum Distance : int {
 			Infinite = ::std::numeric_limits<int>::max()
 		};
@@ -329,15 +367,14 @@ namespace Langulus::RTTI
 		// The Do verb, wrapped in a lambda											
 		FDispatch mDispatcher;
 
-	public:
-		template<CT::Data T>
-		NOD() static DMeta Of() requires CT::Decayed<T>;
-
 	protected:
 		template<CT::Fundamental T>
 		void ReflectFundamentalType() noexcept;
 
 	public:
+		template<CT::Data T>
+		NOD() static DMeta Of() requires CT::Decayed<T>;
+
 		NOD() DMeta GetMostConcrete() const noexcept;
 
 		template<class T, CT::Dense... Args>
@@ -387,6 +424,10 @@ namespace Langulus::RTTI
 		NOD() constexpr bool Is() const;
 
 		AllocationRequest RequestSize(const Size&) const noexcept;
+
+		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+			bool operator == (const MetaData&) const noexcept;
+		#endif
 	};
 
 
@@ -406,6 +447,10 @@ namespace Langulus::RTTI
 		NOD() bool constexpr Is(TMeta) const;
 		template<CT::Trait T>
 		NOD() bool constexpr Is() const;
+
+		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+			bool operator == (const MetaTrait&) const noexcept;
+		#endif
 	};
 
 
@@ -427,6 +472,10 @@ namespace Langulus::RTTI
 		NOD() bool constexpr Is(VMeta) const;
 		template<CT::Verb T>
 		NOD() bool constexpr Is() const;
+
+		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+			bool operator == (const MetaVerb&) const noexcept;
+		#endif
 	};
 	
 	template<CT::Data T, bool ADVANCED = false>
@@ -435,6 +484,7 @@ namespace Langulus::RTTI
 	NOD() bool CastsTo(DMeta, Count);
 
 } // namespace Langulus::RTTI
+
 
 namespace Langulus::A
 {

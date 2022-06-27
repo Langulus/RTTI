@@ -8,11 +8,6 @@
 #include "Main.hpp"
 #include <catch2/catch.hpp>
 
-namespace One::Two::Three
-{
-	struct TypeDeepIntoNamespaces;
-}
-
 SCENARIO("NameOf", "[nameof]") {
 	GIVEN("Type uint16_t") {
 		WHEN("Taken the name of") {

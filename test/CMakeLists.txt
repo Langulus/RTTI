@@ -11,8 +11,11 @@ download_project(
 )
 add_subdirectory(${Catch2_SOURCE_DIR} ${Catch2_BINARY_DIR})
 
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} SOURCE_FILES)
-add_executable(Test.RTTI ${SOURCE_FILES})
+if(LANGULUS_FEATURE_MANAGED_REFLECTION)
+	add_executable(Test.RTTI Main.cpp TestCTTI.cpp TestRTTI.cpp)
+else()
+	add_executable(Test.RTTI Main.cpp TestCTTI.cpp)
+endif()
 
 target_link_libraries(Test.RTTI PRIVATE Langulus.RTTI Catch2)
 
