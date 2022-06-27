@@ -201,7 +201,7 @@ namespace Langulus::RTTI
 		static_assert(sizeof(T) > 0, "Can't reflect an incomplete type");
 
 		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-			static constinit MetaData* meta;
+			static constinit DMeta meta;
 		#else
 			static constinit ::std::unique_ptr<MetaData> meta;
 		#endif
