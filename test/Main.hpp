@@ -25,4 +25,10 @@ using some = std::vector<T>;
 namespace One::Two::Three
 {
 	struct TypeDeepIntoNamespaces;
+
+	template<class T>
+	struct TemplatedTypeDeepIntoNamespaces;
+
+	template<class T>
+	struct VeryComplexTemplate;
 }

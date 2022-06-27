@@ -8,22 +8,87 @@
 #include "Main.hpp"
 #include <catch2/catch.hpp>
 
+using TypeDeepAlias = One::Two::Three::TypeDeepIntoNamespaces;
+using TemplatedAlias = One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>;
+using VeryComplexTemplatedAlias = One::Two::Three::VeryComplexTemplate<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>>;
+
 SCENARIO("NameOf", "[nameof]") {
 	GIVEN("Type uint16_t") {
 		WHEN("Taken the name of") {
 			auto name = NameOf<uint16_t>();
 
 			THEN("Name should be correct") {
-				REQUIRE(name == "unsigned short"); //TODO make names consistent somehow
+				REQUIRE(name == "uint16");
 			}
 		}
 	}
+
 	GIVEN("Type One::Two::Three::TypeDeepIntoNamespaces") {
 		WHEN("Taken the name of") {
 			auto name = NameOf<One::Two::Three::TypeDeepIntoNamespaces>();
 
 			THEN("Name should be correct") {
 				REQUIRE(name == "One::Two::Three::TypeDeepIntoNamespaces");
+			}
+		}
+	}
+
+	GIVEN("Type TypeDeepAlias") {
+		WHEN("Taken the name of") {
+			auto name = NameOf<TypeDeepAlias>();
+
+			THEN("Name should be correct") {
+				REQUIRE(name == "One::Two::Three::TypeDeepIntoNamespaces");
+			}
+		}
+	}
+
+	GIVEN("Type One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>") {
+		WHEN("Taken the name of") {
+			auto name = NameOf<One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>>();
+
+			THEN("Name should be correct") {
+				REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>");
+			}
+		}
+	}
+
+	GIVEN("Type One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>") {
+		WHEN("Taken the name of") {
+			auto name = NameOf<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>>();
+
+			THEN("Name should be correct") {
+				REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>");
+			}
+		}
+	}
+
+	GIVEN("Type TemplatedAlias") {
+		WHEN("Taken the name of") {
+			auto name = NameOf<TemplatedAlias>();
+
+			THEN("Name should be correct") {
+				REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>");
+			}
+		}
+	}
+
+	GIVEN("Type One::Two::Three::VeryComplexTemplate<TemplatedAlias>") {
+		WHEN("Taken the name of") {
+			auto name = NameOf<One::Two::Three::VeryComplexTemplate<TemplatedAlias>>();
+
+			THEN("Name should be correct") {
+				REQUIRE(name == "One::Two::Three::VeryComplexTemplate<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>>");
+			}
+		}
+	}
+
+	GIVEN("Type VeryComplexTemplatedAlias") {
+		WHEN("Taken the name of") {
+			auto name = NameOf<VeryComplexTemplatedAlias>();
+
+			THEN("Name should be correct") {
+				REQUIRE(name == "One::Two::Three::VeryComplexTemplate<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>>");
 			}
 		}
 	}
