@@ -253,16 +253,6 @@ namespace Langulus::RTTI
 
 	using BaseList = ::std::span<const Base>;
 
-	/*namespace Inner
-	{
-		template<class DERIVED, class BASE>
-		struct DBPair { //TODO can't even remember what that is... remove it?
-			NOD() static Base Get() noexcept {
-				return Base::From<DERIVED, BASE>();
-			}
-		};
-	}*/
-
 
 	///																								
 	///	Meta																						
