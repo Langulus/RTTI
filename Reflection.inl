@@ -704,7 +704,7 @@ namespace Langulus::RTTI
 		/// Compare definitions																	
 		///	@param rhs - definition to compare against								
 		///	@return true if definitions match fully									
-		bool MetaData::operator == (const MetaData& rhs) const noexcept {
+		inline bool MetaData::operator == (const MetaData& rhs) const noexcept {
 			if (mMembers.size() != rhs.mMembers.size()
 				|| mAbilities.size() != rhs.mAbilities.size()
 				|| mBases.size() != rhs.mBases.size())
@@ -771,7 +771,7 @@ namespace Langulus::RTTI
 		/// Compare definitions																	
 		///	@param rhs - definition to compare against								
 		///	@return true if definitions match fully									
-		bool MetaTrait::operator == (const MetaTrait& rhs) const noexcept {
+		inline bool MetaTrait::operator == (const MetaTrait& rhs) const noexcept {
 			return mToken == rhs.mToken
 				&& mInfo == rhs.mInfo
 				&& mName == rhs.mName
@@ -811,7 +811,7 @@ namespace Langulus::RTTI
 		/// Compare definitions																	
 		///	@param rhs - definition to compare against								
 		///	@return true if definitions match fully									
-		bool MetaVerb::operator == (const MetaVerb& rhs) const noexcept {
+		inline bool MetaVerb::operator == (const MetaVerb& rhs) const noexcept {
 			return mToken == rhs.mToken
 				&& mInfo == rhs.mInfo
 				&& mName == rhs.mName
