@@ -23,7 +23,7 @@ namespace Langulus::RTTI
 
 	public:
 		template<CT::Trait T>
-		NOD() static TMeta Of();
+		NOD() static TMeta Of() requires CT::Decayed<T>;
 		
 		NOD() bool constexpr Is(TMeta) const;
 		template<CT::Trait T>

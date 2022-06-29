@@ -29,7 +29,7 @@ namespace Langulus::RTTI
 
 	public:
 		template<CT::Verb T>
-		NOD() static VMeta Of();
+		NOD() static VMeta Of() requires CT::Decayed<T>;
 		
 		NOD() bool constexpr Is(VMeta) const;
 		template<CT::Verb T>
