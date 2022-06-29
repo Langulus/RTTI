@@ -15,6 +15,65 @@
 #endif
 
 
+/// You can provide a custom token to your data type, instead of using NameOf	
+/// When verbs are reflected with this, their positive and negative tokens		
+/// shall be the same. If you want them to be different, use POSITIVE and		
+/// NEGATIVE names explicitly instead														
+#define LANGULUS_NAME() \
+	public: static constexpr ::Langulus::Token CTTI_Name = 
+
+/// You can provide a custom positive token for your verb							
+/// This has effect only when reflecting verbs, and if specified, then you		
+/// should also specify the negative verb, too, or get a compile-time error	
+/// If both negative and positive verbs are same, just use LANGULUS_NAME()		
+#define LANGULUS_POSITIVE_VERB() \
+	public: static constexpr ::Langulus::Token CTTI_PositiveVerb = 
+
+/// You can provide a custom negative token for your verb							
+/// This has effect only when reflecting verbs, and if specified, then you		
+/// should also specify the positive verb, too, or get a compile-time error	
+/// If both negative and positive verbs are same, just use LANGULUS_NAME()		
+#define LANGULUS_NEGATIVE_VERB() \
+	public: static constexpr ::Langulus::Token CTTI_NegativeVerb = 
+
+/// You can provide a custom positive operator for your verb						
+/// This is purely for syntax sugar															
+/// If positive operator is specified, you need to also specify the negative	
+#define LANGULUS_POSITIVE_OPERATOR() \
+	public: static constexpr ::Langulus::Token CTTI_PositiveOperator = 
+
+/// You can provide a custom negative operator for your verb						
+/// This is purely for syntax sugar															
+/// If negative operator is specified, you need to also specify the positive	
+#define LANGULUS_NEGATIVE_OPERATOR() \
+	public: static constexpr ::Langulus::Token CTTI_NegativeOperator = 
+
+/// You can provide information string with your reflection, for developers	
+#define LANGULUS_INFO() \
+	public: static constexpr ::Langulus::Token CTTI_Info = 
+
+/// You can provide file format associations by extensions							
+/// You can specify multiple extensions by separating them with commas			
+/// When serializing data of this type to a file, the first reflected			
+/// extension will be used, if no extension has been explicitly stated for		
+/// the file upon opening it for writing													
+/// When deserializing from a file, the type to deserialize will be deduced	
+/// by checking the file extension with the database									
+#define LANGULUS_FILES() \
+	public: static constexpr ::Langulus::Token CTTI_Files = 
+
+/// You can version your types																
+/// When deserializing, you will get an error on major version mismatch			
+/// If not specified, major version is always 1											
+#define LANGULUS_VERSION_MAJOR() \
+	public: static constexpr ::Langulus::Count CTTI_VersionMajor = 
+
+/// You can version your types																
+/// When deserializing, you will get a warning on minor version mismatch		
+/// If not specified, minor version is always 0											
+#define LANGULUS_VERSION_MINOR() \
+	public: static constexpr ::Langulus::Count CTTI_VersionMinor = 
+
 /// You can mark types as deep by using LANGULUS(DEEP) true / false inside		
 /// class, but to fit into CT::Deep concept, your type must also inherit Block
 #define LANGULUS_DEEP() \
@@ -38,7 +97,7 @@
 	public: static constexpr ::Langulus::RTTI::PoolTactic CTTI_Pool = 
 
 /// You can make types concretizable, by using LANGULUS(CONCRETIZABLE) Type	
-/// When dynamically creating objects of your type, the most concrete type		
+/// When dynamically creating your abstract objects, the most concrete type	
 /// in the chain will be used instead														
 #define LANGULUS_CONCRETIZABLE() \
 	public: using CTTI_Concretizable = 
@@ -74,185 +133,14 @@
 #define LANGULUS_VERBS(...) \
 	public: using CTTI_Verbs = ::Langulus::TTypeList<__VA_ARGS__>
 
+/// Reflect a list of possible conversions												
+/// These will be automatically used by Verbs::Interpret if available			
+#define LANGULUS_CONVERSIONS(...) \
+	public: using CTTI_Conversions = ::Langulus::TTypeList<__VA_ARGS__>
+
 
 namespace Langulus::RTTI
 {
-
-	///																								
-	/// Different pool tactics you can assign to your data types					
-	/// Used primarily for advanced tweaking of a final product						
-	/// Pooling works only if managed memory feature is enabled						
-	///																								
-	enum class PoolTactic {
-		// Data instances will be pooled in the default pool chain			
-		// If that pool chain becomes too long, it becomes costly to find	
-		// entries. Works both with managed and non-managed reflection		
-		Default = 0,
-
-		// Data instances will be pooled based on their allocation page	
-		// There will be pools dedicated for each allocation page size		
-		// This effectively narrows the search for entries a bit				
-		// This works both with managed and non-managed reflection			
-		Size,
-
-		// Data instances will be pooled based on their type					
-		// Each meta definition will have its own pool chain					
-		// This works only with managed reflection, otherwise acts as		
-		// the PoolTactic::Size option												
-		Type
-	};
-
-	template<class T>
-	constexpr Size GetAllocationPageOf() noexcept;
-
-	
-	///																								
-	///	These methods are sought in each reflected type								
-	///																								
-	/// The default constructor, wrapped in a lambda expression if available	
-	/// Takes a pointer for a placement-new expression									
-	using FDefaultConstruct = TFunctor<void(void*)>;
-
-	/// The copy constructor, wrapped in a lambda expression if available		
-	/// Takes a pointer for a placement-new expression, and a source				
-	using FCopyConstruct = TFunctor<void(void*, const void*)>;
-
-	/// The move constructor, wrapped in a lambda expression if available		
-	/// Takes a pointer for a placement-new expression, and a source				
-	using FMoveConstruct = TFunctor<void(void*, void*)>;
-
-	/// The destructor, wrapped in a lambda expression									
-	/// Takes the pointer to the instance for destruction								
-	using FDestroy = TFunctor<void(void*)>;
-
-	/// The cloner, wrapped in a lambda expression if available						
-	/// Clone one instance to another														
-	using FClone = TFunctor<void(const void*, void*)>;
-
-	/// The == operator, wrapped in a lambda expression if available				
-	/// Compares two instances for equality												
-	using FCompare = TFunctor<bool(const void*, const void*)>;
-
-	/// The = operator, wrapped in a lambda expression if available				
-	/// Does a shallow copy from one instance to another								
-	using FCopy = TFunctor<void(const void*, void*)>;
-
-	/// The move-copy operator, wrapped in a lambda expression if available		
-	/// Does a move-copy from one instance to another									
-	using FMove = TFunctor<void(void*, void*)>;
-
-	/// The class type function, wrapped in a lambda expression						
-	/// Returns the typed memory block of the class instance							
-	using FResolve = TFunctor<::Langulus::Anyness::Block(const void*)>;
-
-	/// The hash getter, wrapped in a lambda expression								
-	/// Takes the pointer to the instance for hashing									
-	/// Returns the hash																			
-	using FHash = TFunctor<Hash(const void*)>;
-
-	/// A custom verb dispatcher, wrapped in a lambda expression					
-	/// Takes the pointer to the instance that will dispatch, and a verb			
-	using FDispatch = TFunctor<void(void*, Flow::Verb&)>;
-	using FVerb = FDispatch;
-
-
-	///																								
-	/// Used to reflect a member variable													
-	/// You can reflect arrays of elements, tag members as traits, etc.			
-	///																								
-	struct Member {
-		// Type of data																	
-		DMeta mType {};
-		// State of the data																
-		DataState mState {};
-		// Member offset. This is relative to the type it is offsetted		
-		// in! If accessed through a derived type, that offset might		
-		// be wrong! Type must be resolved first!									
-		Offset mOffset {};
-		// Number of elements in mData (in case of an array)					
-		Count mCount {1};
-		// Trait tag																		
-		TMeta mTrait {};
-		// Member token																	
-		Token mName {};
-
-	public:
-		constexpr Member() noexcept = default;
-
-		template<CT::Data OWNER, CT::Data DATA>
-		NOD() static Member From(Offset, const Token& = {}, TMeta = {});
-
-		NOD() constexpr bool operator == (const Member&) const noexcept;
-		
-		template<CT::Data T>
-		NOD() constexpr bool Is() const noexcept;
-		
-		template<CT::Data T>
-		NOD() const T& As(const Byte*) const noexcept;
-		template<CT::Data T>
-		NOD() T& As(Byte*) const noexcept;
-		
-		NOD() constexpr const Byte* Get(const Byte*) const noexcept;
-		NOD() constexpr Byte* Get(Byte*) const noexcept;
-	};
-
-	using MemberList = ::std::span<const Member>;
-
-	
-	///																								
-	///	Used to reflect data capabilities												
-	///																								
-	struct Ability {
-		// The verb ID																		
-		VMeta mVerb {};
-		// Address of function to call												
-		FVerb mFunction {};
-		
-	public:		
-		constexpr Ability() noexcept = default;
-
-		NOD() constexpr bool operator == (const Ability&) const noexcept;
-
-		template<CT::Dense T, CT::Dense VERB>
-		NOD() static Ability From() noexcept;
-	};
-
-	using AbilityList = ::std::span<const Ability>;
-
-
-	///																								
-	///	Used to reflect a base for a type												
-	///																								
-	struct Base {
-		// Type of the base																
-		DMeta mType {};
-		// CT::Number of bases that fit in the type								
-		Count mCount {1};
-		// Offset of the base, relative to the derived type					
-		Offset mOffset {};
-		// Used to map one type onto another										
-		// Usually true when base completely fills the derived type			
-		bool mBinaryCompatible {false};
-		// Whether or not this base is considered an imposed base or not	
-		// Basically, imposed bases are not serialized and don't act in	
-		// distance computation or dispatching										
-		// An imposed base can be added only manually							
-		bool mImposed {false};
-
-	public:
-		constexpr Base() noexcept = default;
-
-		NOD() constexpr bool operator == (const Base&) const noexcept;
-
-		template<CT::Dense T, CT::Dense BASE>
-		NOD() static Base From() SAFETY_NOEXCEPT();
-
-		template<class T, class BASE, Count COUNT>
-		NOD() static Base Map() noexcept;
-	};
-
-	using BaseList = ::std::span<const Base>;
-
 
 	///																								
 	///	Meta																						
@@ -272,297 +160,34 @@ namespace Langulus::RTTI
 		// enabled																			
 		Token mToken;
 		// Each reflection may or may not have some info						
-		Token mInfo;
+		Token mInfo = "<no info provided>";
 		// Original name of the type													
-		Token mName;
+		Token mCppName;
 		// Each reflected type has an unique hash									
 		Hash mHash {};
+		// Major version																	
+		Count mVersionMajor = 1;
+		// Minor version																	
+		Count mVersionMinor = 0;
 
 		template<CT::Data T>
 		static constexpr Hash GetHash() noexcept;
 		template<CT::Data T>
 		static constexpr Token GetName() noexcept;
-	};
-
-
-	///																								
-	///	Meta data																				
-	///																								
-	struct MetaData : public Meta {
-		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-			friend class Interface;
-		#endif
-
-		enum Distance : int {
-			Infinite = ::std::numeric_limits<int>::max()
-		};
-		
-		static constexpr Token DefaultToken = "NoData";
-		
-		// List of reflected members													
-		MemberList mMembers {};
-		// List of reflected abilities												
-		AbilityList mAbilities {};
-		// List of reflected bases														
-		BaseList mBases {};
-		// Default concretization														
-		DMeta mConcrete {};
-		// Dynamic producer of the type												
-		// Types with producers can be created only via a verb				
-		DMeta mProducer {};
-		// True if reflected data is POD (optimization)							
-		// POD data can be directly memcpy-ed, or binary-serialized			
-		bool mIsPOD = false;
-		// True if reflected data is nullifiable (optimization)				
-		// Nullifiable data can be constructed AND destructed via			
-		// memset(0) without hitting undefined behavior							
-		bool mIsNullifiable = false;
-		// If reflected type is abstract												
-		bool mIsAbstract = false;
-		// Type will be interpreted as a memory block and iterated			
-		bool mIsDeep = false;
-		// Size of the reflected type (in bytes)									
-		Size mSize {};
-		// Alignof (in bytes)															
-		Size mAlignment {};
-		// Minimal allocation, in bytes												
-		Size mAllocationPage {};
-		// Precomputed counts indexed by MSB (avoids division by stride)	
-		Size mAllocationTable[sizeof(Size) * 8] {};
-		// File extensions used, separated by commas								
-		Token mFileExtension {};
-
-		// Default constructor wrapped in a lambda upon reflection			
-		FDefaultConstruct mDefaultConstructor;
-		// Copy constructor wrapped in a lambda upon reflection				
-		FCopyConstruct mCopyConstructor;
-		// Move constructor wrapped in a lambda upon reflection				
-		FMoveConstruct mMoveConstructor;
-		// Destructor wrapped in a lambda upon reflection						
-		FDestroy mDestructor;
-		// Cloner wrapped in a lambda upon reflection (placement new)		
-		FClone mCloneInUninitilizedMemory;
-		// Cloner wrapped in a lambda upon reflection							
-		FClone mCloneInInitializedMemory;
-		// The == operator, wrapped in a lambda upon reflection				
-		FCompare mComparer;
-		// The = operator, wrapped in a lambda upon reflection				
-		FCopy mCopier;
-		// The move operator, wrapped in a lambda upon reflection			
-		FMove mMover;
-		// The ClassBlock method, wrapped in a lambda upon reflection		
-		FResolve mResolver;
-		// The GetHash() method, wrapped in a lambda								
-		FHash mHasher;
-		// The Do verb, wrapped in a lambda											
-		FDispatch mDispatcher;
-
-	protected:
-		template<CT::Fundamental T>
-		void ReflectFundamentalType() noexcept;
-
-	public:
-		template<CT::Data T>
-		NOD() static DMeta Of() requires CT::Decayed<T>;
-
-		NOD() DMeta GetMostConcrete() const noexcept;
-
-		template<class T, CT::Dense... Args>
-		void SetBases(TTypeList<Args...>) noexcept;
-
-		template<class T, CT::Dense... Args>
-		void SetAbilities(TTypeList<Args...>) noexcept;
-
-		template<CT::Dense... Args>
-		void SetMembers(Args&&...) noexcept requires (... && CT::Same<Args, Member>);
-
-		NOD() bool GetBase(DMeta, Offset, Base&) const;
-		template<CT::Data T>
-		NOD() bool GetBase(Offset, Base&) const;
-
-		NOD() bool HasBase(DMeta) const;
-		template<CT::Data T>
-		NOD() bool HasBase() const;
-
-		NOD() bool HasDerivation(DMeta) const;
-		template<CT::Data T>
-		NOD() bool HasDerivation() const;
-
-		NOD() bool IsAbleTo(VMeta) const;
-		template<CT::Verb T>
-		NOD() bool IsAbleTo() const;
-
-		template<bool ADVANCED = false>
-		NOD() bool CastsTo(DMeta) const;
-		NOD() bool CastsTo(DMeta, Count) const;
-
-		template<CT::Data T, bool ADVANCED = false>
-		NOD() bool CastsTo() const;
-		template<CT::Data T>
-		NOD() bool CastsTo(Count) const;
-
-		NOD() bool IsRelatedTo(DMeta) const;
-		template<CT::Data T>
-		NOD() bool IsRelatedTo() const;
-
-		NOD() Distance GetDistanceTo(DMeta) const;
-		template<CT::Data T>
-		NOD() Distance GetDistanceTo() const;
-
-		NOD() constexpr bool Is(DMeta) const;
-		template<CT::Data T>
-		NOD() constexpr bool Is() const;
-
-		AllocationRequest RequestSize(const Size&) const noexcept;
 
 		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-			bool operator == (const MetaData&) const noexcept;
+			bool operator == (const Meta&) const noexcept;
 		#endif
 	};
-
-
-	///																								
-	///	Meta trait																				
-	///																								
-	struct MetaTrait : public Meta {
-		static constexpr Token DefaultToken = "NoTrait";
-
-		// Data filter for the trait (optional)									
-		DMeta mDataType {};
-
-	public:
-		template<CT::Trait T>
-		NOD() static TMeta Of();
-		
-		NOD() bool constexpr Is(TMeta) const;
-		template<CT::Trait T>
-		NOD() bool constexpr Is() const;
-
-		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-			bool operator == (const MetaTrait&) const noexcept;
-		#endif
-	};
-
-
-	///																								
-	///	Meta verb																				
-	///																								
-	struct MetaVerb : public Meta {
-		static constexpr Token DefaultToken = "NoVerb";
-
-		// Verbs have antonyms, denoted via this 'negative' token			
-		// For example, 'Destroy' is the reverse of 'Create'					
-		// This is mainly syntax sugar - reverse token just does mass*=-1	
-		Token mTokenReverse;
-
-	public:
-		template<CT::Verb T>
-		NOD() static VMeta Of();
-		
-		NOD() bool constexpr Is(VMeta) const;
-		template<CT::Verb T>
-		NOD() bool constexpr Is() const;
-
-		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-			bool operator == (const MetaVerb&) const noexcept;
-		#endif
-	};
-	
-	template<CT::Data T, bool ADVANCED = false>
-	NOD() bool CastsTo(DMeta);
-	template<CT::Data T>
-	NOD() bool CastsTo(DMeta, Count);
 
 } // namespace Langulus::RTTI
 
+#include "MetaData.hpp"
+#include "MetaTrait.hpp"
+#include "MetaVerb.hpp"
+#include "Fundamental.hpp"
 
-namespace Langulus::A
-{
-	///																								
-	/// The following abstract types are implicitly added as bases					
-	/// when reflecting fundamental types. They are linked to their				
-	/// corresponding concepts, so you can use them at runtime, to check if		
-	/// a type is compatible with the given concept via type->CastsTo				
-	///																								
-
-	/// Check if a type is compatible with CT::Number									
-	/// concept at runtime, via meta->InterpretsAs<ANumber>							
-	class Number {
-		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) ::Langulus::Real;
-		~Number() = delete;
-	};
-
-	/// Check if a type is compatible with CT::Integer									
-	/// concept at runtime, via meta->InterpretsAs<AInteger>							
-	class Integer {
-		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) ::std::intptr_t;
-		LANGULUS_BASES(Number);
-		~Integer() = delete;
-	};
-
-	/// Check if a type is compatible with CT::Signed									
-	/// concept at runtime, via meta->InterpretsAs<ASigned>							
-	class Signed {
-		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) ::Langulus::Real;
-		LANGULUS_BASES(Number);
-		~Signed() = delete;
-	};
-
-	/// Check if a type is compatible with IsUnsigned									
-	/// concept at runtime, via meta->InterpretsAs<AUnsigned>						
-	class Unsigned {
-		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) ::std::uintptr_t;
-		LANGULUS_BASES(Number);
-		~Unsigned() = delete;
-	};
-
-	/// Check if a type is compatible with CT::UnsignedInteger concept at		
-	/// runtime, via meta->InterpretsAs<AUnsignedInteger>								
-	class UnsignedInteger {
-		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) ::std::uintptr_t;
-		LANGULUS_BASES(Unsigned, Integer);
-		~UnsignedInteger() = delete;
-	};
-
-	/// Check if a type is compatible with CT::Real										
-	/// concept at runtime, via meta->InterpretsAs<AReal>								
-	class Real {
-		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) ::Langulus::Real;
-		LANGULUS_BASES(Signed);
-		~Real() = delete;
-	};
-
-	/// Check if a type is compatible with CT::SignedInteger							
-	/// concept at runtime, via meta->InterpretsAs<ASignedInteger>					
-	class SignedInteger {
-		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) ::std::intptr_t;
-		LANGULUS_BASES(Signed, Integer);
-		~SignedInteger() = delete;
-	};
-
-	/// Check if a type is compatible with CT::Character								
-	/// concept at runtime, via meta->InterpretsAs<AText>								
-	class Text {
-		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) char8_t;
-		~Text() = delete;
-	};
-
-	/// Check if a type is compatible with CT::Bool										
-	/// concept at runtime, via meta->InterpretsAs<ABool>								
-	class Bool {
-		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) bool;
-		~Bool() = delete;
-	};
-
-} // namespace Langulus::A
-
+#include "MetaData.inl"
+#include "MetaTrait.inl"
+#include "MetaVerb.inl"
 #include "Reflection.inl"
