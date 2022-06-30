@@ -107,7 +107,7 @@
 /// a compile-time error when a push is attempted. All reflected types are		
 /// insertable by default																		
 #define LANGULUS_INSERTABLE() \
-	public: using CTTI_Insertable = 
+	public: static constexpr bool CTTI_Insertable = 
 
 /// You can define an allocation page (number of elements) by using				
 /// LANGULUS(ALLOCATION_PAGE) X. When allocating memory for your type, X		
@@ -115,15 +115,37 @@
 /// nearest upper power-of-two amount of bytes. By default, allocation page	
 /// size	is never lower than Alignment														
 #define LANGULUS_ALLOCATION_PAGE() \
-	public: constexpr Count CTTI_AllocationPage = 
+	public: static constexpr ::Langulus::Count CTTI_AllocationPage = 
 
 /// Make a type abstract																		
 #define LANGULUS_ABSTRACT() \
 	public: static constexpr bool CTTI_Abstract = 
 
-/// Reflect a list of members																	
-#define LANGULUS_MEMBERS(...) \
-	public: using CTTI_Members = ::Langulus::TTypeList<__VA_ARGS__>
+/// Reflect a property with a trait tag													
+#define LANGULUS_PROPERTY_TRAIT(name, trait) \
+	public: template<class SELF> static auto CTTI_Property_##name() { \
+		alignas(SELF) const ::Langulus::Byte storage[sizeof(SELF)]; \
+		const auto This = reinterpret_cast<const SELF*>(storage); \
+		const auto Prop = ::std::addressof(This->name); \
+		using MemberType = decltype(This->name); \
+		::Langulus::RTTI::Member m; \
+		m.mType = ::Langulus::RTTI::MetaData::Of<Decay<MemberType>>(); \
+		m.mState = {}; \
+		const auto offset = \
+			  reinterpret_cast<const ::Langulus::Byte*>(This) \
+			- reinterpret_cast<const ::Langulus::Byte*>(Prop); \
+		SAFETY(if (offset < 0) \
+			::Langulus::Throw<::Langulus::Except::Access>( \
+				"Property is laid (memorywise) before the owner")); \
+		m.mOffset = static_cast<Offset>(offset); \
+		m.mCount = ::Langulus::ExtentOf<MemberType>; \
+		m.mTrait = ::Langulus::RTTI::MetaTrait::Of<trait>(); \
+		m.mName = #name; \
+		return m; \
+	}
+
+/// Reflect a property																			
+#define LANGULUS_PROPERTY(name) LANGULUS_PROPERTY_TRAIT(name, nullptr)
 
 /// Reflect a list of bases																	
 #define LANGULUS_BASES(...) \

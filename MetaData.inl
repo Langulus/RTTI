@@ -128,7 +128,7 @@ namespace Langulus::RTTI
 			// This is detectable by is_convertible_v								
 			if constexpr (::std::is_convertible_v<T*, BASE*>) {
 				// The devil's work, right here										
-				const Byte storage[sizeof(T)] = {};
+				alignas(T) const Byte storage[sizeof(T)];
 				// First reinterpret the storage as T								
 				const auto derived = reinterpret_cast<const T*>(storage);
 				// Then cast it down to base											
@@ -137,8 +137,8 @@ namespace Langulus::RTTI
 				const auto offset = 
 					reinterpret_cast<const Byte*>(derived) 
 				 - reinterpret_cast<const Byte*>(base);
-				SAFETY(if (offset > 0)
-					Throw<Except::Access>("Base class is laid (memorywise) before the derived"));
+				SAFETY(if (offset < 0)
+					Throw<Except::Access>("Base class is laid (memorywise) after the derived"));
 				result.mOffset = static_cast<Offset>(offset);
 			}
 		}

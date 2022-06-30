@@ -11,6 +11,11 @@
 #include <cstddef>
 #include <vector>
 
+namespace Langulus::Flow
+{
+	class Verb {};
+}
+
 using namespace Langulus;
 using namespace Langulus::RTTI;
 
@@ -32,3 +37,31 @@ namespace One::Two::Three
 	template<class T>
 	struct VeryComplexTemplate;
 }
+
+class ImplicitlyReflectedVerb : public Flow::Verb {};
+
+class ImplicitlyReflectedData {};
+
+class ImplicitlyReflectedDataWithTraits : public ImplicitlyReflectedData {
+	int member;
+	bool anotherMember;
+
+	LANGULUS(NAME) "MyType";
+	LANGULUS(INFO) "Info about MyType";
+	LANGULUS(FILES) "txt, pdf";
+	LANGULUS(VERSION_MAJOR) 2;
+	LANGULUS(VERSION_MINOR) 1;
+	LANGULUS(DEEP) false;
+	LANGULUS(POD) true;
+	LANGULUS(NULLIFIABLE) true;
+	LANGULUS(POOL_TACTIC) PoolTactic::Size;
+	LANGULUS(CONCRETIZABLE) ImplicitlyReflectedData;
+	LANGULUS(INSERTABLE) false;
+	LANGULUS(ALLOCATION_PAGE) 256;
+	LANGULUS(ABSTRACT) true;
+	LANGULUS_PROPERTY(member);
+	LANGULUS_PROPERTY(anotherMember);
+	LANGULUS_BASES(ImplicitlyReflectedData);
+	LANGULUS_VERBS(ImplicitlyReflectedVerb);
+	LANGULUS_CONVERSIONS(int);
+};
