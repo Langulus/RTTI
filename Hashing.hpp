@@ -504,7 +504,11 @@ namespace Langulus
 	template<uint32_t SEED = 19890212, class T, class... MORE>
 	constexpr Hash HashData(const T& head, const MORE&... rest) noexcept {
 		if constexpr (sizeof...(MORE) == 0) {
-			if constexpr (CT::Hashable<T>) {
+			if constexpr (CT::Same<T, Hash>) {
+				// Provided type is already a hash, just propagate it			
+				return head;
+			}
+			else if constexpr (CT::Hashable<T>) {
 				// Hashable via a member GetHash() function						
 				return head.GetHash();
 			}
@@ -529,7 +533,7 @@ namespace Langulus
 		}
 		else {
 			// Combine all data into a single array of hashes, and then		
-			// hash that array again													
+			// hash that array as a whole												
 			const Hash coalesced[1 + sizeof...(MORE)] {
 				HashData<SEED>(head), HashData<SEED>(rest)...
 			};

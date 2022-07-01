@@ -16,7 +16,7 @@ namespace Langulus::RTTI
 	template<CT::Data T>
 	constexpr Hash Meta::GetHash() noexcept {
 		const auto name = NameOf<T>();
-		return ::std::hash<Token>()(name);
+		return {::std::hash<Token>()(name)};
 	}
    
 	/// Get the constexpr name of a type													
