@@ -16,17 +16,15 @@
 
 namespace Langulus
 {
+
+	constexpr uint32_t DefaultHashSeed = 19890212;
+
 	namespace Inner
 	{
 
 		/// MurmurHash3 was written by Austin Appleby, and is placed in the		
 		/// public domain																			
 		/// https://github.com/aappleby/smhasher/blob/master/src/MurmurHash3.cpp
-		void MurmurHash3_x86_32(const void* key, int len, uint32_t seed, void* out);
-		void MurmurHash2_x64_64(const void* key, int len, uint64_t seed, void* out);
-		void MurmurHash3_x86_128(const void* key, int len, uint32_t seed, void* out);
-		void MurmurHash3_x64_128(const void* key, int len, uint32_t seed, void* out);
-
 		/// Note - The x86 and x64 versions do _not_ produce the same results,	
 		/// as the algorithms are optimized for their respective platforms.		
 		/// You can still compile and run any of them on any platform, but your	
@@ -68,7 +66,7 @@ namespace Langulus
 		///	@param len - the number of bytes in the key								
 		///	@param seed - the seed for the hash											
 		///	@param out - [out] the hash goes here (must be 4 bytes)				
-		template<bool TAIL = true, uint32_t SEED = 19890212>
+		template<bool TAIL = true, uint32_t SEED = DefaultHashSeed>
 		void MurmurHash3_x86_32(const void* key, int len, void* out) {
 			const uint8_t* data = (const uint8_t*) key;
 			const int nblocks = len / 4;
@@ -123,7 +121,7 @@ namespace Langulus
 		///	@param len - the number of bytes in the key								
 		///	@param seed - the seed for the hash											
 		///	@param out - [out] the hash goes here (must be 16 bytes)				
-		template<bool TAIL = true, uint32_t SEED = 19890212>
+		template<bool TAIL = true, uint32_t SEED = DefaultHashSeed>
 		void MurmurHash3_x86_128(const void* key, const int len, void* out) {
 			const uint8_t* data = (const uint8_t*) key;
 			const int nblocks = len / 16;
@@ -294,7 +292,7 @@ namespace Langulus
 		///	@param len - the number of bytes in the key								
 		///	@param seed - the seed for the hash											
 		///	@param out - [out] the hash goes here (must be 8 bytes)				
-		template<bool TAIL = true, uint32_t SEED = 19890212>
+		template<bool TAIL = true, uint32_t SEED = DefaultHashSeed>
 		void MurmurHash2_x64_64(const void* key, int len, void* out) {
 			const uint64_t m = BIG_CONSTANT(0xc6a4a7935bd1e995);
 			const int r = 47;
@@ -353,7 +351,7 @@ namespace Langulus
 		///	@param len - the number of bytes in the key								
 		///	@param seed - the seed for the hash											
 		///	@param out - [out] the hash goes here (must be 16 bytes)				
-		template<bool TAIL = true, uint32_t SEED = 19890212>
+		template<bool TAIL = true, uint32_t SEED = DefaultHashSeed>
 		void MurmurHash3_x64_128(const void* key, const int len, void* out) {
 			const uint8_t* data = (const uint8_t*) key;
 			const int nblocks = len / 16;
@@ -473,7 +471,7 @@ namespace Langulus
 	///	@param ptr - memory start															
 	///	@param len - number of bytes to hash											
 	///	@return the hash																		
-	template<uint32_t SEED = 19890212, bool TAIL = true>
+	template<uint32_t SEED = DefaultHashSeed, bool TAIL = true>
 	inline Hash HashBytes(void const* ptr, size_t len) noexcept {
 		Hash result;
 		if constexpr (sizeof(Hash) == 4)
@@ -491,7 +489,7 @@ namespace Langulus
 	///	@tparam N - type to hash (deducible)											
 	///	@param n - the number to hash														
 	///	@return the hash for the number													
-	template<uint32_t SEED = 19890212, CT::Number N>
+	template<uint32_t SEED = DefaultHashSeed, CT::Number N>
 	constexpr Hash HashNumber(const N& n) noexcept {
 		constexpr bool TAIL = 0 != (sizeof(N) % sizeof(Hash));
 		return HashBytes<SEED, TAIL>(&n, sizeof(N));
@@ -501,7 +499,7 @@ namespace Langulus
 	///	@tparam T - type to hash (deducible)											
 	///	@param data - the data to hash													
 	///	@return the hash																		
-	template<uint32_t SEED = 19890212, class T, class... MORE>
+	template<uint32_t SEED = DefaultHashSeed, class T, class... MORE>
 	constexpr Hash HashData(const T& head, const MORE&... rest) noexcept {
 		if constexpr (sizeof...(MORE) == 0) {
 			if constexpr (CT::Same<T, Hash>) {
