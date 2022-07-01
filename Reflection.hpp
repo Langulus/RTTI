@@ -106,8 +106,8 @@
 /// intermediate types, like Block::KnownPointer. These types will produce		
 /// a compile-time error when a push is attempted. All reflected types are		
 /// insertable by default																		
-#define LANGULUS_INSERTABLE() \
-	public: static constexpr bool CTTI_Insertable = 
+#define LANGULUS_UNINSERTABLE() \
+	public: static constexpr bool CTTI_Uninsertable =
 
 /// You can define an allocation page (number of elements) by using				
 /// LANGULUS(ALLOCATION_PAGE) X. When allocating memory for your type, X		

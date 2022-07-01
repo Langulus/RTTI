@@ -91,16 +91,47 @@ namespace Langulus::RTTI
 	///																								
 	///   Ability implementation																
 	///																								
+	
+	/// Compare two abilities																	
+	///	@param rhs - the ability to compare against									
+	///	@return true if both abilities have the same verb							
 	constexpr bool Ability::operator == (const Ability& rhs) const noexcept {
 		return mVerb->Is(rhs.mVerb);
 	}
 	
+	/// Create an ability reflection from a type and a verb							
+	///	@return the ability																	
+	template<CT::Dense T, CT::Verb VERB>
+	Ability Ability::From() noexcept {
+		return {MetaVerb::Of<VERB>(), VERB::template Of<T>()};
+	}
+
 
 	///																								
 	///   Converter implementation															
 	///																								
+	
+	/// Compare two converters																	
+	///	@param rhs - the converter to compare against								
+	///	@return true if both converters have the same type							
 	constexpr bool Converter::operator == (const Converter& rhs) const noexcept {
 		return mDestrinationType->Is(rhs.mDestrinationType);
+	}
+
+	/// Create a converter, utilizing available cast operators/constructors		
+	///	@return the converter																
+	template<CT::Dense T, CT::Dense TO>
+	Converter Converter::From() noexcept {
+		static_assert(CT::Convertible<Decay<T>, Decay<TO>>,
+			"Converter reflected, but conversion is not possible - "
+			"implement a public cast operator in T, or a public constructor in TO");
+
+		return {
+			MetaData::Of<TO>(), 
+			[](void* to, const void* from) {
+				new (to) TO { static_cast<TO>(*static_cast<const T*>(from)) };
+			}
+		};
 	}
 
 
@@ -128,7 +159,7 @@ namespace Langulus::RTTI
 			// This is detectable by is_convertible_v								
 			if constexpr (::std::is_convertible_v<T*, BASE*>) {
 				// The devil's work, right here										
-				alignas(T) const Byte storage[sizeof(T)];
+				alignas(T) Byte storage[sizeof(T)];
 				// First reinterpret the storage as T								
 				const auto derived = reinterpret_cast<const T*>(storage);
 				// Then cast it down to base											
@@ -267,6 +298,7 @@ namespace Langulus::RTTI
 
 			generated.mIsPOD = CT::POD<T>;
 			generated.mIsDeep = CT::Deep<T>;
+			generated.mIsUninsertable = CT::Uninsertable<T>;
 			
 			if constexpr (CT::Concretizable<T>)
 				generated.mConcrete = MetaData::Of<Decay<typename T::CTTI_Concrete>>();
@@ -426,7 +458,7 @@ namespace Langulus::RTTI
    ///   @tparam Args... - all the bases													
 	template<class T, CT::Dense... BASE>
 	void MetaData::SetBases(TTypeList<BASE...>) noexcept {
-		static Base list[] = {Base::From<T, BASE>()...};
+		static const Base list[] {Base::From<T, BASE>()...};
 		mBases = {list};
 	}
 
@@ -434,16 +466,28 @@ namespace Langulus::RTTI
    ///   @tparam Args... - all the abilities												
 	template<class T, CT::Dense... VERB>
 	void MetaData::SetAbilities(TTypeList<VERB...>) noexcept {
-		static Ability list[] = {Ability::From<T, VERB>()...};
-		mAbilities = {list};
+		static const ::std::pair<Token, Ability> list[] {
+			::std::pair<Token, Ability>(
+				MetaVerb::Of<VERB>()->mToken, Ability::From<T, VERB>()
+			)...
+		};
+
+		for (const auto& i : list)
+			mAbilities.insert(i);
 	}
 
    /// Set the list of converters for a given meta definition						
    ///   @tparam Args... - all the abilities												
 	template<class T, CT::Dense... TO>
 	void MetaData::SetConverters(TTypeList<TO...>) noexcept {
-		static Converter list[] = {Converter::From<T, TO>()...};
-		mConverters = {list};
+		static const ::std::pair<Token, Converter> list[] {
+			::std::pair<Token, Converter>(
+				MetaData::Of<TO>()->mToken, Converter::From<T, TO>()
+			)...
+		};
+
+		for (const auto& i : list)
+			mConverters.insert(i);
 	}
 
    /// Set the list of members for a given meta definition							

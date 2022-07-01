@@ -204,3 +204,53 @@ TEMPLATE_TEST_CASE("Real number RTTI interpretation", "[metadata]", float, doubl
 		}
 	}
 }
+
+SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
+	GIVEN("ImplicitlyReflectedDataWithTraits") {
+		WHEN("Reflected") {
+			auto meta = MetaData::Of<ImplicitlyReflectedDataWithTraits>();
+			REQUIRE(meta != nullptr);
+
+			THEN("Requirements should be met") {
+				REQUIRE(meta->mToken == "MyType");
+				REQUIRE(meta->mInfo == "Info about MyType");
+				REQUIRE(meta->mFileExtensions == "txt, pdf");
+				REQUIRE(meta->mVersionMajor == 2);
+				REQUIRE(meta->mVersionMinor == 1);
+				REQUIRE(meta->mIsDeep == true);
+				REQUIRE(meta->mIsPOD == true);
+				REQUIRE(meta->mIsNullifiable == true);
+				REQUIRE(meta->mPoolTactic == PoolTactic::Size);
+				REQUIRE(meta->mConcrete->Is<ImplicitlyReflectedData>());
+				REQUIRE(meta->mIsUninsertable == true);
+				REQUIRE(meta->mAllocationPage == Roof2(250 * sizeof(ImplicitlyReflectedDataWithTraits)));
+				REQUIRE(meta->mIsAbstract == true);
+
+				REQUIRE(CastsTo<A::Real>(meta));
+				REQUIRE(CastsTo<A::Signed>(meta));
+
+				REQUIRE_FALSE(CastsTo<A::Integer>(meta));
+				REQUIRE_FALSE(CastsTo<A::Unsigned>(meta));
+				REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta));
+				REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta));
+
+				REQUIRE(CastsTo<A::Number>(meta, 1));
+				REQUIRE(CastsTo<A::Real>(meta, 1));
+				REQUIRE(CastsTo<A::Signed>(meta, 1));
+
+				REQUIRE_FALSE(CastsTo<A::Integer>(meta, 1));
+				REQUIRE_FALSE(CastsTo<A::Unsigned>(meta, 1));
+				REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta, 1));
+				REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta, 1));
+
+				REQUIRE_FALSE(CastsTo<A::Number>(meta, 2));
+				REQUIRE_FALSE(CastsTo<A::Integer>(meta, 2));
+				REQUIRE_FALSE(CastsTo<A::Real>(meta, 2));
+				REQUIRE_FALSE(CastsTo<A::Unsigned>(meta, 2));
+				REQUIRE_FALSE(CastsTo<A::Signed>(meta, 2));
+				REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta, 2));
+				REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta, 2));
+			}
+		}
+	}
+}

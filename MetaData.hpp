@@ -113,7 +113,7 @@ namespace Langulus::RTTI
 		Token mName {};
 
 	public:
-		constexpr Member() noexcept = default;
+		//constexpr Member() noexcept = default;
 
 		template<CT::Data OWNER, CT::Data DATA>
 		NOD() static Member From(Offset, const Token& = {}, TMeta = {});
@@ -145,11 +145,11 @@ namespace Langulus::RTTI
 		FVerb mFunction {};
 		
 	public:		
-		constexpr Ability() noexcept = default;
+		//constexpr Ability() noexcept = default;
 
 		NOD() constexpr bool operator == (const Ability&) const noexcept;
 
-		template<CT::Dense T, CT::Dense VERB>
+		template<CT::Dense T, CT::Verb VERB>
 		NOD() static Ability From() noexcept;
 	};
 
@@ -163,14 +163,14 @@ namespace Langulus::RTTI
 		// The data ID we're converting to											
 		DMeta mDestrinationType {};
 		// Address of function to call												
-		FVerb mFunction {};
+		FCopyConstruct mFunction {};
 		
 	public:		
-		constexpr Converter() noexcept = default;
+		//constexpr Converter() noexcept = default;
 
 		NOD() constexpr bool operator == (const Converter&) const noexcept;
 
-		template<CT::Dense T, CT::Dense VERB>
+		template<CT::Dense T, CT::Dense TO>
 		NOD() static Converter From() noexcept;
 	};
 
@@ -197,7 +197,7 @@ namespace Langulus::RTTI
 		bool mImposed {false};
 
 	public:
-		constexpr Base() noexcept = default;
+		//constexpr Base() noexcept = default;
 
 		NOD() constexpr bool operator == (const Base&) const noexcept;
 
@@ -208,7 +208,7 @@ namespace Langulus::RTTI
 		NOD() static Base Map() noexcept;
 	};
 
-	using BaseList = ::std::span<Base>;
+	using BaseList = ::std::span<const Base>;
 
 
 	///																								
@@ -249,6 +249,8 @@ namespace Langulus::RTTI
 		bool mIsAbstract = false;
 		// Type will be interpreted as a memory block and iterated			
 		bool mIsDeep = false;
+		// Type is insertable into containers										
+		bool mIsUninsertable = false;
 		// Size of the reflected type (in bytes)									
 		Size mSize {};
 		// Alignof (in bytes)															
