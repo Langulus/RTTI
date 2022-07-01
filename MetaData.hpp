@@ -5,7 +5,6 @@
 /// Distributed under GNU General Public License v3+									
 /// See LICENSE file, or https://www.gnu.org/licenses									
 ///																									
-/// Include this only when building standalone											
 #pragma once
 #include "DataState.hpp"
 #include "NameOf.hpp"
@@ -294,6 +293,8 @@ namespace Langulus::RTTI
 		void ReflectFundamentalType() noexcept;
 
 	public:
+		template<CT::Void T>
+		NOD() static constexpr DMeta Of() requires CT::Decayed<T>;
 		template<CT::Data T>
 		NOD() static DMeta Of() requires CT::Decayed<T>;
 

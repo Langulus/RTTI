@@ -5,7 +5,6 @@
 /// Distributed under GNU General Public License v3+									
 /// See LICENSE file, or https://www.gnu.org/licenses									
 ///																									
-/// Include this only when building standalone											
 #pragma once
 #include "MetaData.hpp"
 
@@ -22,6 +21,8 @@ namespace Langulus::RTTI
 		DMeta mDataType {};
 
 	public:
+		template<CT::Void T>
+		NOD() static constexpr TMeta Of() requires CT::Decayed<T>;
 		template<CT::Trait T>
 		NOD() static TMeta Of() requires CT::Decayed<T>;
 		

@@ -5,7 +5,6 @@
 /// Distributed under GNU General Public License v3+									
 /// See LICENSE file, or https://www.gnu.org/licenses									
 ///																									
-/// Include this only when building standalone											
 #pragma once
 #include "DataState.hpp"
 #include "NameOf.hpp"
@@ -145,7 +144,7 @@
 	}
 
 /// Reflect a property																			
-#define LANGULUS_PROPERTY(name) LANGULUS_PROPERTY_TRAIT(name, nullptr)
+#define LANGULUS_PROPERTY(name) LANGULUS_PROPERTY_TRAIT(name, void)
 
 /// Reflect a list of bases																	
 #define LANGULUS_BASES(...) \

@@ -209,7 +209,11 @@ namespace Langulus::RTTI
    ///																								
    ///   MetaData implementation																
    ///																								
-   
+	template<CT::Void T>
+	constexpr DMeta MetaData::Of() requires CT::Decayed<T> {
+		return nullptr;
+	}
+
    /// Reflect or return an already reflected type meta definition				
    /// Reflection is done only on decayed types to avoid static variable		
 	/// duplications																				

@@ -5,7 +5,6 @@
 /// Distributed under GNU General Public License v3+									
 /// See LICENSE file, or https://www.gnu.org/licenses									
 ///																									
-/// Include this only when building standalone											
 #pragma once
 #include "MetaData.hpp"
 
@@ -28,6 +27,8 @@ namespace Langulus::RTTI
 		Token mOperatorReverse;
 
 	public:
+		template<CT::Void T>
+		NOD() static constexpr VMeta Of() requires CT::Decayed<T>;
 		template<CT::Verb T>
 		NOD() static VMeta Of() requires CT::Decayed<T>;
 		

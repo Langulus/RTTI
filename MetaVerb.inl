@@ -11,6 +11,11 @@
 namespace Langulus::RTTI
 {
 
+	template<CT::Void T>
+	constexpr VMeta MetaVerb::Of() requires CT::Decayed<T> {
+		return nullptr;
+	}
+
 	/// Reflect or return an already reflected type meta trait definition		
 	/// Reflection is done only on decayed types to avoid static variable		
 	/// duplications																				
