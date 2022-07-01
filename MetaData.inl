@@ -242,45 +242,45 @@ namespace Langulus::RTTI
 			// Try to get the definition, type might have been reflected	
 			// previously in another translation unit. This is available	
 			// only if MANAGED_REFLECTION feature is enabled					
-			meta = Database.GetMetaData(Meta::GetName<T>());
+			meta = Database.GetMetaData(Meta::GetReflectedToken<T>());
 			if (meta)
 				return meta;
 		#endif
 
 		// If this is reached, then type is not defined yet					
-		// We'll try to explicitly or implicitly reflect it					
+		// We immediately place it in the static here, because the			
+		// reflection function might end up forever looping otherwise		
+		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+			meta = Database.RegisterData(Meta::GetReflectedToken<T>());
+		#else
+			meta = ::std::make_unique<MetaData>();
+		#endif
 
+		// We'll try to explicitly or implicitly reflect it					
 		if constexpr (CT::Reflectable<T>) {
 			// The type is explicitly reflected with a custom function		
 			// Let's call it...															
 			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-				meta = Database.Register(T::Reflect());
-				return meta;
+				*const_cast<MetaData*>(meta) = T::Reflect();
 			#else
-				meta = ::std::make_unique<MetaData>(T::Reflect());
-				return meta.get();
+				*const_cast<MetaData*>(meta.get()) = T::Reflect();
 			#endif
 		}
 		else {
 			// Type is implicitly reflected, so let's do our best				
 			MetaData generated;
-
-			if constexpr (requires { T::CTTI_Name; })
-				generated.mToken = T::CTTI_Name;
-			else
-				generated.mToken = Meta::GetName<T>();
-
+			generated.mToken = Meta::GetReflectedToken<T>();
 			if constexpr (requires { T::CTTI_Info; })
 				generated.mInfo = T::CTTI_Info;
-
-			generated.mCppName = Meta::GetName<T>();
+			generated.mCppName = Meta::GetCppName<T>();
 			generated.mHash = Meta::GetHash<T>();
 			generated.mIsAbstract = CT::Abstract<T>;
 			generated.mIsNullifiable = CT::Nullifiable<T>;
 			generated.mSize = CT::Abstract<T> ? 0 : sizeof(T);
 			generated.mAlignment = alignof(T);
-			generated.mAllocationPage = GetAllocationPageOf<T>();
 
+			// Calculate the allocation page and table							
+			generated.mAllocationPage = GetAllocationPageOf<T>();
 			constexpr auto minElements = GetAllocationPageOf<T>() / sizeof(T);
 			for (Size bit = 0; bit < sizeof(Size) * 8; ++bit) {
 				const Size threshold = Size {1} << bit;
@@ -290,16 +290,12 @@ namespace Langulus::RTTI
 
 			if constexpr (requires { T::CTTI_Pool; })
 				generated.mPoolTactic = T::CTTI_Pool;
-
 			if constexpr (requires { T::CTTI_Files; })
 				generated.mFileExtensions = T::CTTI_Files;
-
 			if constexpr (requires { T::CTTI_VersionMajor; })
 				generated.mVersionMajor = T::CTTI_VersionMajor;
-
 			if constexpr (requires { T::CTTI_VersionMinor; })
 				generated.mVersionMinor = T::CTTI_VersionMinor;
-
 			generated.mIsPOD = CT::POD<T>;
 			generated.mIsDeep = CT::Deep<T>;
 			generated.mIsUninsertable = CT::Uninsertable<T>;
@@ -402,40 +398,38 @@ namespace Langulus::RTTI
 				};
 			}
 
-			// Reflections that involve other types must be performed after
-			// registering this one, otherwise infinite reflection happens	
-			//TODO but then its likely that types will always conflict :(	
-			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-				meta = Database.Register(Move(generated));
-			#else
-				meta = ::std::make_unique<MetaData>(Move(generated));
-			#endif
-
+			// Reflect the concrete type												
 			if constexpr (CT::Concretizable<T>)
-				meta->mConcrete = MetaData::Of<Decay<typename T::CTTI_Concrete>>();
+				generated.mConcrete = MetaData::Of<Decay<typename T::CTTI_Concrete>>();
 
 			// Set reflected bases														
 			if constexpr (requires { typename T::CTTI_Bases; })
-				meta->SetBases<T>(typename T::CTTI_Bases {});
+				generated.SetBases<T>(typename T::CTTI_Bases {});
 
 			// Set reflected abilities													
 			if constexpr (requires { typename T::CTTI_Verbs; })
-				meta->SetAbilities<T>(typename T::CTTI_Verbs {});
+				generated.SetAbilities<T>(typename T::CTTI_Verbs {});
 
 			// Set reflected converters												
 			if constexpr (requires { typename T::CTTI_Conversions; })
-				meta->SetConverters<T>(typename T::CTTI_Conversions {});
+				generated.SetConverters<T>(typename T::CTTI_Conversions {});
 
 			// Set some additional stuff if T is fundamental					
 			if constexpr (CT::Fundamental<T>)
-				meta->ReflectFundamentalType<T>();
+				generated.ReflectFundamentalType<T>();
 
 			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-				return meta;
+				*const_cast<MetaData*>(meta) = Move(generated);
 			#else
-				return meta.get();
+				*const_cast<MetaData*>(meta.get()) = Move(generated);
 			#endif
 		}
+
+		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+			return meta;
+		#else
+			return meta.get();
+		#endif
 	}
 
 	/// Integrate fundamental types with the reflection system						
@@ -770,41 +764,6 @@ namespace Langulus::RTTI
 		result.mElementCount = mAllocationTable[msb];
 		return result;
 	}
-
-	#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-		/// Compare definitions																	
-		///	@param rhs - definition to compare against								
-		///	@return true if definitions match fully									
-		inline bool MetaData::operator == (const MetaData& rhs) const noexcept {
-			if (mMembers.size() != rhs.mMembers.size()
-				|| mAbilities != rhs.mAbilities
-				|| mConverters != rhs.mConverters
-				|| mBases.size() != rhs.mBases.size())
-				return false;
-
-			for (int i = 0; i < mMembers.size(); ++i) {
-				if (mMembers[i] != rhs.mMembers[i])
-					return false;
-			}
-
-			for (int i = 0; i < mBases.size(); ++i) {
-				if (mBases[i] != rhs.mBases[i])
-					return false;
-			}
-
-			return Meta::operator == (rhs)
-				&& mConcrete == rhs.mConcrete
-				&& mProducer == rhs.mProducer
-				&& mIsPOD == rhs.mIsPOD
-				&& mIsNullifiable == rhs.mIsNullifiable
-				&& mIsAbstract == rhs.mIsAbstract
-				&& mIsDeep == rhs.mIsDeep
-				&& mSize == rhs.mSize
-				&& mAlignment == rhs.mAlignment
-				&& mAllocationPage == rhs.mAllocationPage
-				&& mFileExtensions == rhs.mFileExtensions;
-		}
-	#endif
 
 	/// A freestanding type compatibility check											
 	/// Purely cosmetic, to avoid typing `template` before member function		

@@ -11,6 +11,52 @@
 namespace Langulus::RTTI
 {
 
+	/// Get the reflected positive token for a verb										
+	///	@return the token																		
+	template<CT::Data T>
+	constexpr Token MetaVerb::GetReflectedPositiveVerbToken() noexcept {
+		if constexpr (requires { T::CTTI_Name; })
+			return T::CTTI_Name;
+		else if constexpr (requires { T::CTTI_PositiveVerb; }) {
+			if constexpr (!requires { T::CTTI_NegativeVerb; }) {
+				LANGULUS_ASSERT(
+					"Positive verb defined, but no negative provided - "
+					"either define the negative, or use LANGULUS(NAME) "
+					"if both tokens are the same");
+			}
+
+			return T::CTTI_PositiveVerb;
+		}
+		else return Meta::GetCppName<T>();
+	}
+
+	/// Get the reflected negative token for a verb										
+	///	@return the token																		
+	template<CT::Data T>
+	constexpr Token MetaVerb::GetReflectedNegativeVerbToken() noexcept {
+		if constexpr (requires { T::CTTI_Name; })
+			return T::CTTI_Name;
+		else if constexpr (requires { T::CTTI_NegativeVerb; }) {
+			if constexpr (!requires { T::CTTI_PositiveVerb; }) {
+				LANGULUS_ASSERT(
+					"Negative verb defined, but no positive provided - "
+					"either define the positive, or use LANGULUS(NAME) "
+					"if both tokens are the same");
+			}
+
+			return T::CTTI_NegativeVerb;
+		}
+		else return Meta::GetCppName<T>();
+	}
+
+	/// Get the constexpr hash of a verb													
+	///	@return the hash of the type														
+	template<CT::Data T>
+	constexpr Hash MetaVerb::GetVerbHash() noexcept {
+		const auto name = MetaVerb::GetReflectedPositiveVerbToken<T>();
+		return {::std::hash<Token>()(name)};
+	}
+
 	template<CT::Void T>
 	constexpr VMeta MetaVerb::Of() requires CT::Decayed<T> {
 		return nullptr;
@@ -44,81 +90,63 @@ namespace Langulus::RTTI
 			// Try to get the definition, type might have been reflected	
 			// previously in another translation unit. This is available	
 			// only if MANAGED_REFLECTION feature is enabled					
-			meta = Database.GetMetaVerb(Meta::GetName<T>());
+			meta = Database.GetMetaVerb(MetaVerb::GetReflectedPositiveVerbToken<T>());
 			if (meta)
 				return meta;
 		#endif
 
-		// If this is reached, then type is not defined yet					
-		// We'll try to explicitly or implicitly reflect it					
+		// If this is reached, then trait is not defined yet					
+		// We immediately place it in the static here, because the			
+		// reflection function might end up forever looping otherwise		
+		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+			meta = Database.RegisterVerb(
+				MetaVerb::GetReflectedPositiveVerbToken<T>(),
+				MetaVerb::GetReflectedNegativeVerbToken<T>()
+			);
+		#else
+			meta = ::std::make_unique<MetaVerb>();
+		#endif
 
+		// We'll try to explicitly or implicitly reflect it					
 		if constexpr (CT::Reflectable<T>) {
-			// The type is explicitly reflected with a custom function		
+			// The verb is explicitly reflected with a custom function		
 			// Let's call it...															
 			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-				meta = Database.Register(T::Reflect());
-				return meta;
+				*const_cast<MetaVerb*>(meta) = T::Reflect();
 			#else
-				meta = ::std::make_unique<MetaVerb>(T::Reflect());
-				return meta.get();
+				*const_cast<MetaVerb*>(meta.get()) = T::Reflect();
 			#endif
 		}
 		else {
 			// Type is implicitly reflected, so let's do our best				
 			MetaVerb generated;
-
-			// Reflect the name															
-			if constexpr (requires { T::CTTI_Name; }) {
-				generated.mToken = T::CTTI_Name;
-				generated.mTokenReverse = T::CTTI_Name;
-			}
-			else if constexpr (requires { T::CTTI_PositiveVerb; }) {
-				generated.mToken = T::CTTI_PositiveVerb;
-				if constexpr (!requires { T::CTTI_NegativeVerb; }) {
-					LANGULUS_ASSERT(
-						"Positive verb defined, but no negative provided - "
-						"either define the negative, or use LANGULUS(NAME) "
-						"if both tokens are the same");
-				}
-				else generated.mTokenReverse = T::CTTI_NegativeVerb;
-			}
-			else if constexpr (requires { T::CTTI_NegativeVerb; }) {
-				generated.mTokenReverse = T::CTTI_NegativeVerb;
-				if constexpr (!requires { T::CTTI_PositiveVerb; }) {
-					LANGULUS_ASSERT(
-						"Negative verb defined, but no positive provided - "
-						"either define the positive, or use LANGULUS(NAME) "
-						"if both tokens are the same");
-				}
-				else generated.mToken = T::CTTI_PositiveVerb;
-			}
-			else {
-				generated.mToken = Meta::GetName<T>();
-				generated.mTokenReverse = Meta::GetName<T>();
-			}
+			generated.mToken = 
+				MetaVerb::GetReflectedPositiveVerbToken<T>();
+			generated.mTokenReverse = 
+				MetaVerb::GetReflectedNegativeVerbToken<T>();
 
 			// Reflect the operator tokens, if any									
 			if constexpr (requires { T::CTTI_PositiveOperator; }) {
-				generated.mOperator = T::CTTI_PositiveOperator;
-				if constexpr (!requires { T::CTTI_NegativeOperator; }) {
+				if constexpr (!requires { T::CTTI_NegativeOperator; })
 					LANGULUS_ASSERT("Positive operator defined, but no negative provided");
-				}
-				else generated.mOperatorReverse = T::CTTI_NegativeOperator;
+
+				generated.mOperator = T::CTTI_PositiveOperator;
+				generated.mOperatorReverse = T::CTTI_NegativeOperator;
 			}
 			else if constexpr (requires { T::CTTI_NegativeOperator; }) {
-				generated.mOperatorReverse = T::CTTI_NegativeOperator;
-				if constexpr (!requires { T::CTTI_PositiveOperator; }) {
+				if constexpr (!requires { T::CTTI_PositiveOperator; })
 					LANGULUS_ASSERT("Negative operator defined, but no positive provided");
-				}
-				else generated.mOperator = T::CTTI_PositiveOperator;
+
+				generated.mOperator = T::CTTI_PositiveOperator;
+				generated.mOperatorReverse = T::CTTI_NegativeOperator;
 			}
 
 			// Reflect info string if any												
 			if constexpr (requires { T::CTTI_Info; })
 				generated.mInfo = T::CTTI_Info;
 
-			generated.mCppName = Meta::GetName<T>();
-			generated.mHash = Meta::GetHash<T>();
+			generated.mCppName = Meta::GetCppName<T>();
+			generated.mHash = GetVerbHash<T>();
 
 			// Reflect version															
 			if constexpr (requires { T::CTTI_VersionMajor; })
@@ -128,13 +156,17 @@ namespace Langulus::RTTI
 				generated.mVersionMinor = T::CTTI_VersionMinor;
 
 			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-				meta = Database.Register(Move(generated));
-				return meta;
+				*const_cast<MetaVerb*>(meta) = Move(generated);
 			#else
-				meta = ::std::make_unique<MetaVerb>(Move(generated));
-				return meta.get();
+				*const_cast<MetaVerb*>(meta.get()) = Move(generated);
 			#endif
 		}
+
+		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+			return meta;
+		#else
+			return meta.get();
+		#endif
 	}
 
    /// Check if two meta definitions match exactly										
@@ -159,15 +191,5 @@ namespace Langulus::RTTI
 	constexpr bool MetaVerb::Is() const {
 		return Is(MetaVerb::Of<T>());
 	}
-
-	#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-		/// Compare definitions																	
-		///	@param rhs - definition to compare against								
-		///	@return true if definitions match fully									
-		inline bool MetaVerb::operator == (const MetaVerb& rhs) const noexcept {
-			return Meta::operator == (rhs)
-				&& mTokenReverse == rhs.mTokenReverse;
-		}
-	#endif
 	
 } // namespace Langulus::RTTI

@@ -232,12 +232,6 @@ namespace Langulus::RTTI
 	/// Base for meta definitions																
 	///																								
 	struct Meta {
-	protected:
-		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-			friend class Interface;
-			Count mReferences {1};
-		#endif
-
 	public:
 		// Each reflection primitive has a unique token, but that			
 		// uniqueness is checked only if MANAGED_REFLECTION feature is		
@@ -257,11 +251,9 @@ namespace Langulus::RTTI
 		template<CT::Data T>
 		static constexpr Hash GetHash() noexcept;
 		template<CT::Data T>
-		static constexpr Token GetName() noexcept;
-
-		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-			bool operator == (const Meta&) const noexcept;
-		#endif
+		static constexpr Token GetCppName() noexcept;
+		template<CT::Data T>
+		static constexpr Token GetReflectedToken() noexcept;
 	};
 
 } // namespace Langulus::RTTI

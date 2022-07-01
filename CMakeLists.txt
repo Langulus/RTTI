@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(LANGULUS_FEATURE_MANAGED_REFLECTION
     "Reflections will be kept in a centralized location, when reflected, which speeds up \
-    type comparisons, and allows you to dynamically modify the reflection at runtime" ON)
+    type comparisons, and allows you to dynamically modify the reflection at runtime")
 
 # Check if this project is built as standalone, or a part of something else
 if(PROJECT_IS_TOP_LEVEL)

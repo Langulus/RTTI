@@ -29,10 +29,6 @@ namespace Langulus::RTTI
 		NOD() bool constexpr Is(TMeta) const;
 		template<CT::Trait T>
 		NOD() bool constexpr Is() const;
-
-		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-			bool operator == (const MetaTrait&) const noexcept;
-		#endif
 	};
 
 } // namespace Langulus::RTTI

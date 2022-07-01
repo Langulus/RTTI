@@ -15,29 +15,25 @@ namespace Langulus::RTTI
 	///	@return the hash of the type														
 	template<CT::Data T>
 	constexpr Hash Meta::GetHash() noexcept {
-		const auto name = NameOf<T>();
+		const auto name = Meta::GetReflectedToken<T>();
 		return {::std::hash<Token>()(name)};
 	}
    
 	/// Get the constexpr name of a type													
 	///	@return the hash of the type														
 	template<CT::Data T>
-	constexpr Token Meta::GetName() noexcept {
+	constexpr Token Meta::GetCppName() noexcept {
 		return NameOf<T>();
 	}
-	
-	#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-		/// Compare definitions																	
-		///	@param rhs - definition to compare against								
-		///	@return true if definitions match fully									
-		inline bool Meta::operator == (const Meta& rhs) const noexcept {
-			return mToken == rhs.mToken
-				&& mInfo == rhs.mInfo
-				&& mCppName == rhs.mCppName
-				&& mHash == rhs.mHash
-				&& mVersionMajor == rhs.mVersionMajor
-				&& mVersionMinor == rhs.mVersionMinor;
-		}
-	#endif
+
+	/// Get the reflected token for a type/trait/positive verb						
+	///	@return the token																		
+	template<CT::Data T>
+	constexpr Token Meta::GetReflectedToken() noexcept {
+		if constexpr (requires { T::CTTI_Name; })
+			return T::CTTI_Name;
+		else
+			return Meta::GetCppName<T>();
+	}
 
 } // namespace Langulus::RTTI

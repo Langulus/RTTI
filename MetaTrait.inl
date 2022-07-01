@@ -44,54 +44,55 @@ namespace Langulus::RTTI
 			// Try to get the definition, type might have been reflected	
 			// previously in another translation unit. This is available	
 			// only if MANAGED_REFLECTION feature is enabled					
-			meta = Database.GetMetaTrait(Meta::GetName<T>());
+			meta = Database.GetMetaTrait(Meta::GetReflectedToken<T>());
 			if (meta)
 				return meta;
 		#endif
 
-		// If this is reached, then type is not defined yet					
-		// We'll try to explicitly or implicitly reflect it					
+		// If this is reached, then trait is not defined yet					
+		// We immediately place it in the static here, because the			
+		// reflection function might end up forever looping otherwise		
+		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+			meta = Database.RegisterTrait(Meta::GetReflectedToken<T>());
+		#else
+			meta = ::std::make_unique<MetaTrait>();
+		#endif
 
+		// We'll try to explicitly or implicitly reflect it					
 		if constexpr (CT::Reflectable<T>) {
-			// The type is explicitly reflected with a custom function		
+			// The trait is explicitly reflected with a custom function		
 			// Let's call it...															
 			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-				meta = Database.Register(T::Reflect());
-				return meta;
+				*const_cast<MetaTrait*>(meta) = T::Reflect();
 			#else
-				meta = ::std::make_unique<MetaTrait>(T::Reflect());
-				return meta.get();
+				*const_cast<MetaTrait*>(meta.get()) = T::Reflect();
 			#endif
 		}
 		else {
 			// Type is implicitly reflected, so let's do our best				
 			MetaTrait generated;
-
-			if constexpr (requires { T::CTTI_Name; })
-				generated.mToken = T::CTTI_Name;
-			else
-				generated.mToken = Meta::GetName<T>();
-
+			generated.mToken = Meta::GetReflectedToken<T>();
 			if constexpr (requires { T::CTTI_Info; })
 				generated.mInfo = T::CTTI_Info;
-
-			generated.mCppName = Meta::GetName<T>();
+			generated.mCppName = Meta::GetCppName<T>();
 			generated.mHash = Meta::GetHash<T>();
-
 			if constexpr (requires { T::CTTI_VersionMajor; })
 				generated.mVersionMajor = T::CTTI_VersionMajor;
-
 			if constexpr (requires { T::CTTI_VersionMinor; })
 				generated.mVersionMinor = T::CTTI_VersionMinor;
 
 			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-				meta = Database.Register(Move(generated));
-				return meta;
+				*const_cast<MetaTrait*>(meta) = Move(generated);
 			#else
-				meta = ::std::make_unique<MetaTrait>(Move(generated));
-				return meta.get();
+				*const_cast<MetaTrait*>(meta.get()) = Move(generated);
 			#endif
 		}
+
+		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+			return meta;
+		#else
+			return meta.get();
+		#endif
 	}
 
    /// Check if two meta definitions match exactly										
@@ -115,16 +116,6 @@ namespace Langulus::RTTI
 	template<CT::Trait T>
 	constexpr bool MetaTrait::Is() const {
 		return Is(MetaTrait::Of<T>());
-	}	
-	
-	#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-		/// Compare definitions																	
-		///	@param rhs - definition to compare against								
-		///	@return true if definitions match fully									
-		inline bool MetaTrait::operator == (const MetaTrait& rhs) const noexcept {
-			return Meta::operator == (rhs)
-				&& mDataType == rhs.mDataType;
-		}
-	#endif
+	}
 	
 } // namespace Langulus::RTTI

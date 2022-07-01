@@ -36,9 +36,13 @@ namespace Langulus::RTTI
 		template<CT::Verb T>
 		NOD() bool constexpr Is() const;
 
-		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-			bool operator == (const MetaVerb&) const noexcept;
-		#endif
+	protected:
+		template<CT::Data T>
+		static constexpr Token GetReflectedPositiveVerbToken() noexcept;
+		template<CT::Data T>
+		static constexpr Token GetReflectedNegativeVerbToken() noexcept;
+		template<CT::Data T>
+		static constexpr Hash GetVerbHash() noexcept;
 	};
 
 } // namespace Langulus::RTTI

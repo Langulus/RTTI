@@ -214,10 +214,6 @@ namespace Langulus::RTTI
 	///	Meta data																				
 	///																								
 	struct MetaData : public Meta {
-		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-			friend class Interface;
-		#endif
-
 		enum Distance : int {
 			Infinite = ::std::numeric_limits<int>::max()
 		};
@@ -350,10 +346,6 @@ namespace Langulus::RTTI
 		NOD() constexpr bool Is() const;
 
 		AllocationRequest RequestSize(const Size&) const noexcept;
-
-		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-			bool operator == (const MetaData&) const noexcept;
-		#endif
 	};
 
 

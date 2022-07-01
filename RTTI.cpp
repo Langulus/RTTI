@@ -90,22 +90,16 @@ namespace Langulus::RTTI
 	///	@return the newly defined meta data, if not defined yet, or				
 	///			  a pointer to the already registered definition, if same		
 	///			  or nullptr if a conflict or out-of-memory occured				
-	DMeta Interface::Register(MetaData&& definition) noexcept {
-		const auto found = GetMetaData(definition.mToken);
+	DMeta Interface::RegisterData(const Token& token) noexcept {
+		const auto found = GetMetaData(token);
 		if (found) {
-			if (*found == definition) {
-				// Same type registered													
-				++const_cast<MetaData*>(found)->mReferences;
-				return found;
-			}
-
 			// Conflicting type 															
 			return nullptr;
 		}
 
 		// If reached, then not found, so emplace a new definition			
-		const auto newDefinition = new MetaData {Move(definition)};
-		mMetaData.insert({newDefinition->mToken, newDefinition});
+		const auto newDefinition = new MetaData {};
+		mMetaData.insert({token, newDefinition});
 		return newDefinition;
 	}
 
@@ -114,22 +108,16 @@ namespace Langulus::RTTI
 	///	@return the newly defined meta trait, if not defined yet, or			
 	///			  a pointer to the already registered definition, if same		
 	///			  or nullptr if a conflict or out-of-memory occured				
-	TMeta Interface::Register(MetaTrait&& definition) noexcept {
-		const auto found = GetMetaTrait(definition.mToken);
+	TMeta Interface::RegisterTrait(const Token& token) noexcept {
+		const auto found = GetMetaTrait(token);
 		if (found) {
-			if (*found == definition) {
-				// Same type registered													
-				++const_cast<MetaTrait*>(found)->mReferences;
-				return found;
-			}
-
 			// Conflicting type 															
 			return nullptr;
 		}
 
 		// If reached, then not found, so emplace a new definition			
-		const auto newDefinition = new MetaTrait {Move(definition)};
-		mMetaTraits.insert({newDefinition->mToken, newDefinition});
+		const auto newDefinition = new MetaTrait {};
+		mMetaTraits.insert({token, newDefinition});
 		return newDefinition;
 	}
 
@@ -138,23 +126,17 @@ namespace Langulus::RTTI
 	///	@return the newly defined meta verb, if not defined yet, or				
 	///			  a pointer to the already registered definition, if same		
 	///			  or nullptr if a conflict or out-of-memory occured				
-	VMeta Interface::Register(MetaVerb&& definition) noexcept {
-		const auto found = GetMetaVerb(definition.mToken);
+	VMeta Interface::RegisterVerb(const Token& token, const Token& tokenReverse) noexcept {
+		const auto found = GetMetaVerb(token);
 		if (found) {
-			if (*found == definition) {
-				// Same type registered													
-				++const_cast<MetaVerb*>(found)->mReferences;
-				return found;
-			}
-
 			// Conflicting type 															
 			return nullptr;
 		}
 
 		// If reached, then not found, so emplace a new definition			
-		const auto newDefinition = new MetaVerb {Move(definition)};
-		mMetaVerbs.insert({newDefinition->mToken, newDefinition});
-		mMetaVerbsAlt.insert({newDefinition->mTokenReverse, newDefinition});
+		const auto newDefinition = new MetaVerb {};
+		mMetaVerbs.insert({token, newDefinition});
+		mMetaVerbsAlt.insert({tokenReverse, newDefinition});
 		return newDefinition;
 	}
 
@@ -165,11 +147,8 @@ namespace Langulus::RTTI
 		if (!found)
 			return;
 
-		--const_cast<MetaData*>(found)->mReferences;
-		if (found->mReferences == 0) {
-			mMetaData.erase(definition->mToken);
-			delete found;
-		}
+		mMetaData.erase(definition->mToken);
+		delete found;
 	}
 
 	/// Unregister a trait definition														
@@ -179,11 +158,8 @@ namespace Langulus::RTTI
 		if (!found)
 			return;
 
-		--const_cast<MetaTrait*>(found)->mReferences;
-		if (found->mReferences == 0) {
-			mMetaTraits.erase(definition->mToken);
-			delete found;
-		}
+		mMetaTraits.erase(definition->mToken);
+		delete found;
 	}
 
 	/// Unregister a verb definition															
@@ -193,12 +169,9 @@ namespace Langulus::RTTI
 		if (!found)
 			return;
 
-		--const_cast<MetaVerb*>(found)->mReferences;
-		if (found->mReferences == 0) {
-			mMetaVerbs.erase(definition->mToken);
-			mMetaVerbsAlt.erase(definition->mTokenReverse);
-			delete found;
-		}
+		mMetaVerbs.erase(definition->mToken);
+		mMetaVerbsAlt.erase(definition->mTokenReverse);
+		delete found;
 	}
 
 } // namespace Langulus::RTTI

@@ -44,9 +44,9 @@ namespace Langulus::RTTI
 		NOD() TMeta GetMetaTrait(const Token&) const noexcept;
 		NOD() VMeta GetMetaVerb(const Token&) const noexcept;
 
-		NOD() DMeta Register(MetaData&&) noexcept;
-		NOD() TMeta Register(MetaTrait&&) noexcept;
-		NOD() VMeta Register(MetaVerb&&) noexcept;
+		NOD() DMeta RegisterData(const Token&) noexcept;
+		NOD() TMeta RegisterTrait(const Token&) noexcept;
+		NOD() VMeta RegisterVerb(const Token&, const Token&) noexcept;
 
 		void Unregister(DMeta) noexcept;
 		void Unregister(TMeta) noexcept;
