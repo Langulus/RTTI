@@ -517,7 +517,7 @@ namespace Langulus
 			else if constexpr (requires (::std::hash<T> h, const T& i) { h(i); }) {
 				// Hashable via std::hash												
 				::std::hash<T> hasher;
-				return hasher(head);
+				return {hasher(head)};
 			}
 			else if constexpr (CT::POD<T>) {
 				// Explicitly marked POD type is always hashable, but be		
