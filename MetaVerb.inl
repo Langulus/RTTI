@@ -6,7 +6,7 @@
 /// See LICENSE file, or https://www.gnu.org/licenses									
 ///																									
 #pragma once
-#include "Reflection.hpp"
+#include "Hashing.hpp"
 
 namespace Langulus::RTTI
 {

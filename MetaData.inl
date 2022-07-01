@@ -6,7 +6,7 @@
 /// See LICENSE file, or https://www.gnu.org/licenses									
 ///																									
 #pragma once
-#include "Reflection.hpp"
+#include "Hashing.hpp"
 
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
 	#include "RTTI.hpp"
@@ -300,9 +300,6 @@ namespace Langulus::RTTI
 			generated.mIsDeep = CT::Deep<T>;
 			generated.mIsUninsertable = CT::Uninsertable<T>;
 			
-			if constexpr (CT::Concretizable<T>)
-				generated.mConcrete = MetaData::Of<Decay<typename T::CTTI_Concrete>>();
-
 			// Wrap the default constructor of the type inside a lambda		
 			if constexpr (CT::Defaultable<T>) {
 				generated.mDefaultConstructor = [](void* at) {
@@ -401,27 +398,37 @@ namespace Langulus::RTTI
 				};
 			}
 
+			// Reflections that involve other types must be performed after
+			// registering this one, otherwise infinite reflection happens	
+			//TODO but then its likely that types will always conflict :(	
+			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+				meta = Database.Register(Move(generated));
+			#else
+				meta = ::std::make_unique<MetaData>(Move(generated));
+			#endif
+
+			if constexpr (CT::Concretizable<T>)
+				meta->mConcrete = MetaData::Of<Decay<typename T::CTTI_Concrete>>();
+
 			// Set reflected bases														
 			if constexpr (requires { typename T::CTTI_Bases; })
-				generated.SetBases<T>(typename T::CTTI_Bases {});
+				meta->SetBases<T>(typename T::CTTI_Bases {});
 
 			// Set reflected abilities													
 			if constexpr (requires { typename T::CTTI_Verbs; })
-				generated.SetAbilities<T>(typename T::CTTI_Verbs {});
+				meta->SetAbilities<T>(typename T::CTTI_Verbs {});
 
 			// Set reflected converters												
 			if constexpr (requires { typename T::CTTI_Conversions; })
-				generated.SetConverters<T>(typename T::CTTI_Conversions {});
+				meta->SetConverters<T>(typename T::CTTI_Conversions {});
 
 			// Set some additional stuff if T is fundamental					
 			if constexpr (CT::Fundamental<T>)
-				generated.ReflectFundamentalType<T>();
+				meta->ReflectFundamentalType<T>();
 
 			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-				meta = Database.Register(Move(generated));
 				return meta;
 			#else
-				meta = ::std::make_unique<MetaData>(Move(generated));
 				return meta.get();
 			#endif
 		}

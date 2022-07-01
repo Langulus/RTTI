@@ -1,3 +1,11 @@
+///																									
+/// Langulus::RTTI																				
+/// Copyright(C) 2012 Dimo Markov <langulusteam@gmail.com>							
+///																									
+/// Distributed under GNU General Public License v3+									
+/// See LICENSE file, or https://www.gnu.org/licenses									
+///																									
+/// Include this only when building standalone											
 #pragma once
 #include <Langulus.Logger.hpp>
 
