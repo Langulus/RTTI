@@ -7,7 +7,6 @@
 ///																									
 #pragma once
 #include "Hashing.hpp"
-#include "MetaVerb.inl"
 
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
 	#include "RTTI.hpp"
