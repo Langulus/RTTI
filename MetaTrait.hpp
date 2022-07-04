@@ -26,9 +26,11 @@ namespace Langulus::RTTI
 		template<CT::Trait T>
 		NOD() static TMeta Of() requires CT::Decayed<T>;
 		
-		NOD() bool constexpr Is(TMeta) const;
+		NOD() bool constexpr Is(TMeta) const noexcept;
 		template<CT::Trait T>
 		NOD() bool constexpr Is() const;
+
+		constexpr bool operator == (const MetaTrait&) const noexcept;
 	};
 
 } // namespace Langulus::RTTI

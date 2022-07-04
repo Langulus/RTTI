@@ -543,4 +543,3 @@ namespace Langulus
 
 // Let's not pollute the namespace
 #undef BIG_CONSTANT
-

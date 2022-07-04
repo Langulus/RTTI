@@ -41,7 +41,7 @@ namespace One::Two::Three
 class ImplicitlyReflectedVerb : public Flow::Verb {
 public:
 	template<class T>
-	static FVerb Of() {
+	static OverrideList Of() {
 		return {};
 	}
 };

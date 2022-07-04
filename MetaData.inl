@@ -7,6 +7,7 @@
 ///																									
 #pragma once
 #include "Hashing.hpp"
+#include "MetaVerb.inl"
 
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
 	#include "RTTI.hpp"
@@ -471,9 +472,9 @@ namespace Langulus::RTTI
    ///   @tparam Args... - all the abilities												
 	template<class T, CT::Dense... VERB>
 	void MetaData::SetAbilities(TTypeList<VERB...>) noexcept {
-		static const ::std::pair<Token, Ability> list[] {
-			::std::pair<Token, Ability>(
-				MetaVerb::Of<VERB>()->mToken, Ability::From<T, VERB>()
+		static const ::std::pair<VMeta, Ability> list[] {
+			::std::pair<VMeta, Ability>(
+				MetaVerb::Of<VERB>(), Ability::From<T, VERB>()
 			)...
 		};
 
@@ -485,9 +486,9 @@ namespace Langulus::RTTI
    ///   @tparam Args... - all the abilities												
 	template<class T, CT::Dense... TO>
 	void MetaData::SetConverters(TTypeList<TO...>) noexcept {
-		static const ::std::pair<Token, Converter> list[] {
-			::std::pair<Token, Converter>(
-				MetaData::Of<TO>()->mToken, Converter::From<T, TO>()
+		static const ::std::pair<DMeta, Converter> list[] {
+			::std::pair<DMeta, Converter>(
+				MetaData::Of<TO>(), Converter::From<T, TO>()
 			)...
 		};
 
@@ -605,7 +606,7 @@ namespace Langulus::RTTI
 	///	@param verb - the verb to check if able										
 	///	@return true if this data type is able to do verb							
 	inline bool MetaData::IsAbleTo(VMeta verb) const {
-		return mAbilities.find(verb->mToken) != mAbilities.end();
+		return mAbilities.find(verb) != mAbilities.end();
 	}
 	
 	/// Check if this data type is able to do something								
@@ -614,6 +615,40 @@ namespace Langulus::RTTI
 	template<CT::Verb T>
 	bool MetaData::IsAbleTo() const {
 		return IsAbleTo(MetaVerb::Of<T>());
+	}
+
+	/// Get an ability																			
+	///	@param vmeta - the type of the verb												
+	///	@param dmeta - the type of the verb's argument (optional)				
+	///	@return the functor if found														
+	inline FVerb MetaData::GetAbility(VMeta vmeta, DMeta dmeta) const {
+		const auto foundv = mAbilities.find(vmeta);
+		if (foundv != mAbilities.end()) {
+			const auto& overrides = foundv->second.mOverrides;
+			const auto foundo = overrides.find(dmeta);
+			if (foundo != overrides.end())
+				return foundo->second;
+		}
+
+		return {};
+	}
+
+	/// Get an ability with static verb														
+	///	@tparam V - the type of the verb													
+	///	@param dmeta - the type of the verb's argument (optional)				
+	///	@return the functor if found														
+	template<CT::Verb V>
+	FVerb MetaData::GetAbility(DMeta dmeta) const {
+		return GetAbility(MetaVerb::Of<V>(), dmeta);
+	}
+
+	/// Get an ability with static verb and argument type								
+	///	@tparam V - the type of the verb													
+	///	@tparam D - the type of the verb's argument									
+	///	@return the functor if found														
+	template<CT::Verb V, CT::Data D>
+	FVerb MetaData::GetAbility() const {
+		return GetAbility(MetaVerb::Of<V>(), MetaData::Of<D>());
 	}
 
 	/// Check if this type interprets as another without conversion				
@@ -733,7 +768,7 @@ namespace Langulus::RTTI
 	/// Check if two meta definitions match exactly										
 	///	@param other - the type to compare against									
 	///	@return true if types match														
-	constexpr bool MetaData::Is(DMeta other) const {
+	constexpr bool MetaData::Is(DMeta other) const noexcept {
 		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
 			// This function is reduced to a pointer match, if the meta		
 			// database is centralized, because it guarantees that			
@@ -751,6 +786,10 @@ namespace Langulus::RTTI
 	template<CT::Data T>
 	constexpr bool MetaData::Is() const {
 		return Is(MetaData::Of<Decay<T>>());
+	}
+
+	constexpr bool MetaData::operator == (const MetaData& rhs) const noexcept {
+		return Is(&rhs);
 	}
 
 	/// Get a size based on reflected allocation page and count (unsafe)			

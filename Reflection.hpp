@@ -258,6 +258,17 @@ namespace Langulus::RTTI
 
 } // namespace Langulus::RTTI
 
+namespace std
+{
+	template<>
+	struct hash<const ::Langulus::RTTI::Meta*> {
+		LANGULUS(ALWAYSINLINE)
+		size_t operator()(const Langulus::RTTI::Meta* k) const noexcept {
+			return k->mHash.mHash;
+		}
+	};
+}
+
 #include "MetaData.hpp"
 #include "MetaTrait.hpp"
 #include "MetaVerb.hpp"

@@ -92,8 +92,8 @@ namespace Langulus::RTTI
 
 
 	///																								
-	/// Used to reflect a member variable													
-	/// You can reflect arrays of elements, tag members as traits, etc.			
+	///	Used to reflect a member variable												
+	///	You can reflect arrays of elements, tag members as traits, etc.		
 	///																								
 	struct Member {
 		// Type of data																	
@@ -112,8 +112,6 @@ namespace Langulus::RTTI
 		Token mName {};
 
 	public:
-		//constexpr Member() noexcept = default;
-
 		template<CT::Data OWNER, CT::Data DATA>
 		NOD() static Member From(Offset, const Token& = {}, TMeta = {});
 
@@ -135,24 +133,25 @@ namespace Langulus::RTTI
 
 	
 	///																								
-	///	Used to reflect data capabilities												
+	///	Used to reflect abilities 															
 	///																								
 	struct Ability {
 		// The verb ID																		
 		VMeta mVerb {};
-		// Address of function to call												
-		FVerb mFunction {};
-		
-	public:		
-		//constexpr Ability() noexcept = default;
 
+		// Functions to call, paired with their argument types				
+		using OverrideList = ::std::unordered_map<DMeta, FVerb, ::std::hash<const Meta*>>;
+		OverrideList mOverrides {};
+		
+	public:
 		NOD() constexpr bool operator == (const Ability&) const noexcept;
 
 		template<CT::Dense T, CT::Verb VERB>
 		NOD() static Ability From() noexcept;
 	};
 
-	using AbilityList = ::std::unordered_map<Token, Ability>;
+	using AbilityList = ::std::unordered_map<VMeta, Ability, ::std::hash<const Meta*>>;
+	using OverrideList = typename Ability::OverrideList;
 
 
 	///																								
@@ -164,16 +163,14 @@ namespace Langulus::RTTI
 		// Address of function to call												
 		FCopyConstruct mFunction {};
 		
-	public:		
-		//constexpr Converter() noexcept = default;
-
+	public:
 		NOD() constexpr bool operator == (const Converter&) const noexcept;
 
 		template<CT::Dense T, CT::Dense TO>
 		NOD() static Converter From() noexcept;
 	};
 
-	using ConverterList = ::std::unordered_map<Token, Converter>;
+	using ConverterList = ::std::unordered_map<DMeta, Converter, ::std::hash<const Meta*>>;
 
 
 	///																								
@@ -196,8 +193,6 @@ namespace Langulus::RTTI
 		bool mImposed {false};
 
 	public:
-		//constexpr Base() noexcept = default;
-
 		NOD() constexpr bool operator == (const Base&) const noexcept;
 
 		template<CT::Dense T, CT::Dense BASE>
@@ -324,6 +319,12 @@ namespace Langulus::RTTI
 		template<CT::Verb T>
 		NOD() bool IsAbleTo() const;
 
+		NOD() FVerb GetAbility(VMeta, DMeta) const;
+		template<CT::Verb T>
+		NOD() FVerb GetAbility(DMeta) const;
+		template<CT::Verb T, CT::Data D>
+		NOD() FVerb GetAbility() const;
+
 		template<bool ADVANCED = false>
 		NOD() bool CastsTo(DMeta) const;
 		NOD() bool CastsTo(DMeta, Count) const;
@@ -341,9 +342,11 @@ namespace Langulus::RTTI
 		template<CT::Data T>
 		NOD() Distance GetDistanceTo() const;
 
-		NOD() constexpr bool Is(DMeta) const;
+		NOD() constexpr bool Is(DMeta) const noexcept;
 		template<CT::Data T>
 		NOD() constexpr bool Is() const;
+
+		constexpr bool operator == (const MetaData&) const noexcept;
 
 		AllocationRequest RequestSize(const Size&) const noexcept;
 	};

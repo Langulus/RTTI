@@ -32,9 +32,11 @@ namespace Langulus::RTTI
 		template<CT::Verb T>
 		NOD() static VMeta Of() requires CT::Decayed<T>;
 		
-		NOD() bool constexpr Is(VMeta) const;
+		NOD() bool constexpr Is(VMeta) const noexcept;
 		template<CT::Verb T>
 		NOD() bool constexpr Is() const;
+
+		constexpr bool operator == (const MetaVerb&) const noexcept;
 
 	protected:
 		template<CT::Data T>
