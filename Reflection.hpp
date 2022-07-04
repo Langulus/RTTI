@@ -260,12 +260,21 @@ namespace Langulus::RTTI
 
 namespace std
 {
+	using ::Langulus::RTTI::DMeta;
+	using ::Langulus::RTTI::TMeta;
+	using ::Langulus::RTTI::VMeta;
+
 	template<>
-	struct hash<const ::Langulus::RTTI::Meta*> {
-		LANGULUS(ALWAYSINLINE)
-		size_t operator()(const Langulus::RTTI::Meta* k) const noexcept {
-			return k->mHash.mHash;
-		}
+	struct hash<DMeta> {
+		LANGULUS(ALWAYSINLINE) size_t operator()(DMeta k) const noexcept;
+	};
+	template<>
+	struct hash<TMeta> {
+		LANGULUS(ALWAYSINLINE) size_t operator()(TMeta k) const noexcept;
+	};
+	template<>
+	struct hash<VMeta> {
+		LANGULUS(ALWAYSINLINE) size_t operator()(VMeta k) const noexcept;
 	};
 }
 
@@ -273,6 +282,19 @@ namespace std
 #include "MetaTrait.hpp"
 #include "MetaVerb.hpp"
 #include "Fundamental.hpp"
+
+namespace std
+{
+	size_t hash<DMeta>::operator()(DMeta k) const noexcept {
+		return k->mHash.mHash;
+	}
+	size_t hash<TMeta>::operator()(TMeta k) const noexcept {
+		return k->mHash.mHash;
+	}
+	size_t hash<VMeta>::operator()(VMeta k) const noexcept {
+		return k->mHash.mHash;
+	}
+}
 
 #include "MetaData.inl"
 #include "MetaTrait.inl"

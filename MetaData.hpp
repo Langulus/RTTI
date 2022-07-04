@@ -140,7 +140,7 @@ namespace Langulus::RTTI
 		VMeta mVerb {};
 
 		// Functions to call, paired with their argument types				
-		using OverrideList = ::std::unordered_map<DMeta, FVerb, ::std::hash<const Meta*>>;
+		using OverrideList = ::std::unordered_map<DMeta, FVerb>;
 		OverrideList mOverrides {};
 		
 	public:
@@ -150,7 +150,7 @@ namespace Langulus::RTTI
 		NOD() static Ability From() noexcept;
 	};
 
-	using AbilityList = ::std::unordered_map<VMeta, Ability, ::std::hash<const Meta*>>;
+	using AbilityList = ::std::unordered_map<VMeta, Ability>;
 	using OverrideList = typename Ability::OverrideList;
 
 
@@ -170,7 +170,7 @@ namespace Langulus::RTTI
 		NOD() static Converter From() noexcept;
 	};
 
-	using ConverterList = ::std::unordered_map<DMeta, Converter, ::std::hash<const Meta*>>;
+	using ConverterList = ::std::unordered_map<DMeta, Converter>;
 
 
 	///																								
