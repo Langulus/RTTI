@@ -217,7 +217,7 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
 				REQUIRE(meta->mFileExtensions == "txt, pdf");
 				REQUIRE(meta->mVersionMajor == 2);
 				REQUIRE(meta->mVersionMinor == 1);
-				REQUIRE(meta->mIsDeep == false);
+				REQUIRE(meta->mIsDeep == true);
 				REQUIRE(meta->mIsPOD == true);
 				REQUIRE(meta->mIsNullifiable == true);
 				REQUIRE(meta->mPoolTactic == PoolTactic::Size);

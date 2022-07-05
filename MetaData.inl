@@ -298,8 +298,7 @@ namespace Langulus::RTTI
 				generated.mVersionMinor = T::CTTI_VersionMinor;
 			generated.mIsPOD = CT::POD<T>;
 			if constexpr (requires { T::CTTI_Deep; })
-				generated.mIsDeep = CT::DerivedFrom<T, ::Langulus::Anyness::Block>
-					&& sizeof(T) == sizeof(::Langulus::Anyness::Block) && T::CTTI_Deep;
+				generated.mIsDeep = T::CTTI_Deep;
 			generated.mIsUninsertable = CT::Uninsertable<T>;
 			
 			// Wrap the default constructor of the type inside a lambda		
