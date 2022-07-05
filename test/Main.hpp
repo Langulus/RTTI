@@ -16,6 +16,16 @@ namespace Langulus::Flow
 	class Verb {};
 }
 
+namespace Langulus::Anyness
+{
+	class Block {};
+}
+
+namespace Langulus::Anyness
+{
+	class Trait : public Block {};
+}
+
 using namespace Langulus;
 using namespace Langulus::RTTI;
 

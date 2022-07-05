@@ -171,15 +171,6 @@ namespace Langulus::CT
 		{Decay<T>::Reflect()} -> Same<::Langulus::RTTI::MetaData>;
 	};
 
-	/// A deep type is any type with a true static member T::CTTI_Deep			
-	/// and a common interface with Block													
-	/// If no such member/base exists, the type is assumed NOT deep by			
-	/// default. Deep types are considered iteratable, and verbs are				
-	/// executed in each of their elements/members, instead on the type			
-	/// itself. Use LANGULUS(DEEP) macro as member to tag deep types				
-	template<class T>
-	concept Deep = Block<T> && Decay<T>::CTTI_Deep;
-
 	/// An uninsertable type is any type with a true static member					
 	/// T::CTTI_Uninsertable. All types are insertable by default					
 	/// Useful to mark some intermediate types, that are not supposed to be		

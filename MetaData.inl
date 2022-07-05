@@ -101,7 +101,7 @@ namespace Langulus::RTTI
 	
 	/// Create an ability reflection from a type and a verb							
 	///	@return the ability																	
-	template<CT::Dense T, CT::Verb VERB>
+	template<CT::Dense T, CT::Data VERB>
 	Ability Ability::From() noexcept {
 		return {MetaVerb::Of<VERB>(), VERB::template Of<T>()};
 	}
@@ -297,7 +297,9 @@ namespace Langulus::RTTI
 			if constexpr (requires { T::CTTI_VersionMinor; })
 				generated.mVersionMinor = T::CTTI_VersionMinor;
 			generated.mIsPOD = CT::POD<T>;
-			generated.mIsDeep = CT::Deep<T>;
+			if constexpr (requires { T::CTTI_Deep; })
+				generated.mIsDeep = CT::DerivedFrom<T, ::Langulus::Anyness::Block>
+					&& sizeof(T) == sizeof(::Langulus::Anyness::Block) && T::CTTI_Deep;
 			generated.mIsUninsertable = CT::Uninsertable<T>;
 			
 			// Wrap the default constructor of the type inside a lambda		
@@ -348,7 +350,7 @@ namespace Langulus::RTTI
 			}
 
 			// Wrap the == operator of the type inside a lambda				
-			if constexpr (CT::Comparable<T>) {
+			if constexpr (CT::Comparable<T, T>) {
 				generated.mComparer = [](const void* t1, const void* t2) {
 					auto t1Instance = static_cast<const T*>(t1);
 					auto t2Instance = static_cast<const T*>(t2);
@@ -611,7 +613,7 @@ namespace Langulus::RTTI
 	/// Check if this data type is able to do something								
 	///	@tparam T - the verb to check if able											
 	///	@return true if this data type is able to do verb							
-	template<CT::Verb T>
+	template<CT::Data T>
 	bool MetaData::IsAbleTo() const {
 		return IsAbleTo(MetaVerb::Of<T>());
 	}
@@ -636,7 +638,7 @@ namespace Langulus::RTTI
 	///	@tparam V - the type of the verb													
 	///	@param dmeta - the type of the verb's argument (optional)				
 	///	@return the functor if found														
-	template<CT::Verb V>
+	template<CT::Data V>
 	FVerb MetaData::GetAbility(DMeta dmeta) const {
 		return GetAbility(MetaVerb::Of<V>(), dmeta);
 	}
@@ -645,7 +647,7 @@ namespace Langulus::RTTI
 	///	@tparam V - the type of the verb													
 	///	@tparam D - the type of the verb's argument									
 	///	@return the functor if found														
-	template<CT::Verb V, CT::Data D>
+	template<CT::Data V, CT::Data D>
 	FVerb MetaData::GetAbility() const {
 		return GetAbility(MetaVerb::Of<V>(), MetaData::Of<D>());
 	}

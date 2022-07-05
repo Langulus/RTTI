@@ -146,7 +146,7 @@ namespace Langulus::RTTI
 	public:
 		NOD() constexpr bool operator == (const Ability&) const noexcept;
 
-		template<CT::Dense T, CT::Verb VERB>
+		template<CT::Dense T, CT::Data VERB>
 		NOD() static Ability From() noexcept;
 	};
 
@@ -316,13 +316,13 @@ namespace Langulus::RTTI
 		NOD() bool HasDerivation() const;
 
 		NOD() bool IsAbleTo(VMeta) const;
-		template<CT::Verb T>
+		template<CT::Data T>
 		NOD() bool IsAbleTo() const;
 
 		NOD() FVerb GetAbility(VMeta, DMeta) const;
-		template<CT::Verb T>
+		template<CT::Data T>
 		NOD() FVerb GetAbility(DMeta) const;
-		template<CT::Verb T, CT::Data D>
+		template<CT::Data T, CT::Data D>
 		NOD() FVerb GetAbility() const;
 
 		template<bool ADVANCED = false>

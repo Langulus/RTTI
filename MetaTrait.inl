@@ -20,7 +20,7 @@ namespace Langulus::RTTI
 	/// Reflection is done only on decayed types to avoid static variable		
 	/// duplications																				
 	///   @tparam T - the type to reflect (will always be decayed)					
-	template<CT::Trait T>
+	template<CT::Data T>
 	TMeta MetaTrait::Of() requires CT::Decayed<T> {
 		// This check is not standard, but doesn't hurt afaik					
 		static_assert(sizeof(T) > 0, "Can't reflect an incomplete type");
@@ -113,7 +113,7 @@ namespace Langulus::RTTI
 	/// Check if two meta definitions match exactly										
 	///	@tparam T - the trait to compare against										
 	///	@return true if traits match														
-	template<CT::Trait T>
+	template<CT::Data T>
 	constexpr bool MetaTrait::Is() const {
 		return Is(MetaTrait::Of<T>());
 	}
