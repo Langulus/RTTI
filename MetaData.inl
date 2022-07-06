@@ -655,22 +655,24 @@ namespace Langulus::RTTI
 	template<bool MUTABLE>
 	auto MetaData::GetAbility(VMeta vmeta, DMeta dmeta) const {
 		const auto foundv = mAbilities.find(vmeta);
-		if (foundv != mAbilities.end()) {
-			if constexpr (MUTABLE) {
+		if constexpr (MUTABLE) {
+			if (foundv != mAbilities.end()) {
 				const auto& overrides = foundv->second.mOverloadsMutable;
 				const auto foundo = overrides.find({dmeta});
 				if (foundo != overrides.end())
 					return foundo->second;
 			}
-			else {
+			return FVerbMutable {};
+		}
+		else {
+			if (foundv != mAbilities.end()) {
 				const auto& overrides = foundv->second.mOverloadsConstant;
 				const auto foundo = overrides.find({dmeta});
 				if (foundo != overrides.end())
 					return foundo->second;
 			}
+			return FVerbConstant {};
 		}
-
-		return {};
 	}
 
 	/// Get an ability with static verb														
