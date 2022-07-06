@@ -8,6 +8,7 @@
 #pragma once
 #include "DataState.hpp"
 #include "NameOf.hpp"
+#include <vector>
 
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
 	LANGULUS_EXCEPTION(Meta);
@@ -211,6 +212,26 @@ namespace Langulus::CT
 	template<class... T>
 	concept Abstract = ((!Sparse<T> && (::std::is_abstract_v<Decay<T>> || Decay<T>::CTTI_Abstract)) && ...);
 
+	namespace Inner
+	{
+		template<class T>
+		concept DispatcherMutable = requires (Decay<T>& a, ::Langulus::Flow::Verb& b) {
+			{a.Do(b)};
+		};
+		template<class T>
+		concept DispatcherConstant = requires (const Decay<T>& a, ::Langulus::Flow::Verb& b) {
+			{a.Do(b)};
+		};
+	}
+
+	/// Check if T has a mutable dispatcher (has Do() method for verbs)			
+	template<class... T>
+	concept DispatcherMutable = (Inner::DispatcherMutable<T> && ...);
+
+	/// Check if T has a constant dispatcher (has Do() method for verbs)			
+	template<class... T>
+	concept DispatcherConstant = (Inner::DispatcherConstant<T> && ...);
+
 } // namespace Langulus::CT
 
 
@@ -260,6 +281,10 @@ namespace std
 		LANGULUS(ALWAYSINLINE) size_t operator()(DMeta k) const noexcept;
 	};
 	template<>
+	struct hash<vector<DMeta>> {
+		LANGULUS(ALWAYSINLINE) size_t operator()(const vector<DMeta>& k) const noexcept;
+	};
+	template<>
 	struct hash<TMeta> {
 		LANGULUS(ALWAYSINLINE) size_t operator()(TMeta k) const noexcept;
 	};
@@ -274,10 +299,23 @@ namespace std
 #include "MetaVerb.hpp"
 #include "Fundamental.hpp"
 
+#include "MetaData.inl"
+#include "MetaTrait.inl"
+#include "MetaVerb.inl"
+#include "Reflection.inl"
+#include "Hashing.hpp"
+
 namespace std
 {
 	size_t hash<DMeta>::operator()(DMeta k) const noexcept {
 		return k->mHash.mHash;
+	}
+	size_t hash<vector<DMeta>>::operator()(const vector<DMeta>& k) const noexcept {
+		using ::Langulus::Hash;
+		vector<Hash> coalesced;
+		for (auto& i : k)
+			coalesced.emplace_back(i->mHash);
+		return ::Langulus::HashBytes<::Langulus::DefaultHashSeed, false>(coalesced.data(), coalesced.size() * sizeof(Hash)).mHash;
 	}
 	size_t hash<TMeta>::operator()(TMeta k) const noexcept {
 		return k->mHash.mHash;
@@ -287,7 +325,3 @@ namespace std
 	}
 }
 
-#include "MetaData.inl"
-#include "MetaTrait.inl"
-#include "MetaVerb.inl"
-#include "Reflection.inl"

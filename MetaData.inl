@@ -101,9 +101,32 @@ namespace Langulus::RTTI
 	
 	/// Create an ability reflection from a type and a verb							
 	///	@return the ability																	
-	template<CT::Dense T, CT::Data VERB>
+	template<CT::Data T, CT::Data VERB, CT::Data... A>
 	Ability Ability::From() noexcept {
-		return {MetaVerb::Of<VERB>(), VERB::template Of<T>()};
+		static_assert(CT::DerivedFrom<VERB, ::Langulus::Flow::Verb>,
+			"VERB must inherit Flow::Verb");
+
+		Ability result;
+		result.mVerb = MetaVerb::Of<VERB>();
+		if constexpr (CT::Mutable<T> && VERB::template AvailableFor<T, A...>()) {
+			result.mOverloadsMutable.insert({
+				{MetaData::Of<A>()...},
+				[](void* context, Flow::Verb& verb) {
+
+				}
+			});
+		}
+		else if constexpr (CT::Constant<T> && VERB::template AvailableFor<T, A...>()) {
+			result.mOverloadsConstant.insert({
+				{MetaData::Of<A>()...},
+				[](const void* context, Flow::Verb& verb) {
+
+				}
+			});
+		}
+		else LANGULUS_ASSERT("VERB is not available for T (neither mutable, nor constant)");
+
+		return result;
 	}
 
 
@@ -129,7 +152,7 @@ namespace Langulus::RTTI
 		return {
 			MetaData::Of<TO>(), 
 			[](void* to, const void* from) {
-				new (to) TO { static_cast<TO>(*static_cast<const T*>(from)) };
+				new (to) TO {static_cast<TO>(*static_cast<const T*>(from))};
 			}
 		};
 	}
@@ -391,10 +414,18 @@ namespace Langulus::RTTI
 				};
 			}
 
-			// Wrap the Do verb method inside a lambda							
-			if constexpr (CT::Dispatcher<T>) {
-				generated.mDispatcher = [](void* at, Flow::Verb& verb) {
+			// Wrap the mutable Do verb method inside a lambda					
+			if constexpr (CT::DispatcherMutable<T>) {
+				generated.mDispatcherMutable = [](void* at, Flow::Verb& verb) {
 					auto instance = static_cast<T*>(at);
+					instance->Do(verb);
+				};
+			}
+
+			// Wrap the constant Do verb method inside a lambda				
+			if constexpr (CT::DispatcherConstant<T>) {
+				generated.mDispatcherConstant = [](const void* at, Flow::Verb& verb) {
+					auto instance = static_cast<const T*>(at);
 					instance->Do(verb);
 				};
 			}
@@ -621,13 +652,22 @@ namespace Langulus::RTTI
 	///	@param vmeta - the type of the verb												
 	///	@param dmeta - the type of the verb's argument (optional)				
 	///	@return the functor if found														
-	inline FVerb MetaData::GetAbility(VMeta vmeta, DMeta dmeta) const {
+	template<bool MUTABLE>
+	auto MetaData::GetAbility(VMeta vmeta, DMeta dmeta) const {
 		const auto foundv = mAbilities.find(vmeta);
 		if (foundv != mAbilities.end()) {
-			const auto& overrides = foundv->second.mOverrides;
-			const auto foundo = overrides.find(dmeta);
-			if (foundo != overrides.end())
-				return foundo->second;
+			if constexpr (MUTABLE) {
+				const auto& overrides = foundv->second.mOverloadsMutable;
+				const auto foundo = overrides.find({dmeta});
+				if (foundo != overrides.end())
+					return foundo->second;
+			}
+			else {
+				const auto& overrides = foundv->second.mOverloadsConstant;
+				const auto foundo = overrides.find({dmeta});
+				if (foundo != overrides.end())
+					return foundo->second;
+			}
 		}
 
 		return {};
@@ -637,18 +677,22 @@ namespace Langulus::RTTI
 	///	@tparam V - the type of the verb													
 	///	@param dmeta - the type of the verb's argument (optional)				
 	///	@return the functor if found														
-	template<CT::Data V>
-	FVerb MetaData::GetAbility(DMeta dmeta) const {
-		return GetAbility(MetaVerb::Of<V>(), dmeta);
+	template<bool MUTABLE, CT::Data V>
+	auto MetaData::GetAbility(DMeta dmeta) const {
+		static_assert(CT::DerivedFrom<V, ::Langulus::Flow::Verb>,
+			"V must be derived from Flow::Verb");
+		return GetAbility<MUTABLE>(MetaVerb::Of<V>(), dmeta);
 	}
 
 	/// Get an ability with static verb and argument type								
 	///	@tparam V - the type of the verb													
 	///	@tparam D - the type of the verb's argument									
 	///	@return the functor if found														
-	template<CT::Data V, CT::Data D>
-	FVerb MetaData::GetAbility() const {
-		return GetAbility(MetaVerb::Of<V>(), MetaData::Of<D>());
+	template<bool MUTABLE, CT::Data V, CT::Data... A>
+	auto MetaData::GetAbility() const {
+		static_assert(CT::DerivedFrom<V, ::Langulus::Flow::Verb>,
+			"V must be derived from Flow::Verb");
+		return GetAbility<MUTABLE>(MetaVerb::Of<V>(), MetaData::Of<A>()...);
 	}
 
 	/// Check if this type interprets as another without conversion				

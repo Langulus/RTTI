@@ -225,6 +225,63 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
 				REQUIRE(meta->mIsUninsertable == true);
 				REQUIRE(meta->mAllocationPage == Roof2(250 * sizeof(ImplicitlyReflectedDataWithTraits)));
 				REQUIRE(meta->mIsAbstract == true);
+				REQUIRE(meta->mSize == 0);
+				REQUIRE(meta->mAlignment == alignof(ImplicitlyReflectedDataWithTraits));
+			}
+		}
+	}
+}
+
+SCENARIO("A simple type reflected with CTTI traits", "[metadata]") {
+	GIVEN("ImplicitlyReflectedData") {
+		WHEN("Reflected") {
+			auto meta = MetaData::Of<ImplicitlyReflectedData>();
+			REQUIRE(meta != nullptr);
+
+			THEN("Requirements should be met") {
+				REQUIRE(meta->mToken == "ImplicitlyReflectedData");
+				REQUIRE(meta->mCppName == "ImplicitlyReflectedData");
+				REQUIRE(meta->mInfo == "<no info provided>");
+				REQUIRE(meta->mFileExtensions == "");
+				REQUIRE(meta->mVersionMajor == 1);
+				REQUIRE(meta->mVersionMinor == 0);
+				REQUIRE(meta->mIsDeep == false);
+				REQUIRE(meta->mIsPOD == true);
+				REQUIRE(meta->mIsNullifiable == false);
+				REQUIRE(meta->mPoolTactic == PoolTactic::Default);
+				REQUIRE(meta->mConcrete == nullptr);
+				REQUIRE(meta->mIsUninsertable == false);
+				REQUIRE(meta->mAllocationPage >= Alignment);
+				REQUIRE(meta->mIsAbstract == false);
+				REQUIRE(meta->mSize == sizeof(ImplicitlyReflectedData));
+				REQUIRE(meta->mAlignment == alignof(ImplicitlyReflectedData));
+			}
+		}
+	}
+}
+
+SCENARIO("A reflected verb with CTTI traits", "[metaverb]") {
+	GIVEN("Create verb with positive/negative tokens, with stateless and contextual default functions") {
+		WHEN("Reflected") {
+			Anyness::Block someBlock;
+			Flow::Verb someVerb;
+			auto meta = MetaVerb::Of<Verbs::Create>();
+			REQUIRE(meta != nullptr);
+
+			THEN("Requirements should be met") {
+				REQUIRE(meta->mToken == "Create");
+				REQUIRE(meta->mTokenReverse == "Destroy");
+				REQUIRE(meta->mInfo.starts_with("Used for allocating new elements. "));
+				REQUIRE(meta->mVersionMajor == 1);
+				REQUIRE(meta->mVersionMinor == 0);
+				REQUIRE(meta->mOperator == "");
+				REQUIRE(meta->mOperatorReverse == "");
+				REQUIRE(meta->mDefaultInvocationMutable);
+				REQUIRE(meta->mDefaultInvocationMutable(someBlock, someVerb) == false);
+				REQUIRE(meta->mDefaultInvocationConstant);
+				REQUIRE(meta->mDefaultInvocationConstant(someBlock, someVerb) == true);
+				REQUIRE(meta->mStatelessInvocation);
+				REQUIRE(meta->mStatelessInvocation(someVerb) == false);
 			}
 		}
 	}

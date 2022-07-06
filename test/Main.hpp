@@ -48,13 +48,67 @@ namespace One::Two::Three
 	struct VeryComplexTemplate;
 }
 
-class ImplicitlyReflectedVerb : public Flow::Verb {
-public:
-	template<class T>
-	static OverrideList Of() {
-		return {};
-	}
-};
+namespace Verbs
+{
+	///																								
+	/// A testing verb, similar to the ones used in Langulus::Flow					
+	///																								
+	struct Create : public Flow::Verb {
+		LANGULUS(POSITIVE_VERB) "Create";
+		LANGULUS(NEGATIVE_VERB) "Destroy";
+		LANGULUS(INFO)
+			"Used for allocating new elements. "
+			"If the type you're creating has	a producer, "
+			"you need to execute the verb in a matching producer, "
+			"or that producer will be created automatically for you, if possible";
+
+		/// Check if the verb is available in a type, and with given arguments	
+		///	@return true if verb is available in T with arguments A...			
+		template<CT::Data T, CT::Data... A>
+		static constexpr bool AvailableFor() noexcept {
+			if constexpr (sizeof...(A) == 0)
+				return requires (T & t, Verb & v) { t.Create(v); };
+			else
+				return requires (T & t, Verb & v, A... a) { t.Create(v, a...); };
+		}
+
+		/// Get the verb functor for the given type and arguments					
+		///	@return the function, or nullptr if not available						
+		template<CT::Data T, CT::Data... A>
+		static constexpr auto Of() noexcept {
+			if constexpr (!Create::AvailableFor<T, A...>()) {
+				return nullptr;
+			}
+			else if constexpr (CT::Constant<T>) {
+				return [](const void* context, Flow::Verb& verb, A... args) {
+					auto typedContext = static_cast<const T*>(context);
+					typedContext->Create(verb, args...);
+				};
+			}
+			else {
+				return [](void* context, Flow::Verb& verb, A... args) {
+					auto typedContext = static_cast<T*>(context);
+					typedContext->Create(verb, args...);
+				};
+			}
+		}
+
+		template<CT::Data T>
+		static bool ExecuteIn(T&, Verb&);
+
+		static bool ExecuteDefault(const Anyness::Block&, Verb&) {
+			return true;
+		}
+
+		static bool ExecuteDefault(Anyness::Block&, Verb&) {
+			return false;
+		}
+
+		static bool ExecuteStateless(Verb&) {
+			return false;
+		}
+	};
+}
 
 class ImplicitlyReflectedData {};
 
@@ -65,6 +119,10 @@ public:
 
 	inline operator int() const noexcept {
 		return 0;
+	}
+
+	void Create(Flow::Verb& v) {
+		
 	}
 
 	LANGULUS(NAME) "MyType";
@@ -83,6 +141,6 @@ public:
 	LANGULUS_PROPERTY(member);
 	LANGULUS_PROPERTY(anotherMember);
 	LANGULUS_BASES(ImplicitlyReflectedData);
-	LANGULUS_VERBS(ImplicitlyReflectedVerb);
+	LANGULUS_VERBS(Verbs::Create);
 	LANGULUS_CONVERSIONS(int);
 };

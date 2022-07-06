@@ -13,9 +13,11 @@ namespace Langulus::RTTI
 {
 
 	/// The default verb execution functor													
-	using FDefault = TFunctor<bool(::Langulus::Anyness::Block&, ::Langulus::Flow::Verb&)>;
-	using FStateless = TFunctor<bool(::Langulus::Flow::Verb&)>;
+	using FDefaultVerbMutable = bool (*)(::Langulus::Anyness::Block&, ::Langulus::Flow::Verb&);
+	using FDefaultVerbConstant = bool (*)(const ::Langulus::Anyness::Block&, ::Langulus::Flow::Verb&);
+	using FStatelessVerb = bool (*)(::Langulus::Flow::Verb&);
 	using AbleList = ::std::unordered_set<DMeta>;
+
 
 	///																								
 	///	Meta verb																				
@@ -32,10 +34,13 @@ namespace Langulus::RTTI
 		Token mOperator;
 		Token mOperatorReverse;
 
-		// Reflected default verb, if available									
-		FDefault mDefaultInvocation;
+		// Reflected default verb for mutable context, if available			
+		FDefaultVerbMutable mDefaultInvocationMutable {};
+		// Reflected default verb for immutable context, if available		
+		FDefaultVerbConstant mDefaultInvocationConstant {};
+
 		// Reflected stateless verb, if available									
-		FStateless mStatelessInvocation;
+		FStatelessVerb mStatelessInvocation {};
 
 		// A set of data types that are capable of doing the verb			
 		AbleList mAble;
@@ -63,14 +68,24 @@ namespace Langulus::RTTI
 
 } // namespace Langulus::RTTI
 
+
 namespace Langulus::CT
 {
 
-	/// Checks if a verb is defaultable														
+	/// Checks if a verb is defaultable in a mutable context							
 	template<class T>
-	concept DefaultableVerb = requires {{
+	concept DefaultableVerbMutable = requires {{
 		T::ExecuteDefault(
 			Uneval<::Langulus::Anyness::Block&>(), 
+			Uneval<::Langulus::Flow::Verb&>()
+		)} -> CT::Same<bool>;
+	};
+
+	/// Checks if a verb is defaultable in an immutable context						
+	template<class T>
+	concept DefaultableVerbConstant = requires {{
+		T::ExecuteDefault(
+			Uneval<const ::Langulus::Anyness::Block&>(), 
 			Uneval<::Langulus::Flow::Verb&>()
 		)} -> CT::Same<bool>;
 	};

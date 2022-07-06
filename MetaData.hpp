@@ -87,8 +87,10 @@ namespace Langulus::RTTI
 
 	/// A custom verb dispatcher, wrapped in a lambda expression					
 	/// Takes the pointer to the instance that will dispatch, and a verb			
-	using FDispatch = TFunctor<void(void*, Flow::Verb&)>;
-	using FVerb = FDispatch;
+	using FDispatchMutable = TFunctor<void(void*, Flow::Verb&)>;
+	using FDispatchConstant = TFunctor<void(const void*, Flow::Verb&)>;
+	using FVerbMutable = FDispatchMutable;
+	using FVerbConstant = FDispatchConstant;
 
 
 	///																								
@@ -139,19 +141,28 @@ namespace Langulus::RTTI
 		// The verb ID																		
 		VMeta mVerb {};
 
+		using Signature = ::std::vector<DMeta>;
+
 		// Functions to call, paired with their argument types				
-		using OverrideList = ::std::unordered_map<DMeta, FVerb>;
-		OverrideList mOverrides {};
+		// For functions that can mutate the context								
+		using MutableOverloadList = ::std::unordered_map<Signature, FVerbMutable>;
+		MutableOverloadList mOverloadsMutable;
+		
+		// Functions to call, paired with their argument types				
+		// For functions that can't mutate the context							
+		using ConstantOverloadList = ::std::unordered_map<Signature, FVerbConstant>;
+		ConstantOverloadList mOverloadsConstant {};
 		
 	public:
 		NOD() constexpr bool operator == (const Ability&) const noexcept;
 
-		template<CT::Dense T, CT::Data VERB>
+		template<CT::Data T, CT::Data VERB, CT::Data... A>
 		NOD() static Ability From() noexcept;
 	};
 
 	using AbilityList = ::std::unordered_map<VMeta, Ability>;
-	using OverrideList = typename Ability::OverrideList;
+	using MutableOverloadList = typename Ability::MutableOverloadList;
+	using ConstantOverloadList = typename Ability::ConstantOverloadList;
 
 
 	///																								
@@ -276,8 +287,10 @@ namespace Langulus::RTTI
 		FResolve mResolver;
 		// The GetHash() method, wrapped in a lambda								
 		FHash mHasher;
-		// The Do verb, wrapped in a lambda											
-		FDispatch mDispatcher;
+		// The Do verb, wrapped in a lambda (mutable context)					
+		FDispatchMutable mDispatcherMutable;
+		// The Do verb, wrapped in a lambda	(immutable context)				
+		FDispatchConstant mDispatcherConstant;
 
 	protected:
 		template<CT::Fundamental T>
@@ -319,11 +332,12 @@ namespace Langulus::RTTI
 		template<CT::Data T>
 		NOD() bool IsAbleTo() const;
 
-		NOD() FVerb GetAbility(VMeta, DMeta) const;
-		template<CT::Data T>
-		NOD() FVerb GetAbility(DMeta) const;
-		template<CT::Data T, CT::Data D>
-		NOD() FVerb GetAbility() const;
+		template<bool MUTABLE>
+		NOD() auto GetAbility(VMeta, DMeta) const;
+		template<bool MUTABLE, CT::Data V>
+		NOD() auto GetAbility(DMeta) const;
+		template<bool MUTABLE, CT::Data V, CT::Data... A>
+		NOD() auto GetAbility() const;
 
 		template<bool ADVANCED = false>
 		NOD() bool CastsTo(DMeta) const;
