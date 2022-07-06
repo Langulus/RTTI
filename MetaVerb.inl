@@ -57,12 +57,14 @@ namespace Langulus::RTTI
 		return {::std::hash<Token>()(name)};
 	}
 
+	/// Meta of a void always returns nullptr												
+	///	@return nullptr																		
 	template<CT::Void T>
 	constexpr VMeta MetaVerb::Of() requires CT::Decayed<T> {
 		return nullptr;
 	}
 
-	/// Reflect or return an already reflected type meta trait definition		
+	/// Reflect or return an already reflected verb definition						
 	/// Reflection is done only on decayed types to avoid static variable		
 	/// duplications																				
 	///   @tparam T - the type to reflect (will always be decayed)					
@@ -160,6 +162,12 @@ namespace Langulus::RTTI
 			#else
 				*const_cast<MetaVerb*>(meta.get()) = Move(generated);
 			#endif
+
+			if constexpr (CT::DefaultableVerb<T>)
+				mDefaultInvocation = T::ExecuteDefault;
+
+			if constexpr (CT::StatelessVerb<T>)
+				mStatelessInvocation = T::ExecuteStateless;
 		}
 
 		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
@@ -192,6 +200,9 @@ namespace Langulus::RTTI
 		return Is(MetaVerb::Of<T>());
 	}
 	
+	/// Compare verb definitions																
+	///	@param rhs - the verb definition to compare with							
+	///	@return true if definitions match												
 	constexpr bool MetaVerb::operator == (const MetaVerb& rhs) const noexcept {
 		return Is(&rhs);
 	}

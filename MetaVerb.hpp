@@ -7,9 +7,15 @@
 ///																									
 #pragma once
 #include "MetaData.hpp"
+#include <unordered_set>
 
 namespace Langulus::RTTI
 {
+
+	/// The default verb execution functor													
+	using FDefault = TFunctor<bool(::Langulus::Anyness::Block&, ::Langulus::Flow::Verb&)>;
+	using FStateless = TFunctor<bool(::Langulus::Flow::Verb&)>;
+	using AbleList = ::std::unordered_set<DMeta>;
 
 	///																								
 	///	Meta verb																				
@@ -25,6 +31,14 @@ namespace Langulus::RTTI
 		// Verbs can be tokenized as operators - just syntax sugar			
 		Token mOperator;
 		Token mOperatorReverse;
+
+		// Reflected default verb, if available									
+		FDefault mDefaultInvocation;
+		// Reflected stateless verb, if available									
+		FStateless mStatelessInvocation;
+
+		// A set of data types that are capable of doing the verb			
+		AbleList mAble;
 
 	public:
 		template<CT::Void T>
@@ -48,3 +62,25 @@ namespace Langulus::RTTI
 	};
 
 } // namespace Langulus::RTTI
+
+namespace Langulus::CT
+{
+
+	/// Checks if a verb is defaultable														
+	template<class T>
+	concept DefaultableVerb = requires {{
+		T::ExecuteDefault(
+			Uneval<::Langulus::Anyness::Block&>(), 
+			Uneval<::Langulus::Flow::Verb&>()
+		)} -> CT::Same<bool>;
+	};
+
+	/// Checks if a verb is executable as stateless										
+	template<class T>
+	concept StatelessVerb = requires {{
+		T::ExecuteStateless(
+			Uneval<::Langulus::Flow::Verb&>()
+		)} -> CT::Same<bool>;
+	};
+
+} // namespace Langulus::CT
