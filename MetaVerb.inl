@@ -157,17 +157,17 @@ namespace Langulus::RTTI
 			if constexpr (requires { T::CTTI_VersionMinor; })
 				generated.mVersionMinor = T::CTTI_VersionMinor;
 
+			if constexpr (CT::DefaultableVerb<T>)
+				generated.mDefaultInvocation = T::ExecuteDefault;
+
+			if constexpr (CT::StatelessVerb<T>)
+				generated.mStatelessInvocation = T::ExecuteStateless;
+
 			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
 				*const_cast<MetaVerb*>(meta) = Move(generated);
 			#else
 				*const_cast<MetaVerb*>(meta.get()) = Move(generated);
 			#endif
-
-			if constexpr (CT::DefaultableVerb<T>)
-				mDefaultInvocation = T::ExecuteDefault;
-
-			if constexpr (CT::StatelessVerb<T>)
-				mStatelessInvocation = T::ExecuteStateless;
 		}
 
 		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
