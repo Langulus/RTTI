@@ -339,11 +339,27 @@ namespace Langulus::RTTI
 				};
 			}
 
+			// Wrap the disown constructor of the type inside a lambda		
+			if constexpr (CT::DisownMakable<T>) {
+				generated.mDisownConstructor = [](void* at, const void* from) {
+					auto fromInstance = static_cast<const T*>(from);
+					new (at) T {Disown(*fromInstance)};
+				};
+			}
+
 			// Wrap the move constructor of the type inside a lambda			
 			if constexpr (CT::MoveMakable<T>) {
 				generated.mMoveConstructor = [](void* at, void* from) {
 					auto fromInstance = static_cast<T*>(from);
 					new (at) T {Forward<T>(*fromInstance)};
+				};
+			}
+
+			// Wrap the abandon constructor of the type inside a lambda		
+			if constexpr (CT::AbandonMakable<T>) {
+				generated.mAbandonConstructor = [](void* at, void* from) {
+					auto fromInstance = static_cast<T*>(from);
+					new (at) T {Abandon(*fromInstance)};
 				};
 			}
 

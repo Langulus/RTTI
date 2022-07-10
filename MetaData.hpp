@@ -10,6 +10,23 @@
 #include "NameOf.hpp"
 #include <unordered_map>
 
+namespace Langulus::CT
+{
+
+	/// Check if T is disown-constructible													
+	template<class... T>
+	concept DisownMakable = (::std::constructible_from<Decay<T>, ::Langulus::Disowned<Decay<T>>&&> && ...);
+	template<class... T>
+	concept DisownMakableNoexcept = DisownMakable<T...> && (noexcept(T {Uneval<::Langulus::Disowned<Decay<T>>&&>()}) && ...);
+
+	/// Check if T is abandon-constructible												
+	template<class... T>
+	concept AbandonMakable = (::std::constructible_from<Decay<T>, ::Langulus::Abandoned<Decay<T>>&&> && ...);
+	template<class... T>
+	concept AbandonMakableNoexcept = AbandonMakable<T...> && (noexcept(T {Uneval<::Langulus::Abandoned<Decay<T>>&&>()}) && ...);
+
+}
+
 namespace Langulus::RTTI
 {
 
@@ -269,8 +286,12 @@ namespace Langulus::RTTI
 		FDefaultConstruct mDefaultConstructor;
 		// Copy constructor wrapped in a lambda upon reflection				
 		FCopyConstruct mCopyConstructor;
+		// Disowned constructor wrapped in a lambda upon reflection			
+		FCopyConstruct mDisownConstructor;
 		// Move constructor wrapped in a lambda upon reflection				
 		FMoveConstruct mMoveConstructor;
+		// Abandon constructor wrapped in a lambda upon reflection			
+		FMoveConstruct mAbandonConstructor;
 		// Destructor wrapped in a lambda upon reflection						
 		FDestroy mDestructor;
 		// Cloner wrapped in a lambda upon reflection (placement new)		
