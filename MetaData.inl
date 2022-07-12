@@ -105,26 +105,27 @@ namespace Langulus::RTTI
 	Ability Ability::From() noexcept {
 		static_assert(CT::DerivedFrom<VERB, ::Langulus::Flow::Verb>,
 			"VERB must inherit Flow::Verb");
+		static_assert(
+			VERB::template AvailableFor<T, A...>() || 
+			VERB::template AvailableFor<const T, A...>(),
+			"VERB is not available in reflected type, "
+			"neither in mutable, nor in immutable form");
 
 		Ability result;
 		result.mVerb = MetaVerb::Of<VERB>();
-		if constexpr (CT::Mutable<T> && VERB::template AvailableFor<T, A...>()) {
+		if constexpr (VERB::template AvailableFor<T, A...>()) {
 			result.mOverloadsMutable.insert({
 				{MetaData::Of<A>()...},
-				[](void* context, Flow::Verb& verb) {
-
-				}
+				VERB::template Of<T>()
 			});
 		}
-		else if constexpr (CT::Constant<T> && VERB::template AvailableFor<T, A...>()) {
+
+		if constexpr (VERB::template AvailableFor<const T, A...>()) {
 			result.mOverloadsConstant.insert({
 				{MetaData::Of<A>()...},
-				[](const void* context, Flow::Verb& verb) {
-
-				}
+				VERB::template Of<const T>()
 			});
 		}
-		else LANGULUS_ASSERT("VERB is not available for T (neither mutable, nor constant)");
 
 		return result;
 	}
@@ -550,6 +551,89 @@ namespace Langulus::RTTI
 		mMembers = {Forward<Member>(items)...};
 	}
 	
+	/// Get a reflected member by trait, type, and/or offset (inner)				
+	///	@param trait - filter by trait, or nullptr if trait is irrelevant		
+	///	@param type - filter by data type, or nullptr if irrelevant				
+	///	@param offset - considers only matches after that many matches			
+	///	@return the member interface if found, or nullptr if not					
+	inline const Member* MetaData::GetMemberInner(TMeta trait, DMeta type, Offset& offset) const noexcept {
+		// Search in all bases first													
+		for (auto& base : mBases) {
+			const auto found = base.mType->GetMemberInner(trait, type, offset);
+			if (found)
+				return found;
+		}
+
+		// Then locally																	
+		for (auto& member : mMembers) {
+			if (trait && !trait->Is(member.mTrait))
+				continue;
+			if (type && !type->Is(member.mType))
+				continue;
+
+			// Match found																	
+			if (0 == offset)
+				return &member;
+
+			// Offset not reached yet													
+			--offset;
+		}
+
+		// Nothing was found																
+		return nullptr;
+	}
+
+	/// Get member count by matching trait, type, and/or offset (inner)			
+	///	@param trait - filter by trait, or nullptr if trait is irrelevant		
+	///	@param type - filter by data type, or nullptr if irrelevant				
+	///	@param offset - considers only matches after that many matches			
+	///	@return the member interface if found, or nullptr if not					
+	inline Count MetaData::GetMemberCountInner(TMeta trait, DMeta type, Offset& offset) const noexcept {
+		Count result {};
+
+		// Search in all bases first													
+		for (auto& base : mBases)
+			result += base.mType->GetMemberCountInner(trait, type, offset);
+
+		// Then locally																	
+		for (auto& member : mMembers) {
+			if (trait && !trait->Is(member.mTrait))
+				continue;
+			if (type && !type->Is(member.mType))
+				continue;
+
+			// Match found																	
+			if (0 == offset) {
+				++result;
+				continue;
+			}
+
+			// Offset not reached yet													
+			--offset;
+		}
+
+		// Nothing was found																
+		return result;
+	}
+
+	/// Get a reflected member by trait, type, and/or offset							
+	///	@param trait - filter by trait, or nullptr if trait is irrelevant		
+	///	@param type - filter by data type, or nullptr if irrelevant				
+	///	@param offset - considers only matches after that many matches			
+	///	@return the member interface if found, or nullptr if not					
+	inline const Member* MetaData::GetMember(TMeta trait, DMeta type, Offset offset) const noexcept {
+		return GetMemberInner(trait, type, offset);
+	}
+
+	/// Count the number of matching reflected members									
+	///	@param trait - filter by trait, or nullptr if trait is irrelevant		
+	///	@param type - filter by data type, or nullptr if irrelevant				
+	///	@param offset - considers only matches after that many matches			
+	///	@return the number of matching members											
+	inline Count MetaData::GetMemberCount(TMeta trait, DMeta type, Offset offset) const noexcept {
+		return GetMemberCountInner(trait, type, offset);
+	}
+
 	/// Get the most concrete type															
 	///	@return the most concrete type													
 	inline DMeta MetaData::GetMostConcrete() const noexcept {

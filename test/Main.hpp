@@ -118,11 +118,15 @@ public:
 	bool anotherMember;
 
 	inline operator int() const noexcept {
-		return 0;
+		return member;
+	}
+
+	void Create(Flow::Verb& v) const {
+		//++member;
 	}
 
 	void Create(Flow::Verb& v) {
-		
+		++member;
 	}
 
 	LANGULUS(NAME) "MyType";

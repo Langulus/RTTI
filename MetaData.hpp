@@ -104,6 +104,7 @@ namespace Langulus::RTTI
 
 	/// A custom verb dispatcher, wrapped in a lambda expression					
 	/// Takes the pointer to the instance that will dispatch, and a verb			
+	/// There is a mutable and immutable version of this								
 	using FDispatchMutable = TFunctor<void(void*, Flow::Verb&)>;
 	using FDispatchConstant = TFunctor<void(const void*, Flow::Verb&)>;
 	using FVerbMutable = FDispatchMutable;
@@ -317,6 +318,9 @@ namespace Langulus::RTTI
 		template<CT::Fundamental T>
 		void ReflectFundamentalType() noexcept;
 
+		NOD() const Member* GetMemberInner(TMeta, DMeta, Offset&) const noexcept;
+		NOD() Count GetMemberCountInner(TMeta, DMeta, Offset&) const noexcept;
+
 	public:
 		template<CT::Void T>
 		NOD() static constexpr DMeta Of() requires CT::Decayed<T>;
@@ -324,18 +328,13 @@ namespace Langulus::RTTI
 		NOD() static DMeta Of() requires CT::Decayed<T>;
 
 		NOD() DMeta GetMostConcrete() const noexcept;
+		NOD() AllocationRequest RequestSize(const Size&) const noexcept;
 
+		//																						
+		//	Base management																
+		//																						
 		template<class T, CT::Dense... Args>
 		void SetBases(TTypeList<Args...>) noexcept;
-
-		template<class T, CT::Dense... Args>
-		void SetAbilities(TTypeList<Args...>) noexcept;
-
-		template<class T, CT::Dense... Args>
-		void SetConverters(TTypeList<Args...>) noexcept;
-
-		template<CT::Dense... Args>
-		void SetMembers(Args&&...) noexcept requires (... && CT::Same<Args, Member>);
 
 		NOD() bool GetBase(DMeta, Offset, Base&) const;
 		template<CT::Data T>
@@ -349,6 +348,21 @@ namespace Langulus::RTTI
 		template<CT::Data T>
 		NOD() bool HasDerivation() const;
 
+		//																						
+		//	Member management																
+		//																						
+		template<CT::Dense... Args>
+		void SetMembers(Args&&...) noexcept requires (... && CT::Same<Args, Member>);
+
+		NOD() const Member* GetMember(TMeta, DMeta = nullptr, Offset = 0) const noexcept;
+		NOD() Count GetMemberCount(TMeta, DMeta = nullptr, Offset = 0) const noexcept;
+
+		//																						
+		//	Ability management															
+		//																						
+		template<class T, CT::Dense... Args>
+		void SetAbilities(TTypeList<Args...>) noexcept;
+
 		NOD() bool IsAbleTo(VMeta) const;
 		template<CT::Data T>
 		NOD() bool IsAbleTo() const;
@@ -359,6 +373,12 @@ namespace Langulus::RTTI
 		NOD() auto GetAbility(DMeta) const;
 		template<bool MUTABLE, CT::Data V, CT::Data... A>
 		NOD() auto GetAbility() const;
+
+		//																						
+		//	Morphisms and comparison													
+		//																						
+		template<class T, CT::Dense... Args>
+		void SetConverters(TTypeList<Args...>) noexcept;
 
 		template<bool ADVANCED = false>
 		NOD() bool CastsTo(DMeta) const;
@@ -382,8 +402,6 @@ namespace Langulus::RTTI
 		NOD() constexpr bool Is() const;
 
 		constexpr bool operator == (const MetaData&) const noexcept;
-
-		AllocationRequest RequestSize(const Size&) const noexcept;
 	};
 
 

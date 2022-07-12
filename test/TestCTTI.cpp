@@ -208,6 +208,10 @@ TEMPLATE_TEST_CASE("Real number RTTI interpretation", "[metadata]", float, doubl
 SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
 	GIVEN("ImplicitlyReflectedDataWithTraits") {
 		WHEN("Reflected") {
+			ImplicitlyReflectedDataWithTraits instance;
+			ImplicitlyReflectedData* ptrtobase = &static_cast<ImplicitlyReflectedData&>(instance);
+			const auto baseoffset = reinterpret_cast<char*>(ptrtobase) - reinterpret_cast<char*>(&instance);
+
 			auto meta = MetaData::Of<ImplicitlyReflectedDataWithTraits>();
 			REQUIRE(meta != nullptr);
 
@@ -227,6 +231,21 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
 				REQUIRE(meta->mIsAbstract == true);
 				REQUIRE(meta->mSize == 0);
 				REQUIRE(meta->mAlignment == alignof(ImplicitlyReflectedDataWithTraits));
+
+				REQUIRE(meta->mBases.size() == 1);
+				REQUIRE(meta->mBases[0].mType->Is<ImplicitlyReflectedData>());
+				REQUIRE(meta->mBases[0].mImposed == false);
+				REQUIRE(meta->mBases[0].mBinaryCompatible == false);
+				REQUIRE(meta->mBases[0].mCount == 1);
+				REQUIRE(meta->mBases[0].mOffset == baseoffset);
+
+				REQUIRE(meta->mAbilities.size() == 1);
+				REQUIRE(meta->mAbilities.begin()->first->Is<Verbs::Create>());
+				REQUIRE(meta->mAbilities.begin()->second.mVerb->Is<Verbs::Create>());
+				REQUIRE(meta->mAbilities.begin()->second.mOverloadsConstant.size() == 1);
+				REQUIRE(meta->mAbilities.begin()->second.mOverloadsConstant.contains(Ability::Signature {}));
+				REQUIRE(meta->mAbilities.begin()->second.mOverloadsMutable.size() == 1);
+				REQUIRE(meta->mAbilities.begin()->second.mOverloadsMutable.contains(Ability::Signature {}));
 			}
 		}
 	}
