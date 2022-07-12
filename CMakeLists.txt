@@ -20,7 +20,8 @@ endif()
 
 # Build and install RTTI library
 if(LANGULUS_FEATURE_MANAGED_REFLECTION)
-    add_definitions(-DLANGULUS_ENABLE_MANAGED_REFLECTION)
+    add_definitions(-DLANGULUS_ENABLE_FEATURE_MANAGED_REFLECTION)
+	
     add_library(Langulus.RTTI RTTI.cpp)
     target_include_directories(Langulus.RTTI PUBLIC include)
     target_link_libraries(Langulus.RTTI PUBLIC Langulus.Logger)
