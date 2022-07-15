@@ -74,20 +74,14 @@ namespace Langulus::CT
 
 	/// Checks if a verb is defaultable in a mutable context							
 	template<class T>
-	concept DefaultableVerbMutable = requires {{
-		T::ExecuteDefault(
-			Uneval<::Langulus::Anyness::Block&>(), 
-			Uneval<::Langulus::Flow::Verb&>()
-		)} -> CT::Same<bool>;
+	concept DefaultableVerbMutable = requires {
+		RTTI::FDefaultVerbMutable {&T::ExecuteDefault};
 	};
 
 	/// Checks if a verb is defaultable in an immutable context						
 	template<class T>
-	concept DefaultableVerbConstant = requires {{
-		T::ExecuteDefault(
-			Uneval<const ::Langulus::Anyness::Block&>(), 
-			Uneval<::Langulus::Flow::Verb&>()
-		)} -> CT::Same<bool>;
+	concept DefaultableVerbConstant = requires {
+		RTTI::FDefaultVerbConstant {&T::ExecuteDefault};
 	};
 
 	/// Checks if a verb is executable as stateless										
