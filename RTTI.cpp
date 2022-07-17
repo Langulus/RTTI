@@ -7,6 +7,7 @@
 ///																									
 #include "Reflection.hpp"
 #include "RTTI.hpp"
+#include <algorithm>
 
 namespace Langulus::RTTI
 {
@@ -49,11 +50,23 @@ namespace Langulus::RTTI
 			delete pair.second;
 	}
 
+	/// Convert a token to a lowercase string												
+	///	@param token - the token to lowercase											
+	///	@return the lowercase string														
+	typename Interface::Lowercase Interface::ToLowercase(const Token& token) noexcept {
+		Lowercase lc {token};
+		::std::transform(lc.begin(), lc.end(), lc.begin(),
+			[](unsigned char c) { return ::std::tolower(c); }
+		);
+		return Move(lc);
+	}
+
 	/// Get an existing meta data definition by its token								
 	///	@param token - the token of the data definition								
 	///	@return the definition, or nullptr if not found								
 	DMeta Interface::GetMetaData(const Token& token) const noexcept {
-		const auto found = mMetaData.find(token);
+		const auto lc = ToLowercase(token);
+		const auto found = mMetaData.find(lc);
 		if (found == mMetaData.end())
 			return nullptr;
 		return found->second;
@@ -63,7 +76,8 @@ namespace Langulus::RTTI
 	///	@param token - the token of the trait definition							
 	///	@return the definition, or nullptr if not found								
 	TMeta Interface::GetMetaTrait(const Token& token) const noexcept {
-		const auto found = mMetaTraits.find(token);
+		const auto lc = ToLowercase(token);
+		const auto found = mMetaTraits.find(lc);
 		if (found == mMetaTraits.end())
 			return nullptr;
 		return found->second;
@@ -74,11 +88,12 @@ namespace Langulus::RTTI
 	///						you can search by positive, as well as negative token	
 	///	@return the definition, or nullptr if not found								
 	VMeta Interface::GetMetaVerb(const Token& token) const noexcept {
-		auto found = mMetaVerbs.find(token);
+		const auto lc = ToLowercase(token);
+		auto found = mMetaVerbs.find(lc);
 		if (found != mMetaVerbs.end())
 			return found->second;
 
-		found = mMetaVerbsAlt.find(token);
+		found = mMetaVerbsAlt.find(lc);
 		if (found != mMetaVerbsAlt.end())
 			return found->second;
 
@@ -91,7 +106,8 @@ namespace Langulus::RTTI
 	///			  a pointer to the already registered definition, if same		
 	///			  or nullptr if a conflict or out-of-memory occured				
 	DMeta Interface::RegisterData(const Token& token) noexcept {
-		const auto found = GetMetaData(token);
+		auto lc = ToLowercase(token);
+		const auto found = GetMetaData(lc);
 		if (found) {
 			// Conflicting type 															
 			return nullptr;
@@ -99,7 +115,7 @@ namespace Langulus::RTTI
 
 		// If reached, then not found, so emplace a new definition			
 		const auto newDefinition = new MetaData {};
-		mMetaData.insert({token, newDefinition});
+		mMetaData.insert({::std::move(lc), newDefinition});
 		return newDefinition;
 	}
 
@@ -109,7 +125,8 @@ namespace Langulus::RTTI
 	///			  a pointer to the already registered definition, if same		
 	///			  or nullptr if a conflict or out-of-memory occured				
 	TMeta Interface::RegisterTrait(const Token& token) noexcept {
-		const auto found = GetMetaTrait(token);
+		auto lc = ToLowercase(token);
+		const auto found = GetMetaTrait(lc);
 		if (found) {
 			// Conflicting type 															
 			return nullptr;
@@ -117,7 +134,7 @@ namespace Langulus::RTTI
 
 		// If reached, then not found, so emplace a new definition			
 		const auto newDefinition = new MetaTrait {};
-		mMetaTraits.insert({token, newDefinition});
+		mMetaTraits.insert({::std::move(lc), newDefinition});
 		return newDefinition;
 	}
 
@@ -127,50 +144,56 @@ namespace Langulus::RTTI
 	///			  a pointer to the already registered definition, if same		
 	///			  or nullptr if a conflict or out-of-memory occured				
 	VMeta Interface::RegisterVerb(const Token& token, const Token& tokenReverse) noexcept {
-		const auto found = GetMetaVerb(token);
+		auto lc1 = ToLowercase(token);
+		const auto found = GetMetaVerb(lc1);
 		if (found) {
 			// Conflicting type 															
 			return nullptr;
 		}
 
 		// If reached, then not found, so emplace a new definition			
+		auto lc2 = ToLowercase(tokenReverse);
 		const auto newDefinition = new MetaVerb {};
-		mMetaVerbs.insert({token, newDefinition});
-		mMetaVerbsAlt.insert({tokenReverse, newDefinition});
+		mMetaVerbs.insert({::std::move(lc1), newDefinition});
+		mMetaVerbsAlt.insert({::std::move(lc2), newDefinition});
 		return newDefinition;
 	}
 
 	/// Unregister a data definition															
 	///	@param definition - the definition to remove									
 	void Interface::Unregister(DMeta definition) noexcept {
-		const auto found = GetMetaData(definition->mToken);
+		const auto lc = ToLowercase(definition->mToken);
+		const auto found = GetMetaData(lc);
 		if (!found)
 			return;
 
-		mMetaData.erase(definition->mToken);
+		mMetaData.erase(lc);
 		delete found;
 	}
 
 	/// Unregister a trait definition														
 	///	@param definition - the definition to remove									
 	void Interface::Unregister(TMeta definition) noexcept {
-		const auto found = GetMetaTrait(definition->mToken);
+		const auto lc = ToLowercase(definition->mToken);
+		const auto found = GetMetaTrait(lc);
 		if (!found)
 			return;
 
-		mMetaTraits.erase(definition->mToken);
+		mMetaTraits.erase(lc);
 		delete found;
 	}
 
 	/// Unregister a verb definition															
 	///	@param definition - the definition to remove									
 	void Interface::Unregister(VMeta definition) noexcept {
-		const auto found = GetMetaVerb(definition->mToken);
+		const auto lc1 = ToLowercase(definition->mToken);
+		const auto found = GetMetaVerb(lc1);
 		if (!found)
 			return;
 
-		mMetaVerbs.erase(definition->mToken);
-		mMetaVerbsAlt.erase(definition->mTokenReverse);
+		const auto lc2 = ToLowercase(definition->mTokenReverse);
+		mMetaVerbs.erase(lc1);
+		mMetaVerbsAlt.erase(lc2);
 		delete found;
 	}
 

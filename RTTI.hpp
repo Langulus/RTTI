@@ -28,16 +28,19 @@ namespace Langulus::RTTI
 	class Interface {
 	friend class Inner::InterfaceInitializer;
 	private:
+		using Lowercase = ::std::string;
+		static Lowercase ToLowercase(const Token&) noexcept;
+
 		Interface();
 		~Interface();
 
 		// Database for meta data definitions										
-		::std::unordered_map<Token, DMeta> mMetaData;
+		::std::unordered_map<Lowercase, DMeta> mMetaData;
 		// Database for meta trait definitions										
-		::std::unordered_map<Token, TMeta> mMetaTraits;
+		::std::unordered_map<Lowercase, TMeta> mMetaTraits;
 		// Database for meta verb definitions										
-		::std::unordered_map<Token, VMeta> mMetaVerbs;
-		::std::unordered_map<Token, VMeta> mMetaVerbsAlt;
+		::std::unordered_map<Lowercase, VMeta> mMetaVerbs;
+		::std::unordered_map<Lowercase, VMeta> mMetaVerbsAlt;
 
 	public:
 		NOD() DMeta GetMetaData(const Token&) const noexcept;
