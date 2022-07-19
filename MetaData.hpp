@@ -238,6 +238,8 @@ namespace Langulus::RTTI
 	///	Meta data																				
 	///																								
 	struct MetaData : public Meta {
+		LANGULUS_BASES(Meta);
+
 		enum Distance : int {
 			Infinite = ::std::numeric_limits<int>::max()
 		};

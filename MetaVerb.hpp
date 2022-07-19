@@ -23,6 +23,8 @@ namespace Langulus::RTTI
 	///	Meta verb																				
 	///																								
 	struct MetaVerb : public Meta {
+		LANGULUS_BASES(Meta);
+
 		static constexpr Token DefaultToken = "NoVerb";
 
 		// Verbs have antonyms, denoted via this 'negative' token			

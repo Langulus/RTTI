@@ -15,6 +15,8 @@ namespace Langulus::RTTI
 	///	Meta trait																				
 	///																								
 	struct MetaTrait : public Meta {
+		LANGULUS_BASES(Meta);
+
 		static constexpr Token DefaultToken = "NoTrait";
 
 		// Data filter for the trait (optional)									
