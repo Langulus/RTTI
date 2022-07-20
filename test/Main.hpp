@@ -37,12 +37,21 @@ using uint = unsigned int;
 template<class T>
 using some = std::vector<T>;
 
+enum class Pi {
+	Number = 314
+};
+
 namespace One::Two::Three
 {
 	struct TypeDeepIntoNamespaces;
 
 	template<class T>
-	struct TemplatedTypeDeepIntoNamespaces;
+	struct TemplatedTypeDeepIntoNamespaces {
+		enum VeryDeeplyTemplatedEnum { YesYouGotThatRight };
+
+		template<class MORE>
+		struct Nested;
+	};
 
 	template<class T>
 	struct VeryComplexTemplate;

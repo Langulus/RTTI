@@ -1,4 +1,5 @@
 project(Langulus_Test_RTTI)
+add_definitions(-DLANGULUS_ENABLE_SAFE_MODE)
 
 # Configure Catch2 library
 message(STATUS "Configuring external project: Catch2...")

@@ -23,6 +23,16 @@ SCENARIO("NameOf", "[nameof]") {
 		}
 	}
 
+	GIVEN("The enum Pi") {
+		WHEN("Taken the name of") {
+			auto name = NameOf<Pi::Number>();
+
+			THEN("Name should be correct") {
+				REQUIRE(name == "Pi::Number");
+			}
+		}
+	}
+
 	GIVEN("Type One::Two::Three::TypeDeepIntoNamespaces") {
 		WHEN("Taken the name of") {
 			auto name = NameOf<One::Two::Three::TypeDeepIntoNamespaces>();
@@ -53,15 +63,40 @@ SCENARIO("NameOf", "[nameof]") {
 		}
 	}
 
-	GIVEN("Type One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>") {
+	GIVEN("Enum One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>::VeryDeeplyTemplatedEnum::YesYouGotThatRight") {
 		WHEN("Taken the name of") {
-			auto name = NameOf<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>>();
+			auto name = NameOf<One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>::VeryDeeplyTemplatedEnum::YesYouGotThatRight>();
 
 			THEN("Name should be correct") {
-				REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>");
+				REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>::VeryDeeplyTemplatedEnum::YesYouGotThatRight");
 			}
 		}
 	}
+
+	
+	/*The following cases are, unfortunately, known not to work, and warnings are emitted
+	in such cases. These are the limitations of NameOf, sorry. If someone knows how to
+	improve these use cases, please inform me!*/
+
+	/*GIVEN("Enum One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>::VeryDeeplyTemplatedEnum::YesYouGotThatRight") {
+		WHEN("Taken the name of") {
+			auto name = NameOf<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>::VeryDeeplyTemplatedEnum::YesYouGotThatRight>();
+
+			THEN("Name should be correct") {
+				REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>::VeryDeeplyTemplatedEnum::YesYouGotThatRight");
+			}
+		}
+	}
+
+	GIVEN("Type One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>::Nested<uint16_t>") {
+		WHEN("Taken the name of") {
+			auto name = NameOf<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>::Nested<uint16_t>>();
+
+			THEN("Name should be correct") {
+				REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>::Nested<uint16>");
+			}
+		}
+	}*/
 
 	GIVEN("Type TemplatedAlias") {
 		WHEN("Taken the name of") {
