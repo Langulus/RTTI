@@ -270,6 +270,15 @@ namespace Langulus::RTTI
 
 } // namespace Langulus::RTTI
 
+
+namespace Langulus::CT
+{
+	/// Concept for meta definitions															
+	template<class... T>
+	concept Meta = ((Same<T, ::Langulus::RTTI::Meta> || DerivedFrom<T, ::Langulus::RTTI::Meta>) && ...);
+}
+
+
 namespace std
 {
 	using ::Langulus::RTTI::DMeta;

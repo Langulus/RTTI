@@ -326,14 +326,14 @@ namespace Langulus::RTTI
 			generated.mIsUninsertable = CT::Uninsertable<T>;
 			
 			// Wrap the default constructor of the type inside a lambda		
-			if constexpr (CT::Defaultable<T>) {
+			if constexpr (CT::Defaultable<T> && !CT::Meta<T>) {
 				generated.mDefaultConstructor = [](void* at) {
 					new (at) T {};
 				};
 			}
 
 			// Wrap the copy constructor of the type inside a lambda			
-			if constexpr (CT::CopyMakable<T>) {
+			if constexpr (CT::CopyMakable<T> && !CT::Meta<T>) {
 				generated.mCopyConstructor = [](void* at, const void* from) {
 					auto fromInstance = static_cast<const T*>(from);
 					new (at) T {*fromInstance};
@@ -341,7 +341,7 @@ namespace Langulus::RTTI
 			}
 
 			// Wrap the disown constructor of the type inside a lambda		
-			if constexpr (CT::DisownMakable<T>) {
+			if constexpr (CT::DisownMakable<T> && !CT::Meta<T>) {
 				generated.mDisownConstructor = [](void* at, const void* from) {
 					auto fromInstance = static_cast<const T*>(from);
 					new (at) T {Disown(*fromInstance)};
@@ -349,7 +349,7 @@ namespace Langulus::RTTI
 			}
 
 			// Wrap the move constructor of the type inside a lambda			
-			if constexpr (CT::MoveMakable<T>) {
+			if constexpr (CT::MoveMakable<T> && !CT::Meta<T>) {
 				generated.mMoveConstructor = [](void* at, void* from) {
 					auto fromInstance = static_cast<T*>(from);
 					new (at) T {Forward<T>(*fromInstance)};
@@ -357,7 +357,7 @@ namespace Langulus::RTTI
 			}
 
 			// Wrap the abandon constructor of the type inside a lambda		
-			if constexpr (CT::AbandonMakable<T>) {
+			if constexpr (CT::AbandonMakable<T> && !CT::Meta<T>) {
 				generated.mAbandonConstructor = [](void* at, void* from) {
 					auto fromInstance = static_cast<T*>(from);
 					new (at) T {Abandon(*fromInstance)};
@@ -365,7 +365,7 @@ namespace Langulus::RTTI
 			}
 
 			// Wrap the destructor of the type inside a lambda					
-			if constexpr (CT::Destroyable<T>) {
+			if constexpr (CT::Destroyable<T> && !CT::Meta<T>) {
 				generated.mDestructor = [](void* at) {
 					auto instance = static_cast<T*>(at);
 					instance->~T();
@@ -373,14 +373,14 @@ namespace Langulus::RTTI
 			}
 
 			// Wrap the cloners of the type inside a lambda						
-			if constexpr (CT::CloneMakable<T>) {
+			if constexpr (CT::CloneMakable<T> && !CT::Meta<T>) {
 				generated.mCloneInUninitilizedMemory = [](const void* from, void* to) {
 					auto fromInstance = static_cast<const T*>(from);
 					new (to) T {fromInstance->Clone()};
 				};
 			}
 
-			if constexpr (CT::CloneCopyable<T>) {
+			if constexpr (CT::CloneCopyable<T> && !CT::Meta<T>) {
 				generated.mCloneInInitializedMemory = [](const void* from, void* to) {
 					auto toInstance = static_cast<T*>(to);
 					auto fromInstance = static_cast<const T*>(from);
@@ -398,7 +398,7 @@ namespace Langulus::RTTI
 			}
 
 			// Wrap the copy operator of the type inside a lambda				
-			if constexpr (CT::Copyable<T>) {
+			if constexpr (CT::Copyable<T> && !CT::Meta<T>) {
 				generated.mCopier = [](const void* from, void* to) {
 					auto toInstance = static_cast<T*>(to);
 					auto fromInstance = static_cast<const T*>(from);
@@ -407,7 +407,7 @@ namespace Langulus::RTTI
 			}
 
 			// Wrap the move operator of the type inside a lambda				
-			if constexpr (CT::Movable<T>) {
+			if constexpr (CT::Movable<T> && !CT::Meta<T>) {
 				generated.mMover = [](void* from, void* to) {
 					auto toInstance = static_cast<T*>(to);
 					auto fromInstance = static_cast<T*>(from);

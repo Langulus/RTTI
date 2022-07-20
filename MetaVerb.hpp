@@ -23,6 +23,7 @@ namespace Langulus::RTTI
 	///	Meta verb																				
 	///																								
 	struct MetaVerb : public Meta {
+		LANGULUS(NAME) "VMeta";
 		LANGULUS_BASES(Meta);
 
 		static constexpr Token DefaultToken = "NoVerb";

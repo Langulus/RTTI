@@ -238,6 +238,7 @@ namespace Langulus::RTTI
 	///	Meta data																				
 	///																								
 	struct MetaData : public Meta {
+		LANGULUS(NAME) "DMeta";
 		LANGULUS_BASES(Meta);
 
 		enum Distance : int {
