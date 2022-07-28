@@ -12,6 +12,7 @@ download_project(
 add_subdirectory(${Catch2_SOURCE_DIR} ${Catch2_BINARY_DIR})
 
 if(LANGULUS_FEATURE_MANAGED_REFLECTION)
+    add_definitions(-DLANGULUS_ENABLE_FEATURE_MANAGED_REFLECTION)
 	add_executable(Test.RTTI Main.cpp TestCTTI.cpp TestRTTI.cpp)
 else()
 	add_executable(Test.RTTI Main.cpp TestCTTI.cpp)

@@ -61,6 +61,17 @@ namespace Langulus::RTTI
 		return Move(lc);
 	}
 
+	/// Get the last, most relevant part of a token that my or may not have		
+	/// namespaces in it. Essentially finds last "::" and skip forward to that	
+	///	@param token - the token to scan													
+	///	@return the last token																
+	Token Interface::ToLastToken(const Token& token) noexcept {
+		const auto found = token.find_last_of(':', token.size());
+		if (found != token.npos)
+			return token.substr(found + 1, token.size() - found - 1);
+		return token;
+	}
+
 	/// Get an existing meta data definition by its token								
 	///	@param token - the token of the data definition								
 	///	@return the definition, or nullptr if not found								
@@ -100,6 +111,44 @@ namespace Langulus::RTTI
 		return nullptr;
 	}
 
+	/// Get a list of all the interpretations for a single simple token			
+	///	@param token - the token to search for											
+	///	@return the list of associated meta definitions								
+	const typename Interface::MetaList& Interface::GetAmbiguousMeta(const Token& token) const noexcept {
+		const auto lc = ToLowercase(ToLastToken(token));
+		const auto found = mMetaAmbiguous.find(lc);
+		if (found == mMetaAmbiguous.end()) {
+			static Interface::MetaList fallback {};
+			return fallback;
+		}
+		return found->second;
+	}
+
+	/// Register most relevant token to the ambiguous token map						
+	///	@param token - the token to register											
+	///	@param meta - the definition to add												
+	void Interface::RegisterAmbiguous(const Token& token, const Meta* meta) noexcept {
+		auto ambiguous = ToLowercase(ToLastToken(token));
+		const auto foundAmbiguous = mMetaAmbiguous.find(ambiguous);
+		if (foundAmbiguous == mMetaAmbiguous.end())
+			mMetaAmbiguous.insert({::std::move(ambiguous), {meta}});
+		else
+			foundAmbiguous->second.insert(meta);
+	}
+
+	/// Unregister most relevant token from the ambiguous token map				
+	///	@param token - the token to register											
+	///	@param meta - the definition to remove											
+	void Interface::UnregisterAmbiguous(const Token& token, const Meta* meta) noexcept {
+		auto ambiguous = ToLowercase(ToLastToken(token));
+		const auto foundAmbiguous = mMetaAmbiguous.find(ambiguous);
+		if (foundAmbiguous != mMetaAmbiguous.end()) {
+			foundAmbiguous->second.erase(meta);
+			if (foundAmbiguous->second.empty())
+				mMetaAmbiguous.erase(foundAmbiguous);
+		}
+	}
+
 	/// Register a data definition															
 	///	@param definition - the definition to register								
 	///	@return the newly defined meta data, if not defined yet, or				
@@ -113,9 +162,13 @@ namespace Langulus::RTTI
 			return nullptr;
 		}
 
-		// If reached, then not found, so emplace a new definition			
+		// If reached, then not found, so insert a new definition			
 		const auto newDefinition = new MetaData {};
 		mMetaData.insert({::std::move(lc), newDefinition});
+
+		// Insert the last token to the ambiguity map							
+		RegisterAmbiguous(token, newDefinition);
+
 		return newDefinition;
 	}
 
@@ -135,6 +188,10 @@ namespace Langulus::RTTI
 		// If reached, then not found, so emplace a new definition			
 		const auto newDefinition = new MetaTrait {};
 		mMetaTraits.insert({::std::move(lc), newDefinition});
+
+		// Insert the last token to the ambiguity map							
+		RegisterAmbiguous(token, newDefinition);
+
 		return newDefinition;
 	}
 
@@ -156,6 +213,10 @@ namespace Langulus::RTTI
 		const auto newDefinition = new MetaVerb {};
 		mMetaVerbs.insert({::std::move(lc1), newDefinition});
 		mMetaVerbsAlt.insert({::std::move(lc2), newDefinition});
+
+		RegisterAmbiguous(token, newDefinition);
+		RegisterAmbiguous(tokenReverse, newDefinition);
+
 		return newDefinition;
 	}
 
@@ -168,6 +229,7 @@ namespace Langulus::RTTI
 			return;
 
 		mMetaData.erase(lc);
+		UnregisterAmbiguous(definition->mToken, definition);
 		delete found;
 	}
 
@@ -180,6 +242,7 @@ namespace Langulus::RTTI
 			return;
 
 		mMetaTraits.erase(lc);
+		UnregisterAmbiguous(definition->mToken, definition);
 		delete found;
 	}
 
@@ -194,6 +257,8 @@ namespace Langulus::RTTI
 		const auto lc2 = ToLowercase(definition->mTokenReverse);
 		mMetaVerbs.erase(lc1);
 		mMetaVerbsAlt.erase(lc2);
+		UnregisterAmbiguous(definition->mToken, definition);
+		UnregisterAmbiguous(definition->mTokenReverse, definition);
 		delete found;
 	}
 
