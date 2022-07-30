@@ -46,8 +46,8 @@ namespace Langulus::RTTI
 			delete pair.second;
 		for (auto& pair : mMetaTraits)
 			delete pair.second;
-		for (auto& pair : mMetaVerbs)
-			delete pair.second;
+		for (auto v : mUniqueVerbs)
+			delete v;
 	}
 
 	/// Convert a token to a lowercase string												
@@ -70,6 +70,23 @@ namespace Langulus::RTTI
 		if (found != token.npos)
 			return token.substr(found + 1, token.size() - found - 1);
 		return token;
+	}
+
+	/// Isolate and lowercase an operator token											
+	///	@param token - the operator														
+	///	@return the lowercased and isolated operator token							
+	typename Interface::Lowercase Interface::IsolateOperator(const Token& token) noexcept {
+		// Skip skippable at the front and the back of token					
+		auto l = token.data();
+		auto r = token.data() + token.size();
+		while (l < r && *l <= 32)
+			++l;
+
+		while (r > l && *(r-1) <= 32)
+			--r;
+
+		// Lowercase the isolated token												
+		return ToLowercase(token.substr(l - token.data(), r - l));
 	}
 
 	/// Get an existing meta data definition by its token								
@@ -100,14 +117,21 @@ namespace Langulus::RTTI
 	///	@return the definition, or nullptr if not found								
 	VMeta Interface::GetMetaVerb(const Token& token) const noexcept {
 		const auto lc = ToLowercase(token);
-		auto found = mMetaVerbs.find(lc);
+		const auto found = mMetaVerbs.find(lc);
 		if (found != mMetaVerbs.end())
 			return found->second;
+		return nullptr;
+	}
 
-		found = mMetaVerbsAlt.find(lc);
-		if (found != mMetaVerbsAlt.end())
+	/// Get an existing meta verb definition by its operator token					
+	///	@param token - the operator of the verb definition							
+	///						you can search by positive, as well as negative			
+	///	@return the definition, or nullptr if not found								
+	VMeta Interface::GetOperator(const Token& token) const noexcept {
+		const auto lc = IsolateOperator(token);
+		const auto found = mOperators.find(lc);
+		if (found != mOperators.end())
 			return found->second;
-
 		return nullptr;
 	}
 
@@ -150,10 +174,9 @@ namespace Langulus::RTTI
 	}
 
 	/// Register a data definition															
-	///	@param definition - the definition to register								
-	///	@return the newly defined meta data, if not defined yet, or				
-	///			  a pointer to the already registered definition, if same		
-	///			  or nullptr if a conflict or out-of-memory occured				
+	///	@param token - the data token to reserve										
+	///	@return the newly defined meta data, or nullptr if a conflict or		
+	///			  out-of-memory occured														
 	DMeta Interface::RegisterData(const Token& token) noexcept {
 		auto lc = ToLowercase(token);
 		const auto found = GetMetaData(lc);
@@ -173,10 +196,9 @@ namespace Langulus::RTTI
 	}
 
 	/// Register a trait definition															
-	///	@param definition - the definition to register								
-	///	@return the newly defined meta trait, if not defined yet, or			
-	///			  a pointer to the already registered definition, if same		
-	///			  or nullptr if a conflict or out-of-memory occured				
+	///	@param token - the trait token to reserve										
+	///	@return the newly defined meta trait, or nullptr if a conflict or		
+	///			  out-of-memory occured														
 	TMeta Interface::RegisterTrait(const Token& token) noexcept {
 		auto lc = ToLowercase(token);
 		const auto found = GetMetaTrait(lc);
@@ -196,23 +218,50 @@ namespace Langulus::RTTI
 	}
 
 	/// Register a verb definition															
-	///	@param definition - the definition to register								
-	///	@return the newly defined meta verb, if not defined yet, or				
-	///			  a pointer to the already registered definition, if same		
-	///			  or nullptr if a conflict or out-of-memory occured				
-	VMeta Interface::RegisterVerb(const Token& token, const Token& tokenReverse) noexcept {
+	///	@param token - the positive verb token to reserve							
+	///	@param tokenReverse - the negative verb token to reserve					
+	///	@param op - the positive verb operator to reserve (optional)			
+	///	@param opReverse - the negative verb operator to reserve (optional)	
+	///	@return the newly defined meta verb, or nullptr if a conflict or		
+	///			  out-of-memory occured														
+	VMeta Interface::RegisterVerb(const Token& token, const Token& tokenReverse, const Token& op, const Token& opReverse) noexcept {
 		auto lc1 = ToLowercase(token);
-		const auto found = GetMetaVerb(lc1);
-		if (found) {
-			// Conflicting type 															
+		auto found = GetMetaVerb(lc1);
+		if (found)
 			return nullptr;
+
+		auto lc2 = ToLowercase(tokenReverse);
+		found = GetMetaVerb(lc2);
+		if (found)
+			return nullptr;
+
+		Lowercase op1;
+		if (!op.empty()) {
+			op1 = IsolateOperator(op);
+			const auto found1 = GetOperator(op1);
+			if (found1)
+				return nullptr;
 		}
 
-		// If reached, then not found, so emplace a new definition			
-		auto lc2 = ToLowercase(tokenReverse);
+		Lowercase op2;
+		if (!opReverse.empty()) {
+			op2 = IsolateOperator(opReverse);
+			const auto found1 = GetOperator(op2);
+			if (found1)
+				return nullptr;
+		}
+
 		const auto newDefinition = new MetaVerb {};
+		mUniqueVerbs.insert(newDefinition);
+
 		mMetaVerbs.insert({::std::move(lc1), newDefinition});
-		mMetaVerbsAlt.insert({::std::move(lc2), newDefinition});
+		if (lc1 != lc2)
+			mMetaVerbs.insert({::std::move(lc2), newDefinition});
+
+		if (!op1.empty())
+			mOperators.insert({::std::move(op1), newDefinition});
+		if (!op2.empty() && op1 != op2)
+			mOperators.insert({::std::move(op2), newDefinition});
 
 		RegisterAmbiguous(token, newDefinition);
 		RegisterAmbiguous(tokenReverse, newDefinition);
@@ -256,9 +305,17 @@ namespace Langulus::RTTI
 
 		const auto lc2 = ToLowercase(definition->mTokenReverse);
 		mMetaVerbs.erase(lc1);
-		mMetaVerbsAlt.erase(lc2);
+		mMetaVerbs.erase(lc2);
+
+		const auto op1 = IsolateOperator(definition->mOperator);
+		const auto op2 = IsolateOperator(definition->mOperatorReverse);
+		mOperators.erase(op1);
+		mOperators.erase(op2);
+
 		UnregisterAmbiguous(definition->mToken, definition);
 		UnregisterAmbiguous(definition->mTokenReverse, definition);
+
+		mUniqueVerbs.erase(found);
 		delete found;
 	}
 

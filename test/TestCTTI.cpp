@@ -328,8 +328,8 @@ SCENARIO("A reflected verb with CTTI traits", "[metaverb]") {
 				REQUIRE(meta->mInfo.starts_with("Used for allocating new elements. "));
 				REQUIRE(meta->mVersionMajor == 1);
 				REQUIRE(meta->mVersionMinor == 0);
-				REQUIRE(meta->mOperator == "");
-				REQUIRE(meta->mOperatorReverse == "");
+				REQUIRE(meta->mOperator == " + ");
+				REQUIRE(meta->mOperatorReverse == " - ");
 				REQUIRE(meta->mDefaultInvocationMutable);
 				REQUIRE(meta->mDefaultInvocationMutable(someBlock, someVerb) == false);
 				REQUIRE(meta->mDefaultInvocationConstant);

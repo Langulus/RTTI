@@ -59,6 +59,28 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
 	}
 }
 
+SCENARIO("Testing operators", "[operators]") {
+	GIVEN("Reflected verb with positive and negative operator") {
+		const auto n1t = MetaData::Of<N1::Type>();
+		const auto n1c = MetaData::Of<N1::Create>();
+		const auto n2t = MetaData::Of<N2::Type>();
+		const auto n3t = MetaData::Of<N3::type>();
+		const auto vvv = MetaVerb::Of<Verbs::Create>();
+
+		WHEN("Meta is retrieved by operator token, that is not case-sensitive and ignores spaces/tabs/escapes") {
+			REQUIRE(vvv == RTTI::Database.GetOperator("+"));
+			REQUIRE(vvv == RTTI::Database.GetOperator("-"));
+			REQUIRE(vvv == RTTI::Database.GetOperator("      +"));
+			REQUIRE(vvv == RTTI::Database.GetOperator("  -"));
+			REQUIRE(vvv == RTTI::Database.GetOperator("      +     "));
+			REQUIRE(vvv == RTTI::Database.GetOperator("  - "));
+			REQUIRE(vvv == RTTI::Database.GetOperator("\t\t + \n   \t\t "));
+			REQUIRE(vvv == RTTI::Database.GetOperator("\t\t  - \n\t\t"));
+			REQUIRE(nullptr == RTTI::Database.GetOperator("="));
+		}
+	}
+}
+
 SCENARIO("Modifying a data type at runtime", "[metadata]") {
 	GIVEN("TODO") {
 		WHEN("TODO") {

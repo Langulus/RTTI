@@ -36,15 +36,25 @@
 #define LANGULUS_NEGATIVE_VERB() \
 	public: static constexpr ::Langulus::Token CTTI_NegativeVerb = 
 
+/// You can provide a custom operator for your verb									
+/// This is purely for syntax sugar															
+/// This is used when both positive and negative operators are the same			
+/// If you want them to be different, use POSITIVE and NEGATIVE names			
+/// explicitly instead																			
+#define LANGULUS_OPERATOR() \
+	public: static constexpr ::Langulus::Token CTTI_Operator = 
+
 /// You can provide a custom positive operator for your verb						
 /// This is purely for syntax sugar															
 /// If positive operator is specified, you need to also specify the negative	
+/// If both negative and positive verbs are same, just use LANGULUS_OPERATOR()
 #define LANGULUS_POSITIVE_OPERATOR() \
 	public: static constexpr ::Langulus::Token CTTI_PositiveOperator = 
 
 /// You can provide a custom negative operator for your verb						
 /// This is purely for syntax sugar															
 /// If negative operator is specified, you need to also specify the positive	
+/// If both negative and positive verbs are same, just use LANGULUS_OPERATOR()
 #define LANGULUS_NEGATIVE_OPERATOR() \
 	public: static constexpr ::Langulus::Token CTTI_NegativeOperator = 
 

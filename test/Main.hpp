@@ -65,6 +65,8 @@ namespace Verbs
 	struct Create : public Flow::Verb {
 		LANGULUS(POSITIVE_VERB) "Create";
 		LANGULUS(NEGATIVE_VERB) "Destroy";
+		LANGULUS(POSITIVE_OPERATOR) " + ";
+		LANGULUS(NEGATIVE_OPERATOR) " - ";
 		LANGULUS(INFO)
 			"Used for allocating new elements. "
 			"If the type you're creating has	a producer, "

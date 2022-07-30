@@ -49,6 +49,44 @@ namespace Langulus::RTTI
 		else return Meta::GetCppName<T>();
 	}
 
+	/// Get the reflected positive operator for a verb									
+	///	@return the token																		
+	template<CT::Data T>
+	constexpr Token MetaVerb::GetReflectedPositiveVerbOperator() noexcept {
+		if constexpr (requires { T::CTTI_Operator; })
+			return T::CTTI_Operator;
+		else if constexpr (requires { T::CTTI_PositiveOperator; }) {
+			if constexpr (!requires { T::CTTI_NegativeOperator; }) {
+				LANGULUS_ASSERT(
+					"Positive operator defined, but no negative provided - "
+					"either define the negative, or use LANGULUS(OPERATOR) "
+					"if both operators are the same");
+			}
+
+			return T::CTTI_PositiveOperator;
+		}
+		else return {};
+	}
+
+	/// Get the reflected negative operator for a verb									
+	///	@return the token																		
+	template<CT::Data T>
+	constexpr Token MetaVerb::GetReflectedNegativeVerbOperator() noexcept {
+		if constexpr (requires { T::CTTI_Operator; })
+			return T::CTTI_Operator;
+		else if constexpr (requires { T::CTTI_NegativeOperator; }) {
+			if constexpr (!requires { T::CTTI_PositiveOperator; }) {
+				LANGULUS_ASSERT(
+					"Negative operator defined, but no positive provided - "
+					"either define the positive, or use LANGULUS(OPERATOR) "
+					"if both operators are the same");
+			}
+
+			return T::CTTI_NegativeOperator;
+		}
+		else return {};
+	}
+
 	/// Get the constexpr hash of a verb													
 	///	@return the hash of the type														
 	template<CT::Data T>
@@ -103,7 +141,9 @@ namespace Langulus::RTTI
 		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
 			meta = Database.RegisterVerb(
 				MetaVerb::GetReflectedPositiveVerbToken<T>(),
-				MetaVerb::GetReflectedNegativeVerbToken<T>()
+				MetaVerb::GetReflectedNegativeVerbToken<T>(),
+				MetaVerb::GetReflectedPositiveVerbOperator<T>(),
+				MetaVerb::GetReflectedNegativeVerbOperator<T>()
 			);
 		#else
 			meta = ::std::make_unique<MetaVerb>();
@@ -127,21 +167,10 @@ namespace Langulus::RTTI
 			generated.mTokenReverse = 
 				MetaVerb::GetReflectedNegativeVerbToken<T>();
 
-			// Reflect the operator tokens, if any									
-			if constexpr (requires { T::CTTI_PositiveOperator; }) {
-				if constexpr (!requires { T::CTTI_NegativeOperator; })
-					LANGULUS_ASSERT("Positive operator defined, but no negative provided");
-
-				generated.mOperator = T::CTTI_PositiveOperator;
-				generated.mOperatorReverse = T::CTTI_NegativeOperator;
-			}
-			else if constexpr (requires { T::CTTI_NegativeOperator; }) {
-				if constexpr (!requires { T::CTTI_PositiveOperator; })
-					LANGULUS_ASSERT("Negative operator defined, but no positive provided");
-
-				generated.mOperator = T::CTTI_PositiveOperator;
-				generated.mOperatorReverse = T::CTTI_NegativeOperator;
-			}
+			generated.mOperator =
+				MetaVerb::GetReflectedPositiveVerbOperator<T>();
+			generated.mOperatorReverse =
+				MetaVerb::GetReflectedNegativeVerbOperator<T>();
 
 			// Reflect info string if any												
 			if constexpr (requires { T::CTTI_Info; })

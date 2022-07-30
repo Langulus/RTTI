@@ -45,7 +45,7 @@ namespace Langulus::RTTI
 		// Reflected stateless verb, if available									
 		FStatelessVerb mStatelessInvocation {};
 
-		// A set of data types that are capable of doing the verb			
+		// A set of data types that are capable of doing the verb (TODO)	
 		AbleList mAble;
 
 	public:
@@ -65,6 +65,10 @@ namespace Langulus::RTTI
 		static constexpr Token GetReflectedPositiveVerbToken() noexcept;
 		template<CT::Data T>
 		static constexpr Token GetReflectedNegativeVerbToken() noexcept;
+		template<CT::Data T>
+		static constexpr Token GetReflectedPositiveVerbOperator() noexcept;
+		template<CT::Data T>
+		static constexpr Token GetReflectedNegativeVerbOperator() noexcept;
 		template<CT::Data T>
 		static constexpr Hash GetVerbHash() noexcept;
 	};
