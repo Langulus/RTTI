@@ -244,13 +244,17 @@ namespace Langulus::CT
 		};
 	}
 
-	/// Check if T has a mutable dispatcher (has Do() method for verbs)			
+	/// Check if all T have a mutable dispatcher (has Do() method for verbs)	
 	template<class... T>
 	concept DispatcherMutable = (Inner::DispatcherMutable<T> && ...);
 
-	/// Check if T has a constant dispatcher (has Do() method for verbs)			
+	/// Check if all T have a constant dispatcher (has Do() method for verbs)	
 	template<class... T>
 	concept DispatcherConstant = (Inner::DispatcherConstant<T> && ...);
+
+	/// Check if all T has a dispatcher, compatible with the cv-quality of T	
+	template<class... T>
+	concept Dispatcher = ((CT::DispatcherMutable<T> || (CT::Constant<T> && CT::DispatcherConstant<T>)) && ...);
 
 } // namespace Langulus::CT
 
