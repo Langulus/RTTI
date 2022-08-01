@@ -100,6 +100,17 @@ namespace Langulus::RTTI
 		return found->second;
 	}
 
+	/// Get an existing meta constant definition by its token						
+	///	@param token - the token of the constant definition						
+	///	@return the definition, or nullptr if not found								
+	CMeta Interface::GetMetaConstant(const Token& token) const noexcept {
+		const auto lc = ToLowercase(token);
+		const auto found = mMetaConstants.find(lc);
+		if (found == mMetaConstants.end())
+			return nullptr;
+		return found->second;
+	}
+
 	/// Get an existing meta trait definition by its token							
 	///	@param token - the token of the trait definition							
 	///	@return the definition, or nullptr if not found								
@@ -195,6 +206,28 @@ namespace Langulus::RTTI
 		return newDefinition;
 	}
 
+	/// Register a constant definition														
+	///	@param token - the constant token to reserve									
+	///	@return the newly defined meta constant, or nullptr if a conflict or	
+	///			  out-of-memory occured														
+	CMeta Interface::RegisterConstant(const Token& token) noexcept {
+		auto lc = ToLowercase(token);
+		const auto found = GetMetaConstant(lc);
+		if (found) {
+			// Conflicting type 															
+			return nullptr;
+		}
+
+		// If reached, then not found, so insert a new definition			
+		const auto newDefinition = new MetaConst {};
+		mMetaConstants.insert({::std::move(lc), newDefinition});
+
+		// Insert the last token to the ambiguity map							
+		RegisterAmbiguous(token, newDefinition);
+
+		return newDefinition;
+	}
+
 	/// Register a trait definition															
 	///	@param token - the trait token to reserve										
 	///	@return the newly defined meta trait, or nullptr if a conflict or		
@@ -254,14 +287,14 @@ namespace Langulus::RTTI
 		const auto newDefinition = new MetaVerb {};
 		mUniqueVerbs.insert(newDefinition);
 
-		mMetaVerbs.insert({::std::move(lc1), newDefinition});
+		mMetaVerbs.insert({lc1, newDefinition});
 		if (lc1 != lc2)
-			mMetaVerbs.insert({::std::move(lc2), newDefinition});
+			mMetaVerbs.insert({lc2, newDefinition});
 
 		if (!op1.empty())
-			mOperators.insert({::std::move(op1), newDefinition});
+			mOperators.insert({op1, newDefinition});
 		if (!op2.empty() && op1 != op2)
-			mOperators.insert({::std::move(op2), newDefinition});
+			mOperators.insert({op2, newDefinition});
 
 		RegisterAmbiguous(token, newDefinition);
 		RegisterAmbiguous(tokenReverse, newDefinition);

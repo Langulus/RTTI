@@ -18,6 +18,8 @@ namespace Langulus::RTTI
 		LANGULUS(NAME) "TMeta";
 		LANGULUS_BASES(Meta);
 
+		MetaType GetMetaType() const noexcept final { return Meta::Trait; }
+
 		static constexpr Token DefaultToken = "NoTrait";
 
 		// Data filter for the trait (optional)									

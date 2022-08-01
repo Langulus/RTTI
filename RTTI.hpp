@@ -40,6 +40,8 @@ namespace Langulus::RTTI
 
 		// Database for meta data definitions										
 		::std::unordered_map<Lowercase, DMeta> mMetaData;
+		// Database for named values													
+		::std::unordered_map<Lowercase, CMeta> mMetaConstants;
 		// Database for meta trait definitions										
 		::std::unordered_map<Lowercase, TMeta> mMetaTraits;
 		// Database for meta verb definitions										
@@ -57,16 +59,19 @@ namespace Langulus::RTTI
 		NOD() DMeta GetMetaData(const Token&) const noexcept;
 		NOD() TMeta GetMetaTrait(const Token&) const noexcept;
 		NOD() VMeta GetMetaVerb(const Token&) const noexcept;
+		NOD() CMeta GetMetaConstant(const Token&) const noexcept;
 		NOD() VMeta GetOperator(const Token&) const noexcept;
 		NOD() const MetaList& GetAmbiguousMeta(const Token&) const noexcept;
 
 		NOD() DMeta RegisterData(const Token&) noexcept;
+		NOD() CMeta RegisterConstant(const Token&) noexcept;
 		NOD() TMeta RegisterTrait(const Token&) noexcept;
 		NOD() VMeta RegisterVerb(const Token&, const Token&, const Token& = {}, const Token& = {}) noexcept;
 
 		void Unregister(DMeta) noexcept;
 		void Unregister(TMeta) noexcept;
 		void Unregister(VMeta) noexcept;
+		void Unregister(CMeta) noexcept;
 	};
 
 	///																								

@@ -119,6 +119,16 @@
 #define LANGULUS_UNINSERTABLE() \
 	public: static constexpr bool CTTI_Uninsertable =
 
+/// You can give names to specific values of a given type, such as enums		
+/// These names can be used as constants when parsing code, and are used for	
+/// serialization to code/text/debug														
+#define LANGULUS_NAMED_VALUES(T) \
+	public: static constexpr ::Langulus::RTTI::CMetaTriplet<T> CTTI_NamedValues[] =
+
+/// You can give an optional suffix to your type										
+#define LANGULUS_SUFFIX() \
+	public: static constexpr ::Langulus::Token CTTI_Suffix = 
+
 /// You can define an allocation page (number of elements) by using				
 /// LANGULUS(ALLOCATION_PAGE) X. When allocating memory for your type, X		
 /// will be the minimum amount of elements to allocate, aligned to the			
@@ -255,6 +265,12 @@ namespace Langulus::RTTI
 	///																								
 	struct Meta {
 	public:
+		enum MetaType {
+			Data, Trait, Verb, Constant
+		};
+
+		virtual MetaType GetMetaType() const noexcept = 0;
+
 		// Each reflection primitive has a unique token, but that			
 		// uniqueness is checked only if MANAGED_REFLECTION feature is		
 		// enabled																			
@@ -276,6 +292,13 @@ namespace Langulus::RTTI
 		static constexpr Token GetCppName() noexcept;
 		template<CT::Data T>
 		static constexpr Token GetReflectedToken() noexcept;
+	};
+
+	template<class T>
+	struct CMetaTriplet {
+		Token mToken;
+		T mValue;
+		Token mInfo;
 	};
 
 } // namespace Langulus::RTTI

@@ -276,6 +276,8 @@ namespace Langulus::RTTI
 		// reflection function might end up forever looping otherwise		
 		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
 			meta = Database.RegisterData(Meta::GetReflectedToken<T>());
+			if (!meta)
+				Throw<Except::Meta>("Meta data conflict on registration");
 		#else
 			meta = ::std::make_unique<MetaData>();
 		#endif
@@ -292,7 +294,12 @@ namespace Langulus::RTTI
 		}
 		else {
 			// Type is implicitly reflected, so let's do our best				
-			MetaData generated;
+			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+				MetaData& generated = *const_cast<MetaData*>(meta);
+			#else
+				MetaData& generated = *const_cast<MetaData*>(meta.get());
+			#endif
+
 			generated.mToken = Meta::GetReflectedToken<T>();
 			if constexpr (requires { T::CTTI_Info; })
 				generated.mInfo = T::CTTI_Info;
@@ -316,6 +323,8 @@ namespace Langulus::RTTI
 				generated.mPoolTactic = T::CTTI_Pool;
 			if constexpr (requires { T::CTTI_Files; })
 				generated.mFileExtensions = T::CTTI_Files;
+			if constexpr (requires { T::CTTI_Suffix; })
+				generated.mSuffix = T::CTTI_Suffix;
 			if constexpr (requires { T::CTTI_VersionMajor; })
 				generated.mVersionMajor = T::CTTI_VersionMajor;
 			if constexpr (requires { T::CTTI_VersionMinor; })
@@ -463,15 +472,37 @@ namespace Langulus::RTTI
 			if constexpr (requires { typename T::CTTI_Conversions; })
 				generated.SetConverters<T>(typename T::CTTI_Conversions {});
 
+			// Set reflected named values												
+			if constexpr (requires { T::CTTI_NamedValues; }) {
+				static_assert(CT::Comparable<T, T>, 
+					"Named values specified for type, but type instances are not comparable");
+				constexpr auto c = ExtentOf<decltype(T::CTTI_NamedValues)>;
+				static T staticInstances[c];
+				static ::std::string staticNames[c] {};
+				for (int i = 0; i < c; ++i) {
+					staticNames[i] += generated.mToken;
+					staticNames[i] += "::";
+					staticNames[i] += T::CTTI_NamedValues[i].mToken;
+
+					const auto cmeta = const_cast<MetaConst*>(Database.RegisterConstant(staticNames[i]));
+					if (!cmeta)
+						Throw<Except::Meta>("Meta constant conflict on registration");
+
+					cmeta->mToken = staticNames[i];
+					cmeta->mInfo = T::CTTI_NamedValues[i].mInfo;
+					cmeta->mCppName = cmeta->mToken;
+					cmeta->mHash = HashBytes(cmeta->mToken.data(), cmeta->mToken.size());
+					cmeta->mValueType = &generated;
+					new (staticInstances + i) T {T::CTTI_NamedValues[i].mValue};
+					cmeta->mPtrToValue = staticInstances + i;
+
+					generated.mNamedValues.emplace_back(cmeta);
+				}
+			}
+
 			// Set some additional stuff if T is fundamental					
 			if constexpr (CT::Fundamental<T>)
 				generated.ReflectFundamentalType<T>();
-
-			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-				*const_cast<MetaData*>(meta) = Move(generated);
-			#else
-				*const_cast<MetaData*>(meta.get()) = Move(generated);
-			#endif
 		}
 
 		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
@@ -482,7 +513,7 @@ namespace Langulus::RTTI
 	}
 
 	/// Integrate fundamental types with the reflection system						
-	/// Like, for example, implicitly adding a ANumber bases to number types	
+	/// Like, for example, implicitly adding a A::Number bases to number types	
 	template<CT::Fundamental T>
 	void MetaData::ReflectFundamentalType() noexcept {
 		if constexpr (CT::Bool<T>) {
@@ -795,6 +826,21 @@ namespace Langulus::RTTI
 		static_assert(CT::DerivedFrom<V, ::Langulus::Flow::Verb>,
 			"V must be derived from Flow::Verb");
 		return GetAbility<MUTABLE>(MetaVerb::Of<V>(), MetaData::Of<A>()...);
+	}
+
+	/// Get the token of a reflected named value											
+	///	@attention assumes this definition is the reflection of T				
+	///	@tparam T - type of the value to test (deducible)							
+	///	@param value - the value to check the name of								
+	///	@return the token for the value, or an empty token if not found		
+	template<class T>
+	Token MetaData::GetNamedValueOf(const T& value) const {
+		for (auto& constant : mNamedValues) {
+			if (value == *static_cast<const T*>(constant.first))
+				return constant.second;
+		}
+
+		return {};
 	}
 
 	/// Check if this type interprets as another without conversion				

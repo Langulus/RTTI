@@ -178,6 +178,21 @@ namespace Langulus::RTTI
 		NOD() static Ability From() noexcept;
 	};
 
+
+	///																								
+	///	Meta constant, used to reflect named values for enums						
+	///																								
+	struct MetaConst : public Meta {
+		LANGULUS(NAME) "CMeta";
+		LANGULUS_BASES(Meta);
+
+		MetaType GetMetaType() const noexcept final { return Meta::Constant; }
+
+		DMeta mValueType;
+		const void* mPtrToValue;
+	};
+
+	using NamedValueList = ::std::vector<CMeta>;
 	using AbilityList = ::std::unordered_map<VMeta, Ability>;
 	using MutableOverloadList = typename Ability::MutableOverloadList;
 	using ConstantOverloadList = typename Ability::ConstantOverloadList;
@@ -241,6 +256,8 @@ namespace Langulus::RTTI
 		LANGULUS(NAME) "DMeta";
 		LANGULUS_BASES(Meta);
 
+		MetaType GetMetaType() const noexcept final { return Meta::Data; }
+
 		enum Distance : int {
 			Infinite = ::std::numeric_limits<int>::max()
 		};
@@ -255,6 +272,8 @@ namespace Langulus::RTTI
 		BaseList mBases {};
 		// List of reflected converters												
 		ConverterList mConverters {};
+		// List of named values															
+		NamedValueList mNamedValues {};
 		// Default concretization														
 		DMeta mConcrete {};
 		// Dynamic producer of the type												
@@ -283,6 +302,8 @@ namespace Langulus::RTTI
 		Size mAllocationTable[sizeof(Size) * 8] {};
 		// File extensions used, separated by commas								
 		Token mFileExtensions {};
+		// Suffix																			
+		Token mSuffix {};
 		// The pooling tactic used for the type									
 		PoolTactic mPoolTactic = PoolTactic::Default;
 
@@ -376,6 +397,12 @@ namespace Langulus::RTTI
 		NOD() auto GetAbility(DMeta) const;
 		template<bool MUTABLE, CT::Data V, CT::Data... A>
 		NOD() auto GetAbility() const;
+
+		//																						
+		//	Named value management														
+		//																						
+		template<class T>
+		NOD() Token GetNamedValueOf(const T&) const;
 
 		//																						
 		//	Morphisms and comparison													

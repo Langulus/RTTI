@@ -26,6 +26,8 @@ namespace Langulus::RTTI
 		LANGULUS(NAME) "VMeta";
 		LANGULUS_BASES(Meta);
 
+		MetaType GetMetaType() const noexcept final { return Meta::Verb; }
+
 		static constexpr Token DefaultToken = "NoVerb";
 
 		// Verbs have antonyms, denoted via this 'negative' token			
