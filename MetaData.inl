@@ -584,6 +584,24 @@ namespace Langulus::RTTI
 			mConverters.insert(i);
 	}
 
+	/// Get a converter to a specific static type										
+	///	@tparam T - the type to seek a conversion to									
+	///	@return the conversion function													
+	template<class T>
+	FCopyConstruct MetaData::GetConverter() const noexcept {
+		return GetConverter(MetaData::Of<T>());
+	}
+
+	/// Get a converter to a specific dynamic type										
+	///	@param meta - the type we're converting to									
+	///	@return the conversion function													
+	inline FCopyConstruct MetaData::GetConverter(DMeta meta) const noexcept {
+		const auto found = mConverters.find(meta);
+		if (found != mConverters.end())
+			return found->second.mFunction;
+		return FCopyConstruct {};
+	}
+
    /// Set the list of members for a given meta definition							
    ///   @tparam Args... - all the members												
 	template<CT::Dense... Args>

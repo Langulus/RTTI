@@ -410,6 +410,10 @@ namespace Langulus::RTTI
 		template<class T, CT::Dense... Args>
 		void SetConverters(TTypeList<Args...>) noexcept;
 
+		template<class T>
+		FCopyConstruct GetConverter() const noexcept;
+		FCopyConstruct GetConverter(DMeta) const noexcept;
+
 		template<bool ADVANCED = false>
 		NOD() bool CastsTo(DMeta) const;
 		NOD() bool CastsTo(DMeta, Count) const;
