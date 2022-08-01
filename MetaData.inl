@@ -479,14 +479,23 @@ namespace Langulus::RTTI
 				constexpr auto c = ExtentOf<decltype(T::CTTI_NamedValues)>;
 				static T staticInstances[c];
 				static ::std::string staticNames[c] {};
+				#if !LANGULUS_FEATURE(MANAGED_REFLECTION)
+					static constinit ::std::unique_ptr<MetaConst> staticMC[c] {};
+				#endif
+
 				for (int i = 0; i < c; ++i) {
 					staticNames[i] += generated.mToken;
 					staticNames[i] += "::";
 					staticNames[i] += T::CTTI_NamedValues[i].mToken;
 
-					const auto cmeta = const_cast<MetaConst*>(Database.RegisterConstant(staticNames[i]));
-					if (!cmeta)
-						Throw<Except::Meta>("Meta constant conflict on registration");
+					#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+						const auto cmeta = const_cast<MetaConst*>(Database.RegisterConstant(staticNames[i]));
+						if (!cmeta)
+							Throw<Except::Meta>("Meta constant conflict on registration");
+					#else
+						staticMC[i] = ::std::make_unique<MetaConst>();
+						const auto cmeta = staticMC[i].get();
+					#endif
 
 					cmeta->mToken = staticNames[i];
 					cmeta->mInfo = T::CTTI_NamedValues[i].mInfo;
