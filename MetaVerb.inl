@@ -161,7 +161,12 @@ namespace Langulus::RTTI
 		}
 		else {
 			// Type is implicitly reflected, so let's do our best				
-			MetaVerb generated;
+			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+				MetaVerb& generated = *const_cast<MetaVerb*>(meta);
+			#else
+				MetaVerb& generated = *const_cast<MetaVerb*>(meta.get());
+			#endif
+
 			generated.mToken = 
 				MetaVerb::GetReflectedPositiveVerbToken<T>();
 			generated.mTokenReverse = 
@@ -194,12 +199,6 @@ namespace Langulus::RTTI
 
 			if constexpr (CT::StatelessVerb<T>)
 				generated.mStatelessInvocation = FStatelessVerb {T::ExecuteStateless};
-
-			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-				*const_cast<MetaVerb*>(meta) = Move(generated);
-			#else
-				*const_cast<MetaVerb*>(meta.get()) = Move(generated);
-			#endif
 		}
 
 		#if LANGULUS_FEATURE(MANAGED_REFLECTION)

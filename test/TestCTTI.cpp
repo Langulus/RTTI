@@ -309,6 +309,7 @@ SCENARIO("A simple type reflected with CTTI traits", "[metadata]") {
 				REQUIRE(meta->mIsAbstract == false);
 				REQUIRE(meta->mSize == sizeof(ImplicitlyReflectedData));
 				REQUIRE(meta->mAlignment == alignof(ImplicitlyReflectedData));
+				REQUIRE(meta->mNamedValues.size() == 3);
 			}
 		}
 	}

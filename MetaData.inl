@@ -836,8 +836,8 @@ namespace Langulus::RTTI
 	template<class T>
 	Token MetaData::GetNamedValueOf(const T& value) const {
 		for (auto& constant : mNamedValues) {
-			if (value == *static_cast<const T*>(constant.first))
-				return constant.second;
+			if (value == *static_cast<const T*>(constant->mPtrToValue))
+				return constant->mToken;
 		}
 
 		return {};

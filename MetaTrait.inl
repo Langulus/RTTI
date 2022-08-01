@@ -70,7 +70,12 @@ namespace Langulus::RTTI
 		}
 		else {
 			// Type is implicitly reflected, so let's do our best				
-			MetaTrait generated;
+			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+				MetaTrait& generated = *const_cast<MetaTrait*>(meta);
+			#else
+				MetaTrait& generated = *const_cast<MetaTrait*>(meta.get());
+			#endif
+
 			generated.mToken = Meta::GetReflectedToken<T>();
 			if constexpr (requires { T::CTTI_Info; })
 				generated.mInfo = T::CTTI_Info;
@@ -80,12 +85,6 @@ namespace Langulus::RTTI
 				generated.mVersionMajor = T::CTTI_VersionMajor;
 			if constexpr (requires { T::CTTI_VersionMinor; })
 				generated.mVersionMinor = T::CTTI_VersionMinor;
-
-			#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-				*const_cast<MetaTrait*>(meta) = Move(generated);
-			#else
-				*const_cast<MetaTrait*>(meta.get()) = Move(generated);
-			#endif
 		}
 
 		#if LANGULUS_FEATURE(MANAGED_REFLECTION)

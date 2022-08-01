@@ -28,6 +28,7 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
 		const auto n2t = MetaData::Of<N2::Type>();
 		const auto n3t = MetaData::Of<N3::type>();
 		const auto vvv = MetaVerb::Of<Verbs::Create>();
+		const auto nnn = MetaData::Of<ImplicitlyReflectedData>();
 
 		WHEN("Meta is retrieved by exact token, that is not case-sensitive") {
 			REQUIRE(n1t == RTTI::Database.GetMetaData("N1::Type"));
@@ -48,6 +49,9 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
 		WHEN("Meta is retrieved by ambiguous token, that is not case-sensitive") {
 			auto found = RTTI::Database.GetAmbiguousMeta("type");
 			auto found2 = RTTI::Database.GetAmbiguousMeta("create");
+			auto found3 = RTTI::Database.GetAmbiguousMeta("one");
+			auto found4 = RTTI::Database.GetAmbiguousMeta("two");
+			auto found5 = RTTI::Database.GetAmbiguousMeta("three");
 			REQUIRE(found.size() == 3);
 			REQUIRE(found.find(n1t) != found.end());
 			REQUIRE(found.find(n2t) != found.end());
@@ -55,6 +59,9 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
 			REQUIRE(found2.size() == 2);
 			REQUIRE(found2.find(vvv) != found2.end());
 			REQUIRE(found2.find(n1c) != found2.end());
+			REQUIRE(found3.size() == 2);
+			REQUIRE(found4.size() == 2);
+			REQUIRE(found5.size() == 2);
 		}
 	}
 }
@@ -77,6 +84,21 @@ SCENARIO("Testing operators", "[operators]") {
 			REQUIRE(vvv == RTTI::Database.GetOperator("\t\t + \n   \t\t "));
 			REQUIRE(vvv == RTTI::Database.GetOperator("\t\t  - \n\t\t"));
 			REQUIRE(nullptr == RTTI::Database.GetOperator("="));
+		}
+	}
+}
+
+SCENARIO("Testing constants reflected from another translation unit", "[constants]") {
+	GIVEN("ImplicitlyReflectedData") {
+		const auto vvv = MetaData::Of<ImplicitlyReflectedData>();
+
+		WHEN("Meta is retrieved by constant token") {
+			REQUIRE(RTTI::Database.GetMetaConstant("ImplicitlyReflectedData::One"));
+			REQUIRE(RTTI::Database.GetMetaConstant("ImplicitlyReflectedData::Two"));
+			REQUIRE(RTTI::Database.GetMetaConstant("ImplicitlyReflectedData::Three"));
+			REQUIRE(RTTI::Database.GetMetaConstant("ImplicitlyReflectedData::One")->mValueType == vvv);
+			REQUIRE(RTTI::Database.GetMetaConstant("ImplicitlyReflectedData::Two")->mValueType == vvv);
+			REQUIRE(RTTI::Database.GetMetaConstant("ImplicitlyReflectedData::Three")->mValueType == vvv);
 		}
 	}
 }

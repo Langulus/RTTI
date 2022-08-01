@@ -121,7 +121,21 @@ namespace Verbs
 	};
 }
 
-class ImplicitlyReflectedData {};
+struct ImplicitlyReflectedData {
+	enum Named {
+		One, Two, Three
+	};
+
+	LANGULUS_NAMED_VALUES(Named) {
+		{"One", One},
+		{"Two", Two},
+		{"Three", Three}
+	};
+
+	Named v;
+
+	inline bool operator == (const ImplicitlyReflectedData&) const noexcept = default;
+};
 
 class ImplicitlyReflectedDataWithTraits : public ImplicitlyReflectedData {
 public:
