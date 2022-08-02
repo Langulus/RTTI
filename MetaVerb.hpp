@@ -93,6 +93,10 @@ namespace Langulus::CT
 		RTTI::FDefaultVerbConstant {&T::ExecuteDefault};
 	};
 
+	/// Checks if a verb is defaultable in any context									
+	template<class T>
+	concept DefaultableVerb = DefaultableVerbMutable<T> || DefaultableVerbConstant<T>;
+
 	/// Checks if a verb is executable as stateless										
 	template<class T>
 	concept StatelessVerb = requires {{
