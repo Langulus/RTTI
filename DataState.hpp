@@ -15,6 +15,9 @@ namespace Langulus::RTTI
 	///	Data state flags																		
 	///																								
 	struct DataState {
+		LANGULUS(POD) true;
+		LANGULUS(NULLIFIABLE) true;
+
 		enum Enum {
 			// Default data state														
 			// Default state is inclusive, mutable, nonpolar, nonvacuum		

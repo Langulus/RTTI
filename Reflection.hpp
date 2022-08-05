@@ -6,14 +6,6 @@
 /// See LICENSE file, or https://www.gnu.org/licenses									
 ///																									
 #pragma once
-#include "DataState.hpp"
-#include "NameOf.hpp"
-#include <vector>
-
-#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-	LANGULUS_EXCEPTION(Meta);
-#endif
-
 
 /// You can provide a custom token to your data type, instead of using NameOf	
 /// When verbs are reflected with this, their positive and negative tokens		
@@ -179,6 +171,16 @@
 /// These will be automatically used by Verbs::Interpret if available			
 #define LANGULUS_CONVERSIONS(...) \
 	public: using CTTI_Conversions = ::Langulus::TTypeList<__VA_ARGS__>
+
+#include "DataState.hpp"
+#include "NameOf.hpp"
+#include <vector>
+
+#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+	LANGULUS_EXCEPTION(Meta);
+#endif
+
+
 
 /// Compile-time checks and concepts associated with RTTI							
 namespace Langulus::CT
