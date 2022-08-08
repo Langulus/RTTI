@@ -39,6 +39,12 @@ namespace Langulus::RTTI
 		Token mOperator;
 		Token mOperatorReverse;
 
+		// Verb's reflected default charge											
+		Real mMass {};
+		Real mFrequency {};
+		Real mTime {};
+		Real mPriority {};
+
 		// Reflected default verb for mutable context, if available			
 		FDefaultVerbMutable mDefaultInvocationMutable {};
 		// Reflected default verb for immutable context, if available		

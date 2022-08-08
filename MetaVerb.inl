@@ -184,6 +184,16 @@ namespace Langulus::RTTI
 			generated.mCppName = Meta::GetCppName<T>();
 			generated.mHash = GetVerbHash<T>();
 
+			// Reflect charge																
+			if constexpr (requires { T::CTTI_Mass; })
+				generated.mMass = T::CTTI_Mass;
+			if constexpr (requires { T::CTTI_Frequency; })
+				generated.mFrequency = T::CTTI_Frequency;
+			if constexpr (requires { T::CTTI_Time; })
+				generated.mTime = T::CTTI_Time;
+			if constexpr (requires { T::CTTI_Priority; })
+				generated.mPriority = T::CTTI_Priority;
+
 			// Reflect version															
 			if constexpr (requires { T::CTTI_VersionMajor; })
 				generated.mVersionMajor = T::CTTI_VersionMajor;
