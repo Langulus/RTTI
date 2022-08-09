@@ -883,7 +883,10 @@ namespace Langulus::RTTI
 			return true;
 
 		if constexpr (ADVANCED) {
-			// Do reverse inheritance check, in search of mappings			
+			// Do inheritance check from the view of the other type - it	
+			// might be derived from this one. The inherited should either	
+			// have a resolver and be later checked at runtime, or be		
+			// binary-compatible with this											
 			Base found {};
 			if (other->GetBase(this, 0, found))
 				return mResolver || found.mBinaryCompatible;
