@@ -57,25 +57,10 @@
 #define LANGULUS_NEGATIVE_OPERATOR() \
 	public: static constexpr ::Langulus::Token CTTI_NegativeOperator = 
 
-/// You can provide default mass for verbs												
-/// Default mass is 0																			
-#define LANGULUS_MASS() \
-	public: static constexpr Real CTTI_Mass = 
-
-/// You can provide default frequency for verbs											
-/// Default frequency is 0																		
-#define LANGULUS_FREQUENCY() \
-	public: static constexpr Real CTTI_Frequency = 
-
-/// You can provide default time for verbs												
-/// Default time is 0																			
-#define LANGULUS_TIME() \
-	public: static constexpr Real CTTI_Time = 
-
-/// You can provide default priority for verbs											
-/// Default priority is 0																		
-#define LANGULUS_PRIORITY() \
-	public: static constexpr Real CTTI_Priority = 
+/// You can provide precedence for verbs, used when parsing. Default				
+/// precedence is zero, which means no precedence except order of appearance	
+#define LANGULUS_PRECEDENCE() \
+	public: static constexpr Real CTTI_Precedence = 
 
 /// You can provide information string with your reflection, for developers	
 #define LANGULUS_INFO() \

@@ -67,6 +67,7 @@ namespace Verbs
 		LANGULUS(NEGATIVE_VERB) "Destroy";
 		LANGULUS(POSITIVE_OPERATOR) " + ";
 		LANGULUS(NEGATIVE_OPERATOR) " - ";
+		LANGULUS(PRECEDENCE) 5;
 		LANGULUS(INFO)
 			"Used for allocating new elements. "
 			"If the type you're creating has	a producer, "

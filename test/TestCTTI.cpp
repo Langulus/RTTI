@@ -330,6 +330,7 @@ SCENARIO("A reflected verb with CTTI traits", "[metaverb]") {
 				REQUIRE(meta->mVersionMajor == 1);
 				REQUIRE(meta->mVersionMinor == 0);
 				REQUIRE(meta->mOperator == " + ");
+				REQUIRE(meta->mPrecedence == 5);
 				REQUIRE(meta->mOperatorReverse == " - ");
 				REQUIRE(meta->mDefaultInvocationMutable);
 				REQUIRE(meta->mDefaultInvocationMutable(someBlock, someVerb) == false);
