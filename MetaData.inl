@@ -871,16 +871,29 @@ namespace Langulus::RTTI
 	}
 
 	/// Check if this type interprets as another without conversion				
+	///	@tparam ADVANCED - whether or not to do an advanced search in the		
+	///		opposite inheritance order														
+	///	@tparam BINARY_COMPATIBLE - do we require for the other to be			
+	///		binary compatible with this													
 	///	@param other - the type to try interpreting as								
 	///	@return true if this type interprets as other								
-	template<bool ADVANCED>
+	template<bool ADVANCED, bool BINARY_COMPATIBLE>
 	bool MetaData::CastsTo(DMeta other) const {
 		if (Is(other))
 			return true;
 
 		// Different types might be compatible via inheritance				
-		if (HasBase(other))
-			return true;
+		if constexpr (!BINARY_COMPATIBLE) {
+			// We don't need binary compatibility									
+			if (HasBase(other))
+				return true;
+		}
+		else {
+			// Get the base and check if binary compatible						
+			Base found {};
+			if (GetBase(other, 0, found))
+				return found.mBinaryCompatible;
+		}
 
 		if constexpr (ADVANCED) {
 			// Do inheritance check from the view of the other type - it	
@@ -888,8 +901,12 @@ namespace Langulus::RTTI
 			// have a resolver and be later checked at runtime, or be		
 			// binary-compatible with this											
 			Base found {};
-			if (other->GetBase(this, 0, found))
-				return mResolver || found.mBinaryCompatible;
+			if (other->GetBase(this, 0, found)) {
+				if constexpr (BINARY_COMPATIBLE)
+					return found.mBinaryCompatible;
+				else
+					return mResolver || found.mBinaryCompatible;
+			}
 		}
 
 		// At this point we're pretty sure that types are incompatible		
@@ -898,18 +915,25 @@ namespace Langulus::RTTI
 	
 	/// Check if this type interprets as another without conversion				
 	///	@tparam T - the type to try interpreting as									
+	///	@tparam ADVANCED - whether or not to do an advanced search in the		
+	///		opposite inheritance order														
+	///	@tparam BINARY_COMPATIBLE - do we require for the other to be			
+	///		binary compatible with this													
 	///	@return true if this type interprets as other								
-	template<CT::Data T, bool ADVANCED>
+	template<CT::Data T, bool ADVANCED, bool BINARY_COMPATIBLE>
 	bool MetaData::CastsTo() const {
-		return CastsTo<ADVANCED>(MetaData::Of<Decay<T>>());
+		return CastsTo<ADVANCED, BINARY_COMPATIBLE>(MetaData::Of<Decay<T>>());
 	}
 
-	/// Check if this type interprets as an exact number of another without		
-	/// conversion																					
+	/// Check if this type interprets as an exact number of another, without	
+	/// any conversion																			
+	///	@tparam BINARY_COMPATIBLE - do we require for the other to be			
+	///		binary compatible with this													
 	///	@param other - the type to try interpreting as								
 	///	@param count - the number of items to interpret as							
 	///	@return true if this type interprets as other								
-	inline bool MetaData::CastsTo(DMeta other, Count count) const {
+	template<bool BINARY_COMPATIBLE>
+	bool MetaData::CastsTo(DMeta other, Count count) const {
 		if (Is(other) && count == 1)
 			return true;
 
@@ -921,8 +945,14 @@ namespace Langulus::RTTI
 				// All bases must fit neatly into the original type			
 				return false;
 
-			if ((other->mIsAbstract || found.mBinaryCompatible) && count == found.mCount)
-				return true;
+			if constexpr (BINARY_COMPATIBLE) {
+				if (found.mBinaryCompatible && count == found.mCount)
+					return true;
+			}
+			else {
+				if ((other->mIsAbstract || found.mBinaryCompatible) && count == found.mCount)
+					return true;
+			}
 			
 			scanned += found.mCount;
 		}
@@ -934,13 +964,15 @@ namespace Langulus::RTTI
 		return false;
 	}
 	
-	/// Check if this type interprets as an exact number of another without		
-	/// conversion																					
+	/// Check if this type interprets as an exact number of another, without	
+	/// any conversion																			
+	///	@tparam BINARY_COMPATIBLE - do we require for the other to be			
+	///		binary compatible with this													
 	///	@tparam T - the type to try interpreting as									
 	///	@return true if this type interprets as other								
-	template<CT::Data T>
+	template<CT::Data T, bool BINARY_COMPATIBLE>
 	bool MetaData::CastsTo(Count count) const {
-		return CastsTo(MetaData::Of<T>(), count);
+		return CastsTo<BINARY_COMPATIBLE>(MetaData::Of<T>(), count);
 	}
 
 	/// Check if this type is either same, base or a derivation of other			

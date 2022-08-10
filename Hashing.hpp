@@ -500,7 +500,7 @@ namespace Langulus
 	///	@param data - the data to hash													
 	///	@return the hash																		
 	template<uint32_t SEED = DefaultHashSeed, class T, class... MORE>
-	constexpr Hash HashData(const T& head, const MORE&... rest) noexcept {
+	constexpr Hash HashData(const T& head, const MORE&... rest) {
 		if constexpr (sizeof...(MORE) == 0) {
 			if constexpr (CT::Same<T, Hash>) {
 				// Provided type is already a hash, just propagate it			

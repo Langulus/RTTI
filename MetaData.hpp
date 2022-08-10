@@ -414,13 +414,14 @@ namespace Langulus::RTTI
 		FCopyConstruct GetConverter() const noexcept;
 		FCopyConstruct GetConverter(DMeta) const noexcept;
 
-		template<bool ADVANCED = false>
+		template<bool ADVANCED = false, bool BINARY_COMPATIBLE = false>
 		NOD() bool CastsTo(DMeta) const;
+		template<bool BINARY_COMPATIBLE = false>
 		NOD() bool CastsTo(DMeta, Count) const;
 
-		template<CT::Data T, bool ADVANCED = false>
+		template<CT::Data T, bool ADVANCED = false, bool BINARY_COMPATIBLE = false>
 		NOD() bool CastsTo() const;
-		template<CT::Data T>
+		template<CT::Data T, bool BINARY_COMPATIBLE = false>
 		NOD() bool CastsTo(Count) const;
 
 		NOD() bool IsRelatedTo(DMeta) const;
