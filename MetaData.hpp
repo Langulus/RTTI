@@ -186,10 +186,17 @@ namespace Langulus::RTTI
 		LANGULUS(NAME) "CMeta";
 		LANGULUS_BASES(Meta);
 
+		static constexpr Token DefaultToken = "NoConst";
+
 		MetaType GetMetaType() const noexcept final { return Meta::Constant; }
+		const Token& GetDefaultToken() const noexcept final { return DefaultToken; }
 
 		DMeta mValueType;
 		const void* mPtrToValue;
+
+	protected:
+		template<CT::Data T>
+		static constexpr Token GetReflectedToken() noexcept;
 	};
 
 	using NamedValueList = ::std::vector<CMeta>;
@@ -256,14 +263,15 @@ namespace Langulus::RTTI
 		LANGULUS(NAME) "DMeta";
 		LANGULUS_BASES(Meta);
 
-		MetaType GetMetaType() const noexcept final { return Meta::Data; }
-
 		enum Distance : int {
 			Infinite = ::std::numeric_limits<int>::max()
 		};
 		
 		static constexpr Token DefaultToken = "NoData";
-		
+
+		MetaType GetMetaType() const noexcept final { return Meta::Data; }
+		const Token& GetDefaultToken() const noexcept final { return DefaultToken; }
+
 		// List of reflected members													
 		MemberList mMembers {};
 		// List of reflected abilities												
@@ -339,6 +347,9 @@ namespace Langulus::RTTI
 		FDispatchConstant mDispatcherConstant;
 
 	protected:
+		template<CT::Data T>
+		static constexpr Token GetReflectedToken() noexcept;
+
 		template<CT::Fundamental T>
 		void ReflectFundamentalType() noexcept;
 

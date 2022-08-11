@@ -15,13 +15,13 @@ namespace Langulus::RTTI
 	///	@return the token																		
 	template<CT::Data T>
 	constexpr Token MetaVerb::GetReflectedPositiveVerbToken() noexcept {
-		if constexpr (requires { T::CTTI_Name; })
-			return T::CTTI_Name;
+		if constexpr (requires { T::CTTI_Verb; })
+			return T::CTTI_Verb;
 		else if constexpr (requires { T::CTTI_PositiveVerb; }) {
 			if constexpr (!requires { T::CTTI_NegativeVerb; }) {
 				LANGULUS_ASSERT(
 					"Positive verb defined, but no negative provided - "
-					"either define the negative, or use LANGULUS(NAME) "
+					"either define the negative, or use LANGULUS(VERB) "
 					"if both tokens are the same");
 			}
 
@@ -34,13 +34,13 @@ namespace Langulus::RTTI
 	///	@return the token																		
 	template<CT::Data T>
 	constexpr Token MetaVerb::GetReflectedNegativeVerbToken() noexcept {
-		if constexpr (requires { T::CTTI_Name; })
-			return T::CTTI_Name;
+		if constexpr (requires { T::CTTI_Verb; })
+			return T::CTTI_Verb;
 		else if constexpr (requires { T::CTTI_NegativeVerb; }) {
 			if constexpr (!requires { T::CTTI_PositiveVerb; }) {
 				LANGULUS_ASSERT(
 					"Negative verb defined, but no positive provided - "
-					"either define the positive, or use LANGULUS(NAME) "
+					"either define the positive, or use LANGULUS(VERB) "
 					"if both tokens are the same");
 			}
 

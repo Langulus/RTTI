@@ -8,23 +8,35 @@
 #pragma once
 
 /// You can provide a custom token to your data type, instead of using NameOf	
+#define LANGULUS_NAME() \
+	public: static constexpr ::Langulus::Token CTTI_Name = 
+
+/// You can provide a custom token to your verbs, instead of using NameOf		
 /// When verbs are reflected with this, their positive and negative tokens		
 /// shall be the same. If you want them to be different, use POSITIVE and		
 /// NEGATIVE names explicitly instead														
-#define LANGULUS_NAME() \
-	public: static constexpr ::Langulus::Token CTTI_Name = 
+#define LANGULUS_VERB() \
+	public: static constexpr ::Langulus::Token CTTI_Verb = 
+
+/// You can provide a custom token to your trait										
+#define LANGULUS_TRAIT() \
+	public: static constexpr ::Langulus::Token CTTI_Trait = 
+
+/// You can provide a custom token to your constant									
+#define LANGULUS_CONSTANT() \
+	public: static constexpr ::Langulus::Token CTTI_Constant = 
 
 /// You can provide a custom positive token for your verb							
 /// This has effect only when reflecting verbs, and if specified, then you		
 /// should also specify the negative verb, too, or get a compile-time error	
-/// If both negative and positive verbs are same, just use LANGULUS_NAME()		
+/// If both negative and positive verbs are same, just use LANGULUS_VERB()		
 #define LANGULUS_POSITIVE_VERB() \
 	public: static constexpr ::Langulus::Token CTTI_PositiveVerb = 
 
 /// You can provide a custom negative token for your verb							
 /// This has effect only when reflecting verbs, and if specified, then you		
 /// should also specify the positive verb, too, or get a compile-time error	
-/// If both negative and positive verbs are same, just use LANGULUS_NAME()		
+/// If both negative and positive verbs are same, just use LANGULUS_VERB()		
 #define LANGULUS_NEGATIVE_VERB() \
 	public: static constexpr ::Langulus::Token CTTI_NegativeVerb = 
 
@@ -62,7 +74,7 @@
 #define LANGULUS_PRECEDENCE() \
 	public: static constexpr Real CTTI_Precedence = 
 
-/// You can provide information string with your reflection, for developers	
+/// You can provide information string with your reflection							
 #define LANGULUS_INFO() \
 	public: static constexpr ::Langulus::Token CTTI_Info = 
 
@@ -288,6 +300,7 @@ namespace Langulus::RTTI
 		};
 
 		virtual MetaType GetMetaType() const noexcept = 0;
+		virtual const Token& GetDefaultToken() const noexcept = 0;
 
 		// Each reflection primitive has a unique token, but that			
 		// uniqueness is checked only if MANAGED_REFLECTION feature is		
@@ -304,12 +317,12 @@ namespace Langulus::RTTI
 		// Minor version																	
 		Count mVersionMinor = 0;
 
+		NOD() const Hash& GetHash() const noexcept;
+
 		template<CT::Data T>
-		static constexpr Hash GetHash() noexcept;
+		NOD() static constexpr Hash GenerateHash(const Token&) noexcept;
 		template<CT::Data T>
-		static constexpr Token GetCppName() noexcept;
-		template<CT::Data T>
-		static constexpr Token GetReflectedToken() noexcept;
+		NOD() static constexpr Token GetCppName() noexcept;
 	};
 
 	template<class T>

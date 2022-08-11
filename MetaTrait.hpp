@@ -18,9 +18,10 @@ namespace Langulus::RTTI
 		LANGULUS(NAME) "TMeta";
 		LANGULUS_BASES(Meta);
 
-		MetaType GetMetaType() const noexcept final { return Meta::Trait; }
-
 		static constexpr Token DefaultToken = "NoTrait";
+
+		MetaType GetMetaType() const noexcept final { return Meta::Trait; }
+		const Token& GetDefaultToken() const noexcept final { return DefaultToken; }
 
 		// Data filter for the trait (optional)									
 		DMeta mDataType {};
@@ -36,6 +37,10 @@ namespace Langulus::RTTI
 		NOD() bool constexpr Is() const;
 
 		constexpr bool operator == (const MetaTrait&) const noexcept;
+
+	protected:
+		template<CT::Data T>
+		static constexpr Token GetReflectedToken() noexcept;
 	};
 
 } // namespace Langulus::RTTI

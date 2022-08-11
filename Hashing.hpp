@@ -62,6 +62,7 @@ namespace Langulus
 		/// 32-bit hasher optimized for x86													
 		///	@attention key memory must be aligned to 4 bytes						
 		///	@tparam TAIL - set to true, if length is not aligned to 4 bytes	
+		///	@tparam SEED - the seed for the hash algorithm							
 		///	@param key - the memory to hash												
 		///	@param len - the number of bytes in the key								
 		///	@param seed - the seed for the hash											
@@ -117,6 +118,7 @@ namespace Langulus
 		/// 128-bit hasher optimized for x86												
 		///	@attention key memory must be aligned to 16 bytes						
 		///	@tparam TAIL - set to true, if length is not aligned to 16 bytes	
+		///	@tparam SEED - the seed for the hash algorithm							
 		///	@param key - the memory to hash												
 		///	@param len - the number of bytes in the key								
 		///	@param seed - the seed for the hash											
@@ -288,6 +290,7 @@ namespace Langulus
 		/// 64-bit hasher optimized for x86													
 		///	@attention key memory must be aligned to 8 bytes						
 		///	@tparam TAIL - set to true, if length is not aligned to 8 bytes	
+		///	@tparam SEED - the seed for the hash algorithm							
 		///	@param key - the memory to hash												
 		///	@param len - the number of bytes in the key								
 		///	@param seed - the seed for the hash											
@@ -347,6 +350,7 @@ namespace Langulus
 		/// 128-bit hasher optimized for x64												
 		///	@attention key memory must be aligned to 16 bytes						
 		///	@tparam TAIL - set to true, if length is not aligned to 16 bytes	
+		///	@tparam SEED - the seed for the hash algorithm							
 		///	@param key - the memory to hash												
 		///	@param len - the number of bytes in the key								
 		///	@param seed - the seed for the hash											
@@ -468,6 +472,8 @@ namespace Langulus
 	}
 
 	/// Hash a sequence of bytes																
+	///	@tparam SEED - the seed for the hash algorithm								
+	///	@tparam TAIL - true for a generalized hashing routine (internal)		
 	///	@param ptr - memory start															
 	///	@param len - number of bytes to hash											
 	///	@return the hash																		
@@ -486,6 +492,7 @@ namespace Langulus
 	}
 
 	/// Hash a number																				
+	///	@tparam SEED - the seed for the hash algorithm								
 	///	@tparam N - type to hash (deducible)											
 	///	@param n - the number to hash														
 	///	@return the hash for the number													
@@ -496,8 +503,10 @@ namespace Langulus
 	}
 
 	/// Hash any hashable data, including fundamental types							
-	///	@tparam T - type to hash (deducible)											
-	///	@param data - the data to hash													
+	///	@tparam SEED - the seed for the hash algorithm								
+	///	@tparam T - first type to hash (deducible)									
+	///	@tparam MORE... - the rest of the hashed types (deducible)				
+	///	@param head, rest... - the data to hash										
 	///	@return the hash																		
 	template<uint32_t SEED = DefaultHashSeed, class T, class... MORE>
 	constexpr Hash HashData(const T& head, const MORE&... rest) {
@@ -508,7 +517,7 @@ namespace Langulus
 			}
 			else if constexpr (CT::Hashable<T>) {
 				// Hashable via a member GetHash() function						
-				return head.GetHash();
+				return DenseCast(head).GetHash();
 			}
 			else if constexpr (CT::Number<T>) {
 				// A fundamental number is built-in hashable						
