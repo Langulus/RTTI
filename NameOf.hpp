@@ -18,7 +18,7 @@ namespace Langulus::RTTI
 		/// Once we wrap and stringify it, we can isolate the typename itself   
 		///   @tparam T - the type to get the name of                           
 		template<class T>
-		constexpr Token AsTemplateArgument() {
+		NOD() constexpr Token AsTemplateArgument() {
 			return LANGULUS_FUNCTION();
 		}
 
@@ -27,7 +27,7 @@ namespace Langulus::RTTI
 		/// an enum, if it's a named constant                                   
 		///   @tparam T - the constant to get the name of                       
 		template<auto T>
-		constexpr Token AsTemplateArgument() {
+		NOD() constexpr Token AsTemplateArgument() {
 			return LANGULUS_FUNCTION();
 		}
 
@@ -78,16 +78,26 @@ namespace Langulus::RTTI
 			SkipSpace(name);
 		}
 
-		/// Skip constantly occuring namespaces                                 
-		///   @param name - the string view to modify as constexpr              
+		/// Skip constantly occuring namespaces											
+		///   @param name - the string view to modify as constexpr					
 		constexpr void SkipNamespace(Token& name) {
 			SkipSpace(name);
 			SkipPrefix(name, "Langulus::");
 			SkipSpace(name);
 		}
 
-		/// Skip all decorations in front of a type name                        
-		///   @param name - the string view to modify as constexpr              
+		/// Skip all namespaces																	
+		///   @param name - the string view to modify as constexpr					
+		constexpr void SkipAllNamespaces(Token& name) {
+			auto found = name.find_last_of(':', name.size());
+			if (found == name.npos)
+				return;
+
+			name.remove_prefix(found + 1);
+		}
+
+		/// Skip all decorations in front of a type name								
+		///   @param name - the string view to modify as constexpr					
 		constexpr void SkipDecorations(Token& name) {
 			SkipStruct(name);
 			SkipClass(name);
@@ -121,10 +131,10 @@ namespace Langulus::RTTI
 			#error "No support for this compiler"
 		#endif
 
-		/// Skip all decorations in front of a type name                        
-		///   @return the modified constexpr string view                        
+		/// Skip all decorations in front of a type name								
+		///   @return the modified constexpr string view								
 		template<class T>
-		constexpr Token IsolateTypename() {
+		NOD() constexpr Token IsolateTypename() {
 			auto original = AsTemplateArgument<Decay<T>>();
 			SkipPrefix(original, Prefix);
 			SkipSuffix(original, Suffix);
@@ -137,40 +147,36 @@ namespace Langulus::RTTI
 		/// through the name splitter anyways                                   
 		///   @return the modified constexpr string view                        
 		template<auto T>
-		constexpr Token IsolateConstant() {
+		NOD() constexpr Token IsolateConstant() {
 			auto original = AsTemplateArgument<T>();
 			SkipPrefix(original, Prefix);
 			SkipSuffix(original, Suffix);
 			SkipDecorations(original);
-
-			// Skip ALL namespaces, these will be put back together later  
-			auto found = original.find_last_of(':', original.size());
-			if (found == original.npos)
-				return original;
-			
-			original.remove_prefix(found + 1);
+			SkipAllNamespaces(original);
 			return original;
 		}
 
 		template<class HEAD, class... TAIL>
-		constexpr Size NameSplitAndEstimate() noexcept;
+		NOD() constexpr Size NameSplitAndEstimate() noexcept;
 		template<class HEAD, class... TAIL>
-		constexpr Size NameSplitAndAppend(char*) noexcept;
+		NOD() constexpr Size NameSplitAndAppend(char*) noexcept;
 
 		template<class T>
 		struct Overrider {};
 
 		template<template<class...> class T, class... TArgs>
-		constexpr Size NameOfEstimate(Overrider<T<TArgs...>>&&) noexcept;
+		NOD() constexpr Size NameOfEstimate(Overrider<T<TArgs...>>&&) noexcept;
 		template<class T>
-		constexpr Size NameOfEstimate(Overrider<T>&&) noexcept;
+		NOD() constexpr Size NameOfEstimate(Overrider<T>&&) noexcept;
 
-		/// Correctly handles templated types, but isn't constexpr due to static   
+		/// Correctly handles templated types, but isn't constexpr due to static	
 		/// string buffer, that is required for substitution of fundamental types  
-		///   @tparam T - the templated type                                       
-		///   @return TArgs - the template arguments                               
+		/// This will hopefully be improved in future C++ standards, and made		
+		/// completely constexpr, as it should be												
+		///   @tparam T - the templated type													
+		///   @return TArgs - the template arguments											
 		template<template<class...> class T, class... TArgs>
-		Token NameOf(Overrider<T<TArgs...>>&&) noexcept {
+		NOD() Token NameOf(Overrider<T<TArgs...>>&&) noexcept {
 			auto original = IsolateTypename<T<TArgs...>>();
 
 			// Corner case, where the splitter doesn't work							
@@ -215,10 +221,9 @@ namespace Langulus::RTTI
 		/// Gets the name of T, without the decorations                            
 		/// This is an important step for consistent fundamental names, since      
 		/// different compilers and architectures name types differently in their  
-		/// function name macros. This will hopefully be improved in future C++    
-		/// standards, and made completely constexpr, as it should be              
+		/// function name macros.																	
 		template<class T>
-		constexpr Token NameOf(Overrider<T>&&) noexcept {
+		NOD() constexpr Token ConstexprNameOf() noexcept {
 			// Some fundamental types are stringified differently on different
 			// compilers, and we need to make sure their names cross-match    
 			if constexpr (CT::Same<T, ::std::int8_t>)
@@ -241,8 +246,17 @@ namespace Langulus::RTTI
 				return IsolateTypename<T>();
 		}
 
+		/// Gets the name of T, without the decorations                            
+		/// This is an important step for consistent fundamental names, since      
+		/// different compilers and architectures name types differently in their  
+		/// function name macros.																	
+		template<class T>
+		NOD() constexpr Token NameOf(Overrider<T>&&) noexcept {
+			return ConstexprNameOf<T>();
+		}
+
 		template<auto E>
-		Token NameOfEnum() noexcept;
+		NOD() Token NameOfEnum() noexcept;
 
 	} // namespace Inner
 
@@ -253,8 +267,18 @@ namespace Langulus::RTTI
 	///   @tparam T - the type to get the name of                              
 	///   @return the type name                                                
 	template<class T>
-	Token NameOf() noexcept {
+	NOD() Token NameOf() noexcept {
 		return Inner::NameOf(Inner::Overrider<Decay<T>>{});
+	}
+
+	/// Get the last name of a type, templated or not, ignoring all namespaces	
+	///   @tparam T - the type to get the last name of									
+	///   @return the type name                                                
+	template<class T>
+	NOD() constexpr Token LastNameOf() noexcept {
+		auto result = Inner::ConstexprNameOf<Decay<T>>();
+		Inner::SkipAllNamespaces(result);
+		return result;
 	}
 
 	/// Get the name of a named constant, or any constexpr value in fact       
@@ -263,22 +287,22 @@ namespace Langulus::RTTI
 	///   @tparam T - the constant to get the name of                          
 	///   @return the name of the constant                                     
 	template<auto T>
-	Token NameOf() noexcept {
+	NOD() Token NameOf() noexcept {
 		return Inner::NameOfEnum<T>();
 	}
 
 	template<template<class...> class T, class... TArgs>
-	constexpr Size Inner::NameOfEstimate(Overrider<T<TArgs...>>&&) noexcept {
+	NOD() constexpr Size Inner::NameOfEstimate(Overrider<T<TArgs...>>&&) noexcept {
 		return Inner::IsolateTypename<T<TArgs...>>().size() + NameSplitAndEstimate<TArgs...>() + 3;
 	}
 
 	template<class T>
-	constexpr Size Inner::NameOfEstimate(Overrider<T>&& a) noexcept {
+	NOD() constexpr Size Inner::NameOfEstimate(Overrider<T>&& a) noexcept {
 		return Inner::NameOf(Overrider<T>{}).size();
 	}
 
 	template<class HEAD, class... TAIL>
-	constexpr Size Inner::NameSplitAndEstimate() noexcept {
+	NOD() constexpr Size Inner::NameSplitAndEstimate() noexcept {
 		constexpr auto original = NameOfEstimate(Overrider<HEAD>{});
 		if constexpr (sizeof...(TAIL) > 0)
 			return original + 2 + NameSplitAndEstimate<TAIL...>();
@@ -287,7 +311,7 @@ namespace Langulus::RTTI
 	}
 
 	template<class HEAD, class... TAIL>
-	constexpr Size Inner::NameSplitAndAppend(char* buffer) noexcept {
+	NOD() constexpr Size Inner::NameSplitAndAppend(char* buffer) noexcept {
 		auto original = ::Langulus::RTTI::NameOf<HEAD>();
 		if constexpr (sizeof...(TAIL) > 0) {
 			int i = 0;
@@ -310,7 +334,7 @@ namespace Langulus::RTTI
 	///   @tparam T - the type of the constant                                 
 	///   @tparam E - the constant                                             
 	template<auto E>
-	Token Inner::NameOfEnum() noexcept {
+	NOD() Token Inner::NameOfEnum() noexcept {
 		using EnumType = decltype(E);
 		const auto base = NameOf(Inner::Overrider<EnumType>{});
 		constexpr auto name = IsolateConstant<E>();
