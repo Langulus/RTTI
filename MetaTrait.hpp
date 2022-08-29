@@ -21,7 +21,6 @@ namespace Langulus::RTTI
 		static constexpr Token DefaultToken = "NoTrait";
 
 		MetaType GetMetaType() const noexcept final { return Meta::Trait; }
-		const Token& GetDefaultToken() const noexcept final { return DefaultToken; }
 
 		// Data filter for the trait (optional)									
 		DMeta mDataType {};

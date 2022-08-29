@@ -189,7 +189,6 @@ namespace Langulus::RTTI
 		static constexpr Token DefaultToken = "NoConst";
 
 		MetaType GetMetaType() const noexcept final { return Meta::Constant; }
-		const Token& GetDefaultToken() const noexcept final { return DefaultToken; }
 
 		DMeta mValueType;
 		const void* mPtrToValue;
@@ -270,7 +269,6 @@ namespace Langulus::RTTI
 		static constexpr Token DefaultToken = "NoData";
 
 		MetaType GetMetaType() const noexcept final { return Meta::Data; }
-		const Token& GetDefaultToken() const noexcept final { return DefaultToken; }
 
 		// List of reflected members													
 		MemberList mMembers {};

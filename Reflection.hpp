@@ -300,7 +300,6 @@ namespace Langulus::RTTI
 		};
 
 		virtual MetaType GetMetaType() const noexcept = 0;
-		virtual const Token& GetDefaultToken() const noexcept = 0;
 
 		// Each reflection primitive has a unique token, but that			
 		// uniqueness is checked only if MANAGED_REFLECTION feature is		
