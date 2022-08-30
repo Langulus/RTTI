@@ -259,6 +259,10 @@ namespace Langulus::CT
 		typename Decay<T>::CTTI_Concrete;
 	};
 
+	/// Get the reflected concrete type														
+	template<class T>
+	using ConcreteOf = typename Decay<T>::CTTI_Concrete;
+
 	/// A producible type is any type with a member type CTTI_Producer			
 	/// If no such member exists, the type is assumed NOT producible by			
 	/// default. Producible types can not be created at compile-time, and need	
@@ -268,6 +272,10 @@ namespace Langulus::CT
 	concept Producible = requires {
 		typename Decay<T>::CTTI_Producer;
 	};
+
+	/// Get the reflected producer type														
+	template<class T>
+	using ProducerOf = typename Decay<T>::CTTI_Producer;
 
 	/// Check if T is abstract (has at least one pure virtual function)			
 	template<class... T>
