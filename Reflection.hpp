@@ -128,6 +128,11 @@
 #define LANGULUS_CONCRETIZABLE() \
 	public: using CTTI_Concrete = 
 
+/// You can make types producible only by executing a Verbs::Create in			
+/// a provided type																				
+#define LANGULUS_PRODUCER() \
+	public: using CTTI_Producer = 
+
 /// You can make types not insertable to Anyness containers, such as some		
 /// intermediate types, like Block::KnownPointer. These types will produce		
 /// a compile-time error when a push is attempted. All reflected types are		
@@ -252,6 +257,16 @@ namespace Langulus::CT
 	template<class T>
 	concept Concretizable = requires {
 		typename Decay<T>::CTTI_Concrete;
+	};
+
+	/// A producible type is any type with a member type CTTI_Producer			
+	/// If no such member exists, the type is assumed NOT producible by			
+	/// default. Producible types can not be created at compile-time, and need	
+	/// to be produced by executing Verbs::Create in the producer's context		
+	/// Use LANGULUS(PRODUCER) macro as member to tag such types					
+	template<class T>
+	concept Producible = requires {
+		typename Decay<T>::CTTI_Producer;
 	};
 
 	/// Check if T is abstract (has at least one pure virtual function)			
