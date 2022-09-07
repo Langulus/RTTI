@@ -536,7 +536,7 @@ namespace Langulus
 				constexpr bool TAIL = 0 != (sizeof(T) % sizeof(Hash));
 				return HashBytes<SEED, TAIL>(&head, sizeof(T));
 			}
-			else LANGULUS_ASSERT("Can't hash data");
+			else LANGULUS_ERROR("Can't hash data");
 		}
 		else {
 			// Combine all data into a single array of hashes, and then		

@@ -416,21 +416,39 @@ namespace Langulus::RTTI
 				};
 			}
 
-			// Wrap the copy operator of the type inside a lambda				
+			// Wrap the copy-assignment of the type inside a lambda			
 			if constexpr (CT::Copyable<T> && !CT::Meta<T>) {
-				generated.mCopier = [](const void* from, void* to) {
+				generated.mCopier = [](const void* from, void* to) noexcept(CT::CopyableNoexcept<T>) {
 					auto toInstance = static_cast<T*>(to);
 					auto fromInstance = static_cast<const T*>(from);
 					*toInstance = *fromInstance;
 				};
 			}
 
-			// Wrap the move operator of the type inside a lambda				
+			// Wrap the disown-assignment of the type inside a lambda		
+			if constexpr (CT::DisownCopyable<T> && !CT::Meta<T>) {
+				generated.mDisownCopier = [](const void* from, void* to) noexcept(CT::DisownCopyableNoexcept<T>) {
+					auto toInstance = static_cast<T*>(to);
+					auto fromInstance = static_cast<const T*>(from);
+					*toInstance = Disown(*fromInstance);
+				};
+			}
+
+			// Wrap the move-assignment of the type inside a lambda			
 			if constexpr (CT::Movable<T> && !CT::Meta<T>) {
-				generated.mMover = [](void* from, void* to) {
+				generated.mMover = [](void* from, void* to) noexcept(CT::MovableNoexcept<T>) {
 					auto toInstance = static_cast<T*>(to);
 					auto fromInstance = static_cast<T*>(from);
 					*toInstance = Move(*fromInstance);
+				};
+			}
+
+			// Wrap the move-assignment of the type inside a lambda			
+			if constexpr (CT::AbandonCopyable<T> && !CT::Meta<T>) {
+				generated.mAbandonMover = [](void* from, void* to) noexcept(CT::AbandonCopyableNoexcept<T>) {
+					auto toInstance = static_cast<T*>(to);
+					auto fromInstance = static_cast<T*>(from);
+					*toInstance = Abandon(*fromInstance);
 				};
 			}
 
@@ -559,7 +577,7 @@ namespace Langulus::RTTI
 			using Bases = TTypeList<A::Real>;
 			SetBases<T>(Bases {});
 		}
-		else LANGULUS_ASSERT("Unimplemented fundamental type reflector");
+		else LANGULUS_ERROR("Unimplemented fundamental type reflector");
 	}
 
    /// Set the list of bases for a given meta definition								

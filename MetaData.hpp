@@ -17,13 +17,25 @@ namespace Langulus::CT
 	template<class... T>
 	concept DisownMakable = (::std::constructible_from<Decay<T>, ::Langulus::Disowned<Decay<T>>&&> && ...);
 	template<class... T>
-	concept DisownMakableNoexcept = DisownMakable<T...> && (noexcept(T {Uneval<::Langulus::Disowned<Decay<T>>&&>()}) && ...);
+	concept DisownMakableNoexcept = DisownMakable<T...> && (noexcept(Decay<T> {Uneval<::Langulus::Disowned<Decay<T>>&&>()}) && ...);
+
+	/// Check if T is disown-assignable														
+	template<class... T>
+	concept DisownCopyable = (::std::assignable_from<Decay<T>, ::Langulus::Disowned<Decay<T>>&&> && ...);
+	template<class... T>
+	concept DisownCopyableNoexcept = DisownCopyable<T...> && (noexcept(Uneval<Decay<T>&&>() = Uneval<::Langulus::Disowned<Decay<T>>&&>()) && ...);
 
 	/// Check if T is abandon-constructible												
 	template<class... T>
 	concept AbandonMakable = (::std::constructible_from<Decay<T>, ::Langulus::Abandoned<Decay<T>>&&> && ...);
 	template<class... T>
-	concept AbandonMakableNoexcept = AbandonMakable<T...> && (noexcept(T {Uneval<::Langulus::Abandoned<Decay<T>>&&>()}) && ...);
+	concept AbandonMakableNoexcept = AbandonMakable<T...> && (noexcept(Decay<T> {Uneval<::Langulus::Abandoned<Decay<T>>&&>()}) && ...);
+
+	/// Check if T is abandon-assignable													
+	template<class... T>
+	concept AbandonCopyable = (::std::assignable_from<Decay<T>, ::Langulus::Abandoned<Decay<T>>&&> && ...);
+	template<class... T>
+	concept AbandonCopyableNoexcept = AbandonCopyable<T...> && (noexcept(Uneval<Decay<T>&&>() = Uneval<::Langulus::Abandoned<Decay<T>>&&>()) && ...);
 
 }
 
@@ -85,12 +97,10 @@ namespace Langulus::RTTI
 	/// Compares two instances for equality												
 	using FCompare = TFunctor<bool(const void*, const void*)>;
 
-	/// The = operator, wrapped in a lambda expression if available				
-	/// Does a shallow copy from one instance to another								
+	/// The copy-assignment operator, wrapped in a lambda expression				
 	using FCopy = TFunctor<void(const void*, void*)>;
 
-	/// The move-copy operator, wrapped in a lambda expression if available		
-	/// Does a move-copy from one instance to another									
+	/// The move-assignment operator, wrapped in a lambda expression				
 	using FMove = TFunctor<void(void*, void*)>;
 
 	/// The class type function, wrapped in a lambda expression						
@@ -331,10 +341,14 @@ namespace Langulus::RTTI
 		FClone mCloneInInitializedMemory;
 		// The == operator, wrapped in a lambda upon reflection				
 		FCompare mComparer;
-		// The = operator, wrapped in a lambda upon reflection				
+		// Copy-assignment operator, wrapped in a lambda upon reflection	
 		FCopy mCopier;
-		// The move operator, wrapped in a lambda upon reflection			
+		// Disown-assignment operator, wrapped in a lambda upon reflection
+		FCopy mDisownCopier;
+		// Move-assignment, wrapped in a lambda upon reflection				
 		FMove mMover;
+		// Abandon-assignment, wrapped in a lambda upon reflection			
+		FMove mAbandonMover;
 		// The ClassBlock method, wrapped in a lambda upon reflection		
 		FResolve mResolver;
 		// The GetHash() method, wrapped in a lambda								
