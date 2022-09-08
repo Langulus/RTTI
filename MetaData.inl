@@ -392,18 +392,10 @@ namespace Langulus::RTTI
 			}
 
 			// Wrap the cloners of the type inside a lambda						
-			if constexpr (CT::CloneMakable<T> && !CT::Meta<T>) {
-				generated.mCloneInUninitilizedMemory = [](const void* from, void* to) {
+			if constexpr (CT::Clonable<T> && !CT::Meta<T>) {
+				generated.mCloner = [](const void* from, void* to) {
 					auto fromInstance = static_cast<const T*>(from);
 					new (to) T {fromInstance->Clone()};
-				};
-			}
-
-			if constexpr (CT::CloneCopyable<T> && !CT::Meta<T>) {
-				generated.mCloneInInitializedMemory = [](const void* from, void* to) {
-					auto toInstance = static_cast<T*>(to);
-					auto fromInstance = static_cast<const T*>(from);
-					*toInstance = fromInstance->Clone();
 				};
 			}
 

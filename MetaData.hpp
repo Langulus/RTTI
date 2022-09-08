@@ -335,10 +335,8 @@ namespace Langulus::RTTI
 		FMoveConstruct mAbandonConstructor;
 		// Destructor wrapped in a lambda upon reflection						
 		FDestroy mDestructor;
-		// Cloner wrapped in a lambda upon reflection (placement new)		
-		FClone mCloneInUninitilizedMemory;
 		// Cloner wrapped in a lambda upon reflection							
-		FClone mCloneInInitializedMemory;
+		FClone mCloner;
 		// The == operator, wrapped in a lambda upon reflection				
 		FCompare mComparer;
 		// Copy-assignment operator, wrapped in a lambda upon reflection	
