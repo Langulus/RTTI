@@ -339,9 +339,12 @@ namespace Langulus::RTTI
 				generated.mVersionMajor = T::CTTI_VersionMajor;
 			if constexpr (requires { T::CTTI_VersionMinor; })
 				generated.mVersionMinor = T::CTTI_VersionMinor;
+
 			generated.mIsPOD = CT::POD<T>;
+
 			if constexpr (requires { T::CTTI_Deep; })
 				generated.mIsDeep = T::CTTI_Deep;
+
 			generated.mIsUninsertable = CT::Uninsertable<T>;
 			
 			// Wrap the default constructor of the type inside a lambda		
@@ -353,33 +356,33 @@ namespace Langulus::RTTI
 
 			// Wrap the copy constructor of the type inside a lambda			
 			if constexpr (CT::CopyMakable<T> && !CT::Meta<T>) {
-				generated.mCopyConstructor = [](void* at, const void* from) {
+				generated.mCopyConstructor = [](const void* from, void* to) {
 					auto fromInstance = static_cast<const T*>(from);
-					new (at) T {*fromInstance};
+					new (to) T {*fromInstance};
 				};
 			}
 
 			// Wrap the disown constructor of the type inside a lambda		
 			if constexpr (CT::DisownMakable<T> && !CT::Meta<T>) {
-				generated.mDisownConstructor = [](void* at, const void* from) {
+				generated.mDisownConstructor = [](const void* from, void* to) {
 					auto fromInstance = static_cast<const T*>(from);
-					new (at) T {Disown(*fromInstance)};
+					new (to) T {Disown(*fromInstance)};
 				};
 			}
 
 			// Wrap the move constructor of the type inside a lambda			
 			if constexpr (CT::MoveMakable<T> && !CT::Meta<T>) {
-				generated.mMoveConstructor = [](void* at, void* from) {
+				generated.mMoveConstructor = [](void* from, void* to) {
 					auto fromInstance = static_cast<T*>(from);
-					new (at) T {Forward<T>(*fromInstance)};
+					new (to) T {Forward<T>(*fromInstance)};
 				};
 			}
 
 			// Wrap the abandon constructor of the type inside a lambda		
 			if constexpr (CT::AbandonMakable<T> && !CT::Meta<T>) {
-				generated.mAbandonConstructor = [](void* at, void* from) {
+				generated.mAbandonConstructor = [](void* from, void* to) {
 					auto fromInstance = static_cast<T*>(from);
-					new (at) T {Abandon(*fromInstance)};
+					new (to) T {Abandon(*fromInstance)};
 				};
 			}
 

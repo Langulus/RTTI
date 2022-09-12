@@ -79,11 +79,11 @@ namespace Langulus::RTTI
 
 	/// The copy constructor, wrapped in a lambda expression if available		
 	/// Takes a pointer for a placement-new expression, and a source				
-	using FCopyConstruct = TFunctor<void(void*, const void*)>;
+	using FCopyConstruct = TFunctor<void(const void* from, void* to)>;
 
 	/// The move constructor, wrapped in a lambda expression if available		
 	/// Takes a pointer for a placement-new expression, and a source				
-	using FMoveConstruct = TFunctor<void(void*, void*)>;
+	using FMoveConstruct = TFunctor<void(void* from, void* to)>;
 
 	/// The destructor, wrapped in a lambda expression									
 	/// Takes the pointer to the instance for destruction								
@@ -91,17 +91,17 @@ namespace Langulus::RTTI
 
 	/// The cloner, wrapped in a lambda expression if available						
 	/// Clone one instance to another														
-	using FClone = TFunctor<void(const void*, void*)>;
+	using FClone = TFunctor<void(const void* from, void* to)>;
 
 	/// The == operator, wrapped in a lambda expression if available				
 	/// Compares two instances for equality												
 	using FCompare = TFunctor<bool(const void*, const void*)>;
 
 	/// The copy-assignment operator, wrapped in a lambda expression				
-	using FCopy = TFunctor<void(const void*, void*)>;
+	using FCopy = TFunctor<void(const void* from, void* to)>;
 
 	/// The move-assignment operator, wrapped in a lambda expression				
-	using FMove = TFunctor<void(void*, void*)>;
+	using FMove = TFunctor<void(void* from, void* to)>;
 
 	/// The class type function, wrapped in a lambda expression						
 	/// Returns the typed memory block of the class instance							
