@@ -175,9 +175,8 @@
 		const auto offset = \
 			  reinterpret_cast<const ::Langulus::Byte*>(This) \
 			- reinterpret_cast<const ::Langulus::Byte*>(Prop); \
-		SAFETY(if (offset < 0) \
-			::Langulus::Throw<::Langulus::Except::Access>( \
-				"Property is laid (memorywise) before the owner")); \
+		LANGULUS_ASSUME(DevAssumes, offset >= 0, \
+			"Property is laid (memorywise) before the owner"); \
 		m.mOffset = static_cast<Offset>(offset); \
 		m.mCount = ::Langulus::ExtentOf<MemberType>; \
 		m.mTrait = ::Langulus::RTTI::MetaTrait::Of<trait>(); \

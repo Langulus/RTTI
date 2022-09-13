@@ -152,7 +152,7 @@ namespace Langulus::RTTI
 
 		return {
 			MetaData::Of<TO>(), 
-			[](void* to, const void* from) {
+			[](const void* from, void* to) {
 				new (to) TO {static_cast<TO>(*static_cast<const T*>(from))};
 			}
 		};
@@ -192,8 +192,9 @@ namespace Langulus::RTTI
 				const auto offset = 
 					reinterpret_cast<const Byte*>(derived) 
 				 - reinterpret_cast<const Byte*>(base);
-				SAFETY(if (offset < 0)
-					Throw<Except::Access>("Base class is laid (memorywise) after the derived"));
+
+				LANGULUS_ASSUME(DevAssumes, offset >= 0,
+					"Base class is laid (memorywise) after the derived");
 				result.mOffset = static_cast<Offset>(offset);
 			}
 		}
@@ -503,6 +504,7 @@ namespace Langulus::RTTI
 			if constexpr (requires { T::CTTI_NamedValues; }) {
 				static_assert(CT::Comparable<T, T>, 
 					"Named values specified for type, but type instances are not comparable");
+
 				constexpr auto c = ExtentOf<decltype(T::CTTI_NamedValues)>;
 				static T staticInstances[c];
 				static ::std::string staticNames[c] {};
@@ -517,8 +519,8 @@ namespace Langulus::RTTI
 
 					#if LANGULUS_FEATURE(MANAGED_REFLECTION)
 						const auto cmeta = const_cast<MetaConst*>(Database.RegisterConstant(staticNames[i]));
-						if (!cmeta)
-							Throw<Except::Meta>("Meta constant conflict on registration");
+						LANGULUS_ASSERT(cmeta, Except::Meta,
+							"Meta constant conflict on registration");
 					#else
 						staticMC[i] = ::std::make_unique<MetaConst>();
 						const auto cmeta = staticMC[i].get();
