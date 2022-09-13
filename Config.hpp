@@ -14,8 +14,7 @@
 /// speeds up meta definition comparisons.												
 /// Naming collisions will be detected upon type registration						
 /// Gives a significant overhead on program launch, no dependencies				
-#ifdef LANGULUS_ENABLE_MANAGED_REFLECTION
-	#undef LANGULUS_FEATURE_MANAGED_REFLECTION
+#ifdef LANGULUS_ENABLE_FEATURE_MANAGED_REFLECTION
 	#define LANGULUS_FEATURE_MANAGED_REFLECTION() 1
 #else
 	#define LANGULUS_FEATURE_MANAGED_REFLECTION() 0
