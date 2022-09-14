@@ -190,11 +190,11 @@ namespace Langulus::RTTI
 				const auto base = static_cast<const BASE*>(derived);
 				// Then reinterpret back to byte arrays and get difference	
 				const auto offset = 
-					reinterpret_cast<const Byte*>(derived) 
-				 - reinterpret_cast<const Byte*>(base);
+					reinterpret_cast<const Byte*>(base) -
+					reinterpret_cast<const Byte*>(derived);
 
-				LANGULUS_ASSUME(DevAssumes, offset >= 0,
-					"Base class is laid (memorywise) after the derived");
+				LANGULUS_ASSERT(offset >= 0, Except::Meta,
+					"BASE is laid (memorywise) before T");
 				result.mOffset = static_cast<Offset>(offset);
 			}
 		}
