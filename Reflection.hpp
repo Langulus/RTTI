@@ -204,10 +204,7 @@
 #include "NameOf.hpp"
 #include <vector>
 
-#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-	LANGULUS_EXCEPTION(Meta);
-#endif
-
+LANGULUS_EXCEPTION(Meta);
 
 
 /// Compile-time checks and concepts associated with RTTI							
