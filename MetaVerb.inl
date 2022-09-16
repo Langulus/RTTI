@@ -223,7 +223,7 @@ namespace Langulus::RTTI
 			// same instance																
 			return this == other;
 		#else
-			return mHash == other->mHash && mToken == other->mToken;
+			return other && mHash == other->mHash && mToken == other->mToken;
 		#endif
 	}	
    
