@@ -6,7 +6,7 @@
 /// See LICENSE file, or https://www.gnu.org/licenses									
 ///																									
 #pragma once
-#include <Langulus.RTTI.hpp>
+#include <LangulusRTTI.hpp>
 #include <cstdint>
 #include <cstddef>
 #include <vector>
