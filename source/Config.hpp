@@ -6,7 +6,7 @@
 /// See LICENSE file, or https://www.gnu.org/licenses									
 ///																									
 #pragma once
-#include <Langulus.Logger.hpp>
+#include <LangulusLogger.hpp>
 
 /// Reflections will be registered in a centralized location, allowing for		
 /// runtime type modification. Meta primitives will always be in the same		
