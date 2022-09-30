@@ -226,6 +226,9 @@ namespace Langulus::CT
 	template<class T>
 	concept Uninsertable = Decay<T>::CTTI_Uninsertable;
 
+	template<class T>
+	concept Insertable = !Uninsertable<T>;
+
 	/// A POD (Plain Old Data) type is any type with a static member				
 	/// T::CTTI_POD set to true. If no such member exists, the type is			
 	/// assumed NOT POD by default, unless ::std::is_trivial.						
@@ -357,7 +360,7 @@ namespace Langulus::CT
 {
 	/// Concept for meta definitions															
 	template<class... T>
-	concept Meta = ((Same<T, ::Langulus::RTTI::Meta> || DerivedFrom<T, ::Langulus::RTTI::Meta>) && ...);
+	concept Meta = (DerivedFrom<T, ::Langulus::RTTI::Meta> && ...);
 }
 
 
