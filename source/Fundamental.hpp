@@ -22,7 +22,7 @@ namespace Langulus::A
 	/// concept at runtime, via meta->InterpretsAs<ANumber>							
 	class Number {
 		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) ::Langulus::Real;
+		LANGULUS(CONCRETE) ::Langulus::Real;
 		~Number() = delete;
 	};
 
@@ -30,7 +30,7 @@ namespace Langulus::A
 	/// concept at runtime, via meta->InterpretsAs<AInteger>							
 	class Integer {
 		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) ::std::intptr_t;
+		LANGULUS(CONCRETE) ::std::intptr_t;
 		LANGULUS_BASES(Number);
 		~Integer() = delete;
 	};
@@ -39,7 +39,7 @@ namespace Langulus::A
 	/// concept at runtime, via meta->InterpretsAs<ASigned>							
 	class Signed {
 		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) ::Langulus::Real;
+		LANGULUS(CONCRETE) ::Langulus::Real;
 		LANGULUS_BASES(Number);
 		~Signed() = delete;
 	};
@@ -48,7 +48,7 @@ namespace Langulus::A
 	/// concept at runtime, via meta->InterpretsAs<AUnsigned>						
 	class Unsigned {
 		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) ::std::uintptr_t;
+		LANGULUS(CONCRETE) ::std::uintptr_t;
 		LANGULUS_BASES(Number);
 		~Unsigned() = delete;
 	};
@@ -57,7 +57,7 @@ namespace Langulus::A
 	/// runtime, via meta->InterpretsAs<AUnsignedInteger>								
 	class UnsignedInteger {
 		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) ::std::uintptr_t;
+		LANGULUS(CONCRETE) ::std::uintptr_t;
 		LANGULUS_BASES(Unsigned, Integer);
 		~UnsignedInteger() = delete;
 	};
@@ -66,7 +66,7 @@ namespace Langulus::A
 	/// concept at runtime, via meta->InterpretsAs<AReal>								
 	class Real {
 		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) ::Langulus::Real;
+		LANGULUS(CONCRETE) ::Langulus::Real;
 		LANGULUS_BASES(Signed);
 		~Real() = delete;
 	};
@@ -75,7 +75,7 @@ namespace Langulus::A
 	/// concept at runtime, via meta->InterpretsAs<ASignedInteger>					
 	class SignedInteger {
 		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) ::std::intptr_t;
+		LANGULUS(CONCRETE) ::std::intptr_t;
 		LANGULUS_BASES(Signed, Integer);
 		~SignedInteger() = delete;
 	};
@@ -84,7 +84,7 @@ namespace Langulus::A
 	/// concept at runtime, via meta->InterpretsAs<AText>								
 	class Text {
 		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) char8_t;
+		LANGULUS(CONCRETE) char;
 		~Text() = delete;
 	};
 
@@ -92,7 +92,7 @@ namespace Langulus::A
 	/// concept at runtime, via meta->InterpretsAs<ABool>								
 	class Bool {
 		LANGULUS(ABSTRACT) true;
-		LANGULUS(CONCRETIZABLE) bool;
+		LANGULUS(CONCRETE) bool;
 		~Bool() = delete;
 	};
 

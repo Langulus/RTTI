@@ -122,16 +122,20 @@
 #define LANGULUS_POOL_TACTIC() \
 	public: static constexpr ::Langulus::RTTI::PoolTactic CTTI_Pool = 
 
-/// You can make types concretizable, by using LANGULUS(CONCRETIZABLE) Type	
+/// You can make types concretizable, by using LANGULUS(CONCRETE) Type			
 /// When dynamically creating your abstract objects, the most concrete type	
 /// in the chain will be used instead														
-#define LANGULUS_CONCRETIZABLE() \
+#define LANGULUS_CONCRETE() \
 	public: using CTTI_Concrete = 
 
 /// You can make types producible only by executing a Verbs::Create in			
 /// a provided type																				
 #define LANGULUS_PRODUCER() \
 	public: using CTTI_Producer = 
+
+/// You can make types considered as number, by providing a number type				
+#define LANGULUS_NUMBER() \
+	public: using CTTI_Number = 
 
 /// You can make types not insertable to Anyness containers, such as some		
 /// intermediate types, like Block::KnownPointer. These types will produce		
@@ -211,23 +215,41 @@ LANGULUS_EXCEPTION(Meta);
 namespace Langulus::CT
 {
 
+	namespace Inner
+	{
+		template<class T>
+		concept Reflectable = requires {
+			{Decay<T>::Reflect()} -> Same<::Langulus::RTTI::MetaData>;
+		};
+	}
+
 	/// A reflected type is a type that has a public Reflection field				
 	/// This field is automatically added when using LANGULUS(REFLECT) macro	
 	/// inside the type you want to reflect												
-	template<class T>
-	concept Reflectable = requires {
-		{Decay<T>::Reflect()} -> Same<::Langulus::RTTI::MetaData>;
-	};
+	template<class... T>
+	concept Reflectable = (Inner::Reflectable<T> && ...);
+
+	namespace Inner
+	{
+		template<class T>
+		concept Uninsertable = Decay<T>::CTTI_Uninsertable;
+	}
 
 	/// An uninsertable type is any type with a true static member					
 	/// T::CTTI_Uninsertable. All types are insertable by default					
 	/// Useful to mark some intermediate types, that are not supposed to be		
 	/// inserted in containers																	
-	template<class T>
-	concept Uninsertable = Decay<T>::CTTI_Uninsertable;
+	template<class... T>
+	concept Uninsertable = (Inner::Uninsertable<T> && ...);
 
-	template<class T>
-	concept Insertable = !Uninsertable<T>;
+	template<class... T>
+	concept Insertable = !Uninsertable<T...>;
+
+	namespace Inner
+	{
+		template<class T>
+		concept POD = ::std::is_trivial_v<Decay<T>> || Decay<T>::CTTI_POD;
+	}
 
 	/// A POD (Plain Old Data) type is any type with a static member				
 	/// T::CTTI_POD set to true. If no such member exists, the type is			
@@ -236,8 +258,14 @@ namespace Langulus::CT
 	/// by using some batching runtime optimizations									
 	/// All POD types are also directly serializable to binary						
 	/// Use LANGULUS(POD) macro as member to tag POD types							
-	template<class T>
-	concept POD = ::std::is_trivial_v<Decay<T>> || Decay<T>::CTTI_POD;
+	template<class... T>
+	concept POD = (Inner::POD<T> && ...);
+
+	namespace Inner
+	{
+		template<class T>
+		concept Nullifiable = Decay<T>::CTTI_Nullifiable;
+	}
 
 	/// A nullifiable type is any type with a static member							
 	/// T::CTTI_Nullifiable set to true. If no such member exists, the type		
@@ -245,32 +273,44 @@ namespace Langulus::CT
 	/// Nullifiable types improve construction by using some batching				
 	/// runtime optimizations																	
 	/// Use LANGULUS(NULLIFIABLE) macro as member to tag nullifiable types		
-	template<class T>
-	concept Nullifiable = Decay<T>::CTTI_Nullifiable;
+	template<class... T>
+	concept Nullifiable = (Inner::Nullifiable<T> && ...);
+
+	namespace Inner
+	{
+		template<class T>
+		concept Concretizable = requires {
+			typename Decay<T>::CTTI_Concrete;
+		};
+	}
 
 	/// A concretizable type is any type with a member type CTTI_Concrete		
 	/// If no such member exists, the type is assumed NOT concretizable by		
 	/// default. Concretizable types provide a default concretization for		
 	/// when	allocating abstract types														
 	/// Use LANGULUS(CONCRETIZABLE) macro as member to tag such types				
-	template<class T>
-	concept Concretizable = requires {
-		typename Decay<T>::CTTI_Concrete;
-	};
+	template<class... T>
+	concept Concretizable = (Inner::Concretizable<T> && ...);
 
 	/// Get the reflected concrete type														
 	template<class T>
 	using ConcreteOf = typename Decay<T>::CTTI_Concrete;
+
+	namespace Inner
+	{
+		template<class T>
+		concept Producible = requires {
+			typename Decay<T>::CTTI_Producer;
+		};
+	}
 
 	/// A producible type is any type with a member type CTTI_Producer			
 	/// If no such member exists, the type is assumed NOT producible by			
 	/// default. Producible types can not be created at compile-time, and need	
 	/// to be produced by executing Verbs::Create in the producer's context		
 	/// Use LANGULUS(PRODUCER) macro as member to tag such types					
-	template<class T>
-	concept Producible = requires {
-		typename Decay<T>::CTTI_Producer;
-	};
+	template<class... T>
+	concept Producible = (Inner::Producible<T> && ...);
 
 	/// Get the reflected producer type														
 	template<class T>
@@ -303,6 +343,24 @@ namespace Langulus::CT
 	/// Check if all T has a dispatcher, compatible with the cv-quality of T	
 	template<class... T>
 	concept Dispatcher = ((CT::DispatcherMutable<T> || (CT::Constant<T> && CT::DispatcherConstant<T>)) && ...);
+
+	namespace Inner
+	{
+		template<class T>
+		concept CustomNumber = requires {
+			typename Decay<T>::CTTI_Number;
+		};
+	}
+
+	/// Custom number concept (either sparse or dense)									
+	/// Any type that has a static member RTTI_Number set to true					
+	template<class... T>
+	concept CustomNumber = (Inner::CustomNumber<T> && ...);
+
+	/// Number concept (either sparse or dense)											
+	/// Excludes boolean types and char types, unless wrapped in TNumber			
+	template<class... T>
+	concept Number = ((BuiltinNumber<T> || CustomNumber<T>) && ...);
 
 } // namespace Langulus::CT
 

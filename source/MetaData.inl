@@ -288,7 +288,7 @@ namespace Langulus::RTTI
 		#if LANGULUS_FEATURE(MANAGED_REFLECTION)
 			meta = Database.RegisterData(GetReflectedToken<T>());
 			if (!meta)
-				Throw<Except::Meta>("Meta data conflict on registration");
+				LANGULUS_THROW(Meta,"Meta data conflict on registration");
 		#else
 			meta = ::std::make_unique<MetaData>();
 		#endif
