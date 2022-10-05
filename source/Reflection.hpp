@@ -361,6 +361,16 @@ namespace Langulus::CT
 	/// Excludes boolean types and char types, unless wrapped in TNumber			
 	template<class... T>
 	concept Number = ((BuiltinNumber<T> || CustomNumber<T>) && ...);
+	
+	/// Dense number concept																	
+	/// Excludes boolean types and char types, unless wrapped in TNumber			
+	template<class... T>
+	concept DenseNumber = ((Number<T> && Dense<T>) && ...);
+
+	/// Sparse number concept																	
+	/// Excludes boolean types and char types, unless wrapped in TNumber			
+	template<class... T>
+	concept SparseNumber = ((Number<T> && Sparse<T>) && ...);
 
 } // namespace Langulus::CT
 
