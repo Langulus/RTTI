@@ -133,10 +133,6 @@
 #define LANGULUS_PRODUCER() \
 	public: using CTTI_Producer = 
 
-/// You can make types considered as number, by providing a number type				
-#define LANGULUS_NUMBER() \
-	public: using CTTI_Number = 
-
 /// You can make types not insertable to Anyness containers, such as some		
 /// intermediate types, like Block::KnownPointer. These types will produce		
 /// a compile-time error when a push is attempted. All reflected types are		
@@ -347,23 +343,49 @@ namespace Langulus::CT
 	namespace Inner
 	{
 		template<class T>
-		concept CustomNumber = requires {
-			typename Decay<T>::CTTI_Number;
+		concept Typed = requires {
+			typename Decay<T>::MemberType;
 		};
-	}
+
+		/// A convenience function that wraps std::underlying_type_t for enums,	
+		/// as well as anything with MemberType defined									
+		template<Dense T>
+		constexpr auto GetUnderlyingType() noexcept {
+			if constexpr (Typed<T>)
+				return (typename T::MemberType*) nullptr;
+			else if constexpr (::std::is_enum_v<T>)
+				return (::std::underlying_type_t<T>*) nullptr;
+			else
+				return (T*) nullptr;
+		};
+
+	} //namespace Langulus::CT::Inner
+
+	/// Check if a type has an underlying type defined									
+	template<class... T>
+	concept Typed = (Inner::Typed<T> && ...);
+
+	/// Get internal type of an enum, custom number, statically optimized		
+	/// container or vector																		
+	template<CT::Dense T>
+	using TypeOf = Deptr<decltype(Inner::GetUnderlyingType<T>())>;
 
 	/// Custom number concept (either sparse or dense)									
-	/// Any type that has a static member RTTI_Number set to true					
+	/// Any T that has underlying arithmetic type and is binary compatible		
 	template<class... T>
-	concept CustomNumber = (Inner::CustomNumber<T> && ...);
+	concept CustomNumber = (
+		(Inner::Typed<T> 
+			&& ::std::is_arithmetic_v<TypeOf<T>> 
+			&& sizeof(T) == sizeof(TypeOf<T>)
+		) && ...);
 
 	/// Number concept (either sparse or dense)											
-	/// Excludes boolean types and char types, unless wrapped in TNumber			
+	/// Excludes boolean and char types, unless wrapped in TNumber					
 	template<class... T>
 	concept Number = ((BuiltinNumber<T> || CustomNumber<T>) && ...);
 	
 	/// Dense number concept																	
-	/// Excludes boolean types and char types, unless wrapped in TNumber			
+	/// Excludes boolean and char types, unless wrapped in TNumber					
 	template<class... T>
 	concept DenseNumber = ((Number<T> && Dense<T>) && ...);
 
