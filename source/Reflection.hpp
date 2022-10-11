@@ -356,19 +356,31 @@ namespace Langulus::CT
 			else if constexpr (::std::is_enum_v<T>)
 				return (::std::underlying_type_t<T>*) nullptr;
 			else
-				return (T*) nullptr;
+				return (void*) nullptr;
 		};
 
 	} //namespace Langulus::CT::Inner
 
-	/// Check if a type has an underlying type defined									
-	template<class... T>
-	concept Typed = (Inner::Typed<T> && ...);
+} // namespace Langulus::CT
+
+
+namespace Langulus
+{
 
 	/// Get internal type of an enum, custom number, statically optimized		
 	/// container or vector																		
 	template<CT::Dense T>
-	using TypeOf = Deptr<decltype(Inner::GetUnderlyingType<T>())>;
+	using TypeOf = Deptr<decltype(CT::Inner::GetUnderlyingType<T>())>;
+
+} // namespace Langulus
+
+
+namespace Langulus::CT
+{
+
+	/// Check if a type has an underlying type defined									
+	template<class... T>
+	concept Typed = ((Inner::Typed<T> && !Void<TypeOf<T>>) && ...);
 
 	/// Custom number concept (either sparse or dense)									
 	/// Any T that has underlying arithmetic type and is binary compatible		
@@ -379,20 +391,29 @@ namespace Langulus::CT
 			&& sizeof(T) == sizeof(TypeOf<T>)
 		) && ...);
 
-	/// Number concept (either sparse or dense)											
-	/// Excludes boolean and char types, unless wrapped in TNumber					
+	/// Any number concept, custom or not (either sparse or dense)					
+	/// Excludes boolean and character types, unless wrapped in another type	
 	template<class... T>
 	concept Number = ((BuiltinNumber<T> || CustomNumber<T>) && ...);
 	
 	/// Dense number concept																	
-	/// Excludes boolean and char types, unless wrapped in TNumber					
+	/// Excludes boolean and character types, unless wrapped in another type	
 	template<class... T>
 	concept DenseNumber = ((Number<T> && Dense<T>) && ...);
 
 	/// Sparse number concept																	
-	/// Excludes boolean types and char types, unless wrapped in TNumber			
+	/// Excludes boolean types and character types, unless wrapped in another	
 	template<class... T>
 	concept SparseNumber = ((Number<T> && Sparse<T>) && ...);
+
+	/// Custom integer concept (wrapped in another type)								
+	/// Unlike CT::Integer, this includes character and boolean types				
+	template<class... T>
+	concept CustomInteger = ((CustomNumber<T> && ::std::integral<TypeOf<T>>) && ...);
+
+	/// Custom real concept																		
+	template<class... T>
+	concept CustomReal = ((CustomNumber<T> && ::std::floating_point<TypeOf<T>>) && ...);
 
 } // namespace Langulus::CT
 
