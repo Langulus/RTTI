@@ -384,11 +384,15 @@ namespace Langulus::CT
 
    /// Custom boolean concept (wrapped in another type)                       
    template<class... T>
-   concept CustomBool = ((Typed<T> && BuiltinBool<TypeOf<T>>) && ...);
+   concept CustomBool = ((Typed<T> &&
+      BuiltinBool<TypeOf<T>> && sizeof(T) == sizeof(TypeOf<T>)
+   ) && ...);
 
    /// Custom character concept (wrapped in another type)                     
    template<class... T>
-   concept CustomCharacter = ((Typed<T> && BuiltinCharacter<TypeOf<T>>) && ...);
+   concept CustomCharacter = ((Typed<T> &&
+      BuiltinCharacter<TypeOf<T>> && sizeof(T) == sizeof(TypeOf<T>)
+   ) && ...);
 
    /// Custom integer concept (wrapped in another type)                       
    /// Unlike CT::Integer, this includes character and boolean types          
