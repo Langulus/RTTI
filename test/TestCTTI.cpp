@@ -342,3 +342,36 @@ SCENARIO("A reflected verb with CTTI traits", "[metaverb]") {
 		}
 	}
 }
+
+TEMPLATE_TEST_CASE("TypeSuffix", "[metadata]"
+	, /*uint8_t, */uint16_t, uint32_t, uint64_t
+	, int8_t, int16_t, int32_t, int64_t
+	, Float, Double, bool
+) {
+	using T = TestType;
+
+	GIVEN("A type") {
+		WHEN("Generating a constexpr suffix") {
+			constexpr auto token = TypeSuffix<T>();
+
+			THEN("Requirements should be met") {
+				if constexpr (CT::Same<T, int8_t>)
+					REQUIRE(token == "i8");
+				else if constexpr (CT::Same<T, uint16_t>)
+					REQUIRE(token == "u16");
+				else if constexpr (CT::Same<T, int16_t>)
+					REQUIRE(token == "i16");
+				else if constexpr (CT::Same<T, unsigned int>)
+					REQUIRE(token == "u");
+				else if constexpr (CT::Same<T, int>)
+					REQUIRE(token == "i");
+				else if constexpr (CT::Same<T, Real>)
+					REQUIRE(token == "");
+				else if constexpr (CT::Same<T, Float> && !CT::Same<Real, Float>)
+					REQUIRE(token == "f");
+				else if constexpr (CT::Same<T, Double> && !CT::Same<Real, Double>)
+					REQUIRE(token == "d");
+			}
+		}
+	}
+}

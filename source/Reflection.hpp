@@ -513,13 +513,50 @@ namespace Langulus
    /// Works with both custom and builtin arithmetic types                    
    template<class T1, class T2>
    using Lossless = Conditional<
-      // Always pick real numbers over integers if available         
+      // Always pick real numbers over integers if available            
       (CT::Real<T1>&& CT::Integer<T2>)
-      // Always pick signed type if available                        
+      // Always pick signed type if available                           
       || (CT::Signed<T1> && CT::Unsigned<T2>)
-      // Always pick the larger type as a last resort                
+      // Always pick the larger type as a last resort                   
       || (sizeof(Decay<T1>) > sizeof(Decay<T2>)
    ), Decay<T1>, Decay<T2>>;
+
+   
+   /// A type naming convention for standard number types                     
+   ///   @return the suffix depending on the template argument                
+   template<class T>
+   constexpr Token TypeSuffix() {
+      if constexpr (CT::Same<T, signed int>)
+         return "i";
+      else if constexpr (CT::Same<T, unsigned int>)
+         return "u";
+      else if constexpr (CT::Same<T, Real>)
+         return "";
+      else if constexpr (CT::Same<T, ::std::uint8_t>)
+         return "u8";
+      else if constexpr (CT::Same<T, ::std::uint16_t>)
+         return "u16";
+      else if constexpr (CT::Same<T, ::std::uint32_t>)
+         return "u32";
+      else if constexpr (CT::Same<T, ::std::uint64_t>)
+         return "u64";
+      else if constexpr (CT::Same<T, ::std::int8_t>)
+         return "i8";
+      else if constexpr (CT::Same<T, ::std::int16_t>)
+         return "i16";
+      else if constexpr (CT::Same<T, ::std::int32_t>)
+         return "i32";
+      else if constexpr (CT::Same<T, ::std::int64_t>)
+         return "i64";
+      else if constexpr (CT::Same<T, Float>)
+         return "f";
+      else if constexpr (CT::Same<T, Double>)
+         return "d";
+      else if constexpr (CT::Same<T, bool>)
+         return "b";
+      else
+         LANGULUS_ERROR("Unsupported atomic size");
+   }
 
 } // namespace Langulus
 
