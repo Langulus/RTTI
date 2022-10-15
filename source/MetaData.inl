@@ -198,6 +198,18 @@ namespace Langulus::RTTI
             result.mOffset = static_cast<Offset>(offset);
          }
       }
+      else {
+         // If not inherited in C++, then always imposed                
+         // Imposed bases are excluded from serialization               
+         result.mImposed = true;
+
+         if constexpr (sizeof(BASE) < sizeof(T)) {
+            // The imposed type has a chance of being binary compatible 
+            // when having a specific count                             
+            result.mBinaryCompatible = 0 == sizeof(T) % sizeof(BASE);
+            result.mCount = sizeof(T) / sizeof(BASE);
+         }
+      }
 
       // If sizes match and there's no byte offset, then the base and	
       // the derived type are binary compatible									
@@ -205,31 +217,6 @@ namespace Langulus::RTTI
          result.mBinaryCompatible = (0 == result.mOffset);
       return result;
    }
-
-   /// Create a mapping to a type                                             
-   /// This will check if types are binary compatible by size, but no         
-   /// further checks are done. Use at your own risk                          
-   /// It also makes the base imposed, which excludes it from serialization   
-   ///   @return the generated base descriptor                                
-   template<class T, class BASE, Count COUNT>
-   Base Base::Map() noexcept {
-      static_assert(!CT::Same<T, BASE>, 
-         "Base duplication not allowed to avoid regress");
-      static_assert(sizeof(BASE) * COUNT == sizeof(T),
-         "Size mismatch while mapping types");
-      static_assert(COUNT > 0,
-         "Invalid mapping of zero count");
-      static_assert(CT::Abstract<BASE>,
-         "Can't map to an abstract type - size is always zero");
-
-      Base result;
-      result.mBinaryCompatible = true;
-      result.mType = MetaData::Of<BASE>();
-      result.mCount = COUNT;
-      result.mImposed = true;
-      return result;
-   }
-
 
    ///                                                                        
    ///   MetaData implementation                                              

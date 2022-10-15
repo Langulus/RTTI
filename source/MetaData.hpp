@@ -277,9 +277,6 @@ namespace Langulus::RTTI
 
       template<CT::Dense T, CT::Dense BASE>
       NOD() static Base From() SAFETY_NOEXCEPT();
-
-      template<class T, class BASE, Count COUNT>
-      NOD() static Base Map() noexcept;
    };
 
    using BaseList = ::std::span<const Base>;
