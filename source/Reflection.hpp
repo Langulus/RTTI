@@ -351,12 +351,13 @@ namespace Langulus::CT
       /// as well as anything with MemberType defined                         
       template<Dense T>
       constexpr auto GetUnderlyingType() noexcept {
-         if constexpr (Typed<T>)
-            return (typename T::MemberType*) nullptr;
-         else if constexpr (::std::is_enum_v<T>)
-            return (::std::underlying_type_t<T>*) nullptr;
+         using DT = Decay<T>;
+         if constexpr (Typed<DT>)
+            return (typename DT::MemberType*) nullptr;
+         else if constexpr (::std::is_enum_v<DT>)
+            return (::std::underlying_type_t<DT>*) nullptr;
          else
-            return (void*) nullptr;
+            return (DT*) nullptr;
       };
 
    } //namespace Langulus::CT::Inner
@@ -380,7 +381,7 @@ namespace Langulus::CT
 
    /// Check if a type has an underlying type defined                         
    template<class... T>
-   concept Typed = ((Inner::Typed<T> && !Void<TypeOf<T>>) && ...);
+   concept Typed = ((Inner::Typed<T> && Data<TypeOf<T>>) && ...);
 
    /// Custom boolean concept (wrapped in another type)                       
    template<class... T>
