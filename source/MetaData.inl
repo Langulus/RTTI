@@ -203,7 +203,7 @@ namespace Langulus::RTTI
          // Imposed bases are excluded from serialization               
          result.mImposed = true;
 
-         if constexpr (sizeof(BASE) < sizeof(T)) {
+         if constexpr (!CT::Abstract<BASE> && sizeof(BASE) < sizeof(T)) {
             // The imposed type has a chance of being binary compatible 
             // when having a specific count                             
             result.mBinaryCompatible = 0 == sizeof(T) % sizeof(BASE);
