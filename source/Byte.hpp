@@ -80,43 +80,43 @@ namespace Langulus
          return mValue | rhs.mValue;
       }
 
-      NOD() constexpr Byte& operator += (const Byte& rhs) noexcept {
+      constexpr Byte& operator += (const Byte& rhs) noexcept {
          mValue += rhs.mValue;
          return *this;
       }
-      NOD() constexpr Byte& operator -= (const Byte& rhs) noexcept {
+      constexpr Byte& operator -= (const Byte& rhs) noexcept {
          mValue -= rhs.mValue;
          return *this;
       }
-      NOD() constexpr Byte& operator *= (const Byte& rhs) noexcept {
+      constexpr Byte& operator *= (const Byte& rhs) noexcept {
          mValue *= rhs.mValue;
          return *this;
       }
-      NOD() constexpr Byte& operator /= (const Byte& rhs) noexcept {
+      constexpr Byte& operator /= (const Byte& rhs) noexcept {
          mValue /= rhs.mValue;
          return *this;
       }
-      NOD() constexpr Byte& operator %= (const Byte& rhs) noexcept {
+      constexpr Byte& operator %= (const Byte& rhs) noexcept {
          mValue %= rhs.mValue;
          return *this;
       }
-      NOD() constexpr Byte& operator <<= (const Byte& rhs) noexcept {
+      constexpr Byte& operator <<= (const Byte& rhs) noexcept {
          mValue <<= rhs.mValue;
          return *this;
       }
-      NOD() constexpr Byte& operator >>= (const Byte& rhs) noexcept {
+      constexpr Byte& operator >>= (const Byte& rhs) noexcept {
          mValue >>= rhs.mValue;
          return *this;
       }
-      NOD() constexpr Byte& operator ^= (const Byte& rhs) noexcept {
+      constexpr Byte& operator ^= (const Byte& rhs) noexcept {
          mValue ^= rhs.mValue;
          return *this;
       }
-      NOD() constexpr Byte& operator &= (const Byte& rhs) noexcept {
+      constexpr Byte& operator &= (const Byte& rhs) noexcept {
          mValue &= rhs.mValue;
          return *this;
       }
-      NOD() constexpr Byte& operator |= (const Byte& rhs) noexcept {
+      constexpr Byte& operator |= (const Byte& rhs) noexcept {
          mValue |= rhs.mValue;
          return *this;
       }
