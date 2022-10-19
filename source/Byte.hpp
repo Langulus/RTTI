@@ -42,10 +42,11 @@ namespace Langulus
       constexpr explicit operator const ::std::uint8_t& () const noexcept {
          return mValue;
       }
-
-      /// All conversions are explicit only, to preserve type                 
       constexpr explicit operator ::std::uint8_t& () noexcept {
          return mValue;
+      }
+      constexpr explicit operator int () noexcept {
+         return static_cast<int>(mValue);
       }
 
       NOD() constexpr Byte operator + (const Byte& rhs) const noexcept {
