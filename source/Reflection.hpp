@@ -509,6 +509,19 @@ namespace Langulus::CT
 namespace Langulus
 {
 
+   /// Casts a number to its underlying type                                  
+   template<CT::DenseNumber T>
+   NOD() LANGULUS(ALWAYSINLINE) constexpr decltype(auto) BuiltinCast(const T& a) noexcept {
+      if constexpr (CT::BuiltinNumber<T>) {
+         // Already built-in, just forward it                           
+         return a;
+      }
+      else {
+         // Explicitly cast to a reference of the contained type        
+         return static_cast<const TypeOf<T>&>(a);
+      }
+   }
+
    /// When given two arithmetic types, choose the one that is most lossless  
    /// after an arithmetic operation of any kind is performed between both    
    /// Works with both custom and builtin arithmetic types                    
@@ -521,7 +534,6 @@ namespace Langulus
       // Always pick the larger type as a last resort                   
       || (sizeof(Decay<T1>) > sizeof(Decay<T2>)
    ), Decay<T1>, Decay<T2>>;
-
    
    /// A type naming convention for standard number types                     
    ///   @return the suffix depending on the template argument                
