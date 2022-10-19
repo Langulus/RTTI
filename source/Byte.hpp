@@ -22,10 +22,7 @@ namespace Langulus
       LANGULUS(POD) true;
       LANGULUS(NULLIFIABLE) true;
 
-      using MemberType = ::std::uint8_t;
-      static constexpr Count MemberCount {1};
-
-      MemberType mValue {};
+      ::std::uint8_t mValue {};
 
    public:
       constexpr Byte() noexcept = default;
