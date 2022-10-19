@@ -654,6 +654,7 @@ namespace std
    };
 }
 
+#include "Byte.hpp"
 #include "MetaData.hpp"
 #include "MetaTrait.hpp"
 #include "MetaVerb.hpp"
