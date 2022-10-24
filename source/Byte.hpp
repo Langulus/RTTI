@@ -45,8 +45,10 @@ namespace Langulus
       constexpr explicit operator ::std::uint8_t& () noexcept {
          return mValue;
       }
-      constexpr explicit operator int () noexcept {
-         return static_cast<int>(mValue);
+
+      template<CT::BuiltinNumber T>
+      constexpr explicit operator T () const noexcept requires (CT::Dense<T> && !CT::Same<T, ::std::uint8_t>) {
+         return static_cast<T>(mValue);
       }
 
       NOD() constexpr Byte operator + (const Byte& rhs) const noexcept {
