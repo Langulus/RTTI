@@ -616,7 +616,7 @@ namespace Langulus::RTTI
    struct CMetaTriplet {
       Token mToken;
       T mValue;
-      Token mInfo;
+      Token mInfo {};
    };
 
 } // namespace Langulus::RTTI
@@ -676,7 +676,10 @@ namespace std
       vector<Hash> coalesced;
       for (auto& i : k)
          coalesced.emplace_back(i->mHash);
-      return ::Langulus::HashBytes<::Langulus::DefaultHashSeed, false>(coalesced.data(), coalesced.size() * sizeof(Hash)).mHash;
+      return ::Langulus::HashBytes<::Langulus::DefaultHashSeed, false>(
+         coalesced.data(), 
+         static_cast<int>(coalesced.size() * sizeof(Hash))
+      ).mHash;
    }
    size_t hash<TMeta>::operator()(TMeta k) const noexcept {
       return k->mHash.mHash;

@@ -56,7 +56,7 @@ namespace Langulus::RTTI
    typename Interface::Lowercase Interface::ToLowercase(const Token& token) noexcept {
       Lowercase lc {token};
       ::std::transform(lc.begin(), lc.end(), lc.begin(),
-         [](unsigned char c) { return ::std::tolower(c); }
+         [](char c) { return static_cast<char>(::std::tolower(c)); }
       );
       return Move(lc);
    }

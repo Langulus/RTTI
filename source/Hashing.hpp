@@ -479,7 +479,7 @@ namespace Langulus
    ///   @param len - number of bytes to hash                                 
    ///   @return the hash                                                     
    template<uint32_t SEED = DefaultHashSeed, bool TAIL = true>
-   inline Hash HashBytes(void const* ptr, size_t len) noexcept {
+   inline Hash HashBytes(void const* ptr, int len) noexcept {
       Hash result;
       if constexpr (sizeof(Hash) == 4)
          Inner::MurmurHash3_x86_32<TAIL, SEED>(ptr, len, &result);

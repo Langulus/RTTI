@@ -27,7 +27,7 @@ namespace Langulus::RTTI
    ///   The RTTI interface                                                   
    ///                                                                        
    class Interface {
-   friend class Inner::InterfaceInitializer;
+   friend struct Inner::InterfaceInitializer;
    private:
       using Lowercase = ::std::string;
       using MetaList = ::std::unordered_set<const Meta*>;

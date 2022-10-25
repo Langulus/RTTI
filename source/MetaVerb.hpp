@@ -22,7 +22,7 @@ namespace Langulus::RTTI
    ///                                                                        
    ///   Meta verb                                                            
    ///                                                                        
-   struct MetaVerb : public Meta {
+   struct MetaVerb final : public Meta {
       LANGULUS(NAME) "VMeta";
       LANGULUS_BASES(Meta);
 

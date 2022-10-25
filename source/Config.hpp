@@ -19,3 +19,13 @@
 #else
    #define LANGULUS_FEATURE_MANAGED_REFLECTION() 0
 #endif
+
+/// Memory allocations will be pooled, authority will be tracked,             
+/// memory will be reused whenever possible, and you can also tweak           
+/// runtime allocation strategies on per-type basis                           
+/// Significantly improves performance, no dependencies                       
+#ifdef LANGULUS_ENABLE_FEATURE_MANAGED_MEMORY
+   #define LANGULUS_FEATURE_MANAGED_MEMORY() 1
+#else
+   #define LANGULUS_FEATURE_MANAGED_MEMORY() 0
+#endif

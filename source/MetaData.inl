@@ -499,7 +499,7 @@ namespace Langulus::RTTI
                static constinit ::std::unique_ptr<MetaConst> staticMC[c] {};
             #endif
 
-            for (int i = 0; i < c; ++i) {
+            for (Offset i = 0; i < c; ++i) {
                staticNames[i] += generated.mToken;
                staticNames[i] += "::";
                staticNames[i] += T::CTTI_NamedValues[i].mToken;

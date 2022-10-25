@@ -301,7 +301,7 @@ namespace Langulus::RTTI
    }
 
    template<class T>
-   NOD() constexpr Size Inner::NameOfEstimate(Overrider<T>&& a) noexcept {
+   NOD() constexpr Size Inner::NameOfEstimate(Overrider<T>&&) noexcept {
       return Inner::NameOf(Overrider<T>{}).size();
    }
 
@@ -318,7 +318,7 @@ namespace Langulus::RTTI
    NOD() constexpr Size Inner::NameSplitAndAppend(char* buffer) noexcept {
       auto original = ::Langulus::RTTI::NameOf<HEAD>();
       if constexpr (sizeof...(TAIL) > 0) {
-         int i = 0;
+         Offset i = 0;
          for (; i < original.size(); ++i)
             buffer[i] = original[i];
          buffer[i] = ','; ++i;
@@ -326,7 +326,7 @@ namespace Langulus::RTTI
          return original.size() + 2 + NameSplitAndAppend<TAIL...>(buffer + i);
       }
       else {
-         for (int i = 0; i < original.size(); ++i)
+         for (Offset i = 0; i < original.size(); ++i)
             buffer[i] = original[i];
          return original.size();
       }

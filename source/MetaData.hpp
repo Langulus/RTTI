@@ -51,6 +51,15 @@ namespace Langulus::CT
 
 } // namespace Langulus::CT
 
+namespace Langulus::Anyness::Inner
+{
+   #if LANGULUS_FEATURE(MANAGED_MEMORY)
+      class Pool;
+   #else
+      using Pool = void;
+   #endif
+}
+
 namespace Langulus::RTTI
 {
 
@@ -69,19 +78,16 @@ namespace Langulus::RTTI
    enum class PoolTactic {
       // Data instances will be pooled in the default pool chain        
       // If that pool chain becomes too long, it becomes costly to find 
-      // entries. Works both with managed and non-managed reflection    
+      // entries                                                        
       Default = 0,
 
       // Data instances will be pooled based on their allocation page   
       // There will be pools dedicated for each allocation page size    
       // This effectively narrows the search for entries a bit          
-      // This works both with managed and non-managed reflection        
       Size,
 
       // Data instances will be pooled based on their type              
       // Each meta definition will have its own pool chain              
-      // This works only with managed reflection, otherwise acts as     
-      // the PoolTactic::Size option                                    
       Type
    };
 
@@ -212,7 +218,7 @@ namespace Langulus::RTTI
    ///                                                                        
    ///   Meta constant, used to reflect named values for enums                
    ///                                                                        
-   struct MetaConst : public Meta {
+   struct MetaConst final : public Meta {
       LANGULUS(NAME) "CMeta";
       LANGULUS_BASES(Meta);
 
@@ -285,7 +291,7 @@ namespace Langulus::RTTI
    ///                                                                        
    ///   Meta data                                                            
    ///                                                                        
-   struct MetaData : public Meta {
+   struct MetaData final : public Meta {
       LANGULUS(NAME) "DMeta";
       LANGULUS_BASES(Meta);
 
@@ -339,6 +345,8 @@ namespace Langulus::RTTI
       Token mSuffix {};
       // The pooling tactic used for the type                           
       PoolTactic mPoolTactic = PoolTactic::Default;
+      // The pool chain for the type                                    
+      Anyness::Inner::Pool* mPool {};
 
       // Default constructor wrapped in a lambda upon reflection        
       FDefaultConstruct mDefaultConstructor;
