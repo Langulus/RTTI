@@ -147,11 +147,11 @@ public:
 		return member;
 	}
 
-	void Create(Flow::Verb& v) const {
+	void Create(Flow::Verb&) const {
 		//++member;
 	}
 
-	void Create(Flow::Verb& v) {
+	void Create(Flow::Verb&) {
 		++member;
 	}
 
