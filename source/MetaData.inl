@@ -179,16 +179,16 @@ namespace Langulus::RTTI
       result.mType = MetaData::Of<BASE>();
 
       if constexpr (CT::DerivedFrom<T, BASE>) {
-         // This will fail if base is private									
-         // This is detectable by is_convertible_v								
+         // This will fail if base is private                           
+         // This is detectable by is_convertible_v                      
          if constexpr (::std::is_convertible_v<T*, BASE*>) {
-            // The devil's work, right here										
+            // The devil's work, right here                             
             alignas(T) Byte storage[sizeof(T)];
-            // First reinterpret the storage as T								
+            // First reinterpret the storage as T                       
             const auto derived = reinterpret_cast<const T*>(storage);
-            // Then cast it down to base											
+            // Then cast it down to base                                
             const auto base = static_cast<const BASE*>(derived);
-            // Then reinterpret back to byte arrays and get difference	
+            // Then reinterpret back to byte arrays and get difference  
             const auto offset = 
                reinterpret_cast<const Byte*>(base) -
                reinterpret_cast<const Byte*>(derived);
@@ -211,8 +211,8 @@ namespace Langulus::RTTI
          }
       }
 
-      // If sizes match and there's no byte offset, then the base and	
-      // the derived type are binary compatible									
+      // If sizes match and there's no byte offset, then the base and   
+      // the derived type are binary compatible                         
       if constexpr (sizeof(BASE) == sizeof(T))
          result.mBinaryCompatible = (0 == result.mOffset);
       return result;
@@ -505,7 +505,8 @@ namespace Langulus::RTTI
                staticNames[i] += T::CTTI_NamedValues[i].mToken;
 
                #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-                  const auto cmeta = const_cast<MetaConst*>(Database.RegisterConstant(staticNames[i]));
+                  const auto cmeta = const_cast<MetaConst*>(
+                     Database.RegisterConstant(staticNames[i]));
                   LANGULUS_ASSERT(cmeta, Except::Meta,
                      "Meta constant conflict on registration");
                #else
@@ -516,7 +517,10 @@ namespace Langulus::RTTI
                cmeta->mToken = staticNames[i];
                cmeta->mInfo = T::CTTI_NamedValues[i].mInfo;
                cmeta->mCppName = cmeta->mToken;
-               cmeta->mHash = HashBytes(cmeta->mToken.data(), cmeta->mToken.size());
+               cmeta->mHash = HashBytes(
+                  cmeta->mToken.data(), 
+                  static_cast<int>(cmeta->mToken.size())
+               );
                cmeta->mValueType = &generated;
                new (staticInstances + i) T {T::CTTI_NamedValues[i].mValue};
                cmeta->mPtrToValue = staticInstances + i;
@@ -706,6 +710,15 @@ namespace Langulus::RTTI
    ///   @return the number of matching members                               
    inline Count MetaData::GetMemberCount(TMeta trait, DMeta type, Offset offset) const noexcept {
       return GetMemberCountInner(trait, type, offset);
+   }
+
+   /// Count the number of reflected members, in non-imposed bases included   
+   ///   @return the number of members                                        
+   inline Count MetaData::GetMemberCount() const noexcept {
+      Count result = mMembers.size();
+      for (auto& base : mBases)
+         result += base.mType->GetMemberCount();
+      return result;
    }
 
    /// Get the most concrete type                                             

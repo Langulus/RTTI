@@ -426,6 +426,7 @@ namespace Langulus::RTTI
 
       NOD() const Member* GetMember(TMeta, DMeta = nullptr, Offset = 0) const noexcept;
       NOD() Count GetMemberCount(TMeta, DMeta = nullptr, Offset = 0) const noexcept;
+      NOD() Count GetMemberCount() const noexcept;
 
       //                                                                
       // Ability management                                             
