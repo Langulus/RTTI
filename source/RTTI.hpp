@@ -77,6 +77,6 @@ namespace Langulus::RTTI
    ///                                                                        
    ///   The global RTTI instance, initialized via a schwarz counter          
    ///                                                                        
-   extern Interface& Database;
+   LANGULUS_API(RTTI) extern Interface& Database;
 
 } // namespace Langulus::RTTI

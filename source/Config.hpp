@@ -29,3 +29,9 @@
 #else
    #define LANGULUS_FEATURE_MANAGED_MEMORY() 0
 #endif
+
+#if defined(LANGULUS_EXPORT_ALL) || defined(LANGULUS_EXPORT_RTTI)
+   #define LANGULUS_API_RTTI() LANGULUS_EXPORT()
+#else
+   #define LANGULUS_API_RTTI() LANGULUS_IMPORT()
+#endif
