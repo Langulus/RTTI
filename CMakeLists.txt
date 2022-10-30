@@ -6,6 +6,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Check if this project is built as standalone, or a part of something else
 if(PROJECT_IS_TOP_LEVEL)
+    if(LANGULUS_BUILD_SHARED_LIBRARIES)
+        set(LANGULUS_LIBRARY_TYPE SHARED)
+    else()
+        set(LANGULUS_LIBRARY_TYPE STATIC)
+    endif()
+
     find_package(Git REQUIRED)
     execute_process(
         COMMAND ${GIT_EXECUTABLE} submodule update --init -- cmake 
@@ -24,11 +30,13 @@ if(PROJECT_IS_TOP_LEVEL)
     add_compile_definitions(LANGULUS_ENABLE_TESTING)
 	enable_testing()
 	add_subdirectory(test)
+else()
+    set(LANGULUS_LIBRARY_TYPE OBJECT)
 endif()
 
 # Build and install RTTI library
 if(LANGULUS_FEATURE_MANAGED_REFLECTION)
-    add_library(Langulus.RTTI source/RTTI.cpp)
+    add_library(Langulus.RTTI ${LANGULUS_LIBRARY_TYPE} source/RTTI.cpp)
     target_include_directories(Langulus.RTTI PUBLIC include)
     target_link_libraries(Langulus.RTTI PUBLIC Langulus.Logger)
 else()
