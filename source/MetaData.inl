@@ -522,7 +522,7 @@ namespace Langulus::RTTI
                   static_cast<int>(cmeta->mToken.size())
                );
                cmeta->mValueType = &generated;
-               new (staticInstances + i) T {T::CTTI_NamedValues[i].mValue};
+               new (staticInstances + i) T {{T::CTTI_NamedValues[i].mValue}};
                cmeta->mPtrToValue = staticInstances + i;
 
                generated.mNamedValues.emplace_back(cmeta);
