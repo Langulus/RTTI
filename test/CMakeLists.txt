@@ -15,7 +15,7 @@ if(LANGULUS_FEATURE_MANAGED_REFLECTION)
 else()
 	add_executable(Test.RTTI Main.cpp TestCTTI.cpp)
 endif()
-target_link_libraries(Test.RTTI PRIVATE fmt Langulus.RTTI Catch2)
+target_link_libraries(Test.RTTI PRIVATE Langulus.RTTI Catch2)
 
 if (MSVC)
     target_compile_options(Test.RTTI PRIVATE /bigobj)
