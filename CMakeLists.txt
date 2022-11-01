@@ -4,9 +4,10 @@ project(Langulus.RTTI)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Check if this project is built as standalone, or a part of something else
+# Check if this project is built as standalone, or a part of something else 
 if(PROJECT_IS_TOP_LEVEL)
     if(LANGULUS_BUILD_SHARED_LIBRARIES)
+        add_compile_definitions(LANGULUS_EXPORT_ALL)
         set(LANGULUS_LIBRARY_TYPE SHARED)
     else()
         set(LANGULUS_LIBRARY_TYPE STATIC)
@@ -23,7 +24,6 @@ if(PROJECT_IS_TOP_LEVEL)
     include(HandleLangulusFeatures)
 
     handle_langulus_features()
-
     fetch_langulus_module(Core)
     fetch_langulus_module(Logger)
 
@@ -34,7 +34,7 @@ else()
     set(LANGULUS_LIBRARY_TYPE OBJECT)
 endif()
 
-# Build and install RTTI library
+# Build and install RTTI library                                            
 if(LANGULUS_FEATURE_MANAGED_REFLECTION)
     add_library(Langulus.RTTI ${LANGULUS_LIBRARY_TYPE} source/RTTI.cpp)
     target_include_directories(Langulus.RTTI PUBLIC include)

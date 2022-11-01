@@ -1,6 +1,6 @@
-project(Langulus_Test_RTTI)
+project(Langulus.RTTI.Test)
 
-# Configure Catch2 library
+# Configure Catch2 library													
 message(STATUS "Configuring external project: Catch2...")
 download_project(
 	PROJ                Catch2

@@ -272,7 +272,8 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
 				REQUIRE(meta->mBases[0].mImposed == false);
 				REQUIRE(meta->mBases[0].mBinaryCompatible == false);
 				REQUIRE(meta->mBases[0].mCount == 1);
-				REQUIRE(meta->mBases[0].mOffset == baseoffset);
+				REQUIRE(baseoffset >= 0);
+				REQUIRE(meta->mBases[0].mOffset == static_cast<Offset>(baseoffset));
 
 				REQUIRE(meta->mAbilities.size() == 1);
 				REQUIRE(meta->mAbilities.begin()->first->Is<Verbs::Create>());
