@@ -34,13 +34,16 @@ else()
     set(LANGULUS_LIBRARY_TYPE OBJECT)
 endif()
 
-# Build and install RTTI library                                            
+# Build and install library                                                 
 if(LANGULUS_FEATURE_MANAGED_REFLECTION)
-    add_library(Langulus.RTTI ${LANGULUS_LIBRARY_TYPE} source/RTTI.cpp)
-    target_include_directories(Langulus.RTTI PUBLIC include)
-    target_link_libraries(Langulus.RTTI PUBLIC Langulus.Logger)
-else()
-    add_library(Langulus.RTTI INTERFACE)
-    target_include_directories(Langulus.RTTI INTERFACE include)
-    target_link_libraries(Langulus.RTTI INTERFACE Langulus.Logger)
+    set(ADDITIONAL_RTTI_CPP_FILES source/RTTI.cpp)
 endif()
+
+add_library(Langulus.RTTI ${LANGULUS_LIBRARY_TYPE}
+    ${ADDITIONAL_RTTI_CPP_FILES}
+    $<TARGET_OBJECTS:Langulus.Logger>
+)
+target_include_directories(Langulus.RTTI
+    PUBLIC      include
+                $<TARGET_PROPERTY:Langulus.Logger,INCLUDE_DIRECTORIES>
+)

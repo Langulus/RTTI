@@ -119,6 +119,8 @@ namespace Verbs
 }
 
 struct ImplicitlyReflectedData {
+   LANGULUS(POD) true;
+
    enum Named {
       One, Two, Three
    };
