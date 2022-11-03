@@ -74,6 +74,7 @@ namespace Langulus::RTTI
       void Unregister(TMeta) noexcept;
       void Unregister(VMeta) noexcept;
       void Unregister(CMeta) noexcept;
+      void Unregister(const Meta*) noexcept;
    };
 
    ///                                                                        

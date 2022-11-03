@@ -330,6 +330,19 @@ namespace Langulus::RTTI
       delete found;
    }
 
+   /// Unregister a constant definition                                       
+   ///   @param definition - the definition to remove                         
+   void Interface::Unregister(CMeta definition) noexcept {
+      const auto lc = ToLowercase(definition->mToken);
+      const auto found = GetMetaConstant(lc);
+      if (!found)
+         return;
+
+      mMetaConstants.erase(lc);
+      UnregisterAmbiguous(definition->mToken, definition);
+      delete found;
+   }
+
    /// Unregister a verb definition                                           
    ///   @param definition - the definition to remove                         
    void Interface::Unregister(VMeta definition) noexcept {
@@ -352,6 +365,26 @@ namespace Langulus::RTTI
 
       mUniqueVerbs.erase(found);
       delete found;
+   }
+
+   /// Unregister an unknown definition                                       
+   ///   @param definition - the definition to remove                         
+   void Interface::Unregister(const Meta* definition) noexcept {
+      auto asdata = dynamic_cast<DMeta>(definition);
+      if (asdata)
+         Unregister(asdata);
+
+      auto asverb = dynamic_cast<VMeta>(definition);
+      if (asverb)
+         Unregister(asverb);
+
+      auto astrait = dynamic_cast<TMeta>(definition);
+      if (astrait)
+         Unregister(astrait);
+
+      auto asconst = dynamic_cast<CMeta>(definition);
+      if (asconst)
+         Unregister(asconst);
    }
 
 } // namespace Langulus::RTTI
