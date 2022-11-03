@@ -16,10 +16,12 @@ namespace Langulus::RTTI
    namespace Inner
    {
       /// Static initializer for every translation unit                       
-      static struct InterfaceInitializer {
+      struct InterfaceInitializer {
          InterfaceInitializer();
          ~InterfaceInitializer();
-      } InterfaceInitializerInstance;
+      };
+
+      LANGULUS_API(RTTI) extern InterfaceInitializer InterfaceInitializerInstance;
    }
 
 
