@@ -483,7 +483,7 @@ namespace Langulus::RTTI
       template<CT::Data T>
       NOD() constexpr bool Is() const;
 
-      constexpr bool operator == (const MetaData&) const noexcept;
+      //constexpr bool operator == (const MetaData&) const noexcept;
    };
 
    template<CT::Data T, bool ADVANCED = false>

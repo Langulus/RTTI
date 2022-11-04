@@ -274,8 +274,6 @@ namespace Langulus::RTTI
       // reflection function might end up forever looping otherwise     
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          meta = Database.RegisterData(GetReflectedToken<T>());
-         if (!meta)
-            LANGULUS_THROW(Meta,"Meta data conflict on registration");
       #else
          meta = ::std::make_unique<MetaData>();
       #endif
@@ -1071,9 +1069,9 @@ namespace Langulus::RTTI
       return Is(MetaData::Of<Decay<T>>());
    }
 
-   constexpr bool MetaData::operator == (const MetaData& rhs) const noexcept {
+   /*constexpr bool MetaData::operator == (const MetaData& rhs) const noexcept {
       return Is(&rhs);
-   }
+   }*/
 
    /// Get a size based on reflected allocation page and count (unsafe)       
    ///   @attention assumes byteSize is not zero                              

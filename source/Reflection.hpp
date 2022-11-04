@@ -594,15 +594,18 @@ namespace Langulus::RTTI
       // enabled                                                        
       Token mToken;
       // Each reflection may or may not have some info                  
-      Token mInfo = "<no info provided>";
+      Token mInfo {"<no info provided>"};
       // Original name of the type                                      
       Token mCppName;
       // Each reflected type has an unique hash                         
       Hash mHash {};
       // Major version                                                  
-      Count mVersionMajor = 1;
+      Count mVersionMajor {1};
       // Minor version                                                  
-      Count mVersionMinor = 0;
+      Count mVersionMinor {0};
+      // References, increased each time a definition is merged,        
+      // and decreases each time a definition is unregistered           
+      Count mReferences {1};
 
       NOD() const Hash& GetHash() const noexcept;
 

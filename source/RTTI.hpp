@@ -27,6 +27,7 @@ namespace Langulus::RTTI
 
    ///                                                                        
    ///   The RTTI interface                                                   
+   /// Available only if managed reflection feature is enabled                
    ///                                                                        
    class Interface {
    friend struct Inner::InterfaceInitializer;
@@ -65,16 +66,16 @@ namespace Langulus::RTTI
       NOD() VMeta GetOperator(const Token&) const noexcept;
       NOD() const MetaList& GetAmbiguousMeta(const Token&) const noexcept;
 
-      NOD() DMeta RegisterData(const Token&) noexcept;
-      NOD() CMeta RegisterConstant(const Token&) noexcept;
-      NOD() TMeta RegisterTrait(const Token&) noexcept;
-      NOD() VMeta RegisterVerb(const Token&, const Token&, const Token& = {}, const Token& = {}) noexcept;
+      NOD() DMeta RegisterData(const Token&) SAFETY_NOEXCEPT();
+      NOD() CMeta RegisterConstant(const Token&) SAFETY_NOEXCEPT();
+      NOD() TMeta RegisterTrait(const Token&) SAFETY_NOEXCEPT();
+      NOD() VMeta RegisterVerb(const Token&, const Token&, const Token& = {}, const Token& = {}) SAFETY_NOEXCEPT();
 
-      void Unregister(DMeta) noexcept;
-      void Unregister(TMeta) noexcept;
-      void Unregister(VMeta) noexcept;
-      void Unregister(CMeta) noexcept;
-      void Unregister(const Meta*) noexcept;
+      void Unregister(DMeta) SAFETY_NOEXCEPT();
+      void Unregister(TMeta) SAFETY_NOEXCEPT();
+      void Unregister(VMeta) SAFETY_NOEXCEPT();
+      void Unregister(CMeta) SAFETY_NOEXCEPT();
+      void Unregister(const Meta*) SAFETY_NOEXCEPT();
    };
 
    ///                                                                        

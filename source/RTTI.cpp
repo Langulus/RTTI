@@ -189,16 +189,13 @@ namespace Langulus::RTTI
    }
 
    /// Register a data definition                                             
+   ///   @attention assumes token is not yet registered as data               
    ///   @param token - the data token to reserve                             
-   ///   @return the newly defined meta data, or nullptr if a conflict or     
-   ///           out-of-memory occured                                        
-   DMeta Interface::RegisterData(const Token& token) noexcept {
+   ///   @return the newly defined meta data for that token                   
+   DMeta Interface::RegisterData(const Token& token) SAFETY_NOEXCEPT() {
       auto lc = ToLowercase(token);
-      const auto found = GetMetaData(lc);
-      if (found) {
-         // Conflicting type                                            
-         return nullptr;
-      }
+      LANGULUS_ASSUME(DevAssumes, !GetMetaData(lc),
+         "Data already registered");
 
       // If reached, then not found, so insert a new definition         
       const auto newDefinition = new MetaData {};
@@ -211,16 +208,13 @@ namespace Langulus::RTTI
    }
 
    /// Register a constant definition                                         
+   ///   @attention assumes token is not yet registered as constant           
    ///   @param token - the constant token to reserve                         
-   ///   @return the newly defined meta constant, or nullptr if a conflict or 
-   ///           out-of-memory occured                                        
-   CMeta Interface::RegisterConstant(const Token& token) noexcept {
+   ///   @return the newly defined meta constant for that token               
+   CMeta Interface::RegisterConstant(const Token& token) SAFETY_NOEXCEPT() {
       auto lc = ToLowercase(token);
-      const auto found = GetMetaConstant(lc);
-      if (found) {
-         // Conflicting type                                            
-         return nullptr;
-      }
+      LANGULUS_ASSUME(DevAssumes, !GetMetaConstant(lc),
+         "Constant already registered");
 
       // If reached, then not found, so insert a new definition         
       const auto newDefinition = new MetaConst {};
@@ -232,16 +226,13 @@ namespace Langulus::RTTI
    }
 
    /// Register a trait definition                                            
+   ///   @attention assumes token is not yet registered as trait              
    ///   @param token - the trait token to reserve                            
-   ///   @return the newly defined meta trait, or nullptr if a conflict or    
-   ///           out-of-memory occured                                        
-   TMeta Interface::RegisterTrait(const Token& token) noexcept {
+   ///   @return the newly defined meta trait for that token                  
+   TMeta Interface::RegisterTrait(const Token& token) SAFETY_NOEXCEPT() {
       auto lc = ToLowercase(token);
-      const auto found = GetMetaTrait(lc);
-      if (found) {
-         // Conflicting type 															
-         return nullptr;
-      }
+      LANGULUS_ASSUME(DevAssumes, !GetMetaTrait(lc),
+         "Trait already registered");
 
       // If reached, then not found, so emplace a new definition			
       const auto newDefinition = new MetaTrait {};
@@ -253,37 +244,30 @@ namespace Langulus::RTTI
    }
 
    /// Register a verb definition                                             
+   ///   @attention assumes tokens are not yet registered                     
    ///   @param token - the positive verb token to reserve                    
    ///   @param tokenReverse - the negative verb token to reserve             
    ///   @param op - the positive verb operator to reserve (optional)         
    ///   @param opReverse - the negative verb operator to reserve (optional)  
-   ///   @return the newly defined meta verb, or nullptr if a conflict or     
-   ///           out-of-memory occured                                        
-   VMeta Interface::RegisterVerb(const Token& token, const Token& tokenReverse, const Token& op, const Token& opReverse) noexcept {
+   ///   @return the newly defined meta verb for that token configuration     
+   VMeta Interface::RegisterVerb(const Token& token, const Token& tokenReverse, const Token& op, const Token& opReverse) SAFETY_NOEXCEPT() {
       auto lc1 = ToLowercase(token);
-      auto found = GetMetaVerb(lc1);
-      if (found)
-         return nullptr;
-
       auto lc2 = ToLowercase(tokenReverse);
-      found = GetMetaVerb(lc2);
-      if (found)
-         return nullptr;
+      LANGULUS_ASSUME(DevAssumes, !GetMetaVerb(lc1) && !GetMetaVerb(lc2),
+         "Verb already registered");
 
       Lowercase op1;
       if (!op.empty()) {
          op1 = IsolateOperator(op);
-         const auto found1 = GetOperator(op1);
-         if (found1)
-            return nullptr;
+         LANGULUS_ASSUME(DevAssumes, !GetOperator(op1),
+            "Positive operator already registered");
       }
 
       Lowercase op2;
       if (!opReverse.empty()) {
          op2 = IsolateOperator(opReverse);
-         const auto found1 = GetOperator(op2);
-         if (found1)
-            return nullptr;
+         LANGULUS_ASSUME(DevAssumes, !GetOperator(op2),
+            "Negative operator already registered");
       }
 
       const auto newDefinition = new MetaVerb {};
@@ -300,91 +284,132 @@ namespace Langulus::RTTI
 
       RegisterAmbiguous(token, newDefinition);
       RegisterAmbiguous(tokenReverse, newDefinition);
-
       return newDefinition;
    }
 
    /// Unregister a data definition                                           
+   ///   @attention assumes definition is a valid pointer owned by this       
+   ///   @attention definition may no longer be valid pointer after this call 
    ///   @param definition - the definition to remove                         
-   void Interface::Unregister(DMeta definition) noexcept {
-      const auto lc = ToLowercase(definition->mToken);
-      const auto found = GetMetaData(lc);
-      if (!found)
+   void Interface::Unregister(DMeta definition) SAFETY_NOEXCEPT() {
+      --const_cast<MetaData*>(definition)->mReferences;
+      if (definition->mReferences)
          return;
+
+      // Time to remove the definition entirely                         
+      const auto lc = ToLowercase(definition->mToken);
+      LANGULUS_ASSUME(DevAssumes, definition && definition == GetMetaData(lc),
+         "Bad DMeta definition");
 
       mMetaData.erase(lc);
       UnregisterAmbiguous(definition->mToken, definition);
-      delete found;
+      delete definition;
    }
 
    /// Unregister a trait definition                                          
+   ///   @attention assumes definition is a valid pointer owned by this       
+   ///   @attention definition may no longer be valid pointer after this call 
    ///   @param definition - the definition to remove                         
-   void Interface::Unregister(TMeta definition) noexcept {
-      const auto lc = ToLowercase(definition->mToken);
-      const auto found = GetMetaTrait(lc);
-      if (!found)
+   void Interface::Unregister(TMeta definition) SAFETY_NOEXCEPT() {
+      --const_cast<MetaTrait*>(definition)->mReferences;
+      if (definition->mReferences)
          return;
+
+      // Time to remove the definition entirely                         
+      const auto lc = ToLowercase(definition->mToken);
+      LANGULUS_ASSUME(DevAssumes, definition && definition == GetMetaTrait(lc),
+         "Bad TMeta definition");
 
       mMetaTraits.erase(lc);
       UnregisterAmbiguous(definition->mToken, definition);
-      delete found;
+      delete definition;
    }
 
    /// Unregister a constant definition                                       
+   ///   @attention assumes definition is a valid pointer owned by this       
+   ///   @attention definition may no longer be valid pointer after this call 
    ///   @param definition - the definition to remove                         
-   void Interface::Unregister(CMeta definition) noexcept {
-      const auto lc = ToLowercase(definition->mToken);
-      const auto found = GetMetaConstant(lc);
-      if (!found)
+   void Interface::Unregister(CMeta definition) SAFETY_NOEXCEPT() {
+      --const_cast<MetaConst*>(definition)->mReferences;
+      if (definition->mReferences)
          return;
+
+      // Time to remove the definition entirely                         
+      const auto lc = ToLowercase(definition->mToken);
+      LANGULUS_ASSUME(DevAssumes, definition && definition == GetMetaConstant(lc),
+         "Bad CMeta definition");
 
       mMetaConstants.erase(lc);
       UnregisterAmbiguous(definition->mToken, definition);
-      delete found;
+      delete definition;
    }
 
    /// Unregister a verb definition                                           
+   ///   @attention assumes definition is a valid pointer owned by this       
+   ///   @attention definition may no longer be valid pointer after this call 
    ///   @param definition - the definition to remove                         
-   void Interface::Unregister(VMeta definition) noexcept {
-      const auto lc1 = ToLowercase(definition->mToken);
-      const auto found = GetMetaVerb(lc1);
-      if (!found)
+   void Interface::Unregister(VMeta definition) SAFETY_NOEXCEPT() {
+      --const_cast<MetaVerb*>(definition)->mReferences;
+      if (definition->mReferences)
          return;
 
+      // Time to remove the definition entirely                         
+      const auto lc1 = ToLowercase(definition->mToken);
       const auto lc2 = ToLowercase(definition->mTokenReverse);
+      LANGULUS_ASSUME(DevAssumes, 
+         definition && definition == GetMetaVerb(lc1)
+                    && definition == GetMetaVerb(lc2),
+         "Bad VMeta definition"
+      );
+
       mMetaVerbs.erase(lc1);
       mMetaVerbs.erase(lc2);
 
-      const auto op1 = IsolateOperator(definition->mOperator);
-      const auto op2 = IsolateOperator(definition->mOperatorReverse);
-      mOperators.erase(op1);
-      mOperators.erase(op2);
+      if (definition->mOperator.size()) {
+         const auto op1 = IsolateOperator(definition->mOperator);
+         mOperators.erase(op1);
+      }
+
+      if (definition->mOperatorReverse.size()) {
+         const auto op2 = IsolateOperator(definition->mOperatorReverse);
+         mOperators.erase(op2);
+      }
 
       UnregisterAmbiguous(definition->mToken, definition);
       UnregisterAmbiguous(definition->mTokenReverse, definition);
 
-      mUniqueVerbs.erase(found);
-      delete found;
+      mUniqueVerbs.erase(definition);
+      delete definition;
    }
 
    /// Unregister an unknown definition                                       
+   ///   @attention assumes definition is a valid pointer owned by this       
+   ///   @attention definition may no longer be valid pointer after this call 
    ///   @param definition - the definition to remove                         
-   void Interface::Unregister(const Meta* definition) noexcept {
+   void Interface::Unregister(const Meta* definition) SAFETY_NOEXCEPT() {
       auto asdata = dynamic_cast<DMeta>(definition);
-      if (asdata)
+      if (asdata) {
          Unregister(asdata);
+         return;
+      }
 
       auto asverb = dynamic_cast<VMeta>(definition);
-      if (asverb)
+      if (asverb) {
          Unregister(asverb);
+         return;
+      }
 
       auto astrait = dynamic_cast<TMeta>(definition);
-      if (astrait)
+      if (astrait) {
          Unregister(astrait);
+         return;
+      }
 
       auto asconst = dynamic_cast<CMeta>(definition);
-      if (asconst)
+      if (asconst) {
          Unregister(asconst);
+         return;
+      }
    }
 
 } // namespace Langulus::RTTI

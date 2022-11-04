@@ -238,8 +238,8 @@ namespace Langulus::RTTI
    /// Compare verb definitions                                               
    ///   @param rhs - the verb definition to compare with                     
    ///   @return true if definitions match                                    
-   constexpr bool MetaVerb::operator == (const MetaVerb& rhs) const noexcept {
+   /*constexpr bool MetaVerb::operator == (const MetaVerb& rhs) const noexcept {
       return Is(&rhs);
-   }
+   }*/
 
 } // namespace Langulus::RTTI

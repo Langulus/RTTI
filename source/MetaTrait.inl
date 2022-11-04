@@ -127,8 +127,8 @@ namespace Langulus::RTTI
       return Is(MetaTrait::Of<T>());
    }
    
-   constexpr bool MetaTrait::operator == (const MetaTrait& rhs) const noexcept {
+   /*constexpr bool MetaTrait::operator == (const MetaTrait& rhs) const noexcept {
       return Is(&rhs);
-   }
+   }*/
 
 } // namespace Langulus::RTTI
