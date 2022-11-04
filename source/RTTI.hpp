@@ -38,7 +38,6 @@ namespace Langulus::RTTI
       static Token ToLastToken(const Token&) noexcept;
       static Lowercase IsolateOperator(const Token&) noexcept;
 
-      Interface();
       ~Interface();
 
       // Database for meta data definitions                             

@@ -39,13 +39,10 @@ namespace Langulus::RTTI
          Database.~Interface();
    }
 
-   /// Database construction                                                  
-   Interface::Interface() {
-
-   }
-
    /// Database destruction                                                   
    Interface::~Interface() {
+      // If an exception happens here on a delete, then a meta likely   
+      // wasn't unregistered upon mod unload. Thank me later            
       for (auto& pair : mMetaData)
          delete pair.second;
       for (auto& pair : mMetaTraits)
