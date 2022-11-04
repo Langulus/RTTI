@@ -610,6 +610,8 @@ namespace Langulus::RTTI
       NOD() static constexpr Hash GenerateHash(const Token&) noexcept;
       template<CT::Data T>
       NOD() static constexpr Token GetCppName() noexcept;
+
+      virtual ~Meta() = default;
    };
 
    template<class T>
