@@ -35,7 +35,7 @@ namespace Langulus::RTTI
       template<CT::Data T>
       NOD() bool constexpr Is() const;
 
-      //constexpr bool operator == (const MetaTrait&) const noexcept;
+      constexpr bool operator == (const MetaTrait&) const noexcept;
 
    protected:
       template<CT::Data T>

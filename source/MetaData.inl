@@ -1069,9 +1069,9 @@ namespace Langulus::RTTI
       return Is(MetaData::Of<Decay<T>>());
    }
 
-   /*constexpr bool MetaData::operator == (const MetaData& rhs) const noexcept {
+   constexpr bool MetaData::operator == (const MetaData& rhs) const noexcept {
       return Is(&rhs);
-   }*/
+   }
 
    /// Get a size based on reflected allocation page and count (unsafe)       
    ///   @attention assumes byteSize is not zero                              
@@ -1099,4 +1099,23 @@ namespace Langulus::RTTI
       return from->template CastsTo<T>(count);
    }
    
+   /// Check if two meta definitions match exactly                            
+   ///   @param other - the type to compare against                           
+   ///   @return true if types match                                          
+   constexpr bool MetaConst::Is(CMeta other) const noexcept {
+      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         // This function is reduced to a pointer match, if the meta    
+         // database is centralized, because it guarantees that         
+         // definitions in separate translation units are always the    
+         // same instance                                               
+         return this == other;
+      #else
+         return other && mHash == other->mHash && mToken == other->mToken;
+      #endif
+   }
+   
+   constexpr bool MetaConst::operator == (const MetaConst& rhs) const noexcept {
+      return Is(&rhs);
+   }
+
 } // namespace Langulus::RTTI

@@ -232,6 +232,10 @@ namespace Langulus::RTTI
    protected:
       template<CT::Data T>
       static constexpr Token GetReflectedToken() noexcept;
+
+      NOD() constexpr bool Is(CMeta) const noexcept;
+
+      constexpr bool operator == (const MetaConst&) const noexcept;
    };
 
    using NamedValueList = ::std::vector<CMeta>;
@@ -483,7 +487,7 @@ namespace Langulus::RTTI
       template<CT::Data T>
       NOD() constexpr bool Is() const;
 
-      //constexpr bool operator == (const MetaData&) const noexcept;
+      constexpr bool operator == (const MetaData&) const noexcept;
    };
 
    template<CT::Data T, bool ADVANCED = false>
