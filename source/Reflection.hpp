@@ -162,30 +162,22 @@
 #define LANGULUS_ABSTRACT() \
    public: static constexpr bool CTTI_Abstract = 
 
+/// Start reflecting members                                                  
+#define LANGULUS_PROPERTIES_START(SELF) \
+   using Self = SELF; \
+   public: inline static const Langulus::RTTI::Member CTTI_Members [] = {
+
 /// Reflect a property with a trait tag                                       
 #define LANGULUS_PROPERTY_TRAIT(name, trait) \
-   public: template<class SELF> static auto CTTI_Property_##name() { \
-      alignas(SELF) const ::Langulus::Byte storage[sizeof(SELF)]; \
-      const auto This = reinterpret_cast<const SELF*>(storage); \
-      const auto Prop = ::std::addressof(This->name); \
-      using MemberType = decltype(This->name); \
-      ::Langulus::RTTI::Member m; \
-      m.mType = ::Langulus::RTTI::MetaData::Of<Decay<MemberType>>(); \
-      m.mState = {}; \
-      const auto offset = \
-           reinterpret_cast<const ::Langulus::Byte*>(This) \
-         - reinterpret_cast<const ::Langulus::Byte*>(Prop); \
-      LANGULUS_ASSUME(DevAssumes, offset >= 0, \
-         "Property is laid (memorywise) before the owner"); \
-      m.mOffset = static_cast<Offset>(offset); \
-      m.mCount = ::Langulus::ExtentOf<MemberType>; \
-      m.mTrait = ::Langulus::RTTI::MetaTrait::Of<trait>(); \
-      m.mName = #name; \
-      return m; \
-   }
+   ::Langulus::RTTI::Member::From(&Self::name, #name, \
+      ::Langulus::RTTI::MetaTrait::Of<::Langulus::Traits::trait>())
 
-/// Reflect a property                                                        
-#define LANGULUS_PROPERTY(name) LANGULUS_PROPERTY_TRAIT(name, void)
+/// Reflect a property without trait tag                                      
+#define LANGULUS_PROPERTY(name) \
+   ::Langulus::RTTI::Member::From(&Self::name, #name, nullptr)
+
+/// End reflecting members                                                    
+#define LANGULUS_PROPERTIES_END() }
 
 /// Reflect a list of bases                                                   
 #define LANGULUS_BASES(...) \

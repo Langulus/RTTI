@@ -169,7 +169,7 @@ namespace Langulus::RTTI
 
    public:
       template<CT::Data OWNER, CT::Data DATA>
-      NOD() static Member From(Offset, const Token& = {}, TMeta = {});
+      NOD() static Member From(DATA OWNER::* member, const Token&, TMeta);
 
       NOD() constexpr bool operator == (const Member&) const noexcept;
       
@@ -185,7 +185,7 @@ namespace Langulus::RTTI
       NOD() constexpr Byte* Get(Byte*) const noexcept;
    };
 
-   using MemberList = ::std::span<Member>;
+   using MemberList = ::std::span<const Member>;
 
    
    ///                                                                        
@@ -395,6 +395,15 @@ namespace Langulus::RTTI
       NOD() const Member* GetMemberInner(TMeta, DMeta, Offset&) const noexcept;
       NOD() Count GetMemberCountInner(TMeta, DMeta, Offset&) const noexcept;
 
+      template<class T, CT::Dense... Args>
+      void SetBases(TTypeList<Args...>) noexcept;
+
+      template<class T, CT::Dense... Args>
+      void SetAbilities(TTypeList<Args...>) noexcept;
+
+      template<class T, CT::Dense... Args>
+      void SetConverters(TTypeList<Args...>) noexcept;
+
    public:
       template<CT::Void T>
       NOD() static constexpr DMeta Of() requires CT::Decayed<T>;
@@ -407,9 +416,6 @@ namespace Langulus::RTTI
       //                                                                
       // Base management                                                
       //                                                                
-      template<class T, CT::Dense... Args>
-      void SetBases(TTypeList<Args...>) noexcept;
-
       NOD() bool GetBase(DMeta, Offset, Base&) const;
       template<CT::Data T>
       NOD() bool GetBase(Offset, Base&) const;
@@ -425,9 +431,6 @@ namespace Langulus::RTTI
       //                                                                
       // Member management                                              
       //                                                                
-      template<CT::Dense... Args>
-      void SetMembers(Args&&...) noexcept requires (... && CT::Same<Args, Member>);
-
       NOD() const Member* GetMember(TMeta, DMeta = nullptr, Offset = 0) const noexcept;
       NOD() Count GetMemberCount(TMeta, DMeta = nullptr, Offset = 0) const noexcept;
       NOD() Count GetMemberCount() const noexcept;
@@ -435,9 +438,6 @@ namespace Langulus::RTTI
       //                                                                
       // Ability management                                             
       //                                                                
-      template<class T, CT::Dense... Args>
-      void SetAbilities(TTypeList<Args...>) noexcept;
-
       NOD() bool IsAbleTo(VMeta) const;
       template<CT::Data T>
       NOD() bool IsAbleTo() const;
@@ -458,9 +458,6 @@ namespace Langulus::RTTI
       //                                                                
       // Morphisms and comparison                                       
       //                                                                
-      template<class T, CT::Dense... Args>
-      void SetConverters(TTypeList<Args...>) noexcept;
-
       template<class T>
       FCopyConstruct GetConverter() const noexcept;
       FCopyConstruct GetConverter(DMeta) const noexcept;

@@ -34,9 +34,38 @@ namespace Langulus::RTTI
          return Roof2cexpr(sizeof(T));
    }
 
+
    ///                                                                        
    ///   Member implementation                                                
    ///                                                                        
+
+   /// Generate a member definition                                           
+   ///   @tparam OWNER - the owner of the member (deduced)                    
+   ///   @tparam DATA - the type of the member (deduced)                      
+   ///   @param member - pointer to member                                    
+   ///   @param name - variable name                                          
+   ///   @param trait - trait type (optional)                                 
+   ///   @return the generated member descriptor                              
+   template<CT::Data OWNER, CT::Data DATA>
+   Member Member::From(DATA OWNER::* member, const Token& name, TMeta trait) {
+      alignas(OWNER) static const ::Langulus::Byte storage[sizeof(OWNER)];
+      const auto This = reinterpret_cast<const OWNER*>(storage);
+      const auto Prop = ::std::addressof(This->*member);
+      ::Langulus::RTTI::Member m; \
+      m.mType = ::Langulus::RTTI::MetaData::Of<Decay<DATA>>();
+      m.mState = {};
+      const auto offset =
+           reinterpret_cast<const ::Langulus::Byte*>(This)
+         - reinterpret_cast<const ::Langulus::Byte*>(Prop);
+
+      LANGULUS_ASSERT(offset >= 0, Except::Meta,
+         "Member is laid (memorywise) before owner");
+      m.mOffset = static_cast<Offset>(offset);
+      m.mCount = ::Langulus::ExtentOf<DATA>;
+      m.mTrait = trait;
+      m.mName = name;
+      return m;
+   }
 
    /// Check if member is a specific type                                     
    ///   @return true if member exactly matches the provided type             
@@ -183,7 +212,7 @@ namespace Langulus::RTTI
          // This is detectable by is_convertible_v                      
          if constexpr (::std::is_convertible_v<T*, BASE*>) {
             // The devil's work, right here                             
-            alignas(T) Byte storage[sizeof(T)];
+            alignas(T) static const Byte storage[sizeof(T)];
             // First reinterpret the storage as T                       
             const auto derived = reinterpret_cast<const T*>(storage);
             // Then cast it down to base                                
@@ -527,6 +556,10 @@ namespace Langulus::RTTI
             }
          }
 
+         // Set reflected members                                       
+         if constexpr (requires { T::CTTI_Members; })
+            generated.mMembers = T::CTTI_Members;
+
          // Set some additional stuff if T is fundamental               
          if constexpr (CT::Fundamental<T>)
             generated.ReflectFundamentalType<T>();
@@ -618,13 +651,6 @@ namespace Langulus::RTTI
       if (found != mConverters.end())
          return found->second.mFunction;
       return FCopyConstruct {};
-   }
-
-   /// Set the list of members for a given meta definition                    
-   ///   @tparam Args... - all the members                                    
-   template<CT::Dense... Args>
-   void MetaData::SetMembers(Args&&... items) noexcept requires (... && CT::Same<Args, Member>) {
-      mMembers = {Forward<Member>(items)...};
    }
    
    /// Get a reflected member by trait, type, and/or offset (inner)           
