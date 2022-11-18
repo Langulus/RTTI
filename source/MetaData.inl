@@ -53,17 +53,21 @@ namespace Langulus::RTTI
       const auto Prop = ::std::addressof(This->*member);
       ::Langulus::RTTI::Member m; \
       m.mType = ::Langulus::RTTI::MetaData::Of<Decay<DATA>>();
-      m.mState = {};
       const auto offset =
-           reinterpret_cast<const ::Langulus::Byte*>(This)
-         - reinterpret_cast<const ::Langulus::Byte*>(Prop);
+           reinterpret_cast<const ::Langulus::Byte*>(Prop)
+         - reinterpret_cast<const ::Langulus::Byte*>(This);
 
       LANGULUS_ASSERT(offset >= 0, Except::Meta,
          "Member is laid (memorywise) before owner");
+      //TODO of offset is outside instance limits, then mark as static, instead of throw?
       m.mOffset = static_cast<Offset>(offset);
       m.mCount = ::Langulus::ExtentOf<DATA>;
       m.mTrait = trait;
       m.mName = name;
+      if constexpr (::std::is_pointer_v<Deref<DATA>> || ::std::is_pointer_v<Deref<::std::remove_extent_t<DATA>>>)
+         m.mState += DataState::Sparse;
+      if constexpr (CT::Constant<DATA>)
+         m.mState += DataState::Constant;
       return m;
    }
 

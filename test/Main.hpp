@@ -23,6 +23,10 @@ namespace Langulus::Anyness {
    class Trait : public Block {};
 }
 
+namespace Langulus::Traits {
+   class Tag : Anyness::Trait {};
+}
+
 using namespace Langulus;
 using namespace Langulus::RTTI;
 
@@ -140,6 +144,8 @@ class ImplicitlyReflectedDataWithTraits : public ImplicitlyReflectedData {
 public:
    int member {};
    bool anotherMember {};
+   int anotherMemberArray [12] {};
+   int* sparseMember {};
 
    inline operator int() const noexcept {
       return member;
@@ -166,9 +172,14 @@ public:
    LANGULUS(UNINSERTABLE) true;
    LANGULUS(ALLOCATION_PAGE) 250;
    LANGULUS(ABSTRACT) true;
-   LANGULUS_PROPERTY(member);
-   LANGULUS_PROPERTY(anotherMember);
    LANGULUS_BASES(ImplicitlyReflectedData);
    LANGULUS_VERBS(Verbs::Create);
    LANGULUS_CONVERSIONS(int);
+
+   LANGULUS_PROPERTIES_START(ImplicitlyReflectedDataWithTraits)
+      LANGULUS_PROPERTY(member),
+      LANGULUS_PROPERTY_TRAIT(anotherMember, Tag),
+      LANGULUS_PROPERTY(anotherMemberArray),
+      LANGULUS_PROPERTY(sparseMember)
+   LANGULUS_PROPERTIES_END();
 };
