@@ -514,18 +514,37 @@ namespace Langulus
       if constexpr (sizeof...(MORE) == 0) {
          if constexpr (CT::Same<T, Hash>) {
             // Provided type is already a hash, just propagate it       
-            return head;
+            if constexpr (CT::Sparse<T>) {
+               // Never dereference nullptr, return default hash instead
+               if (head == nullptr)
+                  return {};
+            }
+
+            return DenseCast(head);
          }
          else if constexpr (CT::Hashable<T>) {
             // Hashable via a member GetHash() function                 
+            if constexpr (CT::Sparse<T>) {
+               // Never dereference nullptr, return default hash instead
+               if (head == nullptr)
+                  return {};
+            }
+
             return DenseCast(head).GetHash();
          }
          else if constexpr (CT::Number<T>) {
-            // A fundamental number is built-in hashable                
-            return HashNumber<SEED>(head);
+            // Numbers are built-in hashable                            
+            if constexpr (CT::Sparse<T>) {
+               // Never dereference nullptr, return default hash instead
+               if (head == nullptr)
+                  return {};
+            }
+
+            return HashNumber<SEED>(DenseCast(head));
          }
          else if constexpr (requires (::std::hash<T> h, const T& i) { h(i); }) {
-            // Hashable via std::hash                                   
+            // Hashable via std::hash, applies for pointers, too        
+            // Nullptr is acceptable here                               
             ::std::hash<T> hasher;
             return {hasher(head)};
          }
@@ -533,9 +552,23 @@ namespace Langulus
             // Explicitly marked POD type is always hashable, but be    
             // careful for POD types with padding - the junk inbetween  
             // members can interfere with the hash, giving unique       
-            // hashes where the same hashes should be produced          
-            constexpr bool TAIL = 0 != (sizeof(T) % sizeof(Hash));
-            return HashBytes<SEED, TAIL>(&head, sizeof(T));
+            // hashes where the same hashes should be produced. In such 
+            // cases it is recommended you add a custom GetHash() to    
+            // avoid the problem                                        
+            if constexpr (CT::Sparse<T>) {
+               // Never dereference nullptr, return default hash instead
+               if (head == nullptr)
+                  return {};
+            }
+
+            constexpr auto podsize = sizeof(Decay<T>);
+            constexpr bool TAIL = 0 != (podsize % sizeof(Hash));
+            return HashBytes<SEED, TAIL>(&DenseCast(head), podsize);
+         }
+         else if constexpr (CT::Sparse<T>) {
+            // As a last resort, even if not hashable, a sparse type    
+            // can always generate hash, by hashing the pointer         
+            return HashNumber<SEED>(reinterpret_cast<Pointer>(head));
          }
          else LANGULUS_ERROR("Can't hash data");
       }
