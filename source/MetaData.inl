@@ -88,7 +88,7 @@ namespace Langulus::RTTI
    ///   @return true if member exactly matches the provided type             
    template<CT::Data T>
    constexpr bool Member::Is() const noexcept {
-      return mType->Is<T>();
+      return mType == MetaData::Of<Decay<T>>()->mToken;
    }
    
    /// Compare members                                                        
