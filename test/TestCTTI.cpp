@@ -288,29 +288,29 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
 				REQUIRE(meta->mMembers[0].mName == "member");
 				REQUIRE(meta->mMembers[0].mOffset >= sizeof(ImplicitlyReflectedData));
 				REQUIRE(meta->mMembers[0].mState == DataState::Default);
-				REQUIRE(meta->mMembers[0].mTrait == nullptr);
-				REQUIRE(meta->mMembers[0].mType == MetaData::Of<int>());
+				REQUIRE(meta->mMembers[0].mTrait == "");
+				REQUIRE(meta->mMembers[0].mType == MetaData::Of<int>()->mToken);
 
 				REQUIRE(meta->mMembers[1].mCount == 1);
 				REQUIRE(meta->mMembers[1].mName == "anotherMember");
 				REQUIRE(meta->mMembers[1].mOffset > meta->mMembers[0].mOffset);
 				REQUIRE(meta->mMembers[1].mState == DataState::Default);
-				REQUIRE(meta->mMembers[1].mTrait == MetaTrait::Of<Traits::Tag>());
-				REQUIRE(meta->mMembers[1].mType == MetaData::Of<bool>());
+				REQUIRE(meta->mMembers[1].mTrait == MetaTrait::Of<Traits::Tag>()->mToken);
+				REQUIRE(meta->mMembers[1].mType == MetaData::Of<bool>()->mToken);
 
 				REQUIRE(meta->mMembers[2].mCount == 12);
 				REQUIRE(meta->mMembers[2].mName == "anotherMemberArray");
 				REQUIRE(meta->mMembers[2].mOffset > meta->mMembers[1].mOffset);
 				REQUIRE(meta->mMembers[2].mState == DataState::Default);
-				REQUIRE(meta->mMembers[2].mTrait == nullptr);
-				REQUIRE(meta->mMembers[2].mType == MetaData::Of<int>());
+				REQUIRE(meta->mMembers[2].mTrait == "");
+				REQUIRE(meta->mMembers[2].mType == MetaData::Of<int>()->mToken);
 
 				REQUIRE(meta->mMembers[3].mCount == 1);
 				REQUIRE(meta->mMembers[3].mName == "sparseMember");
 				REQUIRE(meta->mMembers[3].mOffset > meta->mMembers[2].mOffset);
 				REQUIRE(meta->mMembers[3].mState == DataState::Sparse);
-				REQUIRE(meta->mMembers[3].mTrait == nullptr);
-				REQUIRE(meta->mMembers[3].mType == MetaData::Of<int>());
+				REQUIRE(meta->mMembers[3].mTrait == "");
+				REQUIRE(meta->mMembers[3].mType == MetaData::Of<int>()->mToken);
 			}
 		}
 	}

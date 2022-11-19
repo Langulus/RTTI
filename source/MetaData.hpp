@@ -153,7 +153,7 @@ namespace Langulus::RTTI
    ///                                                                        
    struct Member {
       // Type of data                                                   
-      DMeta mType {};
+      Token mType {};
       // State of the data                                              
       DataState mState {};
       // Member offset. This is relative to the type it is offsetted    
@@ -163,13 +163,15 @@ namespace Langulus::RTTI
       // Number of elements in mData (in case of an array)              
       Count mCount {1};
       // Trait tag                                                      
-      TMeta mTrait {};
+      Token mTrait {};
       // Member token                                                   
       Token mName {};
 
    public:
       template<CT::Data OWNER, CT::Data DATA>
-      NOD() static Member From(DATA OWNER::* member, const Token&, TMeta);
+      NOD() static Member From(DATA OWNER::* member, const Token&);
+      template<class TRAIT, CT::Data OWNER, CT::Data DATA>
+      NOD() static Member FromTagged(DATA OWNER::* member, const Token&);
 
       NOD() constexpr bool operator == (const Member&) const noexcept;
       
@@ -296,6 +298,7 @@ namespace Langulus::RTTI
    ///   Meta data                                                            
    ///                                                                        
    struct MetaData final : public Meta {
+      friend struct Member;
       LANGULUS(NAME) "DMeta";
       LANGULUS_BASES(Meta);
 

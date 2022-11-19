@@ -44,31 +44,44 @@ namespace Langulus::RTTI
    ///   @tparam DATA - the type of the member (deduced)                      
    ///   @param member - pointer to member                                    
    ///   @param name - variable name                                          
-   ///   @param trait - trait type (optional)                                 
    ///   @return the generated member descriptor                              
    template<CT::Data OWNER, CT::Data DATA>
-   Member Member::From(DATA OWNER::* member, const Token& name, TMeta trait) {
+   Member Member::From(DATA OWNER::* member, const Token& name) {
       alignas(OWNER) static const ::Langulus::Byte storage[sizeof(OWNER)];
       const auto This = reinterpret_cast<const OWNER*>(storage);
       const auto Prop = ::std::addressof(This->*member);
-      ::Langulus::RTTI::Member m; \
-      m.mType = ::Langulus::RTTI::MetaData::Of<Decay<DATA>>();
       const auto offset =
            reinterpret_cast<const ::Langulus::Byte*>(Prop)
          - reinterpret_cast<const ::Langulus::Byte*>(This);
-
       LANGULUS_ASSERT(offset >= 0, Except::Meta,
          "Member is laid (memorywise) before owner");
+
       //TODO of offset is outside instance limits, then mark as static, instead of throw?
+      ::Langulus::RTTI::Member m;
+      m.mType = MetaData::GetReflectedToken<Decay<DATA>>();
       m.mOffset = static_cast<Offset>(offset);
       m.mCount = ::Langulus::ExtentOf<DATA>;
-      m.mTrait = trait;
+      m.mTrait = "";
       m.mName = name;
       if constexpr (::std::is_pointer_v<Deref<DATA>> || ::std::is_pointer_v<Deref<::std::remove_extent_t<DATA>>>)
          m.mState += DataState::Sparse;
       if constexpr (CT::Constant<DATA>)
          m.mState += DataState::Constant;
       return m;
+   }
+
+   /// Generate a member definition, and tag it with a trait definition       
+   ///   @tparam TRAIT - the trait to tag with                                
+   ///   @tparam OWNER - the owner of the member (deduced)                    
+   ///   @tparam DATA - the type of the member (deduced)                      
+   ///   @param member - pointer to member                                    
+   ///   @param name - variable name                                          
+   ///   @return the generated member descriptor                              
+   template<class TRAIT, CT::Data OWNER, CT::Data DATA>
+   Member Member::FromTagged(DATA OWNER::* member, const Token& name) {
+      auto result = Member::From(member, name);
+      result.mTrait = MetaTrait::GetReflectedToken<TRAIT>();
+      return result;
    }
 
    /// Check if member is a specific type                                     
@@ -86,7 +99,7 @@ namespace Langulus::RTTI
          && mState == rhs.mState
          && mOffset == rhs.mOffset
          && mCount == rhs.mCount
-         && (mTrait == rhs.mTrait || (mTrait && mTrait->Is(rhs.mTrait)))
+         && mTrait == rhs.mTrait
          && mName == rhs.mName;
    }
 
@@ -672,9 +685,9 @@ namespace Langulus::RTTI
 
       // Then locally                                                   
       for (auto& member : mMembers) {
-         if (trait && !trait->Is(member.mTrait))
+         if (trait && member.mTrait != trait->mToken)
             continue;
-         if (type && !type->Is(member.mType))
+         if (type && member.mType != type->mToken)
             continue;
 
          // Match found                                                 
@@ -703,9 +716,9 @@ namespace Langulus::RTTI
 
       // Then locally                                                   
       for (auto& member : mMembers) {
-         if (trait && !trait->Is(member.mTrait))
+         if (trait && member.mTrait != trait->mToken)
             continue;
-         if (type && !type->Is(member.mType))
+         if (type && member.mType != type->mToken)
             continue;
 
          // Match found                                                 

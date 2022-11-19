@@ -13,32 +13,18 @@
 namespace Langulus::RTTI
 {
 
-   namespace Inner
-   {
-      /// Static initializer for every translation unit                       
-      struct InterfaceInitializer {
-         InterfaceInitializer();
-         ~InterfaceInitializer();
-      };
-
-      LANGULUS_API(RTTI) extern InterfaceInitializer InterfaceInitializerInstance;
-   }
-
-
    ///                                                                        
    ///   The RTTI interface                                                   
+   ///                                                                        
    /// Available only if managed reflection feature is enabled                
    ///                                                                        
    class Interface {
-   friend struct Inner::InterfaceInitializer;
    private:
       using Lowercase = ::std::string;
       using MetaList = ::std::unordered_set<const Meta*>;
       static Lowercase ToLowercase(const Token&) noexcept;
       static Token ToLastToken(const Token&) noexcept;
       static Lowercase IsolateOperator(const Token&) noexcept;
-
-      ~Interface();
 
       // Database for meta data definitions                             
       ::std::unordered_map<Lowercase, DMeta> mMetaData;
@@ -58,6 +44,8 @@ namespace Langulus::RTTI
       void UnregisterAmbiguous(const Token&, const Meta*) noexcept;
 
    public:
+      ~Interface();
+
       NOD() DMeta GetMetaData(const Token&) const noexcept;
       NOD() TMeta GetMetaTrait(const Token&) const noexcept;
       NOD() VMeta GetMetaVerb(const Token&) const noexcept;
@@ -78,8 +66,8 @@ namespace Langulus::RTTI
    };
 
    ///                                                                        
-   ///   The global RTTI instance, initialized via a schwarz counter          
+   ///   The global RTTI database                                             
    ///                                                                        
-   LANGULUS_API(RTTI) extern Interface& Database;
+   LANGULUS_API(RTTI) extern Interface Database;
 
 } // namespace Langulus::RTTI

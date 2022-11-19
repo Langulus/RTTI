@@ -169,12 +169,11 @@
 
 /// Reflect a property with a trait tag                                       
 #define LANGULUS_PROPERTY_TRAIT(name, trait) \
-   ::Langulus::RTTI::Member::From(&Self::name, #name, \
-      ::Langulus::RTTI::MetaTrait::Of<::Langulus::Traits::trait>())
+   ::Langulus::RTTI::Member::FromTagged<::Langulus::Traits::trait>(&Self::name, #name)
 
 /// Reflect a property without trait tag                                      
 #define LANGULUS_PROPERTY(name) \
-   ::Langulus::RTTI::Member::From(&Self::name, #name, nullptr)
+   ::Langulus::RTTI::Member::From(&Self::name, #name)
 
 /// End reflecting members                                                    
 #define LANGULUS_PROPERTIES_END() }

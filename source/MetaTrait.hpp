@@ -15,6 +15,7 @@ namespace Langulus::RTTI
    ///   Meta trait                                                           
    ///                                                                        
    struct MetaTrait final : public Meta {
+      friend struct Member;
       LANGULUS(NAME) "TMeta";
       LANGULUS_BASES(Meta);
 

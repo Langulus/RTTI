@@ -28,7 +28,7 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
 		const auto n2t = MetaData::Of<N2::Type>();
 		const auto n3t = MetaData::Of<N3::type>();
 		const auto vvv = MetaVerb::Of<Verbs::Create>();
-		const auto nnn = MetaData::Of<ImplicitlyReflectedData>();
+		//const auto nnn = MetaData::Of<ImplicitlyReflectedData>();
 
 		WHEN("Meta is retrieved by exact token, that is not case-sensitive") {
 			REQUIRE(n1t == RTTI::Database.GetMetaData("N1::Type"));
@@ -68,10 +68,10 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
 
 SCENARIO("Testing operators", "[operators]") {
 	GIVEN("Reflected verb with positive and negative operator") {
-		const auto n1t = MetaData::Of<N1::Type>();
-		const auto n1c = MetaData::Of<N1::Create>();
-		const auto n2t = MetaData::Of<N2::Type>();
-		const auto n3t = MetaData::Of<N3::type>();
+		//const auto n1t = MetaData::Of<N1::Type>();
+		//const auto n1c = MetaData::Of<N1::Create>();
+		//const auto n2t = MetaData::Of<N2::Type>();
+		//const auto n3t = MetaData::Of<N3::type>();
 		const auto vvv = MetaVerb::Of<Verbs::Create>();
 
 		WHEN("Meta is retrieved by operator token, that is not case-sensitive and ignores spaces/tabs/escapes") {
