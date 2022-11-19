@@ -58,10 +58,11 @@ namespace Langulus::RTTI
 
       //TODO of offset is outside instance limits, then mark as static, instead of throw?
       ::Langulus::RTTI::Member m;
-      m.mType = MetaData::GetReflectedToken<Decay<DATA>>();
+      m.mTypeRetriever = [] {
+         return MetaData::Of<Decay<DATA>>();
+      };
       m.mOffset = static_cast<Offset>(offset);
       m.mCount = ::Langulus::ExtentOf<DATA>;
-      m.mTrait = "";
       m.mName = name;
       if constexpr (::std::is_pointer_v<Deref<DATA>> || ::std::is_pointer_v<Deref<::std::remove_extent_t<DATA>>>)
          m.mState += DataState::Sparse;
@@ -77,29 +78,81 @@ namespace Langulus::RTTI
    ///   @param member - pointer to member                                    
    ///   @param name - variable name                                          
    ///   @return the generated member descriptor                              
-   template<class TRAIT, CT::Data OWNER, CT::Data DATA>
+   template<CT::Decayed TRAIT, CT::Data OWNER, CT::Data DATA>
    Member Member::FromTagged(DATA OWNER::* member, const Token& name) {
       auto result = Member::From(member, name);
-      result.mTrait = MetaTrait::GetReflectedToken<TRAIT>();
+      result.mTraitRetriever = [] {
+         return MetaTrait::Of<TRAIT>();
+      };
       return result;
+   }
+
+   /// Get the reflected member type at runtime                               
+   ///   @return return the type                                              
+   inline DMeta Member::GetType() const {
+      LANGULUS_ASSUME(DevAssumes, mTypeRetriever != nullptr,
+         "Invalid member type retriever");
+      return mTypeRetriever();
+   }
+
+   /// Get the reflected member trait at runtime                              
+   ///   @return return the trait, if any, or nullptr otherwise               
+   inline TMeta Member::GetTrait() const {
+      if (mTraitRetriever)
+         return mTraitRetriever();
+      return nullptr;
    }
 
    /// Check if member is a specific type                                     
    ///   @return true if member exactly matches the provided type             
    template<CT::Data T>
-   constexpr bool Member::Is() const noexcept {
-      return mType == MetaData::Of<Decay<T>>()->mToken;
+   bool Member::Is() const {
+      LANGULUS_ASSUME(DevAssumes, GetType(), "Invalid member type");
+      return GetType()->Is<T>();
+   }
+   
+   /// Check if member is a specific type                                     
+   ///   @param meta - the meta definition to compare against                 
+   ///   @return true if member exactly matches the provided type             
+   inline bool Member::Is(DMeta meta) const {
+      LANGULUS_ASSUME(DevAssumes, GetType(), "Invalid member type");
+      return GetType()->Is(meta);
+   }
+   
+   /// Check if member is tagged with a specific trait                        
+   ///   @return true if member exactly matches the provided trait            
+   template<CT::Decayed T>
+   bool Member::TraitIs() const {
+      const auto trait = GetTrait();
+      if (!trait)
+         return false;
+      return trait->Is<T>();
+   }
+   
+   /// Check if member is tagged with a specific trait                        
+   ///   @param meta - the meta definition to compare against                 
+   ///   @return true if member exactly matches the provided trait            
+   inline bool Member::TraitIs(TMeta meta) const {
+      const auto trait = GetTrait();
+      if (!trait)
+         return false;
+      return trait->Is(meta);
    }
    
    /// Compare members                                                        
    ///   @param rhs - the member to compare against                           
    ///   @return true if members match                                        
-   constexpr bool Member::operator == (const Member& rhs) const noexcept {
-      return mType == rhs.mType
+   inline bool Member::operator == (const Member& rhs) const noexcept {
+      const auto type1 = GetType();
+      const auto trait1 = GetTrait();
+      const auto type2 = rhs.GetType();
+      const auto trait2 = rhs.GetTrait();
+
+      return (type1 == type2 || (type1 && type1->Is(type2)))
          && mState == rhs.mState
          && mOffset == rhs.mOffset
          && mCount == rhs.mCount
-         && mTrait == rhs.mTrait
+         && (trait1 == trait2 || (trait1 && trait1->Is(trait2)))
          && mName == rhs.mName;
    }
 
@@ -685,9 +738,7 @@ namespace Langulus::RTTI
 
       // Then locally                                                   
       for (auto& member : mMembers) {
-         if (trait && member.mTrait != trait->mToken)
-            continue;
-         if (type && member.mType != type->mToken)
+         if (!member.TraitIs(trait) || !member.Is(type))
             continue;
 
          // Match found                                                 
@@ -716,9 +767,7 @@ namespace Langulus::RTTI
 
       // Then locally                                                   
       for (auto& member : mMembers) {
-         if (trait && member.mTrait != trait->mToken)
-            continue;
-         if (type && member.mType != type->mToken)
+         if (!member.TraitIs(trait) || !member.Is(type))
             continue;
 
          // Match found                                                 

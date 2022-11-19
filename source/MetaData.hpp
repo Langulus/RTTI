@@ -152,8 +152,13 @@ namespace Langulus::RTTI
    ///   You can reflect arrays of elements, tag members as traits, etc.      
    ///                                                                        
    struct Member {
+      using TypeRetriever = TFunctor<DMeta()>;
+      using TraitRetriever = TFunctor<TMeta()>;
+
       // Type of data                                                   
-      Token mType {};
+      // We can't get at reflection time, so we generate a lambda that  
+      // retrieves it when required                                     
+      TypeRetriever mTypeRetriever;
       // State of the data                                              
       DataState mState {};
       // Member offset. This is relative to the type it is offsetted    
@@ -163,20 +168,26 @@ namespace Langulus::RTTI
       // Number of elements in mData (in case of an array)              
       Count mCount {1};
       // Trait tag                                                      
-      Token mTrait {};
+      // We can't get at reflection time, so we generate a lambda that  
+      // retrieves it when required                                     
+      TraitRetriever mTraitRetriever;
       // Member token                                                   
       Token mName {};
 
    public:
       template<CT::Data OWNER, CT::Data DATA>
       NOD() static Member From(DATA OWNER::* member, const Token&);
-      template<class TRAIT, CT::Data OWNER, CT::Data DATA>
+      template<CT::Decayed TRAIT, CT::Data OWNER, CT::Data DATA>
       NOD() static Member FromTagged(DATA OWNER::* member, const Token&);
 
-      NOD() constexpr bool operator == (const Member&) const noexcept;
+      NOD() bool operator == (const Member&) const noexcept;
       
       template<CT::Data T>
-      NOD() constexpr bool Is() const noexcept;
+      NOD() bool Is() const;
+      NOD() bool Is(DMeta) const;
+      template<CT::Decayed T>
+      NOD() bool TraitIs() const;
+      NOD() bool TraitIs(TMeta) const;
       
       template<CT::Data T>
       NOD() const T& As(const Byte*) const noexcept;
@@ -185,6 +196,9 @@ namespace Langulus::RTTI
       
       NOD() constexpr const Byte* Get(const Byte*) const noexcept;
       NOD() constexpr Byte* Get(Byte*) const noexcept;
+
+      NOD() DMeta GetType() const;
+      NOD() TMeta GetTrait() const;
    };
 
    using MemberList = ::std::span<const Member>;
