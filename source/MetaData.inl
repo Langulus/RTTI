@@ -438,6 +438,13 @@ namespace Langulus::RTTI
                new (at) T {};
             };
          }
+         
+         // Wrap the descriptor constructor of the type inside a lambda 
+         if constexpr (CT::DescriptorMakable<T> && !CT::Meta<T>) {
+            generated.mDescriptorConstructor = [](void* at, const ::Langulus::Anyness::Any& descriptor) {
+               new (at) T {descriptor};
+            };
+         }
 
          // Wrap the copy constructor of the type inside a lambda       
          if constexpr (CT::CopyMakable<T> && !CT::Meta<T>) {

@@ -102,6 +102,10 @@ namespace Langulus::RTTI
    /// Takes a pointer for a placement-new expression                         
    using FDefaultConstruct = TFunctor<void(void*)>;
 
+   /// Constructor by descriptor                                              
+   /// Takes a pointer for a placement-new expression, and a descriptor Any   
+   using FDescriptorConstruct = TFunctor<void(void*, const ::Langulus::Anyness::Any&)>;
+
    /// The copy constructor, wrapped in a lambda expression if available      
    /// Takes a pointer for a placement-new expression, and a source           
    using FCopyConstruct = TFunctor<void(const void* from, void* to)>;
@@ -371,6 +375,8 @@ namespace Langulus::RTTI
 
       // Default constructor wrapped in a lambda upon reflection        
       FDefaultConstruct mDefaultConstructor;
+      // Descriptor constructor wrapped in a lambda upon reflection     
+      FDescriptorConstruct mDescriptorConstructor;
       // Copy constructor wrapped in a lambda upon reflection           
       FCopyConstruct mCopyConstructor;
       // Disowned constructor wrapped in a lambda upon reflection       
