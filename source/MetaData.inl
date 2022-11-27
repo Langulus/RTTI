@@ -704,7 +704,7 @@ namespace Langulus::RTTI
    void MetaData::SetConverters(TTypeList<TO...>) noexcept {
       static const ::std::pair<DMeta, Converter> list[] {
          ::std::pair<DMeta, Converter>(
-            MetaData::Of<TO>(), Converter::From<T, TO>()
+            MetaData::Of<Decay<TO>>(), Converter::From<T, TO>()
          )...
       };
 
@@ -717,7 +717,7 @@ namespace Langulus::RTTI
    ///   @return the conversion function                                      
    template<class T>
    FCopyConstruct MetaData::GetConverter() const noexcept {
-      return GetConverter(MetaData::Of<T>());
+      return GetConverter(MetaData::Of<Decay<T>>());
    }
 
    /// Get a converter to a specific dynamic type                             
@@ -897,24 +897,24 @@ namespace Langulus::RTTI
    ///   @return true if a base is available                                  
    template<CT::Data T>
    bool MetaData::HasBase() const {
-      return HasBase(MetaData::Of<T>());
+      return HasBase(MetaData::Of<Decay<T>>());
    }
 
    /// A simple check if this meta data has a derivation                      
-   /// Traverses the whole inheritance tree, so can return distant bases      
+   /// Traverses the whole inheritance tree, so can return distant children   
    ///   @param type - the type of derivation to search for                   
-   ///   @return true if a base is available                                  
+   ///   @return true if a derivation is available                            
    inline bool MetaData::HasDerivation(DMeta type) const {
       return type->HasBase(this);
    }
    
    /// A simple check if this meta data has a derivation                      
-   /// Traverses the whole inheritance tree, so can return distant bases      
+   /// Traverses the whole inheritance tree, so can return distant children   
    ///   @tparam T - the type of derivation to search for                     
-   ///   @return true if a base is available                                  
+   ///   @return true if a derivation is available                            
    template<CT::Data T>
    bool MetaData::HasDerivation() const {
-      return MetaData::Of<T>()->HasBase(this);
+      return MetaData::Of<Decay<T>>()->HasBase(this);
    }
 
    /// Check if this data type is able to do something                        
@@ -978,7 +978,7 @@ namespace Langulus::RTTI
    auto MetaData::GetAbility() const {
       static_assert(CT::DerivedFrom<V, ::Langulus::Flow::Verb>,
          "V must be derived from Flow::Verb");
-      return GetAbility<MUTABLE>(MetaVerb::Of<V>(), MetaData::Of<A>()...);
+      return GetAbility<MUTABLE>(MetaVerb::Of<V>(), MetaData::Of<Decay<A>>()...);
    }
 
    /// Get the token of a reflected named value                               
@@ -1098,7 +1098,7 @@ namespace Langulus::RTTI
    ///   @return true if this type interprets as other                        
    template<CT::Data T, bool BINARY_COMPATIBLE>
    bool MetaData::CastsTo(Count count) const {
-      return CastsTo<BINARY_COMPATIBLE>(MetaData::Of<T>(), count);
+      return CastsTo<BINARY_COMPATIBLE>(MetaData::Of<Decay<T>>(), count);
    }
 
    /// Check if this type is either same, base or a derivation of other       
@@ -1113,7 +1113,7 @@ namespace Langulus::RTTI
    ///   @return true if this type is related to other                        
    template<CT::Data T>
    bool MetaData::IsRelatedTo() const {
-      return IsRelatedTo(MetaData::Of<T>());
+      return IsRelatedTo(MetaData::Of<Decay<T>>());
    }
 
    /// Get the number of conversions required to map one type to another      
@@ -1142,7 +1142,7 @@ namespace Langulus::RTTI
    ///   @return the distance                                                 
    template<CT::Data T>
    MetaData::Distance MetaData::GetDistanceTo() const {
-      return GetDistanceTo(MetaData::Of<T>());
+      return GetDistanceTo(MetaData::Of<Decay<T>>());
    }
 
    /// Check if two meta definitions match exactly                            
