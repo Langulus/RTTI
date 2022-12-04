@@ -58,9 +58,7 @@ namespace Langulus::RTTI
 
       //TODO of offset is outside instance limits, then mark as static, instead of throw?
       ::Langulus::RTTI::Member m;
-      m.mTypeRetriever = [] {
-         return MetaData::Of<Decay<DATA>>();
-      };
+      m.mTypeRetriever = [] { return MetaData::Of<Decay<DATA>>(); };
       m.mOffset = static_cast<Offset>(offset);
       m.mCount = ::Langulus::ExtentOf<DATA>;
       m.mName = name;
@@ -613,6 +611,7 @@ namespace Langulus::RTTI
                      Database.RegisterConstant(staticNames[i]));
                   LANGULUS_ASSERT(cmeta, Except::Meta,
                      "Meta constant conflict on registration");
+                  const_cast<MetaConst*>(cmeta)->mLibraryName = RTTI::Library;
                #else
                   staticMC[i] = ::std::make_unique<MetaConst>();
                   const auto cmeta = staticMC[i].get();
@@ -643,6 +642,7 @@ namespace Langulus::RTTI
       }
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         const_cast<MetaData*>(meta)->mLibraryName = RTTI::Library;
          return meta;
       #else
          return meta.get();

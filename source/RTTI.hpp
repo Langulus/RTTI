@@ -63,11 +63,19 @@ namespace Langulus::RTTI
       void Unregister(VMeta) SAFETY_NOEXCEPT();
       void Unregister(CMeta) SAFETY_NOEXCEPT();
       void Unregister(const Meta*) SAFETY_NOEXCEPT();
+
+      void UnloadLibrary(const Token&);
    };
 
    ///                                                                        
    ///   The global RTTI database                                             
    ///                                                                        
    LANGULUS_API(RTTI) extern Interface Database;
+
+   ///                                                                        
+   ///   Library identifier, local to every shared library                    
+   /// It's your responsibility to define it                                  
+   ///                                                                        
+   extern Token Library;
 
 } // namespace Langulus::RTTI

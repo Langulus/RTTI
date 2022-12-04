@@ -9,6 +9,8 @@
 #include "RTTI.hpp"
 #include <algorithm>
 
+#define VERBOSE(a) //Logger::Verbose() << a;
+
 namespace Langulus::RTTI
 {
 
@@ -172,6 +174,7 @@ namespace Langulus::RTTI
       // If reached, then not found, so insert a new definition         
       const auto newDefinition = new MetaData {};
       mMetaData.insert({::std::move(lc), newDefinition});
+      VERBOSE("RTTI: Data " << token << " registered");
 
       // Insert the last token to the ambiguity map                     
       RegisterAmbiguous(token, newDefinition);
@@ -191,6 +194,7 @@ namespace Langulus::RTTI
       // If reached, then not found, so insert a new definition         
       const auto newDefinition = new MetaConst {};
       mMetaConstants.insert({::std::move(lc), newDefinition});
+      VERBOSE("RTTI: Constant " << token << " registered");
 
       // Insert the last token to the ambiguity map                     
       RegisterAmbiguous(token, newDefinition);
@@ -209,6 +213,7 @@ namespace Langulus::RTTI
       // If reached, then not found, so emplace a new definition			
       const auto newDefinition = new MetaTrait {};
       mMetaTraits.insert({::std::move(lc), newDefinition});
+      VERBOSE("RTTI: Trait " << token << " registered");
 
       // Insert the last token to the ambiguity map							
       RegisterAmbiguous(token, newDefinition);
@@ -244,15 +249,21 @@ namespace Langulus::RTTI
 
       const auto newDefinition = new MetaVerb {};
       mUniqueVerbs.insert(newDefinition);
+      VERBOSE("RTTI: Verb " << token << "/" << tokenReverse << " registered");
 
       mMetaVerbs.insert({lc1, newDefinition});
       if (lc1 != lc2)
          mMetaVerbs.insert({lc2, newDefinition});
 
-      if (!op1.empty())
+      if (!op1.empty()) {
          mOperators.insert({op1, newDefinition});
-      if (!op2.empty() && op1 != op2)
+         VERBOSE("RTTI: Operator " << op1 << " registered");
+      }
+
+      if (!op2.empty() && op1 != op2) {
          mOperators.insert({op2, newDefinition});
+         VERBOSE("RTTI: Operator " << op1 << " registered");
+      }
 
       RegisterAmbiguous(token, newDefinition);
       RegisterAmbiguous(tokenReverse, newDefinition);
@@ -273,6 +284,7 @@ namespace Langulus::RTTI
       LANGULUS_ASSUME(DevAssumes, definition && definition == GetMetaData(lc),
          "Bad DMeta definition");
 
+      VERBOSE("RTTI: Data " << definition->mToken << " unregistered");
       mMetaData.erase(lc);
       UnregisterAmbiguous(definition->mToken, definition);
       delete definition;
@@ -292,6 +304,7 @@ namespace Langulus::RTTI
       LANGULUS_ASSUME(DevAssumes, definition && definition == GetMetaTrait(lc),
          "Bad TMeta definition");
 
+      VERBOSE("RTTI: Trait " << definition->mToken << " unregistered");
       mMetaTraits.erase(lc);
       UnregisterAmbiguous(definition->mToken, definition);
       delete definition;
@@ -311,6 +324,7 @@ namespace Langulus::RTTI
       LANGULUS_ASSUME(DevAssumes, definition && definition == GetMetaConstant(lc),
          "Bad CMeta definition");
 
+      VERBOSE("RTTI: Constant " << definition->mToken << " unregistered");
       mMetaConstants.erase(lc);
       UnregisterAmbiguous(definition->mToken, definition);
       delete definition;
@@ -339,17 +353,20 @@ namespace Langulus::RTTI
 
       if (definition->mOperator.size()) {
          const auto op1 = IsolateOperator(definition->mOperator);
+         VERBOSE("RTTI: Operator " << op1 << " unregistered");
          mOperators.erase(op1);
       }
 
       if (definition->mOperatorReverse.size()) {
          const auto op2 = IsolateOperator(definition->mOperatorReverse);
+         VERBOSE("RTTI: Operator " << op2 << " unregistered");
          mOperators.erase(op2);
       }
 
       UnregisterAmbiguous(definition->mToken, definition);
       UnregisterAmbiguous(definition->mTokenReverse, definition);
 
+      VERBOSE("RTTI: Verb " << definition->mToken << "/" << definition->mTokenReverse << " unregistered");
       mUniqueVerbs.erase(definition);
       delete definition;
    }
@@ -381,6 +398,86 @@ namespace Langulus::RTTI
       if (asconst) {
          Unregister(asconst);
          return;
+      }
+   }
+
+   /// Runs through all definitions, and destroys all of those, that were     
+   /// defined with the given library token                                   
+   ///   @param library - the library token to search for                     
+   void Interface::UnloadLibrary(const Token& library) {
+      VERBOSE("RTTI: Unloading library " << library);
+
+      for (auto meta = mMetaConstants.begin(); meta != mMetaConstants.end();) {
+         if (meta->second->mLibraryName != library) {
+            ++meta;
+            continue;
+         }
+
+         VERBOSE("RTTI: Constant " << meta->second->mToken << " unregistered (" << library << ")");
+         UnregisterAmbiguous(meta->second->mToken, meta->second);
+         delete meta->second;
+         meta = mMetaConstants.erase(meta);
+      }
+
+      for (auto meta = mMetaData.begin(); meta != mMetaData.end();) {
+         if (meta->second->mLibraryName != library) {
+            ++meta;
+            continue;
+         }
+
+         VERBOSE("RTTI: Data " << meta->second->mToken << " unregistered (" << library << ")");
+         UnregisterAmbiguous(meta->second->mToken, meta->second);
+         delete meta->second;
+         meta = mMetaData.erase(meta);
+      }
+
+      for (auto meta = mMetaTraits.begin(); meta != mMetaTraits.end();) {
+         if (meta->second->mLibraryName != library) {
+            ++meta;
+            continue;
+         }
+
+         VERBOSE("RTTI: Trait " << meta->second->mToken << " unregistered (" << library << ")");
+         UnregisterAmbiguous(meta->second->mToken, meta->second);
+         delete meta->second;
+         meta = mMetaTraits.erase(meta);
+      }
+
+      for (auto meta = mUniqueVerbs.begin(); meta != mUniqueVerbs.end();) {
+         if ((*meta)->mLibraryName != library) {
+            ++meta;
+            continue;
+         }
+
+         VMeta definition = *meta;
+         const auto lc1 = ToLowercase(definition->mToken);
+         const auto lc2 = ToLowercase(definition->mTokenReverse);
+         LANGULUS_ASSUME(DevAssumes,
+            definition && definition == GetMetaVerb(lc1)
+            && definition == GetMetaVerb(lc2),
+            "Bad VMeta definition"
+         );
+
+         mMetaVerbs.erase(lc1);
+         mMetaVerbs.erase(lc2);
+
+         if (definition->mOperator.size()) {
+            const auto op1 = IsolateOperator(definition->mOperator);
+            VERBOSE("RTTI: Operator " << op1 << " unregistered (" << library << ")");
+            mOperators.erase(op1);
+         }
+
+         if (definition->mOperatorReverse.size()) {
+            const auto op2 = IsolateOperator(definition->mOperatorReverse);
+            VERBOSE("RTTI: Operator " << op2 << " unregistered (" << library << ")");
+            mOperators.erase(op2);
+         }
+
+         VERBOSE("RTTI: Verb " << definition->mToken << "/" << definition->mTokenReverse << " unregistered (" << library << ")");
+         UnregisterAmbiguous(definition->mToken, *meta);
+         UnregisterAmbiguous(definition->mTokenReverse, *meta);
+         meta = mUniqueVerbs.erase(meta);
+         delete definition;
       }
    }
 

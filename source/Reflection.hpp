@@ -501,6 +501,10 @@ namespace Langulus
 {
 
    /// Casts a number to its underlying type                                  
+   /// If T::MemberType exists, or if T is an enum, the inner type returns    
+   ///   @tparam T - type of the number/enum to cast                          
+   ///   @param a - the number to cast                                        
+   ///   @return a reference to the underlying type                           
    template<CT::DenseNumber T>
    NOD() LANGULUS(ALWAYSINLINE) constexpr decltype(auto) BuiltinCast(const T& a) noexcept {
       if constexpr (CT::BuiltinNumber<T>) {
@@ -564,6 +568,7 @@ namespace Langulus
 
 } // namespace Langulus
 
+
 namespace Langulus::RTTI
 {
 
@@ -597,6 +602,9 @@ namespace Langulus::RTTI
       // References, increased each time a definition is merged,        
       // and decreases each time a definition is unregistered           
       Count mReferences {1};
+      // The shared library that defined the module, used to unload     
+      // definitions when module is unloaded                            
+      Token mLibraryName;
 
       NOD() const Hash& GetHash() const noexcept;
 
@@ -608,6 +616,8 @@ namespace Langulus::RTTI
       virtual ~Meta() = default;
    };
 
+   /// Triplet used for named constants reflections inside data types         
+   ///   @tparam T - type of the constant                                     
    template<class T>
    struct CMetaTriplet {
       Token mToken;
@@ -662,6 +672,7 @@ namespace std
 #include "Reflection.inl"
 #include "Hashing.hpp"
 
+
 namespace std
 {
    size_t hash<DMeta>::operator()(DMeta k) const noexcept {
@@ -685,3 +696,12 @@ namespace std
    }
 }
 
+#if LANGULUS_FEATURE(MANAGED_REFLECTION)
+   #define LANGULUS_RTTI_BOUNDARY(a) \
+      namespace Langulus::RTTI \
+      { \
+         Token Library = a; \
+      }
+#else
+   #define LANGULUS_RTTI_BOUNDARY(a)
+#endif
