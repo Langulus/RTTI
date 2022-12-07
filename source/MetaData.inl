@@ -210,7 +210,10 @@ namespace Langulus::RTTI
 
       Ability result;
       result.mVerb = MetaVerb::Of<VERB>();
+
+      // Register provided argument overload (if any)...                
       if constexpr (VERB::template AvailableFor<T, A...>()) {
+         // ... for mutable context                                     
          result.mOverloadsMutable.insert({
             {MetaData::Of<A>()...},
             VERB::template Of<T>()
@@ -218,6 +221,7 @@ namespace Langulus::RTTI
       }
 
       if constexpr (VERB::template AvailableFor<const T, A...>()) {
+         // ... for immutable context                                   
          result.mOverloadsConstant.insert({
             {MetaData::Of<A>()...},
             VERB::template Of<const T>()
@@ -933,6 +937,7 @@ namespace Langulus::RTTI
    }
 
    /// Get an ability                                                         
+   ///   @tparam MUTABLE - whether to get mutable/immutable overload          
    ///   @param vmeta - the type of the verb                                  
    ///   @param dmeta - the type of the verb's argument (optional)            
    ///   @return the functor if found                                         
@@ -941,25 +946,39 @@ namespace Langulus::RTTI
       const auto foundv = mAbilities.find(vmeta);
       if constexpr (MUTABLE) {
          if (foundv != mAbilities.end()) {
-            const auto& overrides = foundv->second.mOverloadsMutable;
-            const auto foundo = overrides.find({dmeta});
-            if (foundo != overrides.end())
+            const auto& overloads = foundv->second.mOverloadsMutable;
+            auto foundo = overloads.find({dmeta});
+            if (foundo != overloads.end())
+               // Specific overload is available                        
+               return foundo->second;
+
+            // Always fallback to default function, if reflected        
+            foundo = overloads.find({});
+            if (foundo != overloads.end())
                return foundo->second;
          }
-         return FVerbMutable {};
       }
       else {
          if (foundv != mAbilities.end()) {
-            const auto& overrides = foundv->second.mOverloadsConstant;
-            const auto foundo = overrides.find({dmeta});
-            if (foundo != overrides.end())
+            const auto& overloads = foundv->second.mOverloadsConstant;
+            auto foundo = overloads.find({dmeta});
+            if (foundo != overloads.end())
+               // Specific overloads is available                       
+               return foundo->second;
+
+            // Always fallback to default function, if reflected        
+            foundo = overloads.find({});
+            if (foundo != overloads.end())
                return foundo->second;
          }
-         return FVerbConstant {};
       }
+
+      // No match found, if reached                                     
+      return FVerbMutable {};
    }
 
    /// Get an ability with static verb                                        
+   ///   @tparam MUTABLE - whether to get mutable/immutable overload          
    ///   @tparam V - the type of the verb                                     
    ///   @param dmeta - the type of the verb's argument (optional)            
    ///   @return the functor if found                                         
@@ -971,6 +990,7 @@ namespace Langulus::RTTI
    }
 
    /// Get an ability with static verb and argument type                      
+   ///   @tparam MUTABLE - whether to get mutable/immutable overload          
    ///   @tparam V - the type of the verb                                     
    ///   @tparam D - the type of the verb's argument                          
    ///   @return the functor if found                                         

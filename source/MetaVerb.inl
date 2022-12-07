@@ -135,7 +135,7 @@ namespace Langulus::RTTI
             return meta;
       #endif
 
-      // If this is reached, then trait is not defined yet              
+      // If this is reached, then verb is not defined yet               
       // We immediately place it in the static here, because the        
       // reflection function might end up forever looping otherwise     
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
@@ -160,7 +160,7 @@ namespace Langulus::RTTI
          #endif
       }
       else {
-         // Type is implicitly reflected, so let's do our best          
+         // Verb is implicitly reflected, so let's do our best          
          #if LANGULUS_FEATURE(MANAGED_REFLECTION)
             MetaVerb& generated = *const_cast<MetaVerb*>(meta);
          #else
