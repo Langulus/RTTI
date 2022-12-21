@@ -7,5 +7,6 @@
 ///                                                                           
 #pragma once
 #include "../source/Reflection.hpp"
+#include "../source/Utilities.hpp"
 
 #define LANGULUS_LIBRARY_RTTI() 1

@@ -53,7 +53,7 @@ namespace Langulus::RTTI
       const auto offset =
            reinterpret_cast<const ::Langulus::Byte*>(Prop)
          - reinterpret_cast<const ::Langulus::Byte*>(This);
-      LANGULUS_ASSERT(offset >= 0, Except::Meta,
+      LANGULUS_ASSERT(offset >= 0, Meta,
          "Member is laid (memorywise) before owner");
 
       //TODO of offset is outside instance limits, then mark as static, instead of throw?
@@ -294,7 +294,7 @@ namespace Langulus::RTTI
                reinterpret_cast<const Byte*>(base) -
                reinterpret_cast<const Byte*>(derived);
 
-            LANGULUS_ASSERT(offset >= 0, Except::Meta,
+            LANGULUS_ASSERT(offset >= 0, Meta,
                "BASE is laid (memorywise) before T");
             result.mOffset = static_cast<Offset>(offset);
          }
@@ -528,7 +528,7 @@ namespace Langulus::RTTI
             generated.mMover = [](void* from, void* to) noexcept(CT::MovableNoexcept<T>) {
                auto toInstance = static_cast<T*>(to);
                auto fromInstance = static_cast<T*>(from);
-               *toInstance = Move(*fromInstance);
+               *toInstance = ::std::move(*fromInstance);
             };
          }
 
@@ -613,7 +613,7 @@ namespace Langulus::RTTI
                #if LANGULUS_FEATURE(MANAGED_REFLECTION)
                   const auto cmeta = const_cast<MetaConst*>(
                      Database.RegisterConstant(staticNames[i]));
-                  LANGULUS_ASSERT(cmeta, Except::Meta,
+                  LANGULUS_ASSERT(cmeta, Meta,
                      "Meta constant conflict on registration");
                   const_cast<MetaConst*>(cmeta)->mLibraryName = RTTI::Library;
                #else

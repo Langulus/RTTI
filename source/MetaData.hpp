@@ -16,38 +16,66 @@ namespace Langulus::CT
    /// Check if T is disown-constructible                                     
    template<class... T>
    concept DisownMakable = (::std::constructible_from<Decay<T>, Langulus::Disowned<Decay<T>>&&> && ...);
+
    template<class... T>
-   concept DisownMakableNoexcept = DisownMakable<T...> && (noexcept(Decay<T> {Uneval<Langulus::Disowned<Decay<T>>&&>()}) && ...);
+   concept DisownMakableNoexcept = DisownMakable<T...> 
+      && (noexcept(Decay<T> {Uneval<Langulus::Disowned<Decay<T>>&&>()}) && ...);
 
    /// Check if T is disown-assignable                                        
    template<class... T>
    concept DisownAssignable = (::std::assignable_from<Decay<T>, Langulus::Disowned<Decay<T>>&&> && ...);
+
    template<class... T>
-   concept DisownAssignableNoexcept = DisownAssignable<T...> && (noexcept(Uneval<Decay<T>&&>() = Uneval<Langulus::Disowned<Decay<T>>&&>()) && ...);
+   concept DisownAssignableNoexcept = DisownAssignable<T...> 
+      && (noexcept(Uneval<Decay<T>&&>() = Uneval<Langulus::Disowned<Decay<T>>&&>()) && ...);
 
    /// Check if T is clone-constructible                                      
    template<class... T>
    concept CloneMakable = (::std::constructible_from<Decay<T>, Langulus::Cloned<Decay<T>>&&> && ...);
+
    template<class... T>
-   concept CloneMakableNoexcept = CloneMakable<T...> && (noexcept(Decay<T> {Uneval<Langulus::Cloned<Decay<T>>&&>()}) && ...);
+   concept CloneMakableNoexcept = CloneMakable<T...> 
+      && (noexcept(Decay<T> {Uneval<Langulus::Cloned<Decay<T>>&&>()}) && ...);
 
    /// Check if T is clone-assignable                                         
    template<class... T>
    concept CloneAssignable = (::std::assignable_from<Decay<T>, Langulus::Cloned<Decay<T>>&&> && ...);
+
    template<class... T>
-   concept CloneAssignableNoexcept = CloneAssignable<T...> && (noexcept(Uneval<Decay<T>&&>() = Uneval<Langulus::Cloned<Decay<T>>&&>()) && ...);
+   concept CloneAssignableNoexcept = CloneAssignable<T...> 
+      && (noexcept(Uneval<Decay<T>&&>() = Uneval<Langulus::Cloned<Decay<T>>&&>()) && ...);
 
    /// Check if T is abandon-constructible                                    
    template<class... T>
    concept AbandonMakable = (::std::constructible_from<Decay<T>, Langulus::Abandoned<Decay<T>>&&> && ...);
+
    template<class... T>
-   concept AbandonMakableNoexcept = AbandonMakable<T...> && (noexcept(Decay<T> {Uneval<Langulus::Abandoned<Decay<T>>&&>()}) && ...);
+   concept AbandonMakableNoexcept = AbandonMakable<T...> 
+      && (noexcept(Decay<T> {Uneval<Langulus::Abandoned<Decay<T>>&&>()}) && ...);
 
    /// Check if T is abandon-assignable                                       
    template<class... T>
    concept AbandonAssignable = (::std::assignable_from<Decay<T>, Langulus::Abandoned<Decay<T>>&&> && ...);
+
    template<class... T>
-   concept AbandonAssignableNoexcept = AbandonAssignable<T...> && (noexcept(Uneval<Decay<T>&&>() = Uneval<Langulus::Abandoned<Decay<T>>&&>()) && ...);
+   concept AbandonAssignableNoexcept = AbandonAssignable<T...> 
+      && (noexcept(Uneval<Decay<T>&&>() = Uneval<Langulus::Abandoned<Decay<T>>&&>()) && ...);
+
+   /// Check if T is semantic-constructible                                   
+   template<class S, class... T>
+   concept SemanticMakable = (::std::constructible_from<Decay<T>, typename S::template Nested<Decay<T>>&&> && ...);
+
+   template<class S, class... T>
+   concept SemanticMakableNoexcept = SemanticMakable<S, T...>
+      && (noexcept(Decay<T> {Uneval<typename S::template Nested<Decay<T>>&&>()}) && ...);
+
+   /// Check if T is semantic-assignable                                      
+   template<class S, class... T>
+   concept SemanticAssignable = (::std::assignable_from<Decay<T>, typename S::template Nested<Decay<T>>&&> && ...);
+
+   template<class S, class... T>
+   concept SemanticAssignableNoexcept = SemanticAssignable<S, T...>
+      && (noexcept(Uneval<Decay<T>&&>() = Uneval<typename S::template Nested<Decay<T>>&&>()) && ...);
 
 } // namespace Langulus::CT
 
