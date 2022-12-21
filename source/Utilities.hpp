@@ -12,8 +12,8 @@ namespace Langulus
 {
 
    template<class T, CT::Semantic S>
-   LANGULUS(ALWAYSINLINE)
-   NOD() T SemanticMake(S&& value) {
+   NOD() LANGULUS(ALWAYSINLINE)
+   T SemanticMake(S&& value) {
       using A = typename S::Type;
 
       if constexpr (S::Move) {
@@ -43,8 +43,8 @@ namespace Langulus
    }
 
    template<class T, CT::Semantic S>
-   LANGULUS(ALWAYSINLINE)
-   NOD() T* SemanticNew(S&& value) {
+   NOD() LANGULUS(ALWAYSINLINE)
+   T* SemanticNew(S&& value) {
       using A = typename S::Type;
 
       if constexpr (S::Move) {
@@ -107,8 +107,6 @@ namespace Langulus
    template<class T, CT::Semantic S>
    LANGULUS(ALWAYSINLINE)
    decltype(auto) SemanticAssign(T& lhs, S&& rhs) {
-      using A = typename S::Type;
-
       if constexpr (S::Move) {
          if constexpr (!S::Keep && requires(T a) { a = Abandon(rhs.mValue); })
             return lhs = Abandon(rhs.mValue);

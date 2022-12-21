@@ -36,7 +36,7 @@ namespace Langulus::RTTI
       ::std::transform(lc.begin(), lc.end(), lc.begin(),
          [](char c) { return static_cast<char>(::std::tolower(c)); }
       );
-      return ::std::move(lc);
+      return lc;
    }
 
    /// Get the last, most relevant part of a token that my or may not have    
