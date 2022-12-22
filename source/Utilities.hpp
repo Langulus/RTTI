@@ -14,7 +14,7 @@ namespace Langulus
    template<class T, CT::Semantic S>
    NOD() LANGULUS(ALWAYSINLINE)
    T SemanticMake(S&& value) {
-      using A = typename S::Type;
+      using A = TypeOf<S>;
 
       if constexpr (S::Move) {
          if constexpr (!S::Keep && ::std::constructible_from<T, Abandoned<A>&&>)
@@ -45,7 +45,7 @@ namespace Langulus
    template<class T, CT::Semantic S>
    NOD() LANGULUS(ALWAYSINLINE)
    T* SemanticNew(S&& value) {
-      using A = typename S::Type;
+      using A = TypeOf<S>;
 
       if constexpr (S::Move) {
          if constexpr (!S::Keep && ::std::constructible_from<T, Abandoned<A>&&>)
@@ -76,7 +76,7 @@ namespace Langulus
    template<class T, CT::Semantic S>
    LANGULUS(ALWAYSINLINE)
    T* SemanticNew(void* placement, S&& value) {
-      using A = typename S::Type;
+      using A = TypeOf<S>;
 
       if constexpr (S::Move) {
          if constexpr (!S::Keep && ::std::constructible_from<T, Abandoned<A>&&>)
