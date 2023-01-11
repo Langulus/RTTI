@@ -528,9 +528,9 @@ namespace Langulus
                // Never dereference nullptr, return default hash instead
                if (head == nullptr)
                   return {};
+               return head->GetHash();
             }
-
-            return DenseCast(head).GetHash();
+            else return head.GetHash();
          }
          else if constexpr (CT::Number<T>) {
             // Numbers are built-in hashable                            
