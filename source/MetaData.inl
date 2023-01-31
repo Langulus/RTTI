@@ -397,6 +397,15 @@ namespace Langulus::RTTI
          meta = ::std::make_unique<MetaData>();
       #endif
 
+      // Then we nest to register all types variations below the        
+      // provided one, by shaving off pointers and constness one by one 
+      // The last, fully decayed type, is the origin type               
+      // Incomplete origin types are never reflected                    
+      if constexpr (CT::Constant<T> && CT::Complete<Decvq<T>>)
+         (void) MetaData::Of<Decvq<T>>();
+      if constexpr (CT::Sparse<T> && CT::Complete<Deptr<T>>)
+         (void) MetaData::Of<Deptr<T>>();
+
       // We'll try to explicitly or implicitly reflect it               
       if constexpr (CT::Reflectable<T>) {
          // The type is explicitly reflected with a custom function     
@@ -427,6 +436,14 @@ namespace Langulus::RTTI
          generated.mIsSparse = CT::Sparse<T>;
          generated.mIsConstant = CT::Constant<T>;
 
+         if constexpr (CT::Sparse<T> && CT::Complete<Deptr<T>>)
+            generated.mDeptr = MetaData::Of<Deptr<T>>();
+
+         if constexpr (CT::Decayed<T>)
+            generated.mOrigin = &generated;
+         else if constexpr (CT::Complete<Decay<T>>)
+            generated.mOrigin = MetaData::Of<Decay<T>>();
+
          // Calculate the allocation page and table                     
          generated.mAllocationPage = GetAllocationPageOf<T>();
          constexpr auto minElements = GetAllocationPageOf<T>() / sizeof(T);
@@ -449,8 +466,10 @@ namespace Langulus::RTTI
 
          generated.mIsPOD = CT::POD<T>;
 
-         if constexpr (CT::Dense<T> && requires { T::CTTI_Deep; })
-            generated.mIsDeep = T::CTTI_Deep;
+         if constexpr (CT::Complete<Decay<T>>) {
+            if constexpr (requires { Decay<T>::CTTI_Deep; })
+               generated.mIsDeep = Decay<T>::CTTI_Deep;
+         }
 
          generated.mIsUninsertable = CT::Uninsertable<T>;
          

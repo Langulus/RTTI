@@ -137,7 +137,7 @@ namespace Langulus::RTTI
       ///   @return the modified constexpr string view                        
       template<class T>
       NOD() constexpr Token IsolateTypename() {
-         auto original = AsTemplateArgument<Decay<T>>();
+         auto original = AsTemplateArgument<T>();
          SkipPrefix(original, Prefix);
          SkipSuffix(original, Suffix);
          SkipDecorations(original);
@@ -229,22 +229,74 @@ namespace Langulus::RTTI
          // Some fundamental types are stringified differently on	      
          // different compilers, and we need to make sure their names   
          // cross-match                                                 
-         if constexpr (CT::Same<T, ::std::int8_t>)
+         //TODO use a generator for the token when c++23 comes out, via the use of constexpr static
+         if constexpr (CT::Exact<T, ::std::int8_t>)
             return "int8";
-         else if constexpr (CT::Same<T, ::std::int16_t>)
+         else if constexpr (CT::Exact<T, ::std::int16_t>)
             return "int16";
-         else if constexpr (CT::Same<T, ::std::int32_t>)
+         else if constexpr (CT::Exact<T, ::std::int32_t>)
             return "int32";
-         else if constexpr (CT::Same<T, ::std::int64_t>)
+         else if constexpr (CT::Exact<T, ::std::int64_t>)
             return "int64";
-         else if constexpr (CT::Same<T, ::std::uint8_t>)
+         else if constexpr (CT::Exact<T, ::std::uint8_t>)
             return "uint8";
-         else if constexpr (CT::Same<T, ::std::uint16_t>)
+         else if constexpr (CT::Exact<T, ::std::uint16_t>)
             return "uint16";
-         else if constexpr (CT::Same<T, ::std::uint32_t>)
+         else if constexpr (CT::Exact<T, ::std::uint32_t>)
             return "uint32";
-         else if constexpr (CT::Same<T, ::std::uint64_t>)
+         else if constexpr (CT::Exact<T, ::std::uint64_t>)
             return "uint64";
+         
+         else if constexpr (CT::Exact<T, const ::std::int8_t>)
+            return "const int8";
+         else if constexpr (CT::Exact<T, const ::std::int16_t>)
+            return "const int16";
+         else if constexpr (CT::Exact<T, const ::std::int32_t>)
+            return "const int32";
+         else if constexpr (CT::Exact<T, const ::std::int64_t>)
+            return "const int64";
+         else if constexpr (CT::Exact<T, const ::std::uint8_t>)
+            return "const uint8";
+         else if constexpr (CT::Exact<T, const ::std::uint16_t>)
+            return "const uint16";
+         else if constexpr (CT::Exact<T, const ::std::uint32_t>)
+            return "const uint32";
+         else if constexpr (CT::Exact<T, const ::std::uint64_t>)
+            return "const uint64";
+
+         else if constexpr (CT::Exact<T, ::std::int8_t*>)
+            return "int8*";
+         else if constexpr (CT::Exact<T, ::std::int16_t*>)
+            return "int16*";
+         else if constexpr (CT::Exact<T, ::std::int32_t*>)
+            return "int32*";
+         else if constexpr (CT::Exact<T, ::std::int64_t*>)
+            return "int64*";
+         else if constexpr (CT::Exact<T, ::std::uint8_t*>)
+            return "uint8*";
+         else if constexpr (CT::Exact<T, ::std::uint16_t*>)
+            return "uint16*";
+         else if constexpr (CT::Exact<T, ::std::uint32_t*>)
+            return "uint32*";
+         else if constexpr (CT::Exact<T, ::std::uint64_t*>)
+            return "uint64*";
+
+         else if constexpr (CT::Exact<T, const ::std::int8_t*>)
+            return "const int8*";
+         else if constexpr (CT::Exact<T, const ::std::int16_t*>)
+            return "const int16*";
+         else if constexpr (CT::Exact<T, const ::std::int32_t*>)
+            return "const int32*";
+         else if constexpr (CT::Exact<T, const ::std::int64_t*>)
+            return "const int64*";
+         else if constexpr (CT::Exact<T, const ::std::uint8_t*>)
+            return "const uint8*";
+         else if constexpr (CT::Exact<T, const ::std::uint16_t*>)
+            return "const uint16*";
+         else if constexpr (CT::Exact<T, const ::std::uint32_t*>)
+            return "const uint32*";
+         else if constexpr (CT::Exact<T, const ::std::uint64_t*>)
+            return "const uint64*";
          else
             return IsolateTypename<T>();
       }
@@ -272,7 +324,7 @@ namespace Langulus::RTTI
    ///   @return the type name                                                
    template<class T>
    NOD() Token NameOf() noexcept {
-      return Inner::NameOf(Inner::Overrider<Decay<T>>{});
+      return Inner::NameOf(Inner::Overrider<T>{});
    }
 
    /// Get the last name of a type, templated or not, ignoring all namespaces 
@@ -280,7 +332,7 @@ namespace Langulus::RTTI
    ///   @return the type name                                                
    template<class T>
    NOD() constexpr Token LastNameOf() noexcept {
-      auto result = Inner::ConstexprNameOf<Decay<T>>();
+      auto result = Inner::ConstexprNameOf<T>();
       Inner::SkipAllNamespaces(result);
       return result;
    }
