@@ -67,9 +67,6 @@ namespace Langulus::RTTI
          // Used to constrain the memory manipulations for safety       
          Typed = 128,
 
-         // Data is sparse, essentially made of pointers                
-         Sparse = 512,
-
          // Data is fully constrained                                   
          // Useful set of states to interface a constant member         
          Constrained = Static | Constant | Typed,
@@ -110,7 +107,6 @@ namespace Langulus::RTTI
       NOD() constexpr bool IsStatic() const noexcept;
       NOD() constexpr bool IsConstant() const noexcept;
       NOD() constexpr bool IsTyped() const noexcept;
-      NOD() constexpr bool IsSparse() const noexcept;
       NOD() constexpr bool IsConstrained() const noexcept;
       
       constexpr void Reset() noexcept;

@@ -117,11 +117,6 @@ namespace Langulus::RTTI
       return mState & DataState::Typed;
    }
 
-   /// Check if data is made of pointers                                      
-   constexpr bool DataState::IsSparse() const noexcept {
-      return mState & DataState::Sparse;
-   }
-
    /// Check if data is either size-, change- or type-constrained             
    constexpr bool DataState::IsConstrained() const noexcept {
       return mState & DataState::Constrained;

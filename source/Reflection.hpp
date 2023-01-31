@@ -235,7 +235,7 @@ namespace Langulus::CT
    namespace Inner
    {
       template<class T>
-      concept POD = ::std::is_trivial_v<Decay<T>> || Decay<T>::CTTI_POD;
+      concept POD = CT::Dense<T> && (::std::is_trivial_v<T> || T::CTTI_POD);
    }
 
    /// A POD (Plain Old Data) type is any type with a static member           
@@ -251,12 +251,12 @@ namespace Langulus::CT
    namespace Inner
    {
       template<class T>
-      concept Nullifiable = Decay<T>::CTTI_Nullifiable;
+      concept Nullifiable = CT::Sparse<T> || T::CTTI_Nullifiable;
    }
 
    /// A nullifiable type is any type with a static member                    
    /// T::CTTI_Nullifiable set to true. If no such member exists, the type    
-   /// is assumed NOT nullifiable by default                                  
+   /// is assumed NOT nullifiable by default, unless its sparse               
    /// Nullifiable types improve construction by using some batching          
    /// runtime optimizations                                                  
    /// Use LANGULUS(NULLIFIABLE) macro as member to tag nullifiable types     
@@ -303,9 +303,10 @@ namespace Langulus::CT
    template<class T>
    using ProducerOf = typename Decay<T>::CTTI_Producer;
 
-   /// Check if T is abstract (has at least one pure virtual function)        
+   /// Check if T is abstract (has at least one pure virtual function, or is  
+   /// explicitly marked as abstract). Sparse types are never abstract        
    template<class... T>
-   concept Abstract = ((!Sparse<T> && (::std::is_abstract_v<Decay<T>> || Decay<T>::CTTI_Abstract)) && ...);
+   concept Abstract = ((Dense<T> && (::std::is_abstract_v<T> || T::CTTI_Abstract)) && ...);
 
    namespace Inner
    {
@@ -506,7 +507,8 @@ namespace Langulus
    ///   @param a - the number to cast                                        
    ///   @return a reference to the underlying type                           
    template<CT::DenseNumber T>
-   NOD() LANGULUS(ALWAYSINLINE) constexpr decltype(auto) BuiltinCast(const T& a) noexcept {
+   NOD() LANGULUS(ALWAYSINLINE)
+   constexpr decltype(auto) BuiltinCast(const T& a) noexcept {
       if constexpr (CT::BuiltinNumber<T>) {
          // Already built-in, just forward it                           
          return a;
@@ -523,7 +525,7 @@ namespace Langulus
    template<class T1, class T2>
    using Lossless = Conditional<
       // Always pick real numbers over integers if available            
-      (CT::Real<T1>&& CT::Integer<T2>)
+         (CT::Real<T1>&& CT::Integer<T2>)
       // Always pick signed type if available                           
       || (CT::Signed<T1> && CT::Unsigned<T2>)
       // Always pick the larger type as a last resort                   
@@ -532,35 +534,36 @@ namespace Langulus
    
    /// A type naming convention for standard number types                     
    ///   @return the suffix depending on the template argument                
-   template<class T>
+   template<CT::Dense T>
    constexpr Token TypeSuffix() {
-      if constexpr (CT::Same<T, signed int>)
+      using TT = TypeOf<T>;
+      if constexpr (CT::Same<TT, signed int>)
          return "i";
-      else if constexpr (CT::Same<T, unsigned int>)
+      else if constexpr (CT::Same<TT, unsigned int>)
          return "u";
-      else if constexpr (CT::Same<T, Real>)
+      else if constexpr (CT::Same<TT, Real>)
          return "";
-      else if constexpr (CT::Same<T, ::std::uint8_t>)
+      else if constexpr (CT::Same<TT, ::std::uint8_t>)
          return "u8";
-      else if constexpr (CT::Same<T, ::std::uint16_t>)
+      else if constexpr (CT::Same<TT, ::std::uint16_t>)
          return "u16";
-      else if constexpr (CT::Same<T, ::std::uint32_t>)
+      else if constexpr (CT::Same<TT, ::std::uint32_t>)
          return "u32";
-      else if constexpr (CT::Same<T, ::std::uint64_t>)
+      else if constexpr (CT::Same<TT, ::std::uint64_t>)
          return "u64";
-      else if constexpr (CT::Same<T, ::std::int8_t>)
+      else if constexpr (CT::Same<TT, ::std::int8_t>)
          return "i8";
-      else if constexpr (CT::Same<T, ::std::int16_t>)
+      else if constexpr (CT::Same<TT, ::std::int16_t>)
          return "i16";
-      else if constexpr (CT::Same<T, ::std::int32_t>)
+      else if constexpr (CT::Same<TT, ::std::int32_t>)
          return "i32";
-      else if constexpr (CT::Same<T, ::std::int64_t>)
+      else if constexpr (CT::Same<TT, ::std::int64_t>)
          return "i64";
-      else if constexpr (CT::Same<T, Float>)
+      else if constexpr (CT::Same<TT, Float>)
          return "f";
-      else if constexpr (CT::Same<T, Double>)
+      else if constexpr (CT::Same<TT, Double>)
          return "d";
-      else if constexpr (CT::Same<T, bool>)
+      else if constexpr (CT::Same<TT, bool>)
          return "b";
       else
          LANGULUS_ERROR("Unsupported atomic size");
@@ -644,19 +647,19 @@ namespace std
 
    template<>
    struct hash<DMeta> {
-      LANGULUS(ALWAYSINLINE) size_t operator()(DMeta k) const noexcept;
+      size_t operator()(DMeta k) const noexcept;
    };
    template<>
    struct hash<vector<DMeta>> {
-      LANGULUS(ALWAYSINLINE) size_t operator()(const vector<DMeta>& k) const noexcept;
+      size_t operator()(const vector<DMeta>& k) const noexcept;
    };
    template<>
    struct hash<TMeta> {
-      LANGULUS(ALWAYSINLINE) size_t operator()(TMeta k) const noexcept;
+      size_t operator()(TMeta k) const noexcept;
    };
    template<>
    struct hash<VMeta> {
-      LANGULUS(ALWAYSINLINE) size_t operator()(VMeta k) const noexcept;
+      size_t operator()(VMeta k) const noexcept;
    };
 }
 
@@ -672,29 +675,6 @@ namespace std
 #include "Reflection.inl"
 #include "Hashing.hpp"
 
-
-namespace std
-{
-   size_t hash<DMeta>::operator()(DMeta k) const noexcept {
-      return k->mHash.mHash;
-   }
-   size_t hash<vector<DMeta>>::operator()(const vector<DMeta>& k) const noexcept {
-      using ::Langulus::Hash;
-      vector<Hash> coalesced;
-      for (auto& i : k)
-         coalesced.emplace_back(i->mHash);
-      return ::Langulus::HashBytes<::Langulus::DefaultHashSeed, false>(
-         coalesced.data(), 
-         static_cast<int>(coalesced.size() * sizeof(Hash))
-      ).mHash;
-   }
-   size_t hash<TMeta>::operator()(TMeta k) const noexcept {
-      return k->mHash.mHash;
-   }
-   size_t hash<VMeta>::operator()(VMeta k) const noexcept {
-      return k->mHash.mHash;
-   }
-}
 
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
    #define LANGULUS_RTTI_BOUNDARY(a) \

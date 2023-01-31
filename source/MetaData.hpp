@@ -13,65 +13,81 @@
 namespace Langulus::CT
 {
 
-   /// Check if T is disown-constructible                                     
+   /// Check if T is disown-constructible, disregards density                 
    template<class... T>
-   concept DisownMakable = (::std::constructible_from<Decay<T>, Langulus::Disowned<Decay<T>>&&> && ...);
+   concept DisownMakable = (
+      ::std::constructible_from<Decay<T>, Langulus::Disowned<Decay<T>>&&>
+      && ...);
 
    template<class... T>
    concept DisownMakableNoexcept = DisownMakable<T...> 
       && (noexcept(Decay<T> {Uneval<Langulus::Disowned<Decay<T>>&&>()}) && ...);
 
-   /// Check if T is disown-assignable                                        
+   /// Check if T is disown-assignable if mutable, disregards density         
    template<class... T>
-   concept DisownAssignable = (::std::assignable_from<Decay<T>, Langulus::Disowned<Decay<T>>&&> && ...);
+   concept DisownAssignable = (
+      (CT::Mutable<T> && ::std::assignable_from<Decay<T>, Langulus::Disowned<Decay<T>>&&>)
+      && ...);
 
    template<class... T>
    concept DisownAssignableNoexcept = DisownAssignable<T...> 
       && (noexcept(Uneval<Decay<T>&&>() = Uneval<Langulus::Disowned<Decay<T>>&&>()) && ...);
 
-   /// Check if T is clone-constructible                                      
+   /// Check if T is clone-constructible, disregards density                  
    template<class... T>
-   concept CloneMakable = (::std::constructible_from<Decay<T>, Langulus::Cloned<Decay<T>>&&> && ...);
+   concept CloneMakable = (
+      ::std::constructible_from<Decay<T>, Langulus::Cloned<Decay<T>>&&>
+      && ...);
 
    template<class... T>
    concept CloneMakableNoexcept = CloneMakable<T...> 
       && (noexcept(Decay<T> {Uneval<Langulus::Cloned<Decay<T>>&&>()}) && ...);
 
-   /// Check if T is clone-assignable                                         
+   /// Check if T is clone-assignable if mutable, disregards density          
    template<class... T>
-   concept CloneAssignable = (::std::assignable_from<Decay<T>, Langulus::Cloned<Decay<T>>&&> && ...);
+   concept CloneAssignable = (
+      (CT::Mutable<T> && ::std::assignable_from<Decay<T>, Langulus::Cloned<Decay<T>>&&>)
+      && ...);
 
    template<class... T>
    concept CloneAssignableNoexcept = CloneAssignable<T...> 
       && (noexcept(Uneval<Decay<T>&&>() = Uneval<Langulus::Cloned<Decay<T>>&&>()) && ...);
 
-   /// Check if T is abandon-constructible                                    
+   /// Check if T is abandon-constructible, disregards density                
    template<class... T>
-   concept AbandonMakable = (::std::constructible_from<Decay<T>, Langulus::Abandoned<Decay<T>>&&> && ...);
+   concept AbandonMakable = (
+      (CT::Mutable<T> && ::std::constructible_from<Decay<T>, Langulus::Abandoned<Decay<T>>&&>)
+      && ...);
 
    template<class... T>
    concept AbandonMakableNoexcept = AbandonMakable<T...> 
       && (noexcept(Decay<T> {Uneval<Langulus::Abandoned<Decay<T>>&&>()}) && ...);
 
-   /// Check if T is abandon-assignable                                       
+   /// Check if T is abandon-assignable if mutable, disregards density        
    template<class... T>
-   concept AbandonAssignable = (::std::assignable_from<Decay<T>, Langulus::Abandoned<Decay<T>>&&> && ...);
+   concept AbandonAssignable = (
+      (CT::Mutable<T> && ::std::assignable_from<Decay<T>, Langulus::Abandoned<Decay<T>>&&>)
+      && ...);
 
    template<class... T>
    concept AbandonAssignableNoexcept = AbandonAssignable<T...> 
       && (noexcept(Uneval<Decay<T>&&>() = Uneval<Langulus::Abandoned<Decay<T>>&&>()) && ...);
 
-   /// Check if T is semantic-constructible                                   
+   /// Check if T is semantic-constructible, disregards density               
    template<class S, class... T>
-   concept SemanticMakable = (::std::constructible_from<Decay<T>, typename S::template Nested<Decay<T>>&&> && ...);
+   concept SemanticMakable = (
+      ::std::constructible_from<Decay<T>, typename S::template Nested<Decay<T>>&&>
+      && ...);
 
    template<class S, class... T>
    concept SemanticMakableNoexcept = SemanticMakable<S, T...>
       && (noexcept(Decay<T> {Uneval<typename S::template Nested<Decay<T>>&&>()}) && ...);
 
-   /// Check if T is semantic-assignable                                      
+   /// Check if T is semantic-assignable if mutable, disregards density       
    template<class S, class... T>
-   concept SemanticAssignable = (::std::assignable_from<Decay<T>, typename S::template Nested<Decay<T>>&&> && ...);
+   concept SemanticAssignable = (
+      (CT::Mutable<T> && ::std::assignable_from<Decay<T>, typename S::template Nested<Decay<T>>&&>)
+      && ...);
 
    template<class S, class... T>
    concept SemanticAssignableNoexcept = SemanticAssignable<S, T...>
@@ -191,8 +207,6 @@ namespace Langulus::RTTI
       // We can't get at reflection time, so we generate a lambda that  
       // retrieves it when required                                     
       TypeRetriever mTypeRetriever;
-      // State of the data                                              
-      DataState mState {};
       // Member offset. This is relative to the type it is offsetted    
       // in! If accessed through a derived type, that offset might      
       // be wrong! Type must be resolved first!                         
@@ -366,11 +380,22 @@ namespace Langulus::RTTI
       ConverterList mConverters {};
       // List of named values                                           
       NamedValueList mNamedValues {};
+      // The origin type, with all qualifiers removed                   
+      // Will be nullptr for incomplete types                           
+      DMeta mOrigin {};
+      // The type, when a single pointer is removed                     
+      // When the last pointer is removed, mDeptr will become mOrigin   
+      // Can be nullptr for incomplete types                            
+      DMeta mDeptr {};
       // Default concretization                                         
       DMeta mConcrete {};
       // Dynamic producer of the type                                   
       // Types with producers can be created only via a verb            
       DMeta mProducer {};
+      // True if reflected data is sparse (a pointer)                   
+      bool mIsSparse = false;
+      // True if reflected data is constant                             
+      bool mIsConstant = false;
       // True if reflected data is POD (optimization)                   
       // POD data can be directly memcpy-ed, or binary-serialized       
       bool mIsPOD = false;
@@ -457,11 +482,12 @@ namespace Langulus::RTTI
 
    public:
       template<CT::Void T>
-      NOD() static constexpr DMeta Of() requires CT::Decayed<T>;
+      NOD() static constexpr DMeta Of();
       template<CT::Data T>
-      NOD() static DMeta Of() requires CT::Decayed<T>;
+      NOD() static DMeta Of();
 
       NOD() DMeta GetMostConcrete() const noexcept;
+      NOD() DMeta RemovePointer() const noexcept;
       NOD() AllocationRequest RequestSize(const Size&) const noexcept;
 
       //                                                                
@@ -534,6 +560,10 @@ namespace Langulus::RTTI
       NOD() constexpr bool Is(DMeta) const noexcept;
       template<CT::Data T>
       NOD() constexpr bool Is() const;
+
+      NOD() constexpr bool IsExact(DMeta) const noexcept;
+      template<CT::Data T>
+      NOD() constexpr bool IsExact() const;
 
       constexpr bool operator == (const MetaData&) const noexcept;
    };
