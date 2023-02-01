@@ -944,8 +944,7 @@ namespace Langulus::RTTI
    /// Traverses the whole inheritance tree, so can return distant bases      
    ///   @param type - the type of base to search for                         
    ///   @return true if a base is available                                  
-   LANGULUS(ALWAYSINLINE)
-   bool MetaData::HasBase(DMeta type) const {
+   inline bool MetaData::HasBase(DMeta type) const {
       for (auto& b : mBases) {
          if (type->Is(b.mType) || b.mType->HasBase(type))
             return true;
@@ -1247,7 +1246,7 @@ namespace Langulus::RTTI
          // database is centralized, because it guarantees that         
          // definitions in separate translation units are always the    
          // same instance                                               
-         return mOrigin && mOrigin == other->mOrigin;
+         return mOrigin && other && mOrigin == other->mOrigin;
       #else
          return other
             && mOrigin && other->mOrigin
