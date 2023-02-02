@@ -613,8 +613,6 @@ namespace Langulus::RTTI
 
       template<CT::Data T>
       NOD() static constexpr Hash GenerateHash(const Token&) noexcept;
-      /*template<CT::Data T>
-      NOD() static constexpr Token GetCppName() noexcept;*/
 
       virtual ~Meta() = default;
    };
@@ -635,7 +633,7 @@ namespace Langulus::CT
 {
    /// Concept for meta definitions                                           
    template<class... T>
-   concept Meta = (DerivedFrom<T, ::Langulus::RTTI::Meta> && ...);
+   concept Meta = ((CT::Complete<T> && DerivedFrom<T, RTTI::Meta>) && ...);
 }
 
 
