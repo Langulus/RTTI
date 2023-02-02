@@ -15,9 +15,9 @@ namespace Langulus::CT
 
    /// Check if T is disown-constructible, disregards density                 
    template<class... T>
-   concept DisownMakable = (
-      ::std::constructible_from<Decay<T>, Langulus::Disowned<Decay<T>>&&>
-      && ...);
+   concept DisownMakable = ((Complete<Decay<T>>
+         && ::std::constructible_from<Decay<T>, Langulus::Disowned<Decay<T>>&&>
+      ) && ...);
 
    template<class... T>
    concept DisownMakableNoexcept = DisownMakable<T...> 
@@ -25,9 +25,9 @@ namespace Langulus::CT
 
    /// Check if T is disown-assignable if mutable, disregards density         
    template<class... T>
-   concept DisownAssignable = (
-      (CT::Mutable<T> && ::std::assignable_from<Decay<T>, Langulus::Disowned<Decay<T>>&&>)
-      && ...);
+   concept DisownAssignable = ((Complete<Decay<T>>
+         && (CT::Mutable<T> && ::std::assignable_from<Decay<T>, Langulus::Disowned<Decay<T>>&&>)
+      ) && ...);
 
    template<class... T>
    concept DisownAssignableNoexcept = DisownAssignable<T...> 
@@ -35,9 +35,9 @@ namespace Langulus::CT
 
    /// Check if T is clone-constructible, disregards density                  
    template<class... T>
-   concept CloneMakable = (
-      ::std::constructible_from<Decay<T>, Langulus::Cloned<Decay<T>>&&>
-      && ...);
+   concept CloneMakable = ((Complete<Decay<T>>
+         && ::std::constructible_from<Decay<T>, Langulus::Cloned<Decay<T>>&&>
+      ) && ...);
 
    template<class... T>
    concept CloneMakableNoexcept = CloneMakable<T...> 
@@ -45,9 +45,9 @@ namespace Langulus::CT
 
    /// Check if T is clone-assignable if mutable, disregards density          
    template<class... T>
-   concept CloneAssignable = (
-      (CT::Mutable<T> && ::std::assignable_from<Decay<T>, Langulus::Cloned<Decay<T>>&&>)
-      && ...);
+   concept CloneAssignable = ((Complete<Decay<T>>
+         && (CT::Mutable<T> && ::std::assignable_from<Decay<T>, Langulus::Cloned<Decay<T>>&&>)
+      ) && ...);
 
    template<class... T>
    concept CloneAssignableNoexcept = CloneAssignable<T...> 
@@ -55,9 +55,9 @@ namespace Langulus::CT
 
    /// Check if T is abandon-constructible, disregards density                
    template<class... T>
-   concept AbandonMakable = (
-      (CT::Mutable<T> && ::std::constructible_from<Decay<T>, Langulus::Abandoned<Decay<T>>&&>)
-      && ...);
+   concept AbandonMakable = ((Complete<Decay<T>>
+         && (CT::Mutable<T> && ::std::constructible_from<Decay<T>, Langulus::Abandoned<Decay<T>>&&>)
+      ) && ...);
 
    template<class... T>
    concept AbandonMakableNoexcept = AbandonMakable<T...> 
@@ -65,9 +65,9 @@ namespace Langulus::CT
 
    /// Check if T is abandon-assignable if mutable, disregards density        
    template<class... T>
-   concept AbandonAssignable = (
-      (CT::Mutable<T> && ::std::assignable_from<Decay<T>, Langulus::Abandoned<Decay<T>>&&>)
-      && ...);
+   concept AbandonAssignable = ((Complete<Decay<T>>
+         && (CT::Mutable<T> && ::std::assignable_from<Decay<T>, Langulus::Abandoned<Decay<T>>&&>)
+      ) && ...);
 
    template<class... T>
    concept AbandonAssignableNoexcept = AbandonAssignable<T...> 
@@ -75,9 +75,9 @@ namespace Langulus::CT
 
    /// Check if T is semantic-constructible, disregards density               
    template<class S, class... T>
-   concept SemanticMakable = (
-      ::std::constructible_from<Decay<T>, typename S::template Nested<Decay<T>>&&>
-      && ...);
+   concept SemanticMakable = ((Complete<Decay<T>>
+         && ::std::constructible_from<Decay<T>, typename S::template Nested<Decay<T>>&&>
+      ) && ...);
 
    template<class S, class... T>
    concept SemanticMakableNoexcept = SemanticMakable<S, T...>
@@ -85,9 +85,9 @@ namespace Langulus::CT
 
    /// Check if T is semantic-assignable if mutable, disregards density       
    template<class S, class... T>
-   concept SemanticAssignable = (
-      (CT::Mutable<T> && ::std::assignable_from<Decay<T>, typename S::template Nested<Decay<T>>&&>)
-      && ...);
+   concept SemanticAssignable = ((Complete<Decay<T>>
+         && (CT::Mutable<T> && ::std::assignable_from<Decay<T>, typename S::template Nested<Decay<T>>&&>)
+      ) && ...);
 
    template<class S, class... T>
    concept SemanticAssignableNoexcept = SemanticAssignable<S, T...>

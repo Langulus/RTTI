@@ -633,7 +633,7 @@ namespace Langulus::CT
 {
    /// Concept for meta definitions                                           
    template<class... T>
-   concept Meta = ((CT::Complete<T> && DerivedFrom<T, RTTI::Meta>) && ...);
+   concept Meta = (DerivedFrom<T, RTTI::Meta> && ...);
 }
 
 
