@@ -42,6 +42,8 @@ enum class Pi {
    Number = 314
 };
 
+struct IncompleteType;
+
 namespace One::Two::Three {
    struct TypeDeepIntoNamespaces;
 

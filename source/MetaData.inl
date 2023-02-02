@@ -221,13 +221,21 @@ namespace Langulus::RTTI
       // Register provided argument overload (if any)...                
       if constexpr (CT::Mutable<T>) {
          // ... for mutable context                                     
+         // (you can call mutable verbs only in mutable types)          
          result.mOverloadsMutable.insert({
             {MetaData::Of<A>()...},
             VERB::template Of<T>()
          });
+         // ... for immutable context                                   
+         // (you can call immutable verbs in mutable types)             
+         result.mOverloadsConstant.insert({
+            {MetaData::Of<A>()...},
+            VERB::template Of<const T>()
+         });
       }
       else {
          // ... for immutable context                                   
+         // (you can call only immutable verbs in immutable types)      
          result.mOverloadsConstant.insert({
             {MetaData::Of<A>()...},
             VERB::template Of<T>()

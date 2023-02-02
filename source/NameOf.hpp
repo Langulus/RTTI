@@ -8,6 +8,7 @@
 #pragma once
 #include "Config.hpp"
 #include <string>
+#include <array>
 
 namespace Langulus::RTTI
 {
@@ -178,11 +179,11 @@ namespace Langulus::RTTI
       ///   @tparam T - the templated type                                    
       ///   @return TArgs - the template arguments                            
       template<template<class...> class T, class... TArgs>
-      NOD() Token NameOf(Overrider<T<TArgs...>>&&) noexcept {
+      NOD() constexpr Token NameOf(Overrider<T<TArgs...>>&&) noexcept {
          auto original = IsolateTypename<T<TArgs...>>();
 
          // Corner case, where the splitter doesn't work                
-         #if LANGULUS(SAFE)
+         /*#if LANGULUS(SAFE)
             const auto found = original.find_first_of('<', 0);
             int nested = 1;
             for (auto i = found + 1; i < original.size() && found != original.npos; ++i) {
@@ -208,98 +209,103 @@ namespace Langulus::RTTI
                else if (original[i] == '>')
                   --nested;
             }
-         #endif
+         #endif*/
 
          SkipTemplateArguments(original);
-         static char buffer[NameOfEstimate(Overrider<T<TArgs...>>{})] = {};
-         ::std::memcpy(buffer, original.data(), original.size());
-         auto i = original.size();
-         buffer[i] = '<'; ++i;
-         i += NameSplitAndAppend<TArgs...>(buffer + i);
-         buffer[i] = '>'; ++i;
-         return Token {buffer, i};
+         constexpr auto size = NameOfEstimate(Overrider<T<TArgs...>>{});
+         ::std::array<char, size> buffer {};
+
+         size_t i = 0;
+         for (auto c : original)
+            buffer[i++] = c;
+
+         //::std::memcpy(buffer.data(), original.data(), original.size());
+         //auto i = original.size();
+         buffer[i++] = '<';
+         i += NameSplitAndAppend<TArgs...>(buffer.data() + i);
+         buffer[i++] = '>';
+         return Token {buffer.data(), i};
       }
 
-      /// Gets the name of T, without the decorations                         
-      /// This is an important step for consistent fundamental names, since   
-      /// different compilers and architectures name types differently in     
-      /// their function name macros                                          
       template<class T>
-      NOD() constexpr Token ConstexprNameOf() noexcept {
-         // Some fundamental types are stringified differently on	      
-         // different compilers, and we need to make sure their names   
-         // cross-match                                                 
-         //TODO use a generator for the token when c++23 comes out, via the use of constexpr static
-         if constexpr (CT::Exact<T, ::std::int8_t>)
-            return "int8";
-         else if constexpr (CT::Exact<T, ::std::int16_t>)
-            return "int16";
-         else if constexpr (CT::Exact<T, ::std::int32_t>)
-            return "int32";
-         else if constexpr (CT::Exact<T, ::std::int64_t>)
-            return "int64";
-         else if constexpr (CT::Exact<T, ::std::uint8_t>)
-            return "uint8";
-         else if constexpr (CT::Exact<T, ::std::uint16_t>)
-            return "uint16";
-         else if constexpr (CT::Exact<T, ::std::uint32_t>)
-            return "uint32";
-         else if constexpr (CT::Exact<T, ::std::uint64_t>)
-            return "uint64";
-         
-         else if constexpr (CT::Exact<T, const ::std::int8_t>)
-            return "const int8";
-         else if constexpr (CT::Exact<T, const ::std::int16_t>)
-            return "const int16";
-         else if constexpr (CT::Exact<T, const ::std::int32_t>)
-            return "const int32";
-         else if constexpr (CT::Exact<T, const ::std::int64_t>)
-            return "const int64";
-         else if constexpr (CT::Exact<T, const ::std::uint8_t>)
-            return "const uint8";
-         else if constexpr (CT::Exact<T, const ::std::uint16_t>)
-            return "const uint16";
-         else if constexpr (CT::Exact<T, const ::std::uint32_t>)
-            return "const uint32";
-         else if constexpr (CT::Exact<T, const ::std::uint64_t>)
-            return "const uint64";
+      struct StatefulNameOf
+      {
+      private:
+         using ClassName = ::std::array<char, 255/*IsolateTypename<T>().size()*/>;
 
-         else if constexpr (CT::Exact<T, ::std::int8_t*>)
-            return "int8*";
-         else if constexpr (CT::Exact<T, ::std::int16_t*>)
-            return "int16*";
-         else if constexpr (CT::Exact<T, ::std::int32_t*>)
-            return "int32*";
-         else if constexpr (CT::Exact<T, ::std::int64_t*>)
-            return "int64*";
-         else if constexpr (CT::Exact<T, ::std::uint8_t*>)
-            return "uint8*";
-         else if constexpr (CT::Exact<T, ::std::uint16_t*>)
-            return "uint16*";
-         else if constexpr (CT::Exact<T, ::std::uint32_t*>)
-            return "uint32*";
-         else if constexpr (CT::Exact<T, ::std::uint64_t*>)
-            return "uint64*";
+         /// Gets the name of T, without the decorations                         
+         /// This is an important step for consistent fundamental names, since   
+         /// different compilers and architectures name types differently in     
+         /// their function name macros                                          
+         NOD() static constexpr ClassName ConstexprNameOf() noexcept {
+            ClassName test {};
+            constexpr Token constness = "const ";
+            constexpr Token sparsenes = "*";
+            size_t at = 0;
 
-         else if constexpr (CT::Exact<T, const ::std::int8_t*>)
-            return "const int8*";
-         else if constexpr (CT::Exact<T, const ::std::int16_t*>)
-            return "const int16*";
-         else if constexpr (CT::Exact<T, const ::std::int32_t*>)
-            return "const int32*";
-         else if constexpr (CT::Exact<T, const ::std::int64_t*>)
-            return "const int64*";
-         else if constexpr (CT::Exact<T, const ::std::uint8_t*>)
-            return "const uint8*";
-         else if constexpr (CT::Exact<T, const ::std::uint16_t*>)
-            return "const uint16*";
-         else if constexpr (CT::Exact<T, const ::std::uint32_t*>)
-            return "const uint32*";
-         else if constexpr (CT::Exact<T, const ::std::uint64_t*>)
-            return "const uint64*";
-         else
-            return IsolateTypename<T>();
-      }
+            // Write const                                                 
+            if constexpr (CT::Constant<T>) {
+               for (auto c : constness)
+                  test[at++] = c;
+            }
+
+            // Write token                                                 
+            if constexpr (CT::Same<T, ::std::int8_t>) {
+               constexpr Token token = "int8";
+               for (auto c : token)
+                  test[at++] = c;
+            }
+            else if constexpr (CT::Same<T, ::std::int16_t>) {
+               constexpr Token token = "int16";
+               for (auto c : token)
+                  test[at++] = c;
+            }
+            else if constexpr (CT::Same<T, ::std::int32_t>) {
+               constexpr Token token = "int32";
+               for (auto c : token)
+                  test[at++] = c;
+            }
+            else if constexpr (CT::Same<T, ::std::int64_t>) {
+               constexpr Token token = "int64";
+               for (auto c : token)
+                  test[at++] = c;
+            }
+            else if constexpr (CT::Same<T, ::std::uint8_t>) {
+               constexpr Token token = "uint8";
+               for (auto c : token)
+                  test[at++] = c;
+            }
+            else if constexpr (CT::Same<T, ::std::uint16_t>) {
+               constexpr Token token = "uint16";
+               for (auto c : token)
+                  test[at++] = c;
+            }
+            else if constexpr (CT::Same<T, ::std::uint32_t>) {
+               constexpr Token token = "uint32";
+               for (auto c : token)
+                  test[at++] = c;
+            }
+            else if constexpr (CT::Same<T, ::std::uint64_t>) {
+               constexpr Token token = "uint64";
+               for (auto c : token)
+                  test[at++] = c;
+            }
+
+            // Write pointer                                               
+            if constexpr (CT::Sparse<T>) {
+               for (auto c : sparsenes)
+                  test[at++] = c;
+            }
+
+            test[at] = '\0';
+            return test;
+         }
+
+         static constexpr ClassName NameBuffer = ConstexprNameOf();
+
+      public:
+         static constexpr Token Name = NameBuffer.data();
+      };
 
       /// Gets the name of T, without the decorations                         
       /// This is an important step for consistent fundamental names, since   
@@ -307,11 +313,20 @@ namespace Langulus::RTTI
       /// their function name macros                                          
       template<class T>
       NOD() constexpr Token NameOf(Overrider<T>&&) noexcept {
-         return ConstexprNameOf<T>();
+         return StatefulNameOf<T>::Name;
       }
 
       template<auto E>
-      NOD() Token NameOfEnum() noexcept;
+      struct StatefulNameOfEnum
+      {
+      private:
+         using ClassName = ::std::array<char, 255/*NameOfEstimate(Overrider<decltype(E)>{}) + IsolateConstant<E>().size() + 2*/>;
+         static constexpr ClassName NameOfEnum() noexcept;
+         static constexpr ClassName NameBuffer = NameOfEnum();
+
+      public:
+         static constexpr Token Name = NameBuffer.data();
+      };
 
    } // namespace Inner
 
@@ -323,7 +338,7 @@ namespace Langulus::RTTI
    ///   @tparam T - the type to get the name of                              
    ///   @return the type name                                                
    template<class T>
-   NOD() Token NameOf() noexcept {
+   NOD() constexpr Token NameOf() noexcept {
       return Inner::NameOf(Inner::Overrider<T>{});
    }
 
@@ -332,7 +347,7 @@ namespace Langulus::RTTI
    ///   @return the type name                                                
    template<class T>
    NOD() constexpr Token LastNameOf() noexcept {
-      auto result = Inner::ConstexprNameOf<T>();
+      auto result = Inner::StatefulNameOf<T>::Name;
       Inner::SkipAllNamespaces(result);
       return result;
    }
@@ -342,10 +357,13 @@ namespace Langulus::RTTI
    /// so that it will too have consistent template arguments if fundamental  
    ///   @tparam T - the constant to get the name of                          
    ///   @return the name of the constant                                     
-   template<auto T>
-   NOD() Token NameOf() noexcept {
-      return Inner::NameOfEnum<T>();
+   template<auto E>
+   NOD() constexpr Token NameOf() noexcept {
+      return Inner::StatefulNameOfEnum<E>::Name;
    }
+
+
+
 
    template<template<class...> class T, class... TArgs>
    NOD() constexpr Size Inner::NameOfEstimate(Overrider<T<TArgs...>>&&) noexcept {
@@ -370,7 +388,7 @@ namespace Langulus::RTTI
    NOD() constexpr Size Inner::NameSplitAndAppend(char* buffer) noexcept {
       auto original = ::Langulus::RTTI::NameOf<HEAD>();
       if constexpr (sizeof...(TAIL) > 0) {
-         Offset i = 0;
+         size_t i = 0;
          for (; i < original.size(); ++i)
             buffer[i] = original[i];
          buffer[i] = ','; ++i;
@@ -390,13 +408,13 @@ namespace Langulus::RTTI
    ///   @tparam T - the type of the constant                                 
    ///   @tparam E - the constant                                             
    template<auto E>
-   NOD() Token Inner::NameOfEnum() noexcept {
+   NOD() constexpr typename Inner::StatefulNameOfEnum<E>::ClassName Inner::StatefulNameOfEnum<E>::NameOfEnum() noexcept {
       using EnumType = decltype(E);
-      const auto base = NameOf(Inner::Overrider<EnumType>{});
+      constexpr auto base = NameOf(Inner::Overrider<EnumType>{});
       constexpr auto name = IsolateConstant<E>();
 
       // Corner case, where the splitter doesn't work                   
-      #if LANGULUS(SAFE)
+      /*#if LANGULUS(SAFE)
          const auto template_start = base.find_first_of('<', 0);
          if (template_start != base.npos)
             Logger::Warning() <<
@@ -405,14 +423,27 @@ namespace Langulus::RTTI
             "you should move your enum outside the templated namespace: "
             "The constant that triggered this warning is: "
             << Logger::Red << base << "::" << name;
-      #endif
+      #endif*/
 
-      constexpr auto size = NameOfEstimate(Overrider<EnumType>{}) + name.size() + 2;
-      static char buffer[size] = {};
-      ::std::memcpy(buffer, base.data(), base.size());
-      buffer[base.size()] = buffer[base.size() + 1] = ':';
-      ::std::memcpy(buffer + base.size() + 2, name.data(), name.size());
-      return Token {buffer, size};
+      ClassName buffer {};
+
+      size_t i = 0;
+      for (auto c : base)
+         buffer[i++] = c;
+
+      //::std::memcpy(buffer.data(), base.data(), base.size());
+      buffer[i++] = ':';
+      buffer[i++] = ':';
+      //buffer[base.size()] = buffer[base.size() + 1] = ':';
+      //::std::memcpy(buffer.data() + base.size() + 2, name.data(), name.size());
+      
+      for (auto c : name)
+         buffer[i++] = c;
+
+      buffer[i++] = '\0';
+      return buffer;
    }
+
+
 
 } // namespace Langulus::RTTI
