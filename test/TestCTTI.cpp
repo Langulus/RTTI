@@ -21,6 +21,14 @@ SCENARIO("NameOf", "[nameof]") {
             REQUIRE(name == "uint16");
          }
       }
+      
+      WHEN("Taken the name of uint16_t&") {
+         auto name = NameOf<uint16_t&>();
+
+         THEN("Name should be correct") {
+            REQUIRE(name == "uint16&");
+         }
+      }
 
       WHEN("Taken the name of const uint16_t") {
          auto name = NameOf<const uint16_t>();
@@ -35,6 +43,30 @@ SCENARIO("NameOf", "[nameof]") {
 
          THEN("Name should be correct") {
             REQUIRE(name == "const uint16*");
+         }
+      }
+
+      WHEN("Taken the name of const uint16_t**") {
+         auto name = NameOf<const uint16_t**>();
+
+         THEN("Name should be correct") {
+            REQUIRE(name == "const uint16**");
+         }
+      }
+      
+      WHEN("Taken the name of const uint16_t* const*") {
+         auto name = NameOf<const uint16_t* const *>();
+
+         THEN("Name should be correct") {
+            REQUIRE(name == "const uint16*const *");
+         }
+      }
+      
+      WHEN("Taken the name of const uint16_t* const* const") {
+         auto name = NameOf<const uint16_t* const * const>();
+
+         THEN("Name should be correct") {
+            REQUIRE(name == "const uint16*const *const");
          }
       }
 
@@ -70,7 +102,7 @@ SCENARIO("NameOf", "[nameof]") {
          auto name = NameOf<IncompleteType*>();
 
          THEN("Name should be correct") {
-            REQUIRE(name == "IncompleteType *");
+            REQUIRE(name == "IncompleteType*");
          }
       }
 
@@ -78,7 +110,7 @@ SCENARIO("NameOf", "[nameof]") {
          auto name = NameOf<const IncompleteType*>();
 
          THEN("Name should be correct") {
-            REQUIRE(name == "const IncompleteType *");
+            REQUIRE(name == "const IncompleteType*");
          }
       }
 
@@ -114,7 +146,7 @@ SCENARIO("NameOf", "[nameof]") {
          auto name = NameOf<TypeDeepAlias*>();
 
          THEN("Name should be correct") {
-            REQUIRE(name == "One::Two::Three::TypeDeepIntoNamespaces *");
+            REQUIRE(name == "One::Two::Three::TypeDeepIntoNamespaces*");
          }
       }
 
@@ -122,7 +154,7 @@ SCENARIO("NameOf", "[nameof]") {
          auto name = NameOf<const TypeDeepAlias*>();
 
          THEN("Name should be correct") {
-            REQUIRE(name == "const One::Two::Three::TypeDeepIntoNamespaces *");
+            REQUIRE(name == "const One::Two::Three::TypeDeepIntoNamespaces*");
          }
       }
 
@@ -155,12 +187,7 @@ SCENARIO("NameOf", "[nameof]") {
       }
    }
 
-   
-   /*The following cases are, unfortunately, known not to work, and warnings are emitted
-   in such cases. These are the limitations of NameOf, sorry. If someone knows how to
-   improve these use cases, please inform me!*/
-
-   /*GIVEN("Enum One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>::VeryDeeplyTemplatedEnum::YesYouGotThatRight") {
+   GIVEN("Enum One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>::VeryDeeplyTemplatedEnum::YesYouGotThatRight") {
       WHEN("Taken the name of") {
          auto name = NameOf<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>::VeryDeeplyTemplatedEnum::YesYouGotThatRight>();
 
@@ -178,7 +205,7 @@ SCENARIO("NameOf", "[nameof]") {
             REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>::Nested<uint16>");
          }
       }
-   }*/
+   }
 
    GIVEN("Type TemplatedAlias") {
       WHEN("Taken the name of") {
@@ -211,26 +238,41 @@ SCENARIO("NameOf", "[nameof]") {
    }
 }
 
-TEMPLATE_TEST_CASE("Unsigned integer RTTI interpretation", "[metadata]", /*uint8_t,*/ uint16_t, uint32_t, uint64_t) {
+TEMPLATE_TEST_CASE("Unsigned integer RTTI interpretation", "[metadata]", uint8_t, uint16_t, uint32_t, uint64_t) {
    GIVEN("An unsigned integer type") {
       auto meta = MetaData::Of<TestType>();
       REQUIRE(meta != nullptr);
 
       WHEN("Interpreted as another type") {
          THEN("Requirements should be met") {
-            REQUIRE(CastsTo<A::Number>(meta));
-            REQUIRE(CastsTo<A::Integer>(meta));
-            REQUIRE(CastsTo<A::Unsigned>(meta));
-            REQUIRE(CastsTo<A::UnsignedInteger>(meta));
+            if constexpr (CT::Same<TestType, uint8_t>) {
+               // uint8_t is intentionally not considered a number by Langulus, 
+               // because it causes ambiguities with char types
+               REQUIRE_FALSE(CastsTo<A::Number>(meta));
+               REQUIRE_FALSE(CastsTo<A::Integer>(meta));
+               REQUIRE_FALSE(CastsTo<A::Unsigned>(meta));
+               REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta));
+
+               REQUIRE_FALSE(CastsTo<A::Number>(meta, 1));
+               REQUIRE_FALSE(CastsTo<A::Integer>(meta, 1));
+               REQUIRE_FALSE(CastsTo<A::Unsigned>(meta, 1));
+               REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta, 1));
+            }
+            else {
+               REQUIRE(CastsTo<A::Number>(meta));
+               REQUIRE(CastsTo<A::Integer>(meta));
+               REQUIRE(CastsTo<A::Unsigned>(meta));
+               REQUIRE(CastsTo<A::UnsignedInteger>(meta));
+
+               REQUIRE(CastsTo<A::Number>(meta, 1));
+               REQUIRE(CastsTo<A::Integer>(meta, 1));
+               REQUIRE(CastsTo<A::Unsigned>(meta, 1));
+               REQUIRE(CastsTo<A::UnsignedInteger>(meta, 1));
+            }
 
             REQUIRE_FALSE(CastsTo<A::Real>(meta));
             REQUIRE_FALSE(CastsTo<A::Signed>(meta));
             REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta));
-
-            REQUIRE(CastsTo<A::Number>(meta, 1));
-            REQUIRE(CastsTo<A::Integer>(meta, 1));
-            REQUIRE(CastsTo<A::Unsigned>(meta, 1));
-            REQUIRE(CastsTo<A::UnsignedInteger>(meta, 1));
 
             REQUIRE_FALSE(CastsTo<A::Real>(meta, 1));
             REQUIRE_FALSE(CastsTo<A::Signed>(meta, 1));
@@ -323,14 +365,14 @@ TEMPLATE_TEST_CASE("Real number RTTI interpretation", "[metadata]", float, doubl
 }
 
 SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]") {
-   GIVEN("IncompleteType") {
+   GIVEN("IncompleteType*") {
       WHEN("Reflected") {
          //auto metafail = MetaData::Of<IncompleteType>(); // should cause compile error
          auto meta = MetaData::Of<IncompleteType*>();
          REQUIRE(meta != nullptr);
 
          THEN("Requirements should be met") {
-            REQUIRE(meta->mToken == "IncompleteType *");
+            REQUIRE(meta->mToken == "IncompleteType*");
             REQUIRE(meta->mVersionMajor == 1);
             REQUIRE(meta->mVersionMinor == 0);
             REQUIRE(meta->mIsDeep == false);
@@ -343,6 +385,161 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mIsAbstract == false);
             REQUIRE(meta->mSize == sizeof(void*));
             REQUIRE(meta->mAlignment == alignof(void*));
+            REQUIRE(meta->mDeptr == nullptr);
+            REQUIRE(meta->mOrigin == nullptr);
+
+            REQUIRE(meta->mBases.size() == 0);
+            REQUIRE(meta->mAbilities.size() == 0);
+            REQUIRE(meta->mMembers.size() == 0);
+         }
+      }
+   }
+
+   GIVEN("IncompleteType**") {
+      WHEN("Reflected") {
+         auto meta = MetaData::Of<IncompleteType**>();
+         REQUIRE(meta != nullptr);
+
+         THEN("Requirements should be met") {
+            REQUIRE(meta->mToken == "IncompleteType**");
+            REQUIRE(meta->mVersionMajor == 1);
+            REQUIRE(meta->mVersionMinor == 0);
+            REQUIRE(meta->mIsDeep == false);
+            REQUIRE(meta->mIsPOD == false);
+            REQUIRE(meta->mIsNullifiable == true);
+            REQUIRE(meta->mPoolTactic == PoolTactic::Default);
+            REQUIRE(meta->mConcrete == nullptr);
+            REQUIRE(meta->mIsUninsertable == false);
+            REQUIRE(meta->mAllocationPage == ::std::max(Alignment, Roof2(sizeof(IncompleteType*))));
+            REQUIRE(meta->mIsAbstract == false);
+            REQUIRE(meta->mSize == sizeof(void*));
+            REQUIRE(meta->mAlignment == alignof(void*));
+            REQUIRE(meta->mDeptr == MetaData::Of<Deptr<IncompleteType**>>());
+            REQUIRE(meta->mOrigin == nullptr);
+
+            REQUIRE(meta->mBases.size() == 0);
+            REQUIRE(meta->mAbilities.size() == 0);
+            REQUIRE(meta->mMembers.size() == 0);
+         }
+      }
+   }
+
+   GIVEN("const IncompleteType**") {
+      WHEN("Reflected") {
+         auto meta = MetaData::Of<const IncompleteType**>();
+         REQUIRE(meta != nullptr);
+
+         THEN("Requirements should be met") {
+            REQUIRE(meta->mToken == "const IncompleteType**");
+            REQUIRE(meta->mVersionMajor == 1);
+            REQUIRE(meta->mVersionMinor == 0);
+            REQUIRE(meta->mIsDeep == false);
+            REQUIRE(meta->mIsPOD == false);
+            REQUIRE(meta->mIsNullifiable == true);
+            REQUIRE(meta->mPoolTactic == PoolTactic::Default);
+            REQUIRE(meta->mConcrete == nullptr);
+            REQUIRE(meta->mIsUninsertable == false);
+            REQUIRE(meta->mAllocationPage == ::std::max(Alignment, Roof2(sizeof(IncompleteType*))));
+            REQUIRE(meta->mIsAbstract == false);
+            REQUIRE(meta->mSize == sizeof(void*));
+            REQUIRE(meta->mAlignment == alignof(void*));
+            REQUIRE(meta->mDeptr == MetaData::Of<Deptr<const IncompleteType**>>());
+            REQUIRE(meta->mOrigin == nullptr);
+            REQUIRE(meta->mIsConstant == false);
+            REQUIRE(meta->mDeptr->mIsConstant == true);
+
+            REQUIRE(meta->mBases.size() == 0);
+            REQUIRE(meta->mAbilities.size() == 0);
+            REQUIRE(meta->mMembers.size() == 0);
+         }
+      }
+   }
+
+   GIVEN("const IncompleteType* const*&") {
+      WHEN("Reflected") {
+         auto meta = MetaData::Of<const IncompleteType* const*&>();
+         REQUIRE(meta != nullptr);
+
+         THEN("Requirements should be met") {
+            REQUIRE(meta->mToken == "const IncompleteType*const *");
+            REQUIRE(meta->mVersionMajor == 1);
+            REQUIRE(meta->mVersionMinor == 0);
+            REQUIRE(meta->mIsDeep == false);
+            REQUIRE(meta->mIsPOD == false);
+            REQUIRE(meta->mIsNullifiable == true);
+            REQUIRE(meta->mPoolTactic == PoolTactic::Default);
+            REQUIRE(meta->mConcrete == nullptr);
+            REQUIRE(meta->mIsUninsertable == false);
+            REQUIRE(meta->mAllocationPage == ::std::max(Alignment, Roof2(sizeof(IncompleteType*))));
+            REQUIRE(meta->mIsAbstract == false);
+            REQUIRE(meta->mSize == sizeof(void*));
+            REQUIRE(meta->mAlignment == alignof(void*));
+            REQUIRE(meta->mDeptr == MetaData::Of<Deptr<const IncompleteType* const*>>());
+            REQUIRE(meta->mOrigin == nullptr);
+            REQUIRE(meta->mIsConstant == true);
+            REQUIRE(meta->mDeptr->mIsConstant == true);
+
+            REQUIRE(meta->mBases.size() == 0);
+            REQUIRE(meta->mAbilities.size() == 0);
+            REQUIRE(meta->mMembers.size() == 0);
+         }
+      }
+   }
+
+   GIVEN("const IncompleteType* const* const&") {
+      WHEN("Reflected") {
+         auto meta = MetaData::Of<const IncompleteType* const* const&>();
+         REQUIRE(meta != nullptr);
+
+         THEN("Requirements should be met") {
+            REQUIRE(meta->mToken == "const IncompleteType*const *");
+            REQUIRE(meta->mVersionMajor == 1);
+            REQUIRE(meta->mVersionMinor == 0);
+            REQUIRE(meta->mIsDeep == false);
+            REQUIRE(meta->mIsPOD == false);
+            REQUIRE(meta->mIsNullifiable == true);
+            REQUIRE(meta->mPoolTactic == PoolTactic::Default);
+            REQUIRE(meta->mConcrete == nullptr);
+            REQUIRE(meta->mIsUninsertable == false);
+            REQUIRE(meta->mAllocationPage == ::std::max(Alignment, Roof2(sizeof(IncompleteType*))));
+            REQUIRE(meta->mIsAbstract == false);
+            REQUIRE(meta->mSize == sizeof(void*));
+            REQUIRE(meta->mAlignment == alignof(void*));
+            REQUIRE(meta->mDeptr == MetaData::Of<Deptr<const IncompleteType* const*>>());
+            REQUIRE(meta->mOrigin == nullptr);
+            REQUIRE(meta->mIsConstant == true);
+            REQUIRE(meta->mDeptr->mIsConstant == true);
+
+            REQUIRE(meta->mBases.size() == 0);
+            REQUIRE(meta->mAbilities.size() == 0);
+            REQUIRE(meta->mMembers.size() == 0);
+         }
+      }
+   }
+
+   GIVEN("const IncompleteType* const* const&") {
+      WHEN("Reflected") {
+         auto meta = MetaData::Of<const IncompleteType* const* const&&>();
+         REQUIRE(meta != nullptr);
+
+         THEN("Requirements should be met") {
+            REQUIRE(meta->mToken == "const IncompleteType*const *");
+            REQUIRE(meta->mVersionMajor == 1);
+            REQUIRE(meta->mVersionMinor == 0);
+            REQUIRE(meta->mIsDeep == false);
+            REQUIRE(meta->mIsPOD == false);
+            REQUIRE(meta->mIsNullifiable == true);
+            REQUIRE(meta->mPoolTactic == PoolTactic::Default);
+            REQUIRE(meta->mConcrete == nullptr);
+            REQUIRE(meta->mIsUninsertable == false);
+            REQUIRE(meta->mAllocationPage == ::std::max(Alignment, Roof2(sizeof(IncompleteType*))));
+            REQUIRE(meta->mIsAbstract == false);
+            REQUIRE(meta->mSize == sizeof(void*));
+            REQUIRE(meta->mAlignment == alignof(void*));
+            REQUIRE(meta->mDeptr == MetaData::Of<Deptr<const IncompleteType* const*>>());
+            REQUIRE(meta->mOrigin == nullptr);
+            REQUIRE(meta->mIsConstant == true);
+            REQUIRE(meta->mDeptr->mIsConstant == true);
 
             REQUIRE(meta->mBases.size() == 0);
             REQUIRE(meta->mAbilities.size() == 0);
@@ -481,35 +678,99 @@ SCENARIO("A reflected verb with CTTI traits", "[metaverb]") {
    }
 }
 
-TEMPLATE_TEST_CASE("TypeSuffix", "[metadata]"
-   , /*uint8_t, */uint16_t, uint32_t, uint64_t
-   , int8_t, int16_t, int32_t, int64_t
-   , Float, Double, bool
-) {
-   using T = TestType;
+SCENARIO("TypeSuffix", "[metadata]") {
+   WHEN("Generating a suffix for uint8_t") {
+      constexpr auto token = TypeSuffix<uint8_t>();
+      THEN("Requirements should be met") {
+         REQUIRE(token == "u8");
+      }
+   }
 
-   GIVEN("A type") {
-      WHEN("Generating a constexpr suffix") {
-         constexpr auto token = TypeSuffix<T>();
+   WHEN("Generating a suffix for uint16_t") {
+      constexpr auto token = TypeSuffix<uint16_t>();
+      THEN("Requirements should be met") {
+         REQUIRE(token == "u16");
+      }
+   }
 
-         THEN("Requirements should be met") {
-            if constexpr (CT::Same<T, int8_t>)
-               REQUIRE(token == "i8");
-            else if constexpr (CT::Same<T, uint16_t>)
-               REQUIRE(token == "u16");
-            else if constexpr (CT::Same<T, int16_t>)
-               REQUIRE(token == "i16");
-            else if constexpr (CT::Same<T, unsigned int>)
-               REQUIRE(token == "u");
-            else if constexpr (CT::Same<T, int>)
-               REQUIRE(token == "i");
-            else if constexpr (CT::Same<T, Real>)
-               REQUIRE(token == "");
-            else if constexpr (CT::Same<T, Float> && !CT::Same<Real, Float>)
-               REQUIRE(token == "f");
-            else if constexpr (CT::Same<T, Double> && !CT::Same<Real, Double>)
-               REQUIRE(token == "d");
-         }
+   WHEN("Generating a suffix for uint32_t") {
+      constexpr auto token = TypeSuffix<uint32_t>();
+      THEN("Requirements should be met") {
+         if constexpr (CT::Same<uint32_t, unsigned int>)
+            REQUIRE(token == "u");
+         else
+            REQUIRE(token == "u32");
+      }
+   }
+   
+   WHEN("Generating a suffix for uint64_t") {
+      constexpr auto token = TypeSuffix<uint64_t>();
+      THEN("Requirements should be met") {
+         if constexpr (CT::Same<uint64_t, unsigned int>)
+            REQUIRE(token == "u");
+         else
+            REQUIRE(token == "u64");
+      }
+   }
+
+   WHEN("Generating a suffix for int8_t") {
+      constexpr auto token = TypeSuffix<int8_t>();
+      THEN("Requirements should be met") {
+         REQUIRE(token == "i8");
+      }
+   }
+
+   WHEN("Generating a suffix for int16_t") {
+      constexpr auto token = TypeSuffix<int16_t>();
+      THEN("Requirements should be met") {
+         REQUIRE(token == "i16");
+      }
+   }
+
+   WHEN("Generating a suffix for int32_t") {
+      constexpr auto token = TypeSuffix<int32_t>();
+      THEN("Requirements should be met") {
+         if constexpr (CT::Same<int32_t, signed int>)
+            REQUIRE(token == "i");
+         else
+            REQUIRE(token == "i32");
+      }
+   }
+   
+   WHEN("Generating a suffix for int64_t") {
+      constexpr auto token = TypeSuffix<int64_t>();
+      THEN("Requirements should be met") {
+         if constexpr (CT::Same<int64_t, signed int>)
+            REQUIRE(token == "i");
+         else
+            REQUIRE(token == "i64");
+      }
+   }
+
+   WHEN("Generating a suffix for float") {
+      constexpr auto token = TypeSuffix<float>();
+      THEN("Requirements should be met") {
+         if constexpr (CT::Same<float, Real>)
+            REQUIRE(token == "");
+         else
+            REQUIRE(token == "f");
+      }
+   }
+
+   WHEN("Generating a suffix for double") {
+      constexpr auto token = TypeSuffix<double>();
+      THEN("Requirements should be met") {
+         if constexpr (CT::Same<double, Real>)
+            REQUIRE(token == "");
+         else
+            REQUIRE(token == "d");
+      }
+   }
+
+   WHEN("Generating a suffix for bool") {
+      constexpr auto token = TypeSuffix<bool>();
+      THEN("Requirements should be met") {
+         REQUIRE(token == "b");
       }
    }
 }

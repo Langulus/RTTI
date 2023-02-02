@@ -14,10 +14,6 @@
 
 namespace Langulus::RTTI
 {
-   namespace Inner
-   {
-      struct PurposefullyIncompleteType;
-   }
    
    /// Get the minimum allocation page size of the type (in bytes)            
    /// This guarantees two things:                                            
@@ -347,7 +343,7 @@ namespace Langulus::RTTI
       if constexpr (requires { T::CTTI_Name; })
          return T::CTTI_Name;
       else
-         return Meta::GetCppName<T>();
+         return NameOf<T>();
    }
 
    /// Reflecting a void type always returns nullptr                          
@@ -357,20 +353,22 @@ namespace Langulus::RTTI
    constexpr DMeta MetaData::Of() {
       return nullptr;
    }
+   
+   /// Always strip references from T                                         
+   ///   @return the meta data of the stripped of references T                
+   template<CT::Data T>
+   LANGULUS(ALWAYSINLINE)
+   DMeta MetaData::Of() requires (::std::is_reference_v<T>) {
+      return MetaData::Of<Decvq<Deref<T>>>();
+   }
 
    /// Reflect or return an already reflected type meta definition            
    /// Reflection is done only on decayed types to avoid static variable      
    /// duplications                                                           
    ///   @tparam T - the type to reflect (will always be decayed)             
    template<CT::Data T>
-   DMeta MetaData::Of() {
-      // This check is not standard, but doesn't hurt afaik             
-      static_assert(CT::Complete<int>,
-         "Can't reliably detect incomplete types");
-      static_assert(!CT::Complete<Inner::PurposefullyIncompleteType>,
-         "Can't reliably detect incomplete types");
-      static_assert(CT::Complete<T>,
-         "Can't reflect an incomplete type");
+   DMeta MetaData::Of() requires (!::std::is_reference_v<T>) {
+      static_assert(CT::Complete<T>, "Can't reflect incomplete type");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          static constinit DMeta meta;
@@ -435,7 +433,7 @@ namespace Langulus::RTTI
          generated.mToken = GetReflectedToken<T>();
          if constexpr (CT::Dense<T> && requires { T::CTTI_Info; })
             generated.mInfo = T::CTTI_Info;
-         generated.mCppName = Meta::GetCppName<T>();
+         generated.mCppName = NameOf<T>();
          generated.mHash = Meta::GenerateHash<T>(GetReflectedToken<T>());
          generated.mIsAbstract = CT::Abstract<T>;
          generated.mIsNullifiable = CT::Nullifiable<T>;
@@ -629,19 +627,19 @@ namespace Langulus::RTTI
             generated.mProducer = MetaData::Of<Decay<typename T::CTTI_Producer>>();
 
          // Set reflected bases                                         
-         if constexpr (CT::Dense<T> && requires { typename T::CTTI_Bases; })
+         if constexpr (CT::Dense<T> && CT::Complete<T> && requires { typename T::CTTI_Bases; })
             generated.SetBases<T>(typename T::CTTI_Bases {});
 
          // Set reflected abilities                                     
-         if constexpr (CT::Dense<T> && requires { typename T::CTTI_Verbs; })
+         if constexpr (CT::Dense<T> && CT::Complete<T> && requires { typename T::CTTI_Verbs; })
             generated.SetAbilities<T>(typename T::CTTI_Verbs {});
 
          // Set reflected converters                                    
-         if constexpr (CT::Dense<T> && requires { typename T::CTTI_Conversions; })
+         if constexpr (CT::Dense<T> && CT::Complete<T> && requires { typename T::CTTI_Conversions; })
             generated.SetConverters<T>(typename T::CTTI_Conversions {});
 
          // Set reflected named values                                  
-         if constexpr (CT::Dense<T> && requires { T::CTTI_NamedValues; }) {
+         if constexpr (CT::Dense<T> && CT::Complete<T> && requires { T::CTTI_NamedValues; }) {
             static_assert(CT::Comparable<T, T>, 
                "Named values specified for type, but type instances are not comparable");
 
@@ -684,7 +682,7 @@ namespace Langulus::RTTI
          }
 
          // Set reflected members                                       
-         if constexpr (CT::Dense<T> && requires { T::CTTI_Members; })
+         if constexpr (CT::Dense<T> && CT::Complete<T> && requires { T::CTTI_Members; })
             generated.mMembers = T::CTTI_Members;
 
          // Set some additional stuff if T is fundamental               

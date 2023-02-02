@@ -27,7 +27,7 @@ namespace Langulus::RTTI
 
          return T::CTTI_PositiveVerb;
       }
-      else return Meta::GetCppName<T>();
+      else return NameOf<T>();
    }
 
    /// Get the reflected negative token for a verb                            
@@ -46,7 +46,7 @@ namespace Langulus::RTTI
 
          return T::CTTI_NegativeVerb;
       }
-      else return Meta::GetCppName<T>();
+      else return NameOf<T>();
    }
 
    /// Get the reflected positive operator for a verb                         
@@ -181,7 +181,7 @@ namespace Langulus::RTTI
          if constexpr (requires { T::CTTI_Info; })
             generated.mInfo = T::CTTI_Info;
 
-         generated.mCppName = Meta::GetCppName<T>();
+         generated.mCppName = NameOf<T>();
          generated.mHash = GetVerbHash<T>();
 
          // Reflect precedence                                          

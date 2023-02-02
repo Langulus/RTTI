@@ -358,6 +358,10 @@ namespace Langulus::RTTI
    ///   Meta data                                                            
    ///                                                                        
    struct MetaData final : public Meta {
+   private:
+      struct PurposefullyIncompleteType;
+
+   public:
       friend struct Member;
       LANGULUS(NAME) "DMeta";
       LANGULUS_BASES(Meta);
@@ -369,6 +373,11 @@ namespace Langulus::RTTI
       static constexpr Token DefaultToken = "NoData";
 
       MetaType GetMetaType() const noexcept final { return Meta::Data; }
+
+      static_assert(CT::Complete<int>,
+         "Can't reliably detect incomplete types");
+      static_assert(!CT::Complete<PurposefullyIncompleteType>,
+         "Can't reliably detect incomplete types");
 
       // List of reflected members                                      
       MemberList mMembers {};
@@ -484,7 +493,9 @@ namespace Langulus::RTTI
       template<CT::Void T>
       NOD() static constexpr DMeta Of();
       template<CT::Data T>
-      NOD() static DMeta Of();
+      NOD() static DMeta Of() requires (!::std::is_reference_v<T>);
+      template<CT::Data T>
+      NOD() static DMeta Of() requires (::std::is_reference_v<T>);
 
       NOD() DMeta GetMostConcrete() const noexcept;
       NOD() DMeta RemovePointer() const noexcept;

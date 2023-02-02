@@ -26,9 +26,9 @@ namespace Langulus::RTTI
    
    /// Get the constexpr name of a type                                       
    ///	@return the hash of the type                                         
-   template<CT::Data T>
+   /*template<CT::Data T>
    constexpr Token Meta::GetCppName() noexcept {
       return NameOf<T>();
-   }
+   }*/
 
 } // namespace Langulus::RTTI
