@@ -6,6 +6,7 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #pragma once
+#include "MetaVerb.hpp"
 #include "Hashing.hpp"
 
 namespace Langulus::RTTI

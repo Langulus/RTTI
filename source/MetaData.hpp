@@ -6,8 +6,7 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #pragma once
-#include "DataState.hpp"
-#include "NameOf.hpp"
+#include "Reflection.hpp"
 #include <unordered_map>
 
 namespace Langulus::CT

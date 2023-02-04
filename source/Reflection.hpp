@@ -6,6 +6,8 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #pragma once
+#include "Config.hpp"
+#include <vector>
 
 /// You can provide a custom token to your data type, instead of using NameOf 
 #define LANGULUS_NAME() \
@@ -191,12 +193,10 @@
 #define LANGULUS_CONVERSIONS(...) \
    public: using CTTI_Conversions = ::Langulus::TTypeList<__VA_ARGS__>
 
-#include "DataState.hpp"
-#include "NameOf.hpp"
-#include <vector>
-
-LANGULUS_EXCEPTION(Meta);
-
+/// You can make types CT::Typed and retrieve their inner type using TypeOf   
+/// by adding LANGULUS(TYPED) <inner type>; as a member                       
+#define LANGULUS_TYPED() \
+   public: using CTTI_InnerType = 
 
 /// Compile-time checks and concepts associated with RTTI                     
 namespace Langulus::CT
@@ -336,37 +336,34 @@ namespace Langulus::CT
    {
       template<class T>
       concept Typed = requires {
-         typename Decay<T>::MemberType;
+         typename Decay<T>::CTTI_InnerType;
       };
 
-      /// A convenience function that wraps std::underlying_type_t for enums, 
-      /// as well as anything with MemberType defined                         
+      /// Convenience function that wraps std::underlying_type_t for enums,   
+      /// as well as anything with CTTI_InnerType defined                     
       template<Dense T>
       constexpr auto GetUnderlyingType() noexcept {
          using DT = Decay<T>;
          if constexpr (Typed<DT>)
-            return (typename DT::MemberType*) nullptr;
+            return (typename DT::CTTI_InnerType*) nullptr;
          else if constexpr (::std::is_enum_v<DT>)
             return (::std::underlying_type_t<DT>*) nullptr;
          else
             return (DT*) nullptr;
       };
 
-   } //namespace Langulus::CT::Inner
-
+   } // namespace Langulus::CT::Inner
 } // namespace Langulus::CT
-
 
 namespace Langulus
 {
 
-   /// Get internal type of an enum, custom number, statically optimized      
-   /// container or vector                                                    
+   /// Get internal type of an enum, or anything reflected with the           
+   /// LANGULUS(TYPED) member                                                 
    template<CT::Dense T>
    using TypeOf = Deptr<decltype(CT::Inner::GetUnderlyingType<T>())>;
 
 } // namespace Langulus
-
 
 namespace Langulus::CT
 {
@@ -502,7 +499,7 @@ namespace Langulus
 {
 
    /// Casts a number to its underlying type                                  
-   /// If T::MemberType exists, or if T is an enum, the inner type returns    
+   /// If T::CTTI_InnerType exists, or if T is an enum, the inner type returns
    ///   @tparam T - type of the number/enum to cast                          
    ///   @param a - the number to cast                                        
    ///   @return a reference to the underlying type                           
@@ -571,7 +568,6 @@ namespace Langulus
 
 } // namespace Langulus
 
-
 namespace Langulus::RTTI
 {
 
@@ -628,14 +624,12 @@ namespace Langulus::RTTI
 
 } // namespace Langulus::RTTI
 
-
 namespace Langulus::CT
 {
    /// Concept for meta definitions                                           
    template<class... T>
    concept Meta = (DerivedFrom<T, RTTI::Meta> && ...);
 }
-
 
 namespace std
 {
@@ -661,17 +655,20 @@ namespace std
    };
 }
 
+#include "Fundamental.hpp"
+#include "Semantics.hpp"
+#include "NameOf.hpp"
 #include "Byte.hpp"
+
 #include "MetaData.hpp"
 #include "MetaTrait.hpp"
 #include "MetaVerb.hpp"
-#include "Fundamental.hpp"
 
 #include "MetaData.inl"
 #include "MetaTrait.inl"
 #include "MetaVerb.inl"
+
 #include "Reflection.inl"
-#include "Hashing.hpp"
 
 
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)

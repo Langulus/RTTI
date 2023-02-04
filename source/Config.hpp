@@ -35,3 +35,5 @@
 #else
    #define LANGULUS_API_RTTI() LANGULUS_IMPORT()
 #endif
+
+LANGULUS_EXCEPTION(Meta);

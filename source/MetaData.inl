@@ -6,6 +6,7 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #pragma once
+#include "MetaData.hpp"
 #include "Hashing.hpp"
 
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
