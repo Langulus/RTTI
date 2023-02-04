@@ -12,6 +12,22 @@ using TypeDeepAlias = One::Two::Three::TypeDeepIntoNamespaces;
 using TemplatedAlias = One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>;
 using VeryComplexTemplatedAlias = One::Two::Three::VeryComplexTemplate<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>>;
 
+/// A freestanding type compatibility check                                   
+/// Purely cosmetic, to avoid typing `template` before member function        
+template<CT::Data T, bool ADVANCED = false>
+LANGULUS(ALWAYSINLINE)
+bool CastsTo(DMeta from) {
+   return from->template CastsTo<T, ADVANCED>();
+}
+
+/// A freestanding type compatibility check                                   
+/// Purely cosmetic, to avoid typing `template` before member function        
+template<CT::Data T>
+LANGULUS(ALWAYSINLINE)
+bool CastsTo(DMeta from, Count count) {
+   return from->template CastsTo<T>(count);
+}
+
 SCENARIO("NameOf", "[nameof]") {
    GIVEN("Type uint16_t") {
       WHEN("Taken the name of uint16_t") {
@@ -377,7 +393,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mVersionMinor == 0);
             REQUIRE(meta->mIsDeep == false);
             REQUIRE(meta->mIsPOD == false);
-            REQUIRE(meta->mIsNullifiable == true);
+            REQUIRE(meta->mIsNullifiable == false);
             REQUIRE(meta->mPoolTactic == PoolTactic::Default);
             REQUIRE(meta->mConcrete == nullptr);
             REQUIRE(meta->mIsUninsertable == false);
@@ -406,7 +422,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mVersionMinor == 0);
             REQUIRE(meta->mIsDeep == false);
             REQUIRE(meta->mIsPOD == false);
-            REQUIRE(meta->mIsNullifiable == true);
+            REQUIRE(meta->mIsNullifiable == false);
             REQUIRE(meta->mPoolTactic == PoolTactic::Default);
             REQUIRE(meta->mConcrete == nullptr);
             REQUIRE(meta->mIsUninsertable == false);
@@ -435,7 +451,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mVersionMinor == 0);
             REQUIRE(meta->mIsDeep == false);
             REQUIRE(meta->mIsPOD == false);
-            REQUIRE(meta->mIsNullifiable == true);
+            REQUIRE(meta->mIsNullifiable == false);
             REQUIRE(meta->mPoolTactic == PoolTactic::Default);
             REQUIRE(meta->mConcrete == nullptr);
             REQUIRE(meta->mIsUninsertable == false);
@@ -466,7 +482,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mVersionMinor == 0);
             REQUIRE(meta->mIsDeep == false);
             REQUIRE(meta->mIsPOD == false);
-            REQUIRE(meta->mIsNullifiable == true);
+            REQUIRE(meta->mIsNullifiable == false);
             REQUIRE(meta->mPoolTactic == PoolTactic::Default);
             REQUIRE(meta->mConcrete == nullptr);
             REQUIRE(meta->mIsUninsertable == false);
@@ -497,7 +513,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mVersionMinor == 0);
             REQUIRE(meta->mIsDeep == false);
             REQUIRE(meta->mIsPOD == false);
-            REQUIRE(meta->mIsNullifiable == true);
+            REQUIRE(meta->mIsNullifiable == false);
             REQUIRE(meta->mPoolTactic == PoolTactic::Default);
             REQUIRE(meta->mConcrete == nullptr);
             REQUIRE(meta->mIsUninsertable == false);
@@ -528,7 +544,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mVersionMinor == 0);
             REQUIRE(meta->mIsDeep == false);
             REQUIRE(meta->mIsPOD == false);
-            REQUIRE(meta->mIsNullifiable == true);
+            REQUIRE(meta->mIsNullifiable == false);
             REQUIRE(meta->mPoolTactic == PoolTactic::Default);
             REQUIRE(meta->mConcrete == nullptr);
             REQUIRE(meta->mIsUninsertable == false);
