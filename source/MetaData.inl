@@ -370,6 +370,7 @@ namespace Langulus::RTTI
    template<CT::Data T>
    DMeta MetaData::Of() requires (!::std::is_reference_v<T>) {
       static_assert(CT::Complete<T>, "Can't reflect incomplete type");
+      using DT = Decay<T>;
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          static constinit DMeta meta;
@@ -448,8 +449,8 @@ namespace Langulus::RTTI
 
          if constexpr (CT::Decayed<T>)
             generated.mOrigin = &generated;
-         else if constexpr (CT::Complete<Decay<T>>)
-            generated.mOrigin = MetaData::Of<Decay<T>>();
+         else if constexpr (CT::Complete<DT>)
+            generated.mOrigin = MetaData::Of<DT>();
 
          // Calculate the allocation page and table                     
          generated.mAllocationPage = GetAllocationPageOf<T>();
@@ -474,178 +475,200 @@ namespace Langulus::RTTI
          generated.mIsPOD = CT::POD<T>;
          generated.mIsUninsertable = CT::Uninsertable<T>;
 
-         if constexpr (CT::Complete<Decay<T>>) {
-            if constexpr (requires { Decay<T>::CTTI_Deep; })
-               generated.mIsDeep = Decay<T>::CTTI_Deep;
-         }
+         if constexpr (CT::Complete<DT>) {
+            // Check if type is deep                                    
+            if constexpr (requires { DT::CTTI_Deep; })
+               generated.mIsDeep = DT::CTTI_Deep;
 
-         if constexpr (CT::Dense<T> && CT::Complete<Decay<T>>) {
             // Wrap the default constructor of the type inside lambda   
             if constexpr (CT::Defaultable<T> && !CT::Meta<T>) {
-               generated.mDefaultConstructor = [](void* at) {
-                  new (at) T {};
+               generated.mDefaultConstructor = [](void* at) noexcept(CT::DefaultableNoexcept<T>) {
+                  auto atT = static_cast<T*>(at);
+                  new (const_cast<void*>(static_cast<const void*>(&DenseCast(atT))))
+                     DT {};
                };
             }
          
             // Wrap the descriptor constructor of the type inside lambda
             if constexpr (CT::DescriptorMakable<T> && !CT::Meta<T>) {
-               generated.mDescriptorConstructor = [](void* at, const ::Langulus::Anyness::Any& descriptor) {
-                  new (at) T {descriptor};
+               generated.mDescriptorConstructor = [](void* at, const ::Langulus::Anyness::Any& descriptor) noexcept(CT::DescriptorMakableNoexcept<T>) {
+                  auto atT = static_cast<T*>(at);
+                  new (const_cast<void*>(static_cast<const void*>(&DenseCast(atT))))
+                     DT {descriptor};
                };
             }
 
             // Wrap the copy constructor of the type inside lambda      
             if constexpr (CT::CopyMakable<T> && !CT::Meta<T>) {
-               generated.mCopyConstructor = [](const void* from, void* to) {
-                  auto fromInstance = static_cast<const T*>(from);
-                  new (to) T {*fromInstance};
+               generated.mCopyConstructor = [](const void* from, void* to) noexcept(CT::CopyMakableNoexcept<T>) {
+                  auto fromT = static_cast<const T*>(from);
+                  auto toT = static_cast<T*>(to);
+                  new (const_cast<void*>(static_cast<const void*>(&DenseCast(toT))))
+                     DT {DenseCast(fromT)};
+               };
+            }
+            
+            // Wrap the clone constructor of the type inside lambda     
+            if constexpr (CT::CloneMakable<T> && !CT::Meta<T>) {
+               generated.mCloneConstructor = [](const void* from, void* to) noexcept(CT::CloneMakableNoexcept<T>) {
+                  auto fromT = static_cast<const T*>(from);
+                  auto toT = static_cast<T*>(to);
+                  new (const_cast<void*>(static_cast<const void*>(&DenseCast(toT))))
+                     DT {Clone(DenseCast(fromT))};
                };
             }
 
             // Wrap the disown constructor of the type inside lambda    
             if constexpr (CT::DisownMakable<T> && !CT::Meta<T>) {
-               generated.mDisownConstructor = [](const void* from, void* to) {
-                  auto fromInstance = static_cast<const T*>(from);
-                  new (to) T {Disown(*fromInstance)};
+               generated.mDisownConstructor = [](const void* from, void* to) noexcept(CT::DisownMakableNoexcept<T>) {
+                  auto fromT = static_cast<const T*>(from);
+                  auto toT = static_cast<T*>(to);
+                  new (const_cast<void*>(static_cast<const void*>(&DenseCast(toT))))
+                     DT {Disown(DenseCast(fromT))};
                };
             }
 
             // Wrap the move constructor of the type inside a lambda    
             if constexpr (CT::MoveMakable<T> && !CT::Meta<T>) {
-               generated.mMoveConstructor = [](void* from, void* to) {
-                  auto fromInstance = static_cast<T*>(from);
-                  new (to) T {Forward<T>(*fromInstance)};
+               generated.mMoveConstructor = [](void* from, void* to) noexcept(CT::MoveMakableNoexcept<T>) {
+                  auto fromT = static_cast<T*>(from);
+                  auto toT = static_cast<T*>(to);
+                  new (const_cast<void*>(static_cast<const void*>(&DenseCast(toT))))
+                     DT {Forward<DT>(DenseCast(fromT))};
                };
             }
 
             // Wrap the abandon constructor of the type inside a lambda 
             if constexpr (CT::AbandonMakable<T> && !CT::Meta<T>) {
-               generated.mAbandonConstructor = [](void* from, void* to) {
-                  auto fromInstance = static_cast<T*>(from);
-                  new (to) T {Abandon(*fromInstance)};
+               generated.mAbandonConstructor = [](void* from, void* to) noexcept(CT::AbandonMakableNoexcept<T>) {
+                  auto fromT = static_cast<T*>(from);
+                  auto toT = static_cast<T*>(to);
+                  new (const_cast<void*>(static_cast<const void*>(&DenseCast(toT))))
+                     DT {Abandon(DenseCast(fromT))};
                };
             }
 
             // Wrap the destructor of the type inside a lambda          
             if constexpr (CT::Destroyable<T> && !CT::Meta<T>) {
                generated.mDestructor = [](void* at) {
-                  auto instance = static_cast<T*>(at);
-                  instance->~T();
-               };
-            }
-
-            // Wrap the cloners of the type inside a lambda             
-            if constexpr (CT::Clonable<T> && !CT::Meta<T>) {
-               generated.mCloner = [](const void* from, void* to) {
-                  auto fromInstance = static_cast<const T*>(from);
-                  new (to) T {fromInstance->Clone()};
+                  auto atT = static_cast<T*>(at);
+                  DenseCast(atT).~DT();
                };
             }
 
             // Wrap the == operator of the type inside a lambda         
             if constexpr (CT::Comparable<T, T>) {
                generated.mComparer = [](const void* t1, const void* t2) {
-                  auto t1Instance = static_cast<const T*>(t1);
-                  auto t2Instance = static_cast<const T*>(t2);
-                  return *t1Instance == *t2Instance;
+                  auto t1T = static_cast<const T*>(t1);
+                  auto t2T = static_cast<const T*>(t2);
+                  return DenseCast(t1T) == DenseCast(t2T);
                };
             }
 
             // Wrap the copy-assignment of the type inside a lambda     
             if constexpr (CT::Copyable<T> && !CT::Meta<T>) {
                generated.mCopier = [](const void* from, void* to) noexcept(CT::CopyableNoexcept<T>) {
-                  auto toInstance = static_cast<T*>(to);
-                  auto fromInstance = static_cast<const T*>(from);
-                  *toInstance = *fromInstance;
+                  auto fromT = static_cast<const T*>(from);
+                  auto toT = static_cast<T*>(to);
+                  DenseCast(toT) = DenseCast(fromT);
                };
             }
 
             // Wrap the disown-assignment of the type inside a lambda   
             if constexpr (CT::DisownAssignable<T> && !CT::Meta<T>) {
                generated.mDisownCopier = [](const void* from, void* to) noexcept(CT::DisownAssignableNoexcept<T>) {
-                  auto toInstance = static_cast<T*>(to);
-                  auto fromInstance = static_cast<const T*>(from);
-                  *toInstance = Disown(*fromInstance);
+                  auto fromT = static_cast<const T*>(from);
+                  auto toT = static_cast<T*>(to);
+                  DenseCast(toT) = Disown(DenseCast(fromT));
+               };
+            }
+            
+            // Wrap the cloners of the type inside a lambda             
+            if constexpr (CT::CloneAssignable<T> && !CT::Meta<T>) {
+               generated.mCloneCopier = [](const void* from, void* to) noexcept(CT::CloneAssignableNoexcept<T>) {
+                  auto fromT = static_cast<const T*>(from);
+                  auto toT = static_cast<T*>(to);
+                  DenseCast(toT) = Clone(DenseCast(fromT));
                };
             }
 
             // Wrap the move-assignment of the type inside a lambda     
             if constexpr (CT::Movable<T> && !CT::Meta<T>) {
                generated.mMover = [](void* from, void* to) noexcept(CT::MovableNoexcept<T>) {
-                  auto toInstance = static_cast<T*>(to);
-                  auto fromInstance = static_cast<T*>(from);
-                  *toInstance = ::std::move(*fromInstance);
+                  auto fromT = static_cast<T*>(from);
+                  auto toT = static_cast<T*>(to);
+                  DenseCast(toT) = ::std::move(DenseCast(fromT));
                };
             }
 
             // Wrap the move-assignment of the type inside a lambda     
             if constexpr (CT::AbandonAssignable<T> && !CT::Meta<T>) {
                generated.mAbandonMover = [](void* from, void* to) noexcept(CT::AbandonAssignableNoexcept<T>) {
-                  auto toInstance = static_cast<T*>(to);
-                  auto fromInstance = static_cast<T*>(from);
-                  *toInstance = Abandon(*fromInstance);
+                  auto fromT = static_cast<T*>(from);
+                  auto toT = static_cast<T*>(to);
+                  DenseCast(toT) = Abandon(DenseCast(fromT));
                };
             }
 
             // Wrap the GetBlock method of the type inside a lambda     
             if constexpr (CT::Resolvable<T>) {
                generated.mResolver = [](const void* at) {
-                  auto instance = static_cast<const T*>(at);
-                  return instance->GetBlock();
+                  auto atT = static_cast<const T*>(at);
+                  return DenseCast(atT).GetBlock();
                };
             }
 
             // Wrap the GetHash() method inside a lambda                
             if constexpr (CT::Hashable<T> || CT::Number<T> || CT::POD<T>) {
                generated.mHasher = [](const void* at) {
-                  auto instance = static_cast<const T*>(at);
-                  return HashData(*instance);
+                  auto atT = static_cast<const T*>(at);
+                  return HashData(DenseCast(atT));
                };
             }
 
             // Wrap the mutable Do verb method inside a lambda          
             if constexpr (CT::DispatcherMutable<T>) {
                generated.mDispatcherMutable = [](void* at, Flow::Verb& verb) {
-                  auto instance = static_cast<T*>(at);
-                  instance->Do(verb);
+                  auto atT = static_cast<T*>(at);
+                  DenseCast(atT).Do(verb);
                };
             }
 
             // Wrap the constant Do verb method inside a lambda         
             if constexpr (CT::DispatcherConstant<T>) {
                generated.mDispatcherConstant = [](const void* at, Flow::Verb& verb) {
-                  auto instance = static_cast<const T*>(at);
-                  instance->Do(verb);
+                  auto atT = static_cast<const T*>(at);
+                  DenseCast(atT).Do(verb);
                };
             }
 
             // Reflect the concrete type                                
             if constexpr (CT::Concretizable<T>)
-               generated.mConcrete = MetaData::Of<Decay<typename T::CTTI_Concrete>>();
+               generated.mConcrete = MetaData::Of<typename DT::CTTI_Concrete>();
 
             // Reflect the producer type                                
             if constexpr (CT::Producible<T>)
-               generated.mProducer = MetaData::Of<Decay<typename T::CTTI_Producer>>();
+               generated.mProducer = MetaData::Of<typename DT::CTTI_Producer>();
 
             // Set reflected bases                                      
-            if constexpr (requires { typename T::CTTI_Bases; })
-               generated.SetBases<T>(typename T::CTTI_Bases {});
+            if constexpr (requires { typename DT::CTTI_Bases; })
+               generated.SetBases<T>(typename DT::CTTI_Bases {});
 
             // Set reflected abilities                                  
-            if constexpr (requires { typename T::CTTI_Verbs; })
-               generated.SetAbilities<T>(typename T::CTTI_Verbs {});
+            if constexpr (requires { typename DT::CTTI_Verbs; })
+               generated.SetAbilities<T>(typename DT::CTTI_Verbs {});
 
             // Set reflected converters                                 
-            if constexpr (requires { typename T::CTTI_Conversions; })
-               generated.SetConverters<T>(typename T::CTTI_Conversions {});
+            if constexpr (requires { typename DT::CTTI_Conversions; })
+               generated.SetConverters<T>(typename DT::CTTI_Conversions {});
 
             // Set reflected named values                               
-            if constexpr (requires { T::CTTI_NamedValues; }) {
+            if constexpr (requires { DT::CTTI_NamedValues; }) {
                static_assert(CT::Comparable<T, T>, 
                   "Named values specified for type, but type instances are not comparable");
 
-               constexpr auto c = ExtentOf<decltype(T::CTTI_NamedValues)>;
-               static T staticInstances[c];
+               constexpr auto c = ExtentOf<decltype(DT::CTTI_NamedValues)>;
+               static DT staticInstances[c];
                static ::std::string staticNames[c] {};
                #if !LANGULUS_FEATURE(MANAGED_REFLECTION)
                   static constinit ::std::unique_ptr<MetaConst> staticMC[c] {};
@@ -654,7 +677,7 @@ namespace Langulus::RTTI
                for (Offset i = 0; i < c; ++i) {
                   staticNames[i] += generated.mToken;
                   staticNames[i] += "::";
-                  staticNames[i] += T::CTTI_NamedValues[i].mToken;
+                  staticNames[i] += DT::CTTI_NamedValues[i].mToken;
 
                   #if LANGULUS_FEATURE(MANAGED_REFLECTION)
                      const auto cmeta = const_cast<MetaConst*>(
@@ -668,14 +691,14 @@ namespace Langulus::RTTI
                   #endif
 
                   cmeta->mToken = staticNames[i];
-                  cmeta->mInfo = T::CTTI_NamedValues[i].mInfo;
+                  cmeta->mInfo = DT::CTTI_NamedValues[i].mInfo;
                   cmeta->mCppName = cmeta->mToken;
                   cmeta->mHash = HashBytes(
                      cmeta->mToken.data(), 
                      static_cast<int>(cmeta->mToken.size())
                   );
                   cmeta->mValueType = &generated;
-                  new (staticInstances + i) T {{T::CTTI_NamedValues[i].mValue}};
+                  new (staticInstances + i) DT {{DT::CTTI_NamedValues[i].mValue}};
                   cmeta->mPtrToValue = staticInstances + i;
 
                   generated.mNamedValues.emplace_back(cmeta);
@@ -683,13 +706,13 @@ namespace Langulus::RTTI
             }
 
             // Set reflected members                                    
-            if constexpr (requires { T::CTTI_Members; })
-               generated.mMembers = T::CTTI_Members;
+            if constexpr (requires { DT::CTTI_Members; })
+               generated.mMembers = DT::CTTI_Members;
 
             // Set some additional stuff if T is fundamental            
             if constexpr (CT::Fundamental<T>)
                generated.ReflectFundamentalType<T>();
-            }
+         }
       }
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
@@ -733,7 +756,7 @@ namespace Langulus::RTTI
    template<class T, CT::Dense... BASE>
    LANGULUS(ALWAYSINLINE)
    void MetaData::SetBases(TTypeList<BASE...>) noexcept {
-      static const Base list[] {Base::From<T, BASE>()...};
+      static const Base list[] {Base::From<Decay<T>, BASE>()...};
       mBases = {list};
    }
 
@@ -754,12 +777,12 @@ namespace Langulus::RTTI
 
    /// Set the list of converters for a given meta definition                 
    ///   @tparam Args... - all the abilities                                  
-   template<class T, CT::Dense... TO>
+   template<class FROM, CT::Dense... TO>
    LANGULUS(ALWAYSINLINE)
    void MetaData::SetConverters(TTypeList<TO...>) noexcept {
       static const ::std::pair<DMeta, Converter> list[] {
          ::std::pair<DMeta, Converter>(
-            MetaData::Of<Decay<TO>>(), Converter::From<T, TO>()
+            MetaData::Of<Decay<TO>>(), Converter::From<Decay<FROM>, TO>()
          )...
       };
 

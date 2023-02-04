@@ -9,91 +9,6 @@
 #include "Reflection.hpp"
 #include <unordered_map>
 
-namespace Langulus::CT
-{
-
-   /// Check if T is disown-constructible, disregards density                 
-   template<class... T>
-   concept DisownMakable = ((Complete<Decay<T>>
-         && ::std::constructible_from<Decay<T>, Langulus::Disowned<Decay<T>>&&>
-      ) && ...);
-
-   template<class... T>
-   concept DisownMakableNoexcept = DisownMakable<T...> 
-      && (noexcept(Decay<T> {Uneval<Langulus::Disowned<Decay<T>>&&>()}) && ...);
-
-   /// Check if T is disown-assignable if mutable, disregards density         
-   template<class... T>
-   concept DisownAssignable = ((Complete<Decay<T>>
-         && (CT::Mutable<T> && ::std::assignable_from<Decay<T>, Langulus::Disowned<Decay<T>>&&>)
-      ) && ...);
-
-   template<class... T>
-   concept DisownAssignableNoexcept = DisownAssignable<T...> 
-      && (noexcept(Uneval<Decay<T>&&>() = Uneval<Langulus::Disowned<Decay<T>>&&>()) && ...);
-
-   /// Check if T is clone-constructible, disregards density                  
-   template<class... T>
-   concept CloneMakable = ((Complete<Decay<T>>
-         && ::std::constructible_from<Decay<T>, Langulus::Cloned<Decay<T>>&&>
-      ) && ...);
-
-   template<class... T>
-   concept CloneMakableNoexcept = CloneMakable<T...> 
-      && (noexcept(Decay<T> {Uneval<Langulus::Cloned<Decay<T>>&&>()}) && ...);
-
-   /// Check if T is clone-assignable if mutable, disregards density          
-   template<class... T>
-   concept CloneAssignable = ((Complete<Decay<T>>
-         && (CT::Mutable<T> && ::std::assignable_from<Decay<T>, Langulus::Cloned<Decay<T>>&&>)
-      ) && ...);
-
-   template<class... T>
-   concept CloneAssignableNoexcept = CloneAssignable<T...> 
-      && (noexcept(Uneval<Decay<T>&&>() = Uneval<Langulus::Cloned<Decay<T>>&&>()) && ...);
-
-   /// Check if T is abandon-constructible, disregards density                
-   template<class... T>
-   concept AbandonMakable = ((Complete<Decay<T>>
-         && (CT::Mutable<T> && ::std::constructible_from<Decay<T>, Langulus::Abandoned<Decay<T>>&&>)
-      ) && ...);
-
-   template<class... T>
-   concept AbandonMakableNoexcept = AbandonMakable<T...> 
-      && (noexcept(Decay<T> {Uneval<Langulus::Abandoned<Decay<T>>&&>()}) && ...);
-
-   /// Check if T is abandon-assignable if mutable, disregards density        
-   template<class... T>
-   concept AbandonAssignable = ((Complete<Decay<T>>
-         && (CT::Mutable<T> && ::std::assignable_from<Decay<T>, Langulus::Abandoned<Decay<T>>&&>)
-      ) && ...);
-
-   template<class... T>
-   concept AbandonAssignableNoexcept = AbandonAssignable<T...> 
-      && (noexcept(Uneval<Decay<T>&&>() = Uneval<Langulus::Abandoned<Decay<T>>&&>()) && ...);
-
-   /// Check if T is semantic-constructible, disregards density               
-   template<class S, class... T>
-   concept SemanticMakable = ((Complete<Decay<T>>
-         && ::std::constructible_from<Decay<T>, typename S::template Nested<Decay<T>>&&>
-      ) && ...);
-
-   template<class S, class... T>
-   concept SemanticMakableNoexcept = SemanticMakable<S, T...>
-      && (noexcept(Decay<T> {Uneval<typename S::template Nested<Decay<T>>&&>()}) && ...);
-
-   /// Check if T is semantic-assignable if mutable, disregards density       
-   template<class S, class... T>
-   concept SemanticAssignable = ((Complete<Decay<T>>
-         && (CT::Mutable<T> && ::std::assignable_from<Decay<T>, typename S::template Nested<Decay<T>>&&>)
-      ) && ...);
-
-   template<class S, class... T>
-   concept SemanticAssignableNoexcept = SemanticAssignable<S, T...>
-      && (noexcept(Uneval<Decay<T>&&>() = Uneval<typename S::template Nested<Decay<T>>&&>()) && ...);
-
-} // namespace Langulus::CT
-
 namespace Langulus::Anyness::Inner
 {
    #if LANGULUS_FEATURE(MANAGED_MEMORY)
@@ -149,11 +64,11 @@ namespace Langulus::RTTI
    /// Takes a pointer for a placement-new expression, and a descriptor Any   
    using FDescriptorConstruct = TFunctor<void(void*, const ::Langulus::Anyness::Any&)>;
 
-   /// The copy constructor, wrapped in a lambda expression if available      
+   /// The copy/disown/clone constructor, wrapped in a lambda expression      
    /// Takes a pointer for a placement-new expression, and a source           
    using FCopyConstruct = TFunctor<void(const void* from, void* to)>;
 
-   /// The move constructor, wrapped in a lambda expression if available      
+   /// The move/abandon constructor, wrapped in a lambda expression           
    /// Takes a pointer for a placement-new expression, and a source           
    using FMoveConstruct = TFunctor<void(void* from, void* to)>;
 
@@ -161,19 +76,14 @@ namespace Langulus::RTTI
    /// Takes the pointer to the instance for destruction                      
    using FDestroy = TFunctor<void(void*)>;
 
-   /// The cloner, wrapped in a lambda expression if available                
-   /// Clone one instance to another                                          
-   //TODO use clone semantics instead
-   using FClone = TFunctor<void(const void* from, void* to)>;
-
    /// The == operator, wrapped in a lambda expression if available           
    /// Compares two instances for equality                                    
    using FCompare = TFunctor<bool(const void*, const void*)>;
 
-   /// The copy-assignment operator, wrapped in a lambda expression           
+   /// The copy/disown/clone-assignment operator, wrapped in a lambda         
    using FCopy = TFunctor<void(const void* from, void* to)>;
 
-   /// The move-assignment operator, wrapped in a lambda expression           
+   /// The move/abandon-assignment operator, wrapped in a lambda expression   
    using FMove = TFunctor<void(void* from, void* to)>;
 
    /// The class type function, wrapped in a lambda expression                
@@ -442,20 +352,22 @@ namespace Langulus::RTTI
       FCopyConstruct mCopyConstructor;
       // Disowned constructor wrapped in a lambda upon reflection       
       FCopyConstruct mDisownConstructor;
+      // Cloned constructor wrapped in a lambda upon reflection         
+      FCopyConstruct mCloneConstructor;
       // Move constructor wrapped in a lambda upon reflection           
       FMoveConstruct mMoveConstructor;
       // Abandon constructor wrapped in a lambda upon reflection        
       FMoveConstruct mAbandonConstructor;
       // Destructor wrapped in a lambda upon reflection                 
       FDestroy mDestructor;
-      // Cloner wrapped in a lambda upon reflection                     
-      FClone mCloner;
       // The == operator, wrapped in a lambda upon reflection           
       FCompare mComparer;
       // Copy-assignment operator, wrapped in a lambda upon reflection  
       FCopy mCopier;
       // Disown-assignment operator, wrapped in a lambda upon reflection
       FCopy mDisownCopier;
+      // Clone-assignment operator, wrapped in a lambda upon reflection 
+      FCopy mCloneCopier;
       // Move-assignment, wrapped in a lambda upon reflection           
       FMove mMover;
       // Abandon-assignment, wrapped in a lambda upon reflection        
