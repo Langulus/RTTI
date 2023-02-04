@@ -772,7 +772,7 @@ namespace Langulus::RTTI
    template<class T>
    LANGULUS(ALWAYSINLINE)
    FCopyConstruct MetaData::GetConverter() const noexcept {
-      return GetConverter(MetaData::Of<Decay<T>>());
+      return GetConverter(MetaData::Of<T>());
    }
 
    /// Get a converter to a specific dynamic type                             
@@ -780,8 +780,11 @@ namespace Langulus::RTTI
    ///   @return the conversion function                                      
    LANGULUS(ALWAYSINLINE)
    FCopyConstruct MetaData::GetConverter(DMeta meta) const noexcept {
-      const auto found = mConverters.find(meta);
-      if (found != mConverters.end())
+      if (!mOrigin)
+         return FCopyConstruct {};
+
+      const auto found = mOrigin->mConverters.find(meta);
+      if (found != mOrigin->mConverters.end())
          return found->second.mFunction;
       return FCopyConstruct {};
    }
@@ -792,15 +795,18 @@ namespace Langulus::RTTI
    ///   @param offset - considers only matches after that many matches       
    ///   @return the member interface if found, or nullptr if not             
    inline const Member* MetaData::GetMemberInner(TMeta trait, DMeta type, Offset& offset) const noexcept {
+      if (!mOrigin)
+         return nullptr;
+
       // Search in all bases first                                      
-      for (auto& base : mBases) {
+      for (auto& base : mOrigin->mBases) {
          const auto found = base.mType->GetMemberInner(trait, type, offset);
          if (found)
             return found;
       }
 
       // Then locally                                                   
-      for (auto& member : mMembers) {
+      for (auto& member : mOrigin->mMembers) {
          if (!member.TraitIs(trait) || !member.Is(type))
             continue;
 
@@ -822,14 +828,16 @@ namespace Langulus::RTTI
    ///   @param offset - considers only matches after that many matches       
    ///   @return the member interface if found, or nullptr if not             
    inline Count MetaData::GetMemberCountInner(TMeta trait, DMeta type, Offset& offset) const noexcept {
-      Count result {};
+      if (!mOrigin)
+         return 0;
 
       // Search in all bases first                                      
-      for (auto& base : mBases)
+      Count result {};
+      for (auto& base : mOrigin->mBases)
          result += base.mType->GetMemberCountInner(trait, type, offset);
 
       // Then locally                                                   
-      for (auto& member : mMembers) {
+      for (auto& member : mOrigin->mMembers) {
          if (!member.TraitIs(trait) || !member.Is(type))
             continue;
 
@@ -871,8 +879,11 @@ namespace Langulus::RTTI
    ///   @return the number of members                                        
    LANGULUS(ALWAYSINLINE)
    Count MetaData::GetMemberCount() const noexcept {
-      Count result = mMembers.size();
-      for (auto& base : mBases)
+      if (!mOrigin)
+         return 0;
+
+      Count result = mOrigin->mMembers.size();
+      for (auto& base : mOrigin->mBases)
          result += base.mType->GetMemberCount();
       return result;
    }
@@ -902,8 +913,11 @@ namespace Langulus::RTTI
    ///   @param base - [in/out] base info ends up here if found               
    ///   @return true if a base is available                                  
    inline bool MetaData::GetBase(DMeta type, Offset offset, Base& base) const {
+      if (!mOrigin || !type)
+         return false;
+
       Count scanned {};
-      for (auto& b : mBases) {
+      for (auto& b : mOrigin->mBases) {
          // Check base                                                  
          if (type->Is(b.mType)) {
             if (scanned == offset) {
@@ -944,7 +958,7 @@ namespace Langulus::RTTI
    template<CT::Data T>
    LANGULUS(ALWAYSINLINE)
    bool MetaData::GetBase(Offset offset, Base& base) const {
-      return GetBase(MetaData::Of<Decay<T>>(), offset, base);
+      return GetBase(MetaData::Of<T>(), offset, base);
    }
 
    /// A simple check if a reflected base is linked to this meta data         
@@ -952,7 +966,10 @@ namespace Langulus::RTTI
    ///   @param type - the type of base to search for                         
    ///   @return true if a base is available                                  
    inline bool MetaData::HasBase(DMeta type) const {
-      for (auto& b : mBases) {
+      if (!mOrigin || !type)
+         return false;
+
+      for (auto& b : mOrigin->mBases) {
          if (type->Is(b.mType) || b.mType->HasBase(type))
             return true;
       }
@@ -1081,12 +1098,15 @@ namespace Langulus::RTTI
    template<class T>
    LANGULUS(ALWAYSINLINE)
    Token MetaData::GetNamedValueOf(const T& value) const {
-      for (auto& constant : mNamedValues) {
+      if (!mOrigin)
+         return "";
+
+      for (auto& constant : mOrigin->mNamedValues) {
          if (value == *static_cast<const T*>(constant->mPtrToValue))
             return constant->mToken;
       }
 
-      return {};
+      return "";
    }
 
    /// Check if this type interprets as another without conversion            
@@ -1102,6 +1122,7 @@ namespace Langulus::RTTI
          return true;
 
       // Different types might be compatible via inheritance            
+      // All the following operations are done in the origin            
       if constexpr (!BINARY_COMPATIBLE) {
          // We don't need binary compatibility                          
          if (HasBase(other))
@@ -1124,7 +1145,7 @@ namespace Langulus::RTTI
             if constexpr (BINARY_COMPATIBLE)
                return found.mBinaryCompatible;
             else
-               return mResolver || found.mBinaryCompatible;
+               return mOrigin->mResolver || found.mBinaryCompatible;
          }
       }
 
@@ -1142,7 +1163,7 @@ namespace Langulus::RTTI
    template<CT::Data T, bool ADVANCED, bool BINARY_COMPATIBLE>
    LANGULUS(ALWAYSINLINE)
    bool MetaData::CastsTo() const {
-      return CastsTo<ADVANCED, BINARY_COMPATIBLE>(MetaData::Of<Decay<T>>());
+      return CastsTo<ADVANCED, BINARY_COMPATIBLE>(MetaData::Of<T>());
    }
 
    /// Check if this type interprets as an exact number of another, without   
@@ -1193,7 +1214,7 @@ namespace Langulus::RTTI
    template<CT::Data T, bool BINARY_COMPATIBLE>
    LANGULUS(ALWAYSINLINE)
    bool MetaData::CastsTo(Count count) const {
-      return CastsTo<BINARY_COMPATIBLE>(MetaData::Of<Decay<T>>(), count);
+      return CastsTo<BINARY_COMPATIBLE>(MetaData::Of<T>(), count);
    }
 
    /// Check if this type is either same, base or a derivation of other       
@@ -1210,7 +1231,7 @@ namespace Langulus::RTTI
    template<CT::Data T>
    LANGULUS(ALWAYSINLINE)
    bool MetaData::IsRelatedTo() const {
-      return IsRelatedTo(MetaData::Of<Decay<T>>());
+      return IsRelatedTo(MetaData::Of<T>());
    }
 
    /// Get the number of conversions required to map one type to another      
@@ -1312,22 +1333,6 @@ namespace Langulus::RTTI
       const auto msb = CountTrailingZeroes(result.mByteSize);
       result.mElementCount = mAllocationTable[msb];
       return result;
-   }
-
-   /// A freestanding type compatibility check                                
-   /// Purely cosmetic, to avoid typing `template` before member function     
-   template<CT::Data T, bool ADVANCED>
-   LANGULUS(ALWAYSINLINE)
-   bool CastsTo(DMeta from) {
-      return from->template CastsTo<T, ADVANCED>();
-   }
-
-   /// A freestanding type compatibility check                                
-   /// Purely cosmetic, to avoid typing `template` before member function     
-   template<CT::Data T>
-   LANGULUS(ALWAYSINLINE)
-   bool CastsTo(DMeta from, Count count) {
-      return from->template CastsTo<T>(count);
    }
    
    /// Check if two meta definitions match exactly                            

@@ -235,7 +235,7 @@ namespace Langulus::CT
    namespace Inner
    {
       template<class T>
-      concept POD = CT::Dense<T> && (::std::is_trivial_v<T> || T::CTTI_POD);
+      concept POD = Complete<Decay<T>> && (::std::is_trivial_v<Decay<T>> || Decay<T>::CTTI_POD);
    }
 
    /// A POD (Plain Old Data) type is any type with a static member           
@@ -251,7 +251,7 @@ namespace Langulus::CT
    namespace Inner
    {
       template<class T>
-      concept Nullifiable = CT::Sparse<T> || T::CTTI_Nullifiable;
+      concept Nullifiable = Complete<Decay<T>> && Decay<T>::CTTI_Nullifiable;
    }
 
    /// A nullifiable type is any type with a static member                    
@@ -266,7 +266,7 @@ namespace Langulus::CT
    namespace Inner
    {
       template<class T>
-      concept Concretizable = requires {
+      concept Concretizable = Complete<Decay<T>> && requires {
          typename Decay<T>::CTTI_Concrete;
       };
    }
@@ -286,7 +286,7 @@ namespace Langulus::CT
    namespace Inner
    {
       template<class T>
-      concept Producible = requires {
+      concept Producible = Complete<Decay<T>> && requires {
          typename Decay<T>::CTTI_Producer;
       };
    }
@@ -330,7 +330,7 @@ namespace Langulus::CT
 
    /// Check if all T has a dispatcher, compatible with the cv-quality of T   
    template<class... T>
-   concept Dispatcher = ((CT::DispatcherMutable<T> || (CT::Constant<T> && CT::DispatcherConstant<T>)) && ...);
+   concept Dispatcher = ((DispatcherMutable<T> || (Constant<T> && DispatcherConstant<T>)) && ...);
 
    namespace Inner
    {

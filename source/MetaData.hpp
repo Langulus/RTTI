@@ -579,10 +579,4 @@ namespace Langulus::RTTI
       constexpr bool operator == (const MetaData&) const noexcept;
    };
 
-   template<CT::Data T, bool ADVANCED = false>
-   NOD() bool CastsTo(DMeta);
-
-   template<CT::Data T>
-   NOD() bool CastsTo(DMeta, Count);
-
 } // namespace Langulus::RTTI
