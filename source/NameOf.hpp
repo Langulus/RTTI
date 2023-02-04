@@ -293,6 +293,37 @@ namespace Langulus::RTTI
    NOD() constexpr Token NameOf() noexcept {
       return Inner::StatefulNameOfType<T>::Name.data();
    }
+   
+   /// Same as NameOf, but removes all namespaces                             
+   ///   @tparam T - the type to get the name of                              
+   ///   @return the type name                                                
+   template<class T>
+   NOD() constexpr Token LastNameOf() noexcept {
+      // Find the last ':' symbol, that is not inside <...> scope       
+      Token name = Inner::StatefulNameOfType<T>::Name.data();
+      size_t depth = 0;
+      for (auto i = name.size(); i > 0; --i) {
+         switch (name[i - 1]) {
+         case ':':
+            if (depth == 0) {
+               name.remove_prefix(i);
+               return name;
+            }
+            break;
+         case '>':
+            ++depth;
+            break;
+         case '<':
+            --depth;
+            break;
+         default:
+            break;
+         }
+      }
+
+      // Something's not right if this was reached                      
+      return "";
+   }
 
    /// Get the name of a named constant                                       
    ///   @tparam E - the constant to get the name of                          
