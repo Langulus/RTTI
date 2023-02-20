@@ -142,6 +142,13 @@
 #define LANGULUS_UNINSERTABLE() \
    public: static constexpr bool CTTI_Uninsertable =
 
+/// You can make types unallocatable by the memory manager. This serves not   
+/// only as forcing the type to be either allocated by conventional C++ means,
+/// or on the stack, but also optimizes away any memory manager searches,     
+/// when inserting pointers, when managed memory is enabled                   
+#define LANGULUS_UNALLOCATABLE() \
+   public: static constexpr bool CTTI_Unallocatable =
+
 /// You can give names to specific values of a given type, such as enums      
 /// These names can be used as constants when parsing code, and are used for  
 /// serialization to code/text/debug                                          
@@ -206,7 +213,7 @@ namespace Langulus::CT
    {
       template<class T>
       concept Reflectable = requires {
-         {Decay<T>::Reflect()} -> Same<::Langulus::RTTI::MetaData>;
+         {T::Reflect()} -> Same<::Langulus::RTTI::MetaData>;
       };
    }
 
@@ -214,12 +221,12 @@ namespace Langulus::CT
    /// This field is automatically added when using LANGULUS(REFLECT) macro   
    /// inside the type you want to reflect                                    
    template<class... T>
-   concept Reflectable = (Inner::Reflectable<T> && ...);
+   concept Reflectable = (Inner::Reflectable<Decay<T>> && ...);
 
    namespace Inner
    {
       template<class T>
-      concept Uninsertable = Decay<T>::CTTI_Uninsertable;
+      concept Uninsertable = T::CTTI_Uninsertable;
    }
 
    /// An uninsertable type is any type with a true static member             
@@ -227,7 +234,7 @@ namespace Langulus::CT
    /// Useful to mark some intermediate types, that are not supposed to be    
    /// inserted in containers                                                 
    template<class... T>
-   concept Uninsertable = (Inner::Uninsertable<T> && ...);
+   concept Uninsertable = (Inner::Uninsertable<Decay<T>> && ...);
 
    template<class... T>
    concept Insertable = !Uninsertable<T...>;
@@ -235,7 +242,23 @@ namespace Langulus::CT
    namespace Inner
    {
       template<class T>
-      concept POD = Complete<Decay<T>> && (::std::is_trivial_v<Decay<T>> || Decay<T>::CTTI_POD);
+      concept Unallocatable = !Complete<T> || T::CTTI_Unallocatable;
+   }
+
+   /// You can make types unallocatable by the memory manager. This serves    
+   /// not only as forcing the type to be either allocated by conventional    
+   /// C++ means, or on the stack, but also optimizes away any memory manager 
+   /// searches, when inserting pointers, when managed memory is enabled      
+   template<class... T>
+   concept Unallocatable = ((Inner::Unallocatable<Decay<T>> && Dense<T>) && ...);
+
+   template<class... T>
+   concept Allocatable = !Unallocatable<T...>;
+
+   namespace Inner
+   {
+      template<class T>
+      concept POD = Complete<T> && (::std::is_trivial_v<T> || T::CTTI_POD);
    }
 
    /// A POD (Plain Old Data) type is any type with a static member           
@@ -246,12 +269,12 @@ namespace Langulus::CT
    /// All POD types are also directly serializable to binary                 
    /// Use LANGULUS(POD) macro as member to tag POD types                     
    template<class... T>
-   concept POD = (Inner::POD<T> && ...);
+   concept POD = (Inner::POD<Decay<T>> && ...);
 
    namespace Inner
    {
       template<class T>
-      concept Nullifiable = Complete<Decay<T>> && Decay<T>::CTTI_Nullifiable;
+      concept Nullifiable = Complete<T> && T::CTTI_Nullifiable;
    }
 
    /// A nullifiable type is any type with a static member                    
@@ -261,13 +284,13 @@ namespace Langulus::CT
    /// runtime optimizations                                                  
    /// Use LANGULUS(NULLIFIABLE) macro as member to tag nullifiable types     
    template<class... T>
-   concept Nullifiable = (Inner::Nullifiable<T> && ...);
+   concept Nullifiable = (Inner::Nullifiable<Decay<T>> && ...);
 
    namespace Inner
    {
       template<class T>
-      concept Concretizable = Complete<Decay<T>> && requires {
-         typename Decay<T>::CTTI_Concrete;
+      concept Concretizable = Complete<T> && requires {
+         typename T::CTTI_Concrete;
       };
    }
 
@@ -277,7 +300,7 @@ namespace Langulus::CT
    /// when	allocating abstract types                                         
    /// Use LANGULUS(CONCRETIZABLE) macro as member to tag such types          
    template<class... T>
-   concept Concretizable = (Inner::Concretizable<T> && ...);
+   concept Concretizable = (Inner::Concretizable<Decay<T>> && ...);
 
    /// Get the reflected concrete type                                        
    template<class T>
@@ -286,8 +309,8 @@ namespace Langulus::CT
    namespace Inner
    {
       template<class T>
-      concept Producible = Complete<Decay<T>> && requires {
-         typename Decay<T>::CTTI_Producer;
+      concept Producible = Complete<T> && requires {
+         typename T::CTTI_Producer;
       };
    }
 
@@ -297,16 +320,24 @@ namespace Langulus::CT
    /// to be produced by executing Verbs::Create in the producer's context    
    /// Use LANGULUS(PRODUCER) macro as member to tag such types               
    template<class... T>
-   concept Producible = (Inner::Producible<T> && ...);
+   concept Producible = (Inner::Producible<Decay<T>> && ...);
 
    /// Get the reflected producer type                                        
    template<class T>
    using ProducerOf = typename Decay<T>::CTTI_Producer;
 
+   
+   namespace Inner
+   {
+      template<class T>
+      concept Abstract = Complete<T>
+         && (::std::is_abstract_v<T> || T::CTTI_Abstract);
+   }
+
    /// Check if T is abstract (has at least one pure virtual function, or is  
    /// explicitly marked as abstract). Sparse types are never abstract        
    template<class... T>
-   concept Abstract = ((Dense<T> && (::std::is_abstract_v<T> || T::CTTI_Abstract)) && ...);
+   concept Abstract = (Inner::Abstract<Decay<T>> && ...);
 
    namespace Inner
    {
@@ -341,7 +372,7 @@ namespace Langulus::CT
 
       /// Convenience function that wraps std::underlying_type_t for enums,   
       /// as well as anything with CTTI_InnerType defined                     
-      template<Dense T>
+      template<class T>
       constexpr auto GetUnderlyingType() noexcept {
          using DT = Decay<T>;
          if constexpr (Typed<DT>)
@@ -360,7 +391,7 @@ namespace Langulus
 
    /// Get internal type of an enum, or anything reflected with the           
    /// LANGULUS(TYPED) member                                                 
-   template<CT::Dense T>
+   template<class T>
    using TypeOf = Deptr<decltype(CT::Inner::GetUnderlyingType<T>())>;
 
 } // namespace Langulus
@@ -578,6 +609,8 @@ namespace Langulus::RTTI
    ///                                                                        
    struct Meta {
    public:
+      LANGULUS(UNALLOCATABLE) true;
+
       enum MetaType {
          Data, Trait, Verb, Constant
       };

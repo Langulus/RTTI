@@ -16,8 +16,12 @@
 /// Gives a significant overhead on program launch, no dependencies           
 #ifdef LANGULUS_ENABLE_FEATURE_MANAGED_REFLECTION
    #define LANGULUS_FEATURE_MANAGED_REFLECTION() 1
+   #define IF_LANGULUS_MANAGED_REFLECTION(a) a
+   #define IF_NOT_LANGULUS_MANAGED_REFLECTION(a)
 #else
    #define LANGULUS_FEATURE_MANAGED_REFLECTION() 0
+   #define IF_LANGULUS_MANAGED_REFLECTION(a)
+   #define IF_NOT_LANGULUS_MANAGED_REFLECTION(a) a
 #endif
 
 /// Memory allocations will be pooled, authority will be tracked,             
@@ -26,8 +30,12 @@
 /// Significantly improves performance, no dependencies                       
 #ifdef LANGULUS_ENABLE_FEATURE_MANAGED_MEMORY
    #define LANGULUS_FEATURE_MANAGED_MEMORY() 1
+   #define IF_LANGULUS_MANAGED_MEMORY(a) a
+   #define IF_NOT_LANGULUS_MANAGED_MEMORY(a)
 #else
    #define LANGULUS_FEATURE_MANAGED_MEMORY() 0
+   #define IF_LANGULUS_MANAGED_MEMORY(a)
+   #define IF_NOT_LANGULUS_MANAGED_MEMORY(a) a
 #endif
 
 #if defined(LANGULUS_EXPORT_ALL) || defined(LANGULUS_EXPORT_RTTI)

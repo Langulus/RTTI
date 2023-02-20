@@ -409,8 +409,7 @@ namespace Langulus::RTTI
       NOD() static DMeta Of() requires (::std::is_reference_v<T>);
 
       NOD() DMeta GetMostConcrete() const noexcept;
-      NOD() DMeta RemovePointer() const noexcept;
-      NOD() AllocationRequest RequestSize(const Size&) const noexcept;
+      NOD() AllocationRequest RequestSize(const Count&) const noexcept;
 
       //                                                                
       // Base management                                                

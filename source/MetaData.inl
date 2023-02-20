@@ -439,7 +439,7 @@ namespace Langulus::RTTI
          generated.mHash = Meta::GenerateHash<T>(GetReflectedToken<T>());
          generated.mIsAbstract = CT::Abstract<T>;
          generated.mIsNullifiable = CT::Nullifiable<T>;
-         generated.mSize = CT::Abstract<T> ? 0 : sizeof(T);
+         generated.mSize = sizeof(T);
          generated.mAlignment = alignof(T);
          generated.mIsSparse = CT::Sparse<T>;
          generated.mIsConstant = CT::Constant<T>;
@@ -921,14 +921,6 @@ namespace Langulus::RTTI
          concrete = concrete->mConcrete;
       return concrete;
    }
-   
-   /// Remove a single pointer                                                
-   ///   @attention may return nullptr for incomplete types                   
-   ///   @return the type with a removed pointer                              
-   LANGULUS(ALWAYSINLINE)
-   DMeta MetaData::RemovePointer() const noexcept {
-      return mDeptr;
-   }
 
    /// Get a reflected base linked to this meta data definition               
    /// Traverses the whole inheritance tree, so can return distant bases      
@@ -1351,9 +1343,9 @@ namespace Langulus::RTTI
    ///   @param count - the number of elements to request                     
    ///   @returns both the provided byte size and reserved count              
    LANGULUS(ALWAYSINLINE)
-   AllocationRequest MetaData::RequestSize(const Size& byteSize) const noexcept {
+   AllocationRequest MetaData::RequestSize(const Count& count) const noexcept {
       AllocationRequest result;
-      result.mByteSize = Roof2(::std::max(byteSize, mAllocationPage));
+      result.mByteSize = Roof2(::std::max(count * mSize, mAllocationPage));
       const auto msb = CountTrailingZeroes(result.mByteSize);
       result.mElementCount = mAllocationTable[msb];
       return result;
