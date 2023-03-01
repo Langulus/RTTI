@@ -62,7 +62,7 @@ namespace Langulus::RTTI
 
    /// Constructor by descriptor                                              
    /// Takes a pointer for a placement-new expression, and a descriptor Any   
-   using FDescriptorConstruct = TFunctor<void(void*, const ::Langulus::Anyness::Any&)>;
+   using FDescriptorConstruct = TFunctor<void(void*, const ::Langulus::Anyness::Block&)>;
 
    /// The copy/disown/clone constructor, wrapped in a lambda expression      
    /// Takes a pointer for a placement-new expression, and a source           

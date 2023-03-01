@@ -491,7 +491,7 @@ namespace Langulus::RTTI
          
             // Wrap the descriptor constructor of the type inside lambda
             if constexpr (CT::DescriptorMakable<T> && !CT::Meta<T>) {
-               generated.mDescriptorConstructor = [](void* at, const ::Langulus::Anyness::Any& descriptor) noexcept(CT::DescriptorMakableNoexcept<T>) {
+               generated.mDescriptorConstructor = [](void* at, const ::Langulus::Anyness::Block& descriptor) noexcept(CT::DescriptorMakableNoexcept<T>) {
                   auto atT = static_cast<T*>(at);
                   new (const_cast<void*>(static_cast<const void*>(&DenseCast(atT))))
                      DT {descriptor};
