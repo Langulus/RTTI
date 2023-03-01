@@ -589,7 +589,7 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
             REQUIRE(meta->mIsUninsertable == true);
             REQUIRE(meta->mAllocationPage == Roof2(250 * sizeof(ImplicitlyReflectedDataWithTraits)));
             REQUIRE(meta->mIsAbstract == true);
-            REQUIRE(meta->mSize == 0);
+            REQUIRE(meta->mSize == sizeof(ImplicitlyReflectedDataWithTraits));
             REQUIRE(meta->mAlignment == alignof(ImplicitlyReflectedDataWithTraits));
 
             REQUIRE(meta->mBases.size() == 1);
