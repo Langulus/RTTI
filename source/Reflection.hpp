@@ -689,7 +689,6 @@ namespace std
 }
 
 #include "Fundamental.hpp"
-#include "Semantics.hpp"
 #include "NameOf.hpp"
 #include "Byte.hpp"
 

@@ -8,6 +8,7 @@
 #pragma once
 #include "MetaData.hpp"
 #include "Hashing.hpp"
+#include "Semantics.hpp"
 
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
    #include "RTTI.hpp"

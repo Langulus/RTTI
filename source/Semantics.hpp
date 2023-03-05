@@ -7,6 +7,7 @@
 ///                                                                           
 #pragma once
 #include "Reflection.hpp"
+#include "Byte.hpp"
 
 namespace Langulus
 {
@@ -335,7 +336,7 @@ namespace Langulus
    /// Create an element on the stack, using the provided semantic            
    ///   @tparam T - the type to instantiate                                  
    ///   @tparam S - the semantic to use (deducible)                          
-   ///   @param value - the constructor arguments and the semantic            
+   ///   @param value - the constructor argument and the semantic             
    ///   @return the instance on the stack                                    
    template<class T, CT::Semantic S>
    NOD() LANGULUS(ALWAYSINLINE)
@@ -357,7 +358,7 @@ namespace Langulus
             LANGULUS_ERROR("Can't abandon/move/copy-construct T from S");
       }
       else {
-         if constexpr (!S::Shallow && S::Keep && ::std::constructible_from<T, Cloned<A>&&>)
+         if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
             return T {Clone(value.mValue)};
          else if constexpr (!S::Keep && ::std::constructible_from<T, Disowned<A>&&>)
             return T {Disown(value.mValue)};
@@ -395,7 +396,7 @@ namespace Langulus
             LANGULUS_ERROR("Can't abandon/move/copy-construct T from S");
       }
       else {
-         if constexpr (!S::Shallow && S::Keep && ::std::constructible_from<T, Cloned<A>&&>)
+         if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
             return new T {Clone(value.mValue)};
          else if constexpr (!S::Keep && ::std::constructible_from<T, Disowned<A>&&>)
             return new T {Disown(value.mValue)};
@@ -408,8 +409,9 @@ namespace Langulus
       }
    }
 
-   /// Create an element on the heap, using the provided semantic             
-   /// (placement new variant)                                                
+   /// Create an element on the heap, using the provided semantic, by using   
+   /// a placement new variant                                                
+   ///   @attention assumes placement pointer is valid                        
    ///   @tparam T - the type to instantiate                                  
    ///   @tparam S - the semantic to use (deducible)                          
    ///   @param placement - where to place the new instance                   
@@ -417,34 +419,97 @@ namespace Langulus
    ///   @return the instance on the heap                                     
    template<class T, CT::Semantic S>
    LANGULUS(ALWAYSINLINE)
-   T* SemanticNew(void* placement, S&& value) {
+   void SemanticNew(void* placement, S&& value) {
+      LANGULUS_ASSUME(DevAssumes, placement, "Invalid placement pointer");
+
       using A = TypeOf<S>;
 
       if constexpr (S::Move) {
          if constexpr (!S::Keep && ::std::constructible_from<T, Abandoned<A>&&>)
-            return new (placement) T {Abandon(value.mValue)};
+            new (placement) T {Abandon(value.mValue)};
          else if constexpr (::std::constructible_from<T, Moved<A>&&>)
-            return new (placement) T {Move(value.mValue)};
+            new (placement) T {Move(value.mValue)};
          else if constexpr (::std::constructible_from<T, A&&>)
-            return new (placement) T {::std::move(value.mValue)};
+            new (placement) T {::std::move(value.mValue)};
          else if constexpr (::std::constructible_from<T, Copied<A>>)
-            return new (placement) T {Copy(value.mValue)};
+            new (placement) T {Copy(value.mValue)};
          else if constexpr (::std::constructible_from<T, const A&>)
-            return new (placement) T {value.mValue};
+            new (placement) T {value.mValue};
          else
             LANGULUS_ERROR("Can't abandon/move/copy-construct T from S");
       }
       else {
-         if constexpr (!S::Shallow && S::Keep && ::std::constructible_from<T, Cloned<A>&&>)
-            return new (placement) T {Clone(value.mValue)};
+         if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
+            new (placement) T {Clone(value.mValue)};
          else if constexpr (!S::Keep && ::std::constructible_from<T, Disowned<A>&&>)
-            return new (placement) T {Disown(value.mValue)};
+            new (placement) T {Disown(value.mValue)};
          else if constexpr (::std::constructible_from<T, Copied<A>>)
-            return new (placement) T {Copy(value.mValue)};
+            new (placement) T {Copy(value.mValue)};
          else if constexpr (::std::constructible_from<T, const A&>)
-            return new (placement) T {value.mValue};
+            new (placement) T {value.mValue};
          else
-            LANGULUS_ERROR("Can't disown/copy-construct T from S");
+            LANGULUS_ERROR("Can't clone/disown/copy-construct T from S");
+      }
+   }
+   
+   /// Create an element on the heap, using the provided semantic, by using   
+   /// a placement new variant, relying on the reflected constructors         
+   ///   @attention assumes type is valid and complete                        
+   ///   @attention assumes bit placement and TypeOf<S> are valid pointers    
+   ///              that point to an instance of the provided type            
+   ///   @tparam S - the semantic to use (deducible)                          
+   ///   @param type - the reflected type to instantiate                      
+   ///   @param placement - where to place the new instance                   
+   ///   @param value - the constructor arguments and the semantic            
+   template<CT::Semantic S>
+   LANGULUS(ALWAYSINLINE)
+   void SemanticNewUnknown(RTTI::DMeta type, Byte* placement, S&& value) {
+      static_assert(
+         CT::Exact<TypeOf<S>, Byte*> ||
+         CT::Exact<TypeOf<S>, const Byte*>,
+         "Bad argument"
+      );
+
+      LANGULUS_ASSUME(DevAssumes, type, "Invalid type");
+      LANGULUS_ASSUME(DevAssumes, placement, "Invalid placement pointer");
+      LANGULUS_ASSUME(DevAssumes, value.mValue, "Invalid argument pointer");
+
+      if constexpr (S::Shallow) {
+         // Abandon/Disown/Move/Copy                                    
+         if constexpr (S::Move) {
+            if constexpr (!S::Keep) {
+               if (type->mAbandonConstructor) {
+                  type->mAbandonConstructor(value.mValue, placement);
+                  return;
+               }
+            }
+            else if (type->mMoveConstructor) {
+               type->mMoveConstructor(value.mValue, placement);
+               return;
+            }
+         }
+         else {
+            if constexpr (!S::Keep) {
+               if (type->mDisownConstructor) {
+                  type->mDisownConstructor(value.mValue, placement);
+                  return;
+               }
+            }
+         }
+
+         if (type->mCopyConstructor)
+            type->mCopyConstructor(value.mValue, placement);
+         else
+            LANGULUS_THROW(Construct, "Can't abandon/disown/move/copy-construct T from S");
+      }
+      else {
+         // Clone/Copy                                                  
+         if (type->mCloneConstructor)
+            type->mCloneConstructor(value.mValue, placement);
+         else if (type->mCopyConstructor)
+            type->mCopyConstructor(value.mValue, placement);
+         else
+            LANGULUS_THROW(Construct, "Can't clone/copy-construct T from S");
       }
    }
 
@@ -456,32 +521,32 @@ namespace Langulus
    ///   @return whatever the assignment operator returns                     
    template<class T, CT::Semantic S>
    LANGULUS(ALWAYSINLINE)
-   decltype(auto) SemanticAssign(T& lhs, S&& rhs) {
+   void SemanticAssign(T& lhs, S&& rhs) {
       if constexpr (S::Move) {
          if constexpr (!S::Keep && requires(T a) { a = Abandon(rhs.mValue); })
-            return lhs = Abandon(rhs.mValue);
+            lhs = Abandon(rhs.mValue);
          else if constexpr (requires(T a) { a = Move(rhs.mValue); })
-            return lhs = Move(rhs.mValue);
+            lhs = Move(rhs.mValue);
          else if constexpr (requires(T a) { a = ::std::move(rhs.mValue); })
-            return lhs = ::std::move(rhs.mValue);
+            lhs = ::std::move(rhs.mValue);
          else if constexpr (requires(T a) { a = Copy(rhs.mValue); })
-            return lhs = Copy(rhs.mValue);
+            lhs = Copy(rhs.mValue);
          else if constexpr (requires(T a) { a = rhs.mValue; })
-            return lhs = rhs.mValue;
+            lhs = rhs.mValue;
          else
             LANGULUS_ERROR("Can't abandon/move/copy-assign T from S");
       }
       else {
-         if constexpr (!S::Shallow && S::Keep && requires(T a) { a = Clone(rhs.mValue); })
-            return lhs = Clone(rhs.mValue);
+         if constexpr (!S::Shallow && requires(T a) { a = Clone(rhs.mValue); })
+            lhs = Clone(rhs.mValue);
          else if constexpr (!S::Keep && requires(T a) { a = Disown(rhs.mValue); })
-            return lhs = Disown(rhs.mValue);
+            lhs = Disown(rhs.mValue);
          else if constexpr (requires(T a) { a = Copy(rhs.mValue); })
-            return lhs = Copy(rhs.mValue);
+            lhs = Copy(rhs.mValue);
          else if constexpr (requires(T a) { a = rhs.mValue; })
-            return lhs = rhs.mValue;
+            lhs = rhs.mValue;
          else
-            LANGULUS_ERROR("Can't disown/copy-assign T from S");
+            LANGULUS_ERROR("Can't clone/disown/copy-assign T from S");
       }
    }
 
