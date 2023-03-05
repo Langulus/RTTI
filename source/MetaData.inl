@@ -361,6 +361,7 @@ namespace Langulus::RTTI
    template<CT::Data T>
    LANGULUS(ALWAYSINLINE)
    DMeta MetaData::Of() requires (::std::is_reference_v<T>) {
+      static_assert(CT::NotSemantic<T>, "Can't reflect a semantic");
       return MetaData::Of<Decvq<Deref<T>>>();
    }
 
@@ -371,6 +372,7 @@ namespace Langulus::RTTI
    template<CT::Data T>
    DMeta MetaData::Of() requires (!::std::is_reference_v<T>) {
       static_assert(CT::Complete<T>, "Can't reflect incomplete type");
+      static_assert(CT::NotSemantic<T>, "Can't reflect a semantic");
       using DT = Decay<T>;
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
@@ -486,8 +488,7 @@ namespace Langulus::RTTI
             if constexpr (CT::Defaultable<T> && !CT::Meta<T>) {
                generated.mDefaultConstructor = [](void* at) noexcept(CT::DefaultableNoexcept<T>) {
                   auto atT = static_cast<T*>(at);
-                  new (const_cast<void*>(static_cast<const void*>(&DenseCast(atT))))
-                     DT {};
+                  new (&DenseCastMutable(atT)) DT {};
                };
             }
          
@@ -495,58 +496,52 @@ namespace Langulus::RTTI
             if constexpr (CT::DescriptorMakable<T> && !CT::Meta<T>) {
                generated.mDescriptorConstructor = [](void* at, const ::Langulus::Anyness::Block& descriptor) noexcept(CT::DescriptorMakableNoexcept<T>) {
                   auto atT = static_cast<T*>(at);
-                  new (const_cast<void*>(static_cast<const void*>(&DenseCast(atT))))
-                     DT {descriptor};
+                  new (&DenseCastMutable(atT)) DT {descriptor};
                };
             }
 
             // Wrap the copy constructor of the type inside lambda      
             if constexpr (CT::CopyMakable<T> && !CT::Meta<T>) {
-               generated.mCopyConstructor = [](const void* from, void* to) noexcept(CT::CopyMakableNoexcept<T>) {
+               generated.mCopyConstructor = [](const void* from, void* to) {
                   auto fromT = static_cast<const T*>(from);
                   auto toT = static_cast<T*>(to);
-                  new (const_cast<void*>(static_cast<const void*>(&DenseCast(toT))))
-                     DT {DenseCast(fromT)};
+                  SemanticNew<DT>(&DenseCastMutable(toT), Copy(DenseCast(fromT)));
                };
             }
             
             // Wrap the clone constructor of the type inside lambda     
             if constexpr (CT::CloneMakable<T> && !CT::Meta<T>) {
-               generated.mCloneConstructor = [](const void* from, void* to) noexcept(CT::CloneMakableNoexcept<T>) {
+               generated.mCloneConstructor = [](const void* from, void* to) {
                   auto fromT = static_cast<const T*>(from);
                   auto toT = static_cast<T*>(to);
-                  new (const_cast<void*>(static_cast<const void*>(&DenseCast(toT))))
-                     DT {Clone(DenseCast(fromT))};
+                  SemanticNew<DT>(&DenseCastMutable(toT), Clone(DenseCast(fromT)));
                };
             }
 
             // Wrap the disown constructor of the type inside lambda    
             if constexpr (CT::DisownMakable<T> && !CT::Meta<T>) {
-               generated.mDisownConstructor = [](const void* from, void* to) noexcept(CT::DisownMakableNoexcept<T>) {
+               generated.mDisownConstructor = [](const void* from, void* to) {
                   auto fromT = static_cast<const T*>(from);
                   auto toT = static_cast<T*>(to);
-                  new (const_cast<void*>(static_cast<const void*>(&DenseCast(toT))))
-                     DT {Disown(DenseCast(fromT))};
+                  SemanticNew<DT>(&DenseCastMutable(toT), Disown(DenseCast(fromT)));
                };
             }
 
             // Wrap the move constructor of the type inside a lambda    
             if constexpr (CT::MoveMakable<T> && !CT::Meta<T>) {
-               generated.mMoveConstructor = [](void* from, void* to) noexcept(CT::MoveMakableNoexcept<T>) {
+               generated.mMoveConstructor = [](void* from, void* to) {
                   auto fromT = static_cast<T*>(from);
                   auto toT = static_cast<T*>(to);
-                  new (const_cast<void*>(static_cast<const void*>(&DenseCast(toT))))
-                     DT {Forward<DT>(DenseCast(fromT))};
+                  SemanticNew<DT>(&DenseCastMutable(toT), Move(DenseCastMutable(fromT)));
                };
             }
 
             // Wrap the abandon constructor of the type inside a lambda 
             if constexpr (CT::AbandonMakable<T> && !CT::Meta<T>) {
-               generated.mAbandonConstructor = [](void* from, void* to) noexcept(CT::AbandonMakableNoexcept<T>) {
+               generated.mAbandonConstructor = [](void* from, void* to) {
                   auto fromT = static_cast<T*>(from);
                   auto toT = static_cast<T*>(to);
-                  new (const_cast<void*>(static_cast<const void*>(&DenseCast(toT))))
-                     DT {Abandon(DenseCast(fromT))};
+                  SemanticNew<DT>(&DenseCastMutable(toT), Abandon(DenseCastMutable(fromT)));
                };
             }
 
@@ -568,47 +563,62 @@ namespace Langulus::RTTI
             }
 
             // Wrap the copy-assignment of the type inside a lambda     
-            if constexpr (CT::Copyable<T> && !CT::Meta<T>) {
-               generated.mCopier = [](const void* from, void* to) noexcept(CT::CopyableNoexcept<T>) {
+            if constexpr (CT::CopyAssignable<T> && !CT::Meta<T>) {
+               generated.mCopier = [](const void* from, void* to) {
                   auto fromT = static_cast<const T*>(from);
                   auto toT = static_cast<T*>(to);
-                  DenseCast(toT) = DenseCast(fromT);
+                  SemanticAssign(
+                     DenseCastMutable(toT),
+                     Copy(DenseCast(fromT))
+                  );
                };
             }
 
             // Wrap the disown-assignment of the type inside a lambda   
             if constexpr (CT::DisownAssignable<T> && !CT::Meta<T>) {
-               generated.mDisownCopier = [](const void* from, void* to) noexcept(CT::DisownAssignableNoexcept<T>) {
+               generated.mDisownCopier = [](const void* from, void* to) {
                   auto fromT = static_cast<const T*>(from);
                   auto toT = static_cast<T*>(to);
-                  DenseCast(toT) = Disown(DenseCast(fromT));
+                  SemanticAssign(
+                     DenseCastMutable(toT),
+                     Disown(DenseCast(fromT))
+                  );
                };
             }
             
             // Wrap the cloners of the type inside a lambda             
             if constexpr (CT::CloneAssignable<T> && !CT::Meta<T>) {
-               generated.mCloneCopier = [](const void* from, void* to) noexcept(CT::CloneAssignableNoexcept<T>) {
+               generated.mCloneCopier = [](const void* from, void* to) {
                   auto fromT = static_cast<const T*>(from);
                   auto toT = static_cast<T*>(to);
-                  DenseCast(toT) = Clone(DenseCast(fromT));
+                  SemanticAssign(
+                     DenseCastMutable(toT),
+                     Clone(DenseCast(fromT))
+                  );
                };
             }
 
             // Wrap the move-assignment of the type inside a lambda     
-            if constexpr (CT::Movable<T> && !CT::Meta<T>) {
-               generated.mMover = [](void* from, void* to) noexcept(CT::MovableNoexcept<T>) {
+            if constexpr (CT::MoveAssignable<T> && !CT::Meta<T>) {
+               generated.mMover = [](void* from, void* to) {
                   auto fromT = static_cast<T*>(from);
                   auto toT = static_cast<T*>(to);
-                  DenseCast(toT) = ::std::move(DenseCast(fromT));
+                  SemanticAssign(
+                     DenseCastMutable(toT),
+                     Move(DenseCastMutable(fromT))
+                  );
                };
             }
 
             // Wrap the move-assignment of the type inside a lambda     
             if constexpr (CT::AbandonAssignable<T> && !CT::Meta<T>) {
-               generated.mAbandonMover = [](void* from, void* to) noexcept(CT::AbandonAssignableNoexcept<T>) {
+               generated.mAbandonMover = [](void* from, void* to) {
                   auto fromT = static_cast<T*>(from);
                   auto toT = static_cast<T*>(to);
-                  DenseCast(toT) = Abandon(DenseCast(fromT));
+                  SemanticAssign(
+                     DenseCastMutable(toT),
+                     Abandon(DenseCastMutable(fromT))
+                  );
                };
             }
 

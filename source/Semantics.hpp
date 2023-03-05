@@ -17,7 +17,10 @@ namespace Langulus
    {
 
       /// An abstract semantic value                                          
-      struct Semantic {};
+      struct Semantic {
+         LANGULUS(UNINSERTABLE) true;
+         LANGULUS(UNALLOCATABLE) true;
+      };
 
       /// An abstract copied value                                            
       struct Copied : Semantic {
@@ -564,82 +567,74 @@ namespace Langulus::CT
 
    /// Check if T is disown-constructible, disregards density                 
    template<class... T>
-   concept DisownMakable = ((Complete<Decay<T>>
-         && ::std::constructible_from<Decay<T>, Langulus::Disowned<Decay<T>>&&>
-      ) && ...);
-
-   template<class... T>
-   concept DisownMakableNoexcept = DisownMakable<T...> 
-      && (noexcept(Decay<T> {Uneval<Langulus::Disowned<Decay<T>>&&>()}) && ...);
+   concept DisownMakable = (
+      (requires (Decay<T> a) { SemanticMake<Decay<T>>(Disown(a)); })
+      && ...);
 
    /// Check if T is disown-assignable if mutable, disregards density         
    template<class... T>
-   concept DisownAssignable = ((Complete<Decay<T>>
-         && (CT::Mutable<T> && ::std::assignable_from<Decay<T>, Langulus::Disowned<Decay<T>>&&>)
-      ) && ...);
-
-   template<class... T>
-   concept DisownAssignableNoexcept = DisownAssignable<T...> 
-      && (noexcept(Uneval<Decay<T>&&>() = Uneval<Langulus::Disowned<Decay<T>>&&>()) && ...);
+   concept DisownAssignable = (
+      (requires (Decay<T> a) { SemanticAssign(a, Disown(a)); })
+      && ...);
 
    /// Check if T is clone-constructible, disregards density                  
    template<class... T>
-   concept CloneMakable = ((Complete<Decay<T>>
-         && ::std::constructible_from<Decay<T>, Langulus::Cloned<Decay<T>>&&>
-      ) && ...);
-
-   template<class... T>
-   concept CloneMakableNoexcept = CloneMakable<T...> 
-      && (noexcept(Decay<T> {Uneval<Langulus::Cloned<Decay<T>>&&>()}) && ...);
+   concept CloneMakable = (
+      (requires (Decay<T> a) { SemanticMake<Decay<T>>(Clone(a)); })
+      && ...);
 
    /// Check if T is clone-assignable if mutable, disregards density          
    template<class... T>
-   concept CloneAssignable = ((Complete<Decay<T>>
-         && (CT::Mutable<T> && ::std::assignable_from<Decay<T>, Langulus::Cloned<Decay<T>>&&>)
-      ) && ...);
-
-   template<class... T>
-   concept CloneAssignableNoexcept = CloneAssignable<T...> 
-      && (noexcept(Uneval<Decay<T>&&>() = Uneval<Langulus::Cloned<Decay<T>>&&>()) && ...);
+   concept CloneAssignable = (
+      (requires (Decay<T> a) { SemanticAssign(a, Clone(a)); })
+      && ...);
 
    /// Check if T is abandon-constructible, disregards density                
    template<class... T>
-   concept AbandonMakable = ((Complete<Decay<T>>
-         && (CT::Mutable<T> && ::std::constructible_from<Decay<T>, Langulus::Abandoned<Decay<T>>&&>)
-      ) && ...);
-
-   template<class... T>
-   concept AbandonMakableNoexcept = AbandonMakable<T...> 
-      && (noexcept(Decay<T> {Uneval<Langulus::Abandoned<Decay<T>>&&>()}) && ...);
+   concept AbandonMakable = (
+      (requires (Decay<T> a) { SemanticMake<Decay<T>>(Abandon(a)); })
+      && ...);
 
    /// Check if T is abandon-assignable if mutable, disregards density        
    template<class... T>
-   concept AbandonAssignable = ((Complete<Decay<T>>
-         && (CT::Mutable<T> && ::std::assignable_from<Decay<T>, Langulus::Abandoned<Decay<T>>&&>)
-      ) && ...);
+   concept AbandonAssignable = (
+      (requires (Decay<T> a) { SemanticAssign(a, Abandon(a)); })
+      && ...);
 
-   template<class... T>
-   concept AbandonAssignableNoexcept = AbandonAssignable<T...> 
-      && (noexcept(Uneval<Decay<T>&&>() = Uneval<Langulus::Abandoned<Decay<T>>&&>()) && ...);
-
-   /// Check if T is semantic-constructible, disregards density               
+   /// Check if T is semantic-constructible by S, disregards density          
    template<class S, class... T>
-   concept SemanticMakable = ((Complete<Decay<T>>
-         && ::std::constructible_from<Decay<T>, typename S::template Nested<Decay<T>>&&>
-      ) && ...);
-
-   template<class S, class... T>
-   concept SemanticMakableNoexcept = SemanticMakable<S, T...>
-      && (noexcept(Decay<T> {Uneval<typename S::template Nested<Decay<T>>&&>()}) && ...);
+   concept SemanticMakable = (
+      (requires (Decay<T> a) { SemanticMake<Decay<T>>(S(a)); })
+      && ...);
 
    /// Check if T is semantic-assignable if mutable, disregards density       
    template<class S, class... T>
-   concept SemanticAssignable = ((Complete<Decay<T>>
-         && (CT::Mutable<T> && ::std::assignable_from<Decay<T>, typename S::template Nested<Decay<T>>&&>)
-      ) && ...);
+   concept SemanticAssignable = (
+      (requires (Decay<T> a) { SemanticAssign(a, S(a)); })
+      && ...);
 
-   template<class S, class... T>
-   concept SemanticAssignableNoexcept = SemanticAssignable<S, T...>
-      && (noexcept(Uneval<Decay<T>&&>() = Uneval<typename S::template Nested<Decay<T>>&&>()) && ...);
+   /// Check if the decayed T is copy-constructible, disregards density       
+   template<class... T>
+   concept CopyMakable = (
+      (requires (Decay<T> a) { SemanticMake<Decay<T>>(Copy(a)); })
+      && ...);
+
+   /// Check if the decayed T is copy-assignable, disregards density          
+   template<class... T>
+   concept CopyAssignable = (
+      (requires (Decay<T> a) { SemanticAssign(a, Copy(a)); })
+      && ...);
+         
+   /// Check if the decayed T is move-constructible, disregards density       
+   template<class... T>
+   concept MoveMakable = (
+      (requires (Decay<T> a) { SemanticMake<Decay<T>>(Move(a)); })
+      && ...);
+
+   /// Check if the decayed T is move-assignable, disregards density          
+   template<class... T>
+   concept MoveAssignable = (
+      (requires (Decay<T> a) { SemanticAssign(a, Move(a)); })
+      && ...);
 
 } // namespace Langulus::CT
