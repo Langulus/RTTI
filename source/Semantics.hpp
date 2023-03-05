@@ -564,77 +564,130 @@ namespace Langulus
 
 namespace Langulus::CT
 {
+   namespace Inner
+   {
+      /// Check if T is disown-constructible, disregards density              
+      template<class T>
+      concept DisownMakable = requires (Decay<T> a) {
+         SemanticMake<Decay<T>>(Disown(a));
+      };
+
+      /// Check if T is disown-assignable if mutable, disregards density      
+      template<class T>
+      concept DisownAssignable = requires (Decay<T> a) {
+         SemanticAssign(a, Disown(a));
+      };
+
+      /// Check if T is clone-constructible, disregards density               
+      template<class T>
+      concept CloneMakable = requires (Decay<T> a) {
+         SemanticMake<Decay<T>>(Clone(a));
+      };
+
+      /// Check if T is clone-assignable if mutable, disregards density       
+      template<class T>
+      concept CloneAssignable = requires (Decay<T> a) {
+         SemanticAssign(a, Clone(a));
+      };
+
+      /// Check if T is abandon-constructible, disregards density             
+      template<class T>
+      concept AbandonMakable = requires (Decay<T> a) {
+         SemanticMake<Decay<T>>(Abandon(a));
+      };
+
+      /// Check if T is abandon-assignable if mutable, disregards density     
+      template<class T>
+      concept AbandonAssignable = requires (Decay<T> a) {
+         SemanticAssign(a, Abandon(a));
+      };
+
+      /// Check if the decayed T is copy-constructible, disregards density    
+      template<class T>
+      concept CopyMakable = requires (Decay<T> a) {
+         SemanticMake<Decay<T>>(Copy(a));
+      };
+
+      /// Check if the decayed T is copy-assignable, disregards density       
+      template<class T>
+      concept CopyAssignable = requires (Decay<T> a) {
+         SemanticAssign(a, Copy(a));
+      };
+
+      /// Check if the decayed T is move-constructible, disregards density    
+      template<class T>
+      concept MoveMakable = requires (Decay<T> a) {
+         SemanticMake<Decay<T>>(Move(a));
+      };
+
+      /// Check if the decayed T is move-assignable, disregards density       
+      template<class T>
+      concept MoveAssignable = requires (Decay<T> a) {
+         SemanticAssign(a, Move(a));
+      };
+
+
+      /// Check if T is semantic-constructible by S, disregards density       
+      template<class S, class T>
+      concept SemanticMakable = requires (Decay<T> a) {
+         SemanticMake<Decay<T>>(S(a));
+      };
+
+      /// Check if T is semantic-assignable if mutable, disregards density    
+      template<class S, class T>
+      concept SemanticAssignable = requires (Decay<T> a) {
+         SemanticAssign(a, S(a));
+      };
+
+   } // namespace Inner
 
    /// Check if T is disown-constructible, disregards density                 
    template<class... T>
-   concept DisownMakable = (
-      (requires (Decay<T> a) { SemanticMake<Decay<T>>(Disown(a)); })
-      && ...);
+   concept DisownMakable = (Inner::DisownMakable<T> && ...);
 
    /// Check if T is disown-assignable if mutable, disregards density         
    template<class... T>
-   concept DisownAssignable = (
-      (requires (Decay<T> a) { SemanticAssign(a, Disown(a)); })
-      && ...);
+   concept DisownAssignable = (Inner::DisownAssignable<T> && ...);
 
    /// Check if T is clone-constructible, disregards density                  
    template<class... T>
-   concept CloneMakable = (
-      (requires (Decay<T> a) { SemanticMake<Decay<T>>(Clone(a)); })
-      && ...);
+   concept CloneMakable = (Inner::CloneMakable<T> && ...);
 
    /// Check if T is clone-assignable if mutable, disregards density          
    template<class... T>
-   concept CloneAssignable = (
-      (requires (Decay<T> a) { SemanticAssign(a, Clone(a)); })
-      && ...);
+   concept CloneAssignable = (Inner::CloneAssignable<T> && ...);
 
    /// Check if T is abandon-constructible, disregards density                
    template<class... T>
-   concept AbandonMakable = (
-      (requires (Decay<T> a) { SemanticMake<Decay<T>>(Abandon(a)); })
-      && ...);
+   concept AbandonMakable = (Inner::AbandonMakable<T> && ...);
 
    /// Check if T is abandon-assignable if mutable, disregards density        
    template<class... T>
-   concept AbandonAssignable = (
-      (requires (Decay<T> a) { SemanticAssign(a, Abandon(a)); })
-      && ...);
-
-   /// Check if T is semantic-constructible by S, disregards density          
-   template<class S, class... T>
-   concept SemanticMakable = (
-      (requires (Decay<T> a) { SemanticMake<Decay<T>>(S(a)); })
-      && ...);
-
-   /// Check if T is semantic-assignable if mutable, disregards density       
-   template<class S, class... T>
-   concept SemanticAssignable = (
-      (requires (Decay<T> a) { SemanticAssign(a, S(a)); })
-      && ...);
+   concept AbandonAssignable = (Inner::AbandonAssignable<T> && ...);
 
    /// Check if the decayed T is copy-constructible, disregards density       
    template<class... T>
-   concept CopyMakable = (
-      (requires (Decay<T> a) { SemanticMake<Decay<T>>(Copy(a)); })
-      && ...);
+   concept CopyMakable = (Inner::CopyMakable<T> && ...);
 
    /// Check if the decayed T is copy-assignable, disregards density          
    template<class... T>
-   concept CopyAssignable = (
-      (requires (Decay<T> a) { SemanticAssign(a, Copy(a)); })
-      && ...);
+   concept CopyAssignable = (Inner::CopyAssignable<T> && ...);
          
    /// Check if the decayed T is move-constructible, disregards density       
    template<class... T>
-   concept MoveMakable = (
-      (requires (Decay<T> a) { SemanticMake<Decay<T>>(Move(a)); })
-      && ...);
+   concept MoveMakable = (Inner::MoveMakable<T> && ...);
 
    /// Check if the decayed T is move-assignable, disregards density          
    template<class... T>
-   concept MoveAssignable = (
-      (requires (Decay<T> a) { SemanticAssign(a, Move(a)); })
-      && ...);
+   concept MoveAssignable = (Inner::MoveAssignable<T> && ...);
+
+
+   /// Check if T is semantic-constructible by S, disregards density          
+   template<class S, class... T>
+   concept SemanticMakable = (Inner::SemanticMakable<S, T> && ...);
+
+   /// Check if T is semantic-assignable if mutable, disregards density       
+   template<class S, class... T>
+   concept SemanticAssignable = (Inner::SemanticAssignable<S, T> && ...);
 
 } // namespace Langulus::CT
