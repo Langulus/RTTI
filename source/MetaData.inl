@@ -361,7 +361,6 @@ namespace Langulus::RTTI
    template<CT::Data T>
    LANGULUS(ALWAYSINLINE)
    DMeta MetaData::Of() requires (::std::is_reference_v<T>) {
-      static_assert(CT::NotSemantic<T>, "Can't reflect a semantic");
       return MetaData::Of<Decvq<Deref<T>>>();
    }
 
@@ -372,7 +371,6 @@ namespace Langulus::RTTI
    template<CT::Data T>
    DMeta MetaData::Of() requires (!::std::is_reference_v<T>) {
       static_assert(CT::Complete<T>, "Can't reflect incomplete type");
-      static_assert(CT::NotSemantic<T>, "Can't reflect a semantic");
       using DT = Decay<T>;
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
