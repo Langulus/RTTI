@@ -124,6 +124,7 @@ namespace Langulus
    
    /// Copy a value                                                           
    template<CT::NotSemantic T>
+   LANGULUS(INTRINSIC)
    NOD() constexpr auto Copy(const T& item) noexcept {
       return Copied<T>{item};
    }
@@ -174,12 +175,14 @@ namespace Langulus
    
    /// Move data                                                              
    template<CT::NotSemantic T>
+   LANGULUS(INTRINSIC)
    NOD() constexpr auto Move(T&& a) noexcept {
       return Moved<T>{::std::forward<T>(a)};
    }
 
    /// Move data                                                              
    template<CT::NotSemantic T>
+   LANGULUS(INTRINSIC)
    NOD() constexpr auto Move(T& a) noexcept {
       return Moved<T>{::std::move(a)};
    }
@@ -236,6 +239,7 @@ namespace Langulus
    /// Same as Move, but resets only mandatory data inside source after move  
    /// essentially saving up on a couple of instructions                      
    template<CT::NotSemantic T>
+   LANGULUS(INTRINSIC)
    NOD() constexpr auto Abandon(T&& a) noexcept {
       return Abandoned<T>{::std::forward<T>(a)};
    }
@@ -244,6 +248,7 @@ namespace Langulus
    /// Same as Move, but resets only mandatory data inside source after move  
    /// essentially saving up on a couple of instructions                      
    template<CT::NotSemantic T>
+   LANGULUS(INTRINSIC)
    NOD() constexpr auto Abandon(T& a) noexcept {
       return Abandoned<T>{::std::move(a)};
    }
@@ -287,6 +292,7 @@ namespace Langulus
    /// Disown a value                                                         
    /// Same as a shallow-copy, but never references, saving some instructions 
    template<CT::NotSemantic T>
+   LANGULUS(INTRINSIC)
    NOD() constexpr auto Disown(const T& item) noexcept {
       return Disowned<T>{item};
    }
@@ -329,6 +335,7 @@ namespace Langulus
    
    /// Clone a value                                                          
    template<CT::NotSemantic T>
+   LANGULUS(INTRINSIC)
    NOD() constexpr auto Clone(const T& item) noexcept {
       return Cloned<T>{item};
    }

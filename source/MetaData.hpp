@@ -109,6 +109,9 @@ namespace Langulus::RTTI
    ///   You can reflect arrays of elements, tag members as traits, etc.      
    ///                                                                        
    struct Member {
+      LANGULUS(UNALLOCATABLE) true;
+      LANGULUS(UNINSERTABLE) true;
+
       using TypeRetriever = TFunctor<DMeta()>;
       using TraitRetriever = TFunctor<TMeta()>;
 
@@ -163,6 +166,8 @@ namespace Langulus::RTTI
    ///   Used to reflect abilities                                            
    ///                                                                        
    struct Ability {
+      LANGULUS(UNALLOCATABLE) true;
+
       // The verb ID                                                    
       VMeta mVerb {};
 
@@ -219,6 +224,9 @@ namespace Langulus::RTTI
    ///   Used to reflect data coversions                                      
    ///                                                                        
    struct Converter {
+      LANGULUS(UNALLOCATABLE) true;
+      LANGULUS(UNINSERTABLE) true;
+
       // The data ID we're converting to                                
       DMeta mDestrinationType {};
       // Address of function to call                                    
@@ -238,6 +246,9 @@ namespace Langulus::RTTI
    ///   Used to reflect a base for a type                                    
    ///                                                                        
    struct Base {
+      LANGULUS(UNALLOCATABLE) true;
+      LANGULUS(UNINSERTABLE) true;
+
       // Type of the base                                               
       DMeta mType {};
       // CT::Number of bases that fit in the type                       
@@ -270,6 +281,11 @@ namespace Langulus::RTTI
    private:
       struct PurposefullyIncompleteType;
 
+      static_assert(CT::Complete<int>,
+         "Can't reliably detect incomplete types");
+      static_assert(!CT::Complete<PurposefullyIncompleteType>,
+         "Can't reliably detect incomplete types");
+
    public:
       friend struct Member;
       LANGULUS(NAME) "DMeta";
@@ -282,11 +298,6 @@ namespace Langulus::RTTI
       static constexpr Token DefaultToken = "NoData";
 
       MetaType GetMetaType() const noexcept final { return Meta::Data; }
-
-      static_assert(CT::Complete<int>,
-         "Can't reliably detect incomplete types");
-      static_assert(!CT::Complete<PurposefullyIncompleteType>,
-         "Can't reliably detect incomplete types");
 
       // List of reflected members                                      
       MemberList mMembers {};
@@ -327,6 +338,8 @@ namespace Langulus::RTTI
       bool mIsDeep = false;
       // Type is insertable into containers                             
       bool mIsUninsertable = false;
+      // Type is allocatable (and thus clonable)                        
+      bool mIsUnallocatable = false;
       // Size of the reflected type (in bytes)                          
       Size mSize {};
       // Alignof (in bytes)                                             

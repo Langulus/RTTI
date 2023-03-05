@@ -475,6 +475,7 @@ namespace Langulus::RTTI
 
          generated.mIsPOD = CT::POD<T>;
          generated.mIsUninsertable = CT::Uninsertable<T>;
+         generated.mIsUnallocatable = CT::Unallocatable<T>;
 
          if constexpr (CT::Complete<DT>) {
             // Check if type is deep                                    
