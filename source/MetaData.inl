@@ -911,8 +911,7 @@ namespace Langulus::RTTI
 
    /// Count the number of reflected members, in non-imposed bases included   
    ///   @return the number of members                                        
-   LANGULUS(ALWAYSINLINE)
-   Count MetaData::GetMemberCount() const noexcept {
+   inline Count MetaData::GetMemberCount() const noexcept {
       if (!mOrigin)
          return 0;
 
