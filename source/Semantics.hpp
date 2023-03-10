@@ -343,6 +343,7 @@ namespace Langulus
       return Cloned<T>{item};
    }
 
+
    /// Create an element on the stack, using the provided semantic            
    ///   @tparam T - the type to instantiate                                  
    ///   @tparam S - the semantic to use (deducible)                          
@@ -350,7 +351,7 @@ namespace Langulus
    ///   @return the instance on the stack                                    
    template<class T, CT::Semantic S>
    NOD() LANGULUS(ALWAYSINLINE)
-   T SemanticMake(S&& value) {
+   auto SemanticMake(S&& value) {
       using A = TypeOf<S>;
 
       if constexpr (S::Move) {
@@ -365,7 +366,7 @@ namespace Langulus
          else if constexpr (::std::constructible_from<T, const A&>)
             return T {value.mValue};
          else
-            LANGULUS_ERROR("Can't abandon/move/copy-construct T from S");
+            return Inner::Unsupported {};
       }
       else {
          if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
@@ -377,7 +378,7 @@ namespace Langulus
          else if constexpr (::std::constructible_from<T, const A&>)
             return T {value.mValue};
          else
-            LANGULUS_ERROR("Can't disown/copy/clone-construct T from S");
+            return Inner::Unsupported {};
       }
    }
 
@@ -388,7 +389,7 @@ namespace Langulus
    ///   @return the instance on the heap                                     
    template<class T, CT::Semantic S>
    NOD() LANGULUS(ALWAYSINLINE)
-   T* SemanticNew(S&& value) {
+   auto SemanticNew(S&& value) {
       using A = TypeOf<S>;
 
       if constexpr (S::Move) {
@@ -403,7 +404,7 @@ namespace Langulus
          else if constexpr (::std::constructible_from<T, const A&>)
             return new T {value.mValue};
          else
-            LANGULUS_ERROR("Can't abandon/move/copy-construct T from S");
+            return Inner::Unsupported {};
       }
       else {
          if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
@@ -415,7 +416,7 @@ namespace Langulus
          else if constexpr (::std::constructible_from<T, const A&>)
             return new T {value.mValue};
          else
-            LANGULUS_ERROR("Can't disown/copy/clone-construct T from S");
+            return Inner::Unsupported {};
       }
    }
 
@@ -429,36 +430,36 @@ namespace Langulus
    ///   @return the instance on the heap                                     
    template<class T, CT::Semantic S>
    LANGULUS(ALWAYSINLINE)
-   void SemanticNew(void* placement, S&& value) {
+   auto SemanticNew(void* placement, S&& value) {
       LANGULUS_ASSUME(DevAssumes, placement, "Invalid placement pointer");
 
       using A = TypeOf<S>;
 
       if constexpr (S::Move) {
          if constexpr (!S::Keep && ::std::constructible_from<T, Abandoned<A>&&>)
-            new (placement) T {Abandon(value.mValue)};
+            return new (placement) T {Abandon(value.mValue)};
          else if constexpr (::std::constructible_from<T, Moved<A>&&>)
-            new (placement) T {Move(value.mValue)};
+            return new (placement) T {Move(value.mValue)};
          else if constexpr (::std::constructible_from<T, A&&>)
-            new (placement) T {::std::move(value.mValue)};
+            return new (placement) T {::std::move(value.mValue)};
          else if constexpr (::std::constructible_from<T, Copied<A>>)
-            new (placement) T {Copy(value.mValue)};
+            return new (placement) T {Copy(value.mValue)};
          else if constexpr (::std::constructible_from<T, const A&>)
-            new (placement) T {value.mValue};
+            return new (placement) T {value.mValue};
          else
-            LANGULUS_ERROR("Can't abandon/move/copy-construct T from S");
+            return Inner::Unsupported {};
       }
       else {
          if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
-            new (placement) T {Clone(value.mValue)};
+            return new (placement) T {Clone(value.mValue)};
          else if constexpr (!S::Keep && ::std::constructible_from<T, Disowned<A>&&>)
-            new (placement) T {Disown(value.mValue)};
+            return new (placement) T {Disown(value.mValue)};
          else if constexpr (::std::constructible_from<T, Copied<A>>)
-            new (placement) T {Copy(value.mValue)};
+            return new (placement) T {Copy(value.mValue)};
          else if constexpr (::std::constructible_from<T, const A&>)
-            new (placement) T {value.mValue};
+            return new (placement) T {value.mValue};
          else
-            LANGULUS_ERROR("Can't clone/disown/copy-construct T from S");
+            return Inner::Unsupported {};
       }
    }
    
@@ -531,32 +532,32 @@ namespace Langulus
    ///   @return whatever the assignment operator returns                     
    template<class T, CT::Semantic S>
    LANGULUS(ALWAYSINLINE)
-   void SemanticAssign(T& lhs, S&& rhs) {
+   decltype(auto) SemanticAssign(T& lhs, S&& rhs) {
       if constexpr (S::Move) {
          if constexpr (!S::Keep && requires(T a) { a = Abandon(rhs.mValue); })
-            lhs = Abandon(rhs.mValue);
+            return (lhs = Abandon(rhs.mValue));
          else if constexpr (requires(T a) { a = Move(rhs.mValue); })
-            lhs = Move(rhs.mValue);
+            return (lhs = Move(rhs.mValue));
          else if constexpr (requires(T a) { a = ::std::move(rhs.mValue); })
-            lhs = ::std::move(rhs.mValue);
+            return (lhs = ::std::move(rhs.mValue));
          else if constexpr (requires(T a) { a = Copy(rhs.mValue); })
-            lhs = Copy(rhs.mValue);
+            return (lhs = Copy(rhs.mValue));
          else if constexpr (requires(T a) { a = rhs.mValue; })
-            lhs = rhs.mValue;
+            return (lhs = rhs.mValue);
          else
-            LANGULUS_ERROR("Can't abandon/move/copy-assign T from S");
+            return Inner::Unsupported {};
       }
       else {
          if constexpr (!S::Shallow && requires(T a) { a = Clone(rhs.mValue); })
-            lhs = Clone(rhs.mValue);
+            return (lhs = Clone(rhs.mValue));
          else if constexpr (!S::Keep && requires(T a) { a = Disown(rhs.mValue); })
-            lhs = Disown(rhs.mValue);
+            return (lhs = Disown(rhs.mValue));
          else if constexpr (requires(T a) { a = Copy(rhs.mValue); })
-            lhs = Copy(rhs.mValue);
+            return (lhs = Copy(rhs.mValue));
          else if constexpr (requires(T a) { a = rhs.mValue; })
-            lhs = rhs.mValue;
+            return (lhs = rhs.mValue);
          else
-            LANGULUS_ERROR("Can't clone/disown/copy-assign T from S");
+            return Inner::Unsupported {};
       }
    }
 
@@ -569,74 +570,74 @@ namespace Langulus::CT
       /// Check if T is disown-constructible, disregards density              
       template<class T>
       concept DisownMakable = requires (Decay<T> a) {
-         SemanticMake<Decay<T>>(Disown(a));
+         {SemanticMake<Decay<T>>(Disown(a))} -> Exact<Decay<T>>;
       };
 
       /// Check if T is disown-assignable if mutable, disregards density      
       template<class T>
       concept DisownAssignable = requires (Decay<T> a) {
-         SemanticAssign(a, Disown(a));
+         {SemanticAssign(a, Disown(a))} -> Exact<Decay<T>&>;
       };
 
       /// Check if T is clone-constructible, disregards density               
       template<class T>
       concept CloneMakable = requires (Decay<T> a) {
-         SemanticMake<Decay<T>>(Clone(a));
+         {SemanticMake<Decay<T>>(Clone(a))} -> Exact<Decay<T>>;
       };
 
       /// Check if T is clone-assignable if mutable, disregards density       
       template<class T>
       concept CloneAssignable = requires (Decay<T> a) {
-         SemanticAssign(a, Clone(a));
+         {SemanticAssign(a, Clone(a))} -> Exact<Decay<T>&>;
       };
 
       /// Check if T is abandon-constructible, disregards density             
       template<class T>
       concept AbandonMakable = requires (Decay<T> a) {
-         SemanticMake<Decay<T>>(Abandon(a));
+         {SemanticMake<Decay<T>>(Abandon(a))} -> Exact<Decay<T>>;
       };
 
       /// Check if T is abandon-assignable if mutable, disregards density     
       template<class T>
       concept AbandonAssignable = requires (Decay<T> a) {
-         SemanticAssign(a, Abandon(a));
+         {SemanticAssign(a, Abandon(a))} -> Exact<Decay<T>&>;
       };
 
       /// Check if the decayed T is copy-constructible, disregards density    
       template<class T>
       concept CopyMakable = requires (Decay<T> a) {
-         SemanticMake<Decay<T>>(Copy(a));
+         {SemanticMake<Decay<T>>(Copy(a))} -> Exact<Decay<T>>;
       };
 
       /// Check if the decayed T is copy-assignable, disregards density       
       template<class T>
       concept CopyAssignable = requires (Decay<T> a) {
-         SemanticAssign(a, Copy(a));
+         {SemanticAssign(a, Copy(a))} -> Exact<Decay<T>&>;
       };
 
       /// Check if the decayed T is move-constructible, disregards density    
       template<class T>
       concept MoveMakable = requires (Decay<T> a) {
-         SemanticMake<Decay<T>>(Move(a));
+         {SemanticMake<Decay<T>>(Move(a))} -> Exact<Decay<T>>;
       };
 
       /// Check if the decayed T is move-assignable, disregards density       
       template<class T>
       concept MoveAssignable = requires (Decay<T> a) {
-         SemanticAssign(a, Move(a));
+         {SemanticAssign(a, Move(a))} -> Exact<Decay<T>&>;
       };
 
 
       /// Check if T is semantic-constructible by S, disregards density       
       template<class S, class T>
       concept SemanticMakable = requires (Decay<T> a) {
-         SemanticMake<Decay<T>>(S(a));
+         {SemanticMake<Decay<T>>(S {a})} -> Exact<Decay<T>>;
       };
 
       /// Check if T is semantic-assignable if mutable, disregards density    
       template<class S, class T>
       concept SemanticAssignable = requires (Decay<T> a) {
-         SemanticAssign(a, S(a));
+         {SemanticAssign(a, S {a})} -> Exact<Decay<T>&>;
       };
 
    } // namespace Inner
