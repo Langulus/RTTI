@@ -90,7 +90,7 @@ namespace Langulus::RTTI
 
       /// Skip these patterns when demangling names                           
       constexpr Token SkipPatterns[] {
-         " ", "\t", "class", "struct", "enum", "Langulus::"
+         "class", "struct", "enum", "Langulus::"
       };
       
       /// Replace these patterns when demangling names                        
@@ -115,6 +115,42 @@ namespace Langulus::RTTI
       struct StatefulNameOfType {
          static constexpr Token Original = IsolateTypename<T>();
 
+         /// Check if a token transition happens at the given offsets         
+         static constexpr bool IsTransition(const Token& remaining, Count s) {
+            return (
+                  remaining.data() == Original.data()
+               || IsAlpha(*(remaining.data()    ))
+               != IsAlpha(*(remaining.data() - 1))
+            ) && (
+                  remaining.data() + s == Original.data() + Original.size()
+               || IsAlpha(*(remaining.data() + s    ))
+               != IsAlpha(*(remaining.data() + s - 1))
+            );
+         }
+
+         /// Perform a potential skip                                         
+         ///   @param remaining - [in/out] the remaining token                
+         ///   @param recycle - [out]                                         
+         static constexpr void Skip(Token& remaining, bool& recycle) {
+            while (remaining.size() > 0 && IsSpace(remaining[0])) {
+               remaining.remove_prefix(1);
+               recycle = true;
+            }
+
+            for (auto skip : SkipPatterns) {
+               if (!remaining.starts_with(skip))
+                  continue;
+
+               // Skip the symbol only if it is at the border of an     
+               // alphabetical sequence, or at the edge of Original     
+               if (IsTransition(remaining, skip.size())) {
+                  remaining.remove_prefix(skip.size());
+                  recycle = true;
+                  break;
+               }
+            }
+         }
+
          /// Do the skip/replace scan without writing to any buffer, in order 
          /// to anticipate the required buffer size                           
          ///   @attention this function should be in sync with Normalize()    
@@ -126,15 +162,7 @@ namespace Langulus::RTTI
                bool recycle = false;
 
                // Do skips                                              
-               for (auto skip : SkipPatterns) {
-                  if (!remaining.starts_with(skip))
-                     continue;
-
-                  remaining.remove_prefix(skip.size());
-                  recycle = true;
-                  break;
-               }
-
+               Skip(remaining, recycle);
                if (recycle || remaining.size() == 0)
                   continue;
                
@@ -143,10 +171,12 @@ namespace Langulus::RTTI
                   if (!remaining.starts_with(replace.first))
                      continue;
 
-                  it += replace.second.size();
-                  remaining.remove_prefix(replace.first.size());
-                  recycle = true;
-                  break;
+                  if (IsTransition(remaining, replace.first.size())) {
+                     it += replace.second.size();
+                     remaining.remove_prefix(replace.first.size());
+                     recycle = true;
+                     break;
+                  }
                }
 
                if (recycle || remaining.size() == 0)
@@ -173,15 +203,7 @@ namespace Langulus::RTTI
                bool recycle = false;
 
                // Do skips                                              
-               for (auto skip : SkipPatterns) {
-                  if (!remaining.starts_with(skip))
-                     continue;
-
-                  remaining.remove_prefix(skip.size());
-                  recycle = true;
-                  break;
-               }
-
+               Skip(remaining, recycle);
                if (recycle || remaining.size() == 0)
                   continue;
                
@@ -190,12 +212,14 @@ namespace Langulus::RTTI
                   if (!remaining.starts_with(replace.first))
                      continue;
 
-                  for (auto c : replace.second)
-                     output[it++] = c;
+                  if (IsTransition(remaining, replace.first.size())) {
+                     for (auto c : replace.second)
+                        output[it++] = c;
 
-                  remaining.remove_prefix(replace.first.size());
-                  recycle = true;
-                  break;
+                     remaining.remove_prefix(replace.first.size());
+                     recycle = true;
+                     break;
+                  }
                }
 
                if (recycle || remaining.size() == 0)

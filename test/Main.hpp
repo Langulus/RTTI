@@ -13,6 +13,10 @@
 
 namespace Langulus::Flow {
    class Verb {};
+   class Construct {};
+   class Constructconst {};
+   class constConstructconst {};
+   class constconst {};
 }
 
 namespace Langulus::Anyness {

@@ -252,6 +252,40 @@ SCENARIO("NameOf", "[nameof]") {
          }
       }
    }
+
+   GIVEN("Types containing many skippable patterns") {
+      WHEN("Taken the name of Langulus::Flow::Construct") {
+         auto name = NameOf<Langulus::Flow::Construct>();
+
+         THEN("Name should be correct") {
+            REQUIRE(name == "Flow::Construct");
+         }
+      }
+
+      WHEN("Taken the name of Langulus::Flow::Constructconst") {
+         auto name = NameOf<Langulus::Flow::Constructconst>();
+
+         THEN("Name should be correct") {
+            REQUIRE(name == "Flow::Constructconst");
+         }
+      }
+
+      WHEN("Taken the name of Langulus::Flow::constConstructconst") {
+         auto name = NameOf<Langulus::Flow::constConstructconst>();
+
+         THEN("Name should be correct") {
+            REQUIRE(name == "Flow::constConstructconst");
+         }
+      }
+
+      WHEN("Taken the name of Langulus::Flow::constconst") {
+         auto name = NameOf<Langulus::Flow::constconst>();
+
+         THEN("Name should be correct") {
+            REQUIRE(name == "Flow::constconst");
+         }
+      }
+   }
 }
 
 TEMPLATE_TEST_CASE("Unsigned integer RTTI interpretation", "[metadata]", uint8_t, uint16_t, uint32_t, uint64_t) {
