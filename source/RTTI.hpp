@@ -12,6 +12,8 @@
 
 namespace Langulus::RTTI
 {
+   using Lowercase = ::std::string;
+   using MetaList = ::std::unordered_set<const Meta*>;
 
    ///                                                                        
    ///   The RTTI interface                                                   
@@ -20,12 +22,6 @@ namespace Langulus::RTTI
    ///                                                                        
    class Interface {
    private:
-      using Lowercase = ::std::string;
-      using MetaList = ::std::unordered_set<const Meta*>;
-      static Lowercase ToLowercase(const Token&) noexcept;
-      static Token ToLastToken(const Token&) noexcept;
-      static Lowercase IsolateOperator(const Token&) noexcept;
-
       // Database for meta data definitions                             
       ::std::unordered_map<Lowercase, DMeta> mMetaData;
       // Database for named values                                      

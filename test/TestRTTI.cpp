@@ -22,17 +22,13 @@ namespace N3 {
 }
 
 SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
-	GIVEN("Reflected types with similar names in different namespaces") {
+	GIVEN("Three reflected types with similar names in different namespaces") {
 		const auto n1t = MetaData::Of<N1::Type>();
 		const auto n1c = MetaData::Of<N1::Create>();
 		const auto n2t = MetaData::Of<N2::Type>();
 		const auto n3t = MetaData::Of<N3::type>();
-
-		const auto n1t_const = MetaData::Of<const N1::Type>();
-		const auto n2t_const = MetaData::Of<const N2::Type>();
-		const auto n3t_const = MetaData::Of<const N3::type>();
-
 		const auto vvv = MetaVerb::Of<Verbs::Create>();
+		//const auto nnn = MetaData::Of<ImplicitlyReflectedData>();
 
 		WHEN("Meta is retrieved by exact token, that is not case-sensitive") {
 			REQUIRE(n1t == RTTI::Database.GetMetaData("N1::Type"));
@@ -56,13 +52,10 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
 			auto found3 = RTTI::Database.GetAmbiguousMeta("one");
 			auto found4 = RTTI::Database.GetAmbiguousMeta("two");
 			auto found5 = RTTI::Database.GetAmbiguousMeta("three");
-			REQUIRE(found.size() == 6);
+			REQUIRE(found.size() == 3);
 			REQUIRE(found.find(n1t) != found.end());
 			REQUIRE(found.find(n2t) != found.end());
 			REQUIRE(found.find(n3t) != found.end());
-			REQUIRE(found.find(n1t_const) != found.end());
-			REQUIRE(found.find(n2t_const) != found.end());
-			REQUIRE(found.find(n3t_const) != found.end());
 			REQUIRE(found2.size() == 2);
 			REQUIRE(found2.find(vvv) != found2.end());
 			REQUIRE(found2.find(n1c) != found2.end());

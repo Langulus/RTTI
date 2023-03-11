@@ -643,6 +643,8 @@ namespace Langulus::RTTI
       template<CT::Data T>
       NOD() static constexpr Hash GenerateHash(const Token&) noexcept;
 
+      IF_LANGULUS_MANAGED_REFLECTION(NOD() Token GetShortestUnambiguousToken() const);
+
       virtual ~Meta() = default;
    };
 

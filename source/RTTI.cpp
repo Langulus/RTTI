@@ -31,7 +31,7 @@ namespace Langulus::RTTI
    /// Convert a token to a lowercase string                                  
    ///   @param token - the token to lowercase                                
    ///   @return the lowercase string                                         
-   typename Interface::Lowercase Interface::ToLowercase(const Token& token) noexcept {
+   Lowercase ToLowercase(const Token& token) noexcept {
       Lowercase lc {token};
       ::std::transform(lc.begin(), lc.end(), lc.begin(),
          [](char c) { return static_cast<char>(::std::tolower(c)); }
@@ -43,7 +43,7 @@ namespace Langulus::RTTI
    /// namespaces in it. Essentially finds last "::" and skip forward to that 
    ///   @param token - the token to scan                                     
    ///   @return the last token                                               
-   Token Interface::ToLastToken(const Token& token) noexcept {
+   Token ToLastToken(const Token& token) noexcept {
       const auto found = token.find_last_of(':', token.size());
       if (found != token.npos)
          return token.substr(found + 1, token.size() - found - 1);
@@ -53,7 +53,7 @@ namespace Langulus::RTTI
    /// Isolate and lowercase an operator token                                
    ///   @param token - the operator                                          
    ///   @return the lowercased and isolated operator token                   
-   typename Interface::Lowercase Interface::IsolateOperator(const Token& token) noexcept {
+   Lowercase IsolateOperator(const Token& token) noexcept {
       // Skip skippable at the front and the back of token              
       auto l = token.data();
       auto r = token.data() + token.size();
@@ -127,11 +127,11 @@ namespace Langulus::RTTI
    /// Get a list of all the interpretations for a single simple token        
    ///   @param token - the token to search for                               
    ///   @return the list of associated meta definitions                      
-   const typename Interface::MetaList& Interface::GetAmbiguousMeta(const Token& token) const noexcept {
+   const MetaList& Interface::GetAmbiguousMeta(const Token& token) const noexcept {
       const auto lc = ToLowercase(ToLastToken(token));
       const auto found = mMetaAmbiguous.find(lc);
       if (found == mMetaAmbiguous.end()) {
-         static Interface::MetaList fallback {};
+         static MetaList fallback {};
          return fallback;
       }
       return found->second;
@@ -479,6 +479,58 @@ namespace Langulus::RTTI
          meta = mUniqueVerbs.erase(meta);
          delete definition;
       }
+   }
+
+   /// Get the shortest possible token, that is not ambiguous                 
+   ///   @return the token                                                    
+   Token Meta::GetShortestUnambiguousToken() const {
+      auto& ambiguous = Database.GetAmbiguousMeta(mToken);
+      if (ambiguous.size() == 1)
+         return ToLastToken(mToken);
+
+      // Collect all origin types, and work with those                  
+      MetaList origins;
+      for (auto& meta : ambiguous) {
+         const auto dmeta = dynamic_cast<DMeta>(meta);
+         if (dmeta) {
+            if (dmeta->mOrigin)
+               origins.insert(dmeta->mOrigin);
+            else
+               origins.insert(dmeta);
+         }
+         else origins.insert(dmeta);
+      }
+
+      if (origins.size() == 1)
+         return ToLastToken(mToken);
+
+      // Start including namespaces, until the resulting token has      
+      // exactly one match inside the ambiguous list                    
+      auto start = ToLastToken(mToken).data() - 3;
+      while (start >= mToken.data()) {
+         if (*start == ':') {
+            const auto candidate = mToken.substr(start - mToken.data() + 1);
+            Count matches {};
+            for (auto& meta : origins) {
+               if (meta->mToken.ends_with(candidate)) {
+                  if (++matches > 1)
+                     break;
+               }
+            }
+
+            if (matches == 1) {
+               // Match found                                           
+               return candidate;
+            }
+
+            start -= 2;
+         }
+
+         --start;
+      }
+
+      // Full token returned as fallback                                
+      return mToken;
    }
 
 } // namespace Langulus::RTTI
