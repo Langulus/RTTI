@@ -342,12 +342,12 @@ namespace Langulus::CT
    namespace Inner
    {
       template<class T>
-      concept DispatcherMutable = requires (Decay<T>& a, ::Langulus::Flow::Verb& b) {
-         {a.Do(b)};
+      concept DispatcherMutable = requires (T* a, ::Langulus::Flow::Verb& b) {
+         {DenseCast(a).Do(b)};
       };
       template<class T>
-      concept DispatcherConstant = requires (const Decay<T>& a, ::Langulus::Flow::Verb& b) {
-         {a.Do(b)};
+      concept DispatcherConstant = requires (const T* a, ::Langulus::Flow::Verb& b) {
+         {DenseCast(a).Do(b)};
       };
    }
 

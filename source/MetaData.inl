@@ -654,11 +654,11 @@ namespace Langulus::RTTI
 
             // Reflect the concrete type                                
             if constexpr (CT::Concretizable<T>)
-               generated.mConcrete = MetaData::Of<typename DT::CTTI_Concrete>();
+               generated.mConcrete = MetaData::Of<CT::ConcreteOf<T>>();
 
             // Reflect the producer type                                
             if constexpr (CT::Producible<T>)
-               generated.mProducer = MetaData::Of<typename DT::CTTI_Producer>();
+               generated.mProducer = MetaData::Of<CT::ProducerOf<T>>();
 
             // Set reflected bases                                      
             if constexpr (requires { typename DT::CTTI_Bases; })
