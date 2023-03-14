@@ -365,9 +365,7 @@ namespace Langulus::RTTI
    }
 
    /// Reflect or return an already reflected type meta definition            
-   /// Reflection is done only on decayed types to avoid static variable      
-   /// duplications                                                           
-   ///   @tparam T - the type to reflect (will always be decayed)             
+   ///   @tparam T - the type to reflect                                      
    template<CT::Data T>
    DMeta MetaData::Of() requires (!::std::is_reference_v<T>) {
       static_assert(CT::Complete<T>, "Can't reflect incomplete type");
