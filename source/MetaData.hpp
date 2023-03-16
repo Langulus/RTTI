@@ -417,9 +417,9 @@ namespace Langulus::RTTI
       template<CT::Void T>
       NOD() static constexpr DMeta Of();
       template<CT::Data T>
-      NOD() static DMeta Of() requires (!::std::is_reference_v<T>);
-      template<CT::Data T>
       NOD() static DMeta Of() requires (::std::is_reference_v<T>);
+      template<CT::Data T>
+      NOD() static DMeta Of() requires (!::std::is_reference_v<T>);
 
       NOD() DMeta GetMostConcrete() const noexcept;
       NOD() AllocationRequest RequestSize(const Count&) const noexcept;

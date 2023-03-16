@@ -534,27 +534,27 @@ namespace Langulus
    LANGULUS(ALWAYSINLINE)
    decltype(auto) SemanticAssign(T& lhs, S&& rhs) {
       if constexpr (S::Move) {
-         if constexpr (!S::Keep && requires(T a) { a = Abandon(rhs.mValue); })
+         if constexpr (!S::Keep && requires(T& a) { a = Abandon(rhs.mValue); })
             return (lhs = Abandon(rhs.mValue));
-         else if constexpr (requires(T a) { a = Move(rhs.mValue); })
+         else if constexpr (requires(T& a) { a = Move(rhs.mValue); })
             return (lhs = Move(rhs.mValue));
-         else if constexpr (requires(T a) { a = ::std::move(rhs.mValue); })
+         else if constexpr (requires(T& a) { a = ::std::move(rhs.mValue); })
             return (lhs = ::std::move(rhs.mValue));
-         else if constexpr (requires(T a) { a = Copy(rhs.mValue); })
+         else if constexpr (requires(T& a) { a = Copy(rhs.mValue); })
             return (lhs = Copy(rhs.mValue));
-         else if constexpr (requires(T a) { a = rhs.mValue; })
+         else if constexpr (requires(T& a) { a = rhs.mValue; })
             return (lhs = rhs.mValue);
          else
             return Inner::Unsupported {};
       }
       else {
-         if constexpr (!S::Shallow && requires(T a) { a = Clone(rhs.mValue); })
+         if constexpr (!S::Shallow && requires(T& a) { a = Clone(rhs.mValue); })
             return (lhs = Clone(rhs.mValue));
-         else if constexpr (!S::Keep && requires(T a) { a = Disown(rhs.mValue); })
+         else if constexpr (!S::Keep && requires(T& a) { a = Disown(rhs.mValue); })
             return (lhs = Disown(rhs.mValue));
-         else if constexpr (requires(T a) { a = Copy(rhs.mValue); })
+         else if constexpr (requires(T& a) { a = Copy(rhs.mValue); })
             return (lhs = Copy(rhs.mValue));
-         else if constexpr (requires(T a) { a = rhs.mValue; })
+         else if constexpr (requires(T& a) { a = rhs.mValue; })
             return (lhs = rhs.mValue);
          else
             return Inner::Unsupported {};

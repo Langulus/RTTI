@@ -366,8 +366,8 @@ namespace Langulus::CT
    namespace Inner
    {
       template<class T>
-      concept Typed = requires {
-         typename Decay<T>::CTTI_InnerType;
+      concept Typed = Complete<T> && requires {
+         typename T::CTTI_InnerType;
       };
 
       /// Convenience function that wraps std::underlying_type_t for enums,   
@@ -401,7 +401,7 @@ namespace Langulus::CT
 
    /// Check if a type has an underlying type defined                         
    template<class... T>
-   concept Typed = ((Inner::Typed<T> && Data<TypeOf<T>>) && ...);
+   concept Typed = ((Inner::Typed<Decay<T>> && Data<TypeOf<T>>) && ...);
 
    /// Custom boolean concept (wrapped in another type)                       
    template<class... T>
