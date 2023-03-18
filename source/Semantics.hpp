@@ -352,34 +352,37 @@ namespace Langulus
    template<class T, CT::Semantic S>
    NOD() LANGULUS(ALWAYSINLINE)
    auto SemanticMake(S&& value) {
-      using A = TypeOf<S>;
+      if constexpr (CT::Complete<T>) {
+         using A = TypeOf<S>;
 
-      if constexpr (S::Move) {
-         if constexpr (!S::Keep && ::std::constructible_from<T, Abandoned<A>&&>)
-            return T {Abandon(value.mValue)};
-         else if constexpr (::std::constructible_from<T, Moved<A>&&>)
-            return T {Move(value.mValue)};
-         else if constexpr (::std::constructible_from<T, A&&>)
-            return T {::std::move(value.mValue)};
-         else if constexpr (::std::constructible_from<T, Copied<A>>)
-            return T {Copy(value.mValue)};
-         else if constexpr (::std::constructible_from<T, const A&>)
-            return T {value.mValue};
-         else
-            return Inner::Unsupported {};
+         if constexpr (S::Move) {
+            if constexpr (!S::Keep && ::std::constructible_from<T, Abandoned<A>&&>)
+               return T {Abandon(value.mValue)};
+            else if constexpr (::std::constructible_from<T, Moved<A>&&>)
+               return T {Move(value.mValue)};
+            else if constexpr (::std::constructible_from<T, A&&>)
+               return T {::std::move(value.mValue)};
+            else if constexpr (::std::constructible_from<T, Copied<A>>)
+               return T {Copy(value.mValue)};
+            else if constexpr (::std::constructible_from<T, const A&>)
+               return T {value.mValue};
+            else
+               return Inner::Unsupported {};
+         }
+         else {
+            if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
+               return T {Clone(value.mValue)};
+            else if constexpr (!S::Keep && ::std::constructible_from<T, Disowned<A>&&>)
+               return T {Disown(value.mValue)};
+            else if constexpr (::std::constructible_from<T, Copied<A>>)
+               return T {Copy(value.mValue)};
+            else if constexpr (::std::constructible_from<T, const A&>)
+               return T {value.mValue};
+            else
+               return Inner::Unsupported {};
+         }
       }
-      else {
-         if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
-            return T {Clone(value.mValue)};
-         else if constexpr (!S::Keep && ::std::constructible_from<T, Disowned<A>&&>)
-            return T {Disown(value.mValue)};
-         else if constexpr (::std::constructible_from<T, Copied<A>>)
-            return T {Copy(value.mValue)};
-         else if constexpr (::std::constructible_from<T, const A&>)
-            return T {value.mValue};
-         else
-            return Inner::Unsupported {};
-      }
+      else return Inner::Unsupported {};
    }
 
    /// Create an element on the heap, using the provided semantic             
@@ -390,34 +393,37 @@ namespace Langulus
    template<class T, CT::Semantic S>
    NOD() LANGULUS(ALWAYSINLINE)
    auto SemanticNew(S&& value) {
-      using A = TypeOf<S>;
+      if constexpr (CT::Complete<T>) {
+         using A = TypeOf<S>;
 
-      if constexpr (S::Move) {
-         if constexpr (!S::Keep && ::std::constructible_from<T, Abandoned<A>&&>)
-            return new T {Abandon(value.mValue)};
-         else if constexpr (::std::constructible_from<T, Moved<A>&&>)
-            return new T {Move(value.mValue)};
-         else if constexpr (::std::constructible_from<T, A&&>)
-            return new T {::std::move(value.mValue)};
-         else if constexpr (::std::constructible_from<T, Copied<A>>)
-            return new T {Copy(value.mValue)};
-         else if constexpr (::std::constructible_from<T, const A&>)
-            return new T {value.mValue};
-         else
-            return Inner::Unsupported {};
+         if constexpr (S::Move) {
+            if constexpr (!S::Keep && ::std::constructible_from<T, Abandoned<A>&&>)
+               return new T {Abandon(value.mValue)};
+            else if constexpr (::std::constructible_from<T, Moved<A>&&>)
+               return new T {Move(value.mValue)};
+            else if constexpr (::std::constructible_from<T, A&&>)
+               return new T {::std::move(value.mValue)};
+            else if constexpr (::std::constructible_from<T, Copied<A>>)
+               return new T {Copy(value.mValue)};
+            else if constexpr (::std::constructible_from<T, const A&>)
+               return new T {value.mValue};
+            else
+               return Inner::Unsupported {};
+         }
+         else {
+            if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
+               return new T {Clone(value.mValue)};
+            else if constexpr (!S::Keep && ::std::constructible_from<T, Disowned<A>&&>)
+               return new T {Disown(value.mValue)};
+            else if constexpr (::std::constructible_from<T, Copied<A>>)
+               return new T {Copy(value.mValue)};
+            else if constexpr (::std::constructible_from<T, const A&>)
+               return new T {value.mValue};
+            else
+               return Inner::Unsupported {};
+         }
       }
-      else {
-         if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
-            return new T {Clone(value.mValue)};
-         else if constexpr (!S::Keep && ::std::constructible_from<T, Disowned<A>&&>)
-            return new T {Disown(value.mValue)};
-         else if constexpr (::std::constructible_from<T, Copied<A>>)
-            return new T {Copy(value.mValue)};
-         else if constexpr (::std::constructible_from<T, const A&>)
-            return new T {value.mValue};
-         else
-            return Inner::Unsupported {};
-      }
+      else return Inner::Unsupported {};
    }
 
    /// Create an element on the heap, using the provided semantic, by using   
@@ -431,36 +437,39 @@ namespace Langulus
    template<class T, CT::Semantic S>
    LANGULUS(ALWAYSINLINE)
    auto SemanticNew(void* placement, S&& value) {
-      LANGULUS_ASSUME(DevAssumes, placement, "Invalid placement pointer");
+      if constexpr (CT::Complete<T>) {
+         LANGULUS_ASSUME(DevAssumes, placement, "Invalid placement pointer");
 
-      using A = TypeOf<S>;
+         using A = TypeOf<S>;
 
-      if constexpr (S::Move) {
-         if constexpr (!S::Keep && ::std::constructible_from<T, Abandoned<A>&&>)
-            return new (placement) T {Abandon(value.mValue)};
-         else if constexpr (::std::constructible_from<T, Moved<A>&&>)
-            return new (placement) T {Move(value.mValue)};
-         else if constexpr (::std::constructible_from<T, A&&>)
-            return new (placement) T {::std::move(value.mValue)};
-         else if constexpr (::std::constructible_from<T, Copied<A>>)
-            return new (placement) T {Copy(value.mValue)};
-         else if constexpr (::std::constructible_from<T, const A&>)
-            return new (placement) T {value.mValue};
-         else
-            return Inner::Unsupported {};
+         if constexpr (S::Move) {
+            if constexpr (!S::Keep && ::std::constructible_from<T, Abandoned<A>&&>)
+               return new (placement) T {Abandon(value.mValue)};
+            else if constexpr (::std::constructible_from<T, Moved<A>&&>)
+               return new (placement) T {Move(value.mValue)};
+            else if constexpr (::std::constructible_from<T, A&&>)
+               return new (placement) T {::std::move(value.mValue)};
+            else if constexpr (::std::constructible_from<T, Copied<A>>)
+               return new (placement) T {Copy(value.mValue)};
+            else if constexpr (::std::constructible_from<T, const A&>)
+               return new (placement) T {value.mValue};
+            else
+               return Inner::Unsupported {};
+         }
+         else {
+            if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
+               return new (placement) T {Clone(value.mValue)};
+            else if constexpr (!S::Keep && ::std::constructible_from<T, Disowned<A>&&>)
+               return new (placement) T {Disown(value.mValue)};
+            else if constexpr (::std::constructible_from<T, Copied<A>>)
+               return new (placement) T {Copy(value.mValue)};
+            else if constexpr (::std::constructible_from<T, const A&>)
+               return new (placement) T {value.mValue};
+            else
+               return Inner::Unsupported {};
+         }
       }
-      else {
-         if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
-            return new (placement) T {Clone(value.mValue)};
-         else if constexpr (!S::Keep && ::std::constructible_from<T, Disowned<A>&&>)
-            return new (placement) T {Disown(value.mValue)};
-         else if constexpr (::std::constructible_from<T, Copied<A>>)
-            return new (placement) T {Copy(value.mValue)};
-         else if constexpr (::std::constructible_from<T, const A&>)
-            return new (placement) T {value.mValue};
-         else
-            return Inner::Unsupported {};
-      }
+      else return Inner::Unsupported {};
    }
    
    /// Create an element on the heap, using the provided semantic, by using   
