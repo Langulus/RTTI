@@ -62,31 +62,31 @@ namespace Langulus
    {
       /// Checks if a type has special semantics                              
       template<class... T>
-      concept Semantic = ((Dense<T> && DerivedFrom<T, A::Semantic>) && ...);
+      concept Semantic = Decayed<T...> && (DerivedFrom<T, A::Semantic> && ...);
 
       /// Checks if a type has no special semantics                           
       template<class... T>
-      concept NotSemantic = (!Semantic<T> && ...);
+      concept NotSemantic = !Semantic<T...>;
 
       /// Check if a type is copied                                           
       template<class... T>
-      concept Copied = ((Dense<T> && DerivedFrom<T, A::Copied>) && ...);
+      concept Copied = Decayed<T...> && (DerivedFrom<T, A::Copied> && ...);
 
       /// Check if a type is moved                                            
       template<class... T>
-      concept Moved = ((Dense<T> && DerivedFrom<T, A::Moved>) && ...);
+      concept Moved = Decayed<T...> && (DerivedFrom<T, A::Moved> && ...);
 
       /// Check if a type is abandoned                                        
       template<class... T>
-      concept Abandoned = ((Dense<T> && DerivedFrom<T, A::Abandoned>) && ...);
+      concept Abandoned = Decayed<T...> && (DerivedFrom<T, A::Abandoned> && ...);
 
       /// Check if a type is disowned                                         
       template<class... T>
-      concept Disowned = ((Dense<T> && DerivedFrom<T, A::Disowned>) && ...);
+      concept Disowned = Decayed<T...> && (DerivedFrom<T, A::Disowned> && ...);
 
       /// Check if a type is cloned                                           
       template<class... T>
-      concept Cloned = ((Dense<T> && DerivedFrom<T, A::Cloned>) && ...);
+      concept Cloned = Decayed<T...> && (DerivedFrom<T, A::Cloned> && ...);
    }
    
    
