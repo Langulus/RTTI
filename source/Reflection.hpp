@@ -208,163 +208,50 @@
 /// Compile-time checks and concepts associated with RTTI                     
 namespace Langulus::CT
 {
-
    namespace Inner
    {
+
       template<class T>
       concept Reflectable = requires {
          {T::Reflect()} -> Same<::Langulus::RTTI::MetaData>;
       };
-   }
 
-   /// A reflected type is a type that has a public Reflection field          
-   /// This field is automatically added when using LANGULUS(REFLECT) macro   
-   /// inside the type you want to reflect                                    
-   template<class... T>
-   concept Reflectable = (Inner::Reflectable<Decay<T>> && ...);
-
-   namespace Inner
-   {
       template<class T>
       concept Uninsertable = T::CTTI_Uninsertable;
-   }
 
-   /// An uninsertable type is any type with a true static member             
-   /// T::CTTI_Uninsertable. All types are insertable by default              
-   /// Useful to mark some intermediate types, that are not supposed to be    
-   /// inserted in containers                                                 
-   template<class... T>
-   concept Uninsertable = (Inner::Uninsertable<Decay<T>> && ...);
-
-   template<class... T>
-   concept Insertable = !Uninsertable<T...>;
-
-   namespace Inner
-   {
       template<class T>
       concept Unallocatable = !Complete<T> || T::CTTI_Unallocatable;
-   }
 
-   /// You can make types unallocatable by the memory manager. This serves    
-   /// not only as forcing the type to be either allocated by conventional    
-   /// C++ means, or on the stack, but also optimizes away any memory manager 
-   /// searches, when inserting pointers, when managed memory is enabled      
-   template<class... T>
-   concept Unallocatable = ((Inner::Unallocatable<Decay<T>> && Dense<T>) && ...);
-
-   template<class... T>
-   concept Allocatable = !Unallocatable<T...>;
-
-   namespace Inner
-   {
       template<class T>
       concept POD = Complete<T> && (::std::is_trivial_v<T> || T::CTTI_POD);
-   }
 
-   /// A POD (Plain Old Data) type is any type with a static member           
-   /// T::CTTI_POD set to true. If no such member exists, the type is         
-   /// assumed NOT POD by default, unless ::std::is_trivial.                  
-   /// POD types improve construction, destruction, copying, and cloning      
-   /// by using some batching runtime optimizations                           
-   /// All POD types are also directly serializable to binary                 
-   /// Use LANGULUS(POD) macro as member to tag POD types                     
-   template<class... T>
-   concept POD = (Inner::POD<Decay<T>> && ...);
-
-   namespace Inner
-   {
       template<class T>
       concept Nullifiable = Complete<T> && T::CTTI_Nullifiable;
-   }
 
-   /// A nullifiable type is any type with a static member                    
-   /// T::CTTI_Nullifiable set to true. If no such member exists, the type    
-   /// is assumed NOT nullifiable by default, unless its sparse               
-   /// Nullifiable types improve construction by using some batching          
-   /// runtime optimizations                                                  
-   /// Use LANGULUS(NULLIFIABLE) macro as member to tag nullifiable types     
-   template<class... T>
-   concept Nullifiable = (Inner::Nullifiable<Decay<T>> && ...);
-
-   namespace Inner
-   {
       template<class T>
       concept Concretizable = Complete<T> && requires {
          typename T::CTTI_Concrete;
       };
-   }
 
-   /// A concretizable type is any type with a member type CTTI_Concrete      
-   /// If no such member exists, the type is assumed NOT concretizable by     
-   /// default. Concretizable types provide a default concretization for      
-   /// when	allocating abstract types                                         
-   /// Use LANGULUS(CONCRETIZABLE) macro as member to tag such types          
-   template<class... T>
-   concept Concretizable = (Inner::Concretizable<Decay<T>> && ...);
-
-   /// Get the reflected concrete type                                        
-   template<class T>
-   using ConcreteOf = typename Decay<T>::CTTI_Concrete;
-
-   namespace Inner
-   {
       template<class T>
       concept Producible = Complete<T> && requires {
          typename T::CTTI_Producer;
       };
-   }
 
-   /// A producible type is any type with a member type CTTI_Producer         
-   /// If no such member exists, the type is assumed NOT producible by        
-   /// default. Producible types can not be created at compile-time, and need 
-   /// to be produced by executing Verbs::Create in the producer's context    
-   /// Use LANGULUS(PRODUCER) macro as member to tag such types               
-   template<class... T>
-   concept Producible = (Inner::Producible<Decay<T>> && ...);
-
-   /// Get the reflected producer type                                        
-   template<class T>
-   using ProducerOf = typename Decay<T>::CTTI_Producer;
-
-   
-   namespace Inner
-   {
       template<class T>
       concept Abstract = Complete<T>
          && (::std::is_abstract_v<T> || T::CTTI_Abstract);
-   }
 
-   /// Check if T is abstract (has at least one pure virtual function, or is  
-   /// explicitly marked as abstract). Sparse types are never abstract        
-   template<class... T>
-   concept Abstract = (Inner::Abstract<Decay<T>> && ...);
-
-   namespace Inner
-   {
       template<class T>
       concept DispatcherMutable = requires (T* a, ::Langulus::Flow::Verb& b) {
          {DenseCast(a).Do(b)};
       };
+
       template<class T>
       concept DispatcherConstant = requires (const T* a, ::Langulus::Flow::Verb& b) {
          {DenseCast(a).Do(b)};
       };
-   }
-
-   /// Check if all T have a mutable dispatcher (has Do() method for verbs)   
-   template<class... T>
-   concept DispatcherMutable = (Inner::DispatcherMutable<T> && ...);
-
-   /// Check if all T have a constant dispatcher (has Do() method for verbs)  
-   template<class... T>
-   concept DispatcherConstant = (Inner::DispatcherConstant<T> && ...);
-
-   /// Check if all T has a dispatcher, compatible with the cv-quality of T   
-   template<class... T>
-   concept Dispatcher = ((DispatcherMutable<T> || (Constant<T> && DispatcherConstant<T>)) && ...);
-
-   namespace Inner
-   {
+      
       template<class T>
       concept Typed = Complete<T> && requires {
          typename T::CTTI_InnerType;
@@ -384,6 +271,95 @@ namespace Langulus::CT
       };
 
    } // namespace Langulus::CT::Inner
+
+
+   /// A reflected type is a type that has a public Reflection field          
+   /// This field is automatically added when using LANGULUS(REFLECT) macro   
+   /// inside the type you want to reflect                                    
+   template<class... T>
+   concept Reflectable = (Inner::Reflectable<Decay<T>> && ...);
+
+   /// An uninsertable type is any type with a true static member             
+   /// T::CTTI_Uninsertable. All types are insertable by default              
+   /// Useful to mark some intermediate types, that are not supposed to be    
+   /// inserted in containers                                                 
+   template<class... T>
+   concept Uninsertable = (Inner::Uninsertable<Decay<T>> && ...);
+
+   template<class... T>
+   concept Insertable = !Uninsertable<T...>;
+
+   /// You can make types unallocatable by the memory manager. This serves    
+   /// not only as forcing the type to be either allocated by conventional    
+   /// C++ means, or on the stack, but also optimizes away any memory manager 
+   /// searches, when inserting pointers, if managed memory is enabled        
+   template<class... T>
+   concept Unallocatable = ((Inner::Unallocatable<Decay<T>> && Dense<T>) && ...);
+
+   template<class... T>
+   concept Allocatable = !Unallocatable<T...>;
+
+   /// A POD (Plain Old Data) type is any type with a static member           
+   /// T::CTTI_POD set to true. If no such member exists, the type is         
+   /// assumed NOT POD by default, unless ::std::is_trivial.                  
+   /// POD types improve construction, destruction, copying, and cloning      
+   /// by using some batching runtime optimizations                           
+   /// All POD types are also directly serializable to binary                 
+   /// Use LANGULUS(POD) macro as member to tag POD types                     
+   template<class... T>
+   concept POD = (Inner::POD<Decay<T>> && ...);
+
+   /// A nullifiable type is any type with a static member                    
+   /// T::CTTI_Nullifiable set to true. If no such member exists, the type    
+   /// is assumed NOT nullifiable by default, unless it is sparse             
+   /// Nullifiable types improve default-construction by using some batching  
+   /// runtime optimizations                                                  
+   /// Use LANGULUS(NULLIFIABLE) macro as member to tag nullifiable types     
+   template<class... T>
+   concept Nullifiable = (Inner::Nullifiable<Decay<T>> && ...);
+
+   /// A concretizable type is any type with a member type CTTI_Concrete      
+   /// If no such member exists, the type is assumed NOT concretizable by     
+   /// default. Concretizable types provide a default concretization for      
+   /// when	allocating abstract types                                         
+   /// Use LANGULUS(CONCRETIZABLE) macro as member to tag such types          
+   template<class... T>
+   concept Concretizable = (Inner::Concretizable<Decay<T>> && ...);
+
+   /// Get the reflected concrete type                                        
+   template<class T>
+   using ConcreteOf = typename Decay<T>::CTTI_Concrete;
+
+   /// A producible type is any type with a member type CTTI_Producer         
+   /// If no such member exists, the type is assumed NOT producible by        
+   /// default. Producible types can not be created at compile-time, and need 
+   /// to be produced by executing Verbs::Create in the producer's context    
+   /// Use LANGULUS(PRODUCER) macro as member to tag such types               
+   template<class... T>
+   concept Producible = (Inner::Producible<Decay<T>> && ...);
+
+   /// Get the reflected producer type                                        
+   template<class T>
+   using ProducerOf = typename Decay<T>::CTTI_Producer;
+
+   /// Check if T is abstract (has at least one pure virtual function, or is  
+   /// explicitly marked as LANGULUS(ABSTRACT)). Sparse types are never       
+   /// abstract                                                               
+   template<class... T>
+   concept Abstract = (Inner::Abstract<Decay<T>> && ...);
+
+   /// Check if all T have a mutable dispatcher (have `Do(Verb&)` method)     
+   template<class... T>
+   concept DispatcherMutable = (Inner::DispatcherMutable<T> && ...);
+
+   /// Check if all T have a constant dispatcher (have `Do(Verb&) const`)     
+   template<class... T>
+   concept DispatcherConstant = (Inner::DispatcherConstant<T> && ...);
+
+   /// Check if all T have a dispatcher, compatible with the cv-quality of T  
+   template<class... T>
+   concept Dispatcher = ((DispatcherMutable<T> || (Constant<T> && DispatcherConstant<T>)) && ...);
+
 } // namespace Langulus::CT
 
 namespace Langulus
