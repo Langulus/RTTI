@@ -261,7 +261,7 @@ namespace Langulus::RTTI
    template<CT::Dense T, CT::Dense TO>
    LANGULUS(ALWAYSINLINE)
    Converter Converter::From() noexcept {
-      static_assert(CT::Convertible<Decay<T>, Decay<TO>>,
+      static_assert(CT::Convertible<T, TO>,
          "Converter reflected, but conversion is not possible - "
          "implement a public cast operator in T, or a public constructor in TO");
 
