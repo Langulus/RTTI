@@ -235,7 +235,7 @@ namespace Langulus::RTTI
    public:
       NOD() constexpr bool operator == (const Converter&) const noexcept;
 
-      template<CT::Dense T, CT::Dense TO>
+      template<class T, class TO>
       NOD() static Converter From() noexcept;
    };
 
@@ -410,7 +410,7 @@ namespace Langulus::RTTI
       template<class T, CT::Dense... Args>
       void SetAbilities(TTypeList<Args...>) noexcept;
 
-      template<class T, CT::Dense... Args>
+      template<class T, class... Args>
       void SetConverters(TTypeList<Args...>) noexcept;
 
    public:

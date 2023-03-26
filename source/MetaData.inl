@@ -258,17 +258,22 @@ namespace Langulus::RTTI
 
    /// Create a converter, utilizing available cast operators/constructors    
    ///   @return the converter                                                
-   template<CT::Dense T, CT::Dense TO>
+   template<class T, class TO>
    LANGULUS(ALWAYSINLINE)
    Converter Converter::From() noexcept {
       static_assert(CT::Convertible<T, TO>,
          "Converter reflected, but conversion is not possible - "
          "implement a public cast operator in T, or a public constructor in TO");
 
+      using DTO = Decay<TO>;
       return {
-         MetaData::Of<TO>(), 
+         MetaData::Of<DTO>(),
          [](const void* from, void* to) {
-            new (to) TO {static_cast<TO>(*static_cast<const T*>(from))};
+            auto fromT = reinterpret_cast<const T*>(from);
+            auto toT = reinterpret_cast<TO*>(to);
+            new (&DenseCastMutable(toT)) DTO {
+               static_cast<DTO>(DenseCast(fromT))
+            };
          }
       };
    }
@@ -785,12 +790,12 @@ namespace Langulus::RTTI
 
    /// Set the list of converters for a given meta definition                 
    ///   @tparam Args... - all the abilities                                  
-   template<class FROM, CT::Dense... TO>
+   template<class FROM, class... TO>
    LANGULUS(ALWAYSINLINE)
    void MetaData::SetConverters(TTypeList<TO...>) noexcept {
       static const ::std::pair<DMeta, Converter> list[] {
          ::std::pair<DMeta, Converter>(
-            MetaData::Of<Decay<TO>>(), Converter::From<Decay<FROM>, TO>()
+            MetaData::Of<Decay<TO>>(), Converter::From<FROM, TO>()
          )...
       };
 
