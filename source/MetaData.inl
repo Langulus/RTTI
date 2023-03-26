@@ -261,19 +261,39 @@ namespace Langulus::RTTI
    template<class T, class TO>
    LANGULUS(ALWAYSINLINE)
    Converter Converter::From() noexcept {
+      static_assert(!CT::Same<T, TO>,
+         "Conversion types can't be similar");
       static_assert(CT::Convertible<T, TO>,
          "Converter reflected, but conversion is not possible - "
-         "implement a public cast operator in T, or a public constructor in TO");
+         "implement a public cast operator in T, or a public constructor in TO,"
+         " these can be either explicit or not");
 
+      using DT = Decay<T>;
       using DTO = Decay<TO>;
+
       return {
          MetaData::Of<DTO>(),
          [](const void* from, void* to) {
             auto fromT = reinterpret_cast<const T*>(from);
             auto toT = reinterpret_cast<TO*>(to);
-            new (&DenseCastMutable(toT)) DTO {
-               static_cast<DTO>(DenseCast(fromT))
-            };
+
+            // These should be in sync with CT::Inner::Convertible      
+            if constexpr (requires (DT& from) { DTO {from}; }) {
+               new (&DenseCastMutable(toT)) DTO {
+                  DenseCastMutable(fromT)
+               };
+            }
+            else if constexpr (requires (DT& from) { DTO {from.operator DTO()}; }) {
+               new (&DenseCastMutable(toT)) DTO {
+                  DenseCastMutable(fromT).operator DTO()
+               };
+            }
+            else if constexpr (requires (DT& from) { static_cast<DTO>(from); }) {
+               new (&DenseCastMutable(toT)) DTO {
+                  static_cast<DTO>(DenseCastMutable(fromT))
+               };
+            }
+            else LANGULUS_ERROR("Unhandled conversion route");
          }
       };
    }
