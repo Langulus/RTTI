@@ -49,20 +49,20 @@ namespace Langulus::RTTI
    ///   @return the generated member descriptor                              
    template<CT::Data OWNER, CT::Data DATA>
    Member Member::From(DATA OWNER::* member, const Token& name) {
-      alignas(OWNER) static const ::Langulus::Byte storage[sizeof(OWNER)];
+      alignas(OWNER) static const Byte storage[sizeof(OWNER)];
       const auto This = reinterpret_cast<const OWNER*>(storage);
       const auto Prop = ::std::addressof(This->*member);
       const auto offset =
-           reinterpret_cast<const ::Langulus::Byte*>(Prop)
-         - reinterpret_cast<const ::Langulus::Byte*>(This);
+           reinterpret_cast<const Byte*>(Prop)
+         - reinterpret_cast<const Byte*>(This);
       LANGULUS_ASSERT(offset >= 0, Meta,
          "Member is laid (memorywise) before owner");
 
       //TODO of offset is outside instance limits, then mark as static, instead of throw?
-      ::Langulus::RTTI::Member m;
+      Member m;
       m.mTypeRetriever = [] { return MetaData::Of<DATA>(); };
       m.mOffset = static_cast<Offset>(offset);
-      m.mCount = ::Langulus::ExtentOf<DATA>;
+      m.mCount = ExtentOf<DATA>;
       m.mName = name;
       return m;
    }
@@ -206,32 +206,34 @@ namespace Langulus::RTTI
    
    /// Create an ability reflection from a type and a verb                    
    ///   @return the ability                                                  
-   template<CT::Data T, CT::Data VERB, CT::Data... A>
+   template<CT::Dense T, CT::Data VERB, CT::Data... A>
    Ability Ability::From() noexcept {
       static_assert(CT::DerivedFrom<VERB, ::Langulus::Flow::Verb>,
          "VERB must inherit Flow::Verb");
-      static_assert(VERB::template AvailableFor<T, A...>(),
-         "VERB is not available in reflected type");
 
       Ability result;
       result.mVerb = MetaVerb::Of<VERB>();
 
       // Register provided argument overload (if any)...                
       if constexpr (CT::Mutable<T>) {
-         // ... for mutable context                                     
-         // (you can call mutable verbs only in mutable types)          
-         result.mOverloadsMutable.insert({
-            {MetaData::Of<A>()...},
-            VERB::template Of<T>()
-         });
-         // ... for immutable context                                   
-         // (you can call immutable verbs in mutable types)             
-         result.mOverloadsConstant.insert({
-            {MetaData::Of<A>()...},
-            VERB::template Of<const T>()
-         });
+         if constexpr (VERB::template AvailableFor<T, A...>()) {
+            // ... for mutable context                                  
+            result.mOverloadsMutable.insert({
+               {MetaData::Of<A>()...},
+               VERB::template Of<T>()
+            });
+         }
+
+         if constexpr (VERB::template AvailableFor<const T, A...>()) {
+            // ... for immutable context                                
+            // (you can call immutable verbs in mutable types)          
+            result.mOverloadsConstant.insert({
+               {MetaData::Of<A>()...},
+               VERB::template Of<const T>()
+            });
+         }
       }
-      else {
+      else if constexpr (VERB::template AvailableFor<T, A...>()) {
          // ... for immutable context                                   
          // (you can call only immutable verbs in immutable types)      
          result.mOverloadsConstant.insert({
@@ -688,8 +690,10 @@ namespace Langulus::RTTI
                generated.SetBases<T>(typename DT::CTTI_Bases {});
 
             // Set reflected abilities                                  
-            if constexpr (requires { typename DT::CTTI_Verbs; })
-               generated.SetAbilities<T>(typename DT::CTTI_Verbs {});
+            if constexpr (requires { typename DT::CTTI_Verbs; }) {
+               using CVT = Deref<decltype(DenseCast(Uneval<T&>()))>;
+               generated.SetAbilities<CVT>(typename DT::CTTI_Verbs {});
+            }
 
             // Set reflected converters                                 
             if constexpr (requires { typename DT::CTTI_Conversions; })
@@ -795,7 +799,7 @@ namespace Langulus::RTTI
 
    /// Set the list of abilities for a given meta definition                  
    ///   @tparam Args... - all the abilities                                  
-   template<class T, CT::Dense... VERB>
+   template<CT::Dense T, CT::Dense... VERB>
    LANGULUS(ALWAYSINLINE)
    void MetaData::SetAbilities(TTypeList<VERB...>) noexcept {
       static const ::std::pair<VMeta, Ability> list[] {
@@ -1362,12 +1366,12 @@ namespace Langulus::RTTI
    template<CT::Data T>
    LANGULUS(ALWAYSINLINE)
    constexpr bool MetaData::IsExact() const {
-      return Is(MetaData::Of<T>());
+      return IsExact(MetaData::Of<T>());
    }
 
    LANGULUS(ALWAYSINLINE)
    constexpr bool MetaData::operator == (const MetaData& rhs) const noexcept {
-      return Is(&rhs);
+      return IsExact(&rhs);
    }
 
    /// Get a size based on reflected allocation page and count (unsafe)       

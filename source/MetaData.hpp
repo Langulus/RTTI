@@ -186,7 +186,7 @@ namespace Langulus::RTTI
    public:
       NOD() constexpr bool operator == (const Ability&) const noexcept;
 
-      template<CT::Data T, CT::Data VERB, CT::Data... A>
+      template<CT::Dense T, CT::Data VERB, CT::Data... A>
       NOD() static Ability From() noexcept;
    };
 
@@ -407,7 +407,7 @@ namespace Langulus::RTTI
       template<class T, CT::Dense... Args>
       void SetBases(TTypeList<Args...>) noexcept;
 
-      template<class T, CT::Dense... Args>
+      template<CT::Dense T, CT::Dense... Args>
       void SetAbilities(TTypeList<Args...>) noexcept;
 
       template<class T, class... Args>
