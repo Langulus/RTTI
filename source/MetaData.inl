@@ -399,7 +399,7 @@ namespace Langulus::RTTI
       using DT = Decay<T>;
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         static constinit DMeta meta;
+         static constinit DMeta meta {};
       #else
          static constinit ::std::unique_ptr<MetaData> meta;
       #endif
