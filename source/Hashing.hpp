@@ -7,6 +7,7 @@
 ///                                                                           
 #pragma once
 #include "Reflection.hpp"
+#include "Assumptions.hpp"
 
 #if defined(_MSC_VER)
    #define BIG_CONSTANT(x) (x)

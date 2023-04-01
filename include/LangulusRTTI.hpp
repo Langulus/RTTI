@@ -8,5 +8,6 @@
 #pragma once
 #include "../source/Reflection.hpp"
 #include "../source/Utilities.hpp"
+#include "../source/Assumptions.hpp"
 
 #define LANGULUS_LIBRARY_RTTI() 1
