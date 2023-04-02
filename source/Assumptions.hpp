@@ -66,14 +66,25 @@ namespace Langulus
 /// Zero level assumptions are always checked                                 
 ///   @param condition - the condition to check for failure                   
 ///   @param message - the exception message, if condition doesn't hold       
-#define LANGULUS_ASSUME(level, condition, message, ...) \
-   ::Langulus::Assume<level>(condition, message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
+#if LANGULUS_COMPILER(CLANG) || LANGULUS_COMPILER(GCC)
+   #define LANGULUS_ASSUME(level, condition, message, ...) \
+      ::Langulus::Assume<level>(condition, message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
 
-#define LANGULUS_ASSERT(condition, exception, message, ...) \
-   ::Langulus::Assume<0, ::Langulus::Except::exception>(condition, message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
+   #define LANGULUS_ASSERT(condition, exception, message, ...) \
+      ::Langulus::Assume<0, ::Langulus::Except::exception>(condition, message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
 
-#define LANGULUS_THROW(exception, message, ...) \
-   ::Langulus::Throw<::Langulus::Except::exception>(message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
+   #define LANGULUS_THROW(exception, message, ...) \
+      ::Langulus::Throw<::Langulus::Except::exception>(message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
+#else
+   #define LANGULUS_ASSUME(level, condition, message, ...) \
+      ::Langulus::Assume<level>(condition, message, LANGULUS_LOCATION(), __VA_ARGS__)
+
+   #define LANGULUS_ASSERT(condition, exception, message, ...) \
+      ::Langulus::Assume<0, ::Langulus::Except::exception>(condition, message, LANGULUS_LOCATION(), __VA_ARGS__)
+
+   #define LANGULUS_THROW(exception, message, ...) \
+      ::Langulus::Throw<::Langulus::Except::exception>(message, LANGULUS_LOCATION(), __VA_ARGS__)
+#endif
 
 /// Convenience macro for specifying temporary lazyness                       
 #define TODO() LANGULUS_THROW(TODO, "Unfinished code")
