@@ -26,7 +26,7 @@ namespace Langulus
    ///   @param message - an error message if condition doesn't hold          
    ///   @param location - the location of the error, if any                  
    template<unsigned LEVEL, class EXCEPTION = Except::Assertion, class... MORE>
-   LANGULUS(ALWAYSINLINE)
+   LANGULUS(INLINED)
    SAFETY_CONSTEXPR()
    void Assume(
       bool condition, 

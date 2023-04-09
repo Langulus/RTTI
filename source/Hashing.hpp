@@ -34,18 +34,18 @@ namespace Langulus
 
       /// Block read - if your platform needs to do endian-swapping or can    
       /// only handle aligned reads, do the conversion here                   
-      LANGULUS(ALWAYSINLINE)
+      LANGULUS(INLINED)
       uint32_t getblock32(const uint32_t* p, int i) {
          return p[i];
       }
 
-      LANGULUS(ALWAYSINLINE)
+      LANGULUS(INLINED)
       uint64_t getblock64(const uint64_t* p, int i) {
          return p[i];
       }
 
       /// Finalization mix - force all bits of a hash block to avalanche      
-      LANGULUS(ALWAYSINLINE)
+      LANGULUS(INLINED)
       uint32_t fmix32(uint32_t h) {
          h ^= h >> 16;
          h *= 0x85ebca6b;
@@ -55,7 +55,7 @@ namespace Langulus
          return h;
       }
 
-      LANGULUS(ALWAYSINLINE)
+      LANGULUS(INLINED)
       uint64_t fmix64(uint64_t k) {
          k ^= k >> 33;
          k *= BIG_CONSTANT(0xff51afd7ed558ccd);
@@ -594,12 +594,12 @@ namespace Langulus
 
 namespace std
 {
-   LANGULUS(ALWAYSINLINE)
+   LANGULUS(INLINED)
    size_t hash<DMeta>::operator()(DMeta k) const noexcept {
       return k->mHash.mHash;
    }
 
-   LANGULUS(ALWAYSINLINE)
+   LANGULUS(INLINED)
    size_t hash<vector<DMeta>>::operator()(const vector<DMeta>& k) const noexcept {
       using ::Langulus::Hash;
       vector<Hash> coalesced;
@@ -612,12 +612,12 @@ namespace std
       ).mHash;
    }
 
-   LANGULUS(ALWAYSINLINE)
+   LANGULUS(INLINED)
    size_t hash<TMeta>::operator()(TMeta k) const noexcept {
       return k->mHash.mHash;
    }
 
-   LANGULUS(ALWAYSINLINE)
+   LANGULUS(INLINED)
    size_t hash<VMeta>::operator()(VMeta k) const noexcept {
       return k->mHash.mHash;
    }

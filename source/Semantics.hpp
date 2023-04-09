@@ -127,7 +127,7 @@ namespace Langulus
    
    /// Copy a value                                                           
    template<CT::NotSemantic T>
-   NOD() LANGULUS(ALWAYSINLINE) 
+   NOD() LANGULUS(INLINED) 
    constexpr auto Copy(const T& item) noexcept {
       return Copied<T>{item};
    }
@@ -178,14 +178,14 @@ namespace Langulus
    
    /// Move data                                                              
    template<CT::NotSemantic T>
-   NOD() LANGULUS(ALWAYSINLINE)
+   NOD() LANGULUS(INLINED)
    constexpr auto Move(T&& a) noexcept {
       return Moved<T>{::std::forward<T>(a)};
    }
 
    /// Move data                                                              
    template<CT::NotSemantic T>
-   NOD() LANGULUS(ALWAYSINLINE)
+   NOD() LANGULUS(INLINED)
    constexpr auto Move(T& a) noexcept {
       return Moved<T>{::std::move(a)};
    }
@@ -242,7 +242,7 @@ namespace Langulus
    /// Same as Move, but resets only mandatory data inside source after move  
    /// essentially saving up on a couple of instructions                      
    template<CT::NotSemantic T>
-   NOD() LANGULUS(ALWAYSINLINE)
+   NOD() LANGULUS(INLINED)
    constexpr auto Abandon(T&& a) noexcept {
       return Abandoned<T>{::std::forward<T>(a)};
    }
@@ -251,7 +251,7 @@ namespace Langulus
    /// Same as Move, but resets only mandatory data inside source after move  
    /// essentially saving up on a couple of instructions                      
    template<CT::NotSemantic T>
-   NOD() LANGULUS(ALWAYSINLINE)
+   NOD() LANGULUS(INLINED)
    constexpr auto Abandon(T& a) noexcept {
       return Abandoned<T>{::std::move(a)};
    }
@@ -295,7 +295,7 @@ namespace Langulus
    /// Disown a value                                                         
    /// Same as a shallow-copy, but never references, saving some instructions 
    template<CT::NotSemantic T>
-   NOD() LANGULUS(ALWAYSINLINE)
+   NOD() LANGULUS(INLINED)
    constexpr auto Disown(const T& item) noexcept {
       return Disowned<T>{item};
    }
@@ -338,7 +338,7 @@ namespace Langulus
    
    /// Clone a value                                                          
    template<CT::NotSemantic T>
-   NOD() LANGULUS(ALWAYSINLINE)
+   NOD() LANGULUS(INLINED)
    constexpr auto Clone(const T& item) noexcept {
       return Cloned<T>{item};
    }
@@ -350,7 +350,7 @@ namespace Langulus
    ///   @param value - the constructor argument and the semantic             
    ///   @return the instance on the stack                                    
    template<class T, CT::Semantic S>
-   NOD() LANGULUS(ALWAYSINLINE)
+   NOD() LANGULUS(INLINED)
    auto SemanticMake(S&& value) {
       if constexpr (CT::Complete<T>) {
          using A = TypeOf<S>;
@@ -391,7 +391,7 @@ namespace Langulus
    ///   @param value - the constructor arguments and the semantic            
    ///   @return the instance on the heap                                     
    template<class T, CT::Semantic S>
-   NOD() LANGULUS(ALWAYSINLINE)
+   NOD() LANGULUS(INLINED)
    auto SemanticNew(S&& value) {
       if constexpr (CT::Complete<T>) {
          using A = TypeOf<S>;
@@ -435,7 +435,7 @@ namespace Langulus
    ///   @param value - the constructor arguments and the semantic            
    ///   @return the instance on the heap                                     
    template<class T, CT::Semantic S>
-   LANGULUS(ALWAYSINLINE)
+   LANGULUS(INLINED)
    auto SemanticNew(void* placement, S&& value) {
       if constexpr (CT::Complete<T>) {
          LANGULUS_ASSUME(DevAssumes, placement, "Invalid placement pointer");
@@ -482,7 +482,7 @@ namespace Langulus
    ///   @param placement - where to place the new instance                   
    ///   @param value - the constructor arguments and the semantic            
    template<CT::Semantic S>
-   LANGULUS(ALWAYSINLINE)
+   LANGULUS(INLINED)
    void SemanticNewUnknown(RTTI::DMeta type, Byte* placement, S&& value) {
       static_assert(
          CT::Exact<TypeOf<S>, Byte*> ||
@@ -540,7 +540,7 @@ namespace Langulus
    ///   @param rhs - right hand side (what are we assigning)                 
    ///   @return whatever the assignment operator returns                     
    template<class T, CT::Semantic S>
-   LANGULUS(ALWAYSINLINE)
+   LANGULUS(INLINED)
    decltype(auto) SemanticAssign(T& lhs, S&& rhs) {
       if constexpr (S::Move) {
          if constexpr (!S::Keep && requires(T& a) { a = Abandon(rhs.mValue); })

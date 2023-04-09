@@ -511,7 +511,7 @@ namespace Langulus
    ///   @param a - the number to cast                                        
    ///   @return a reference to the underlying type                           
    template<CT::DenseNumber T>
-   NOD() LANGULUS(ALWAYSINLINE)
+   NOD() LANGULUS(INLINED)
    constexpr decltype(auto) BuiltinCast(const T& a) noexcept {
       if constexpr (CT::BuiltinNumber<T>) {
          // Already built-in, just forward it                           

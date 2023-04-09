@@ -15,7 +15,7 @@ using VeryComplexTemplatedAlias = One::Two::Three::VeryComplexTemplate<One::Two:
 /// A freestanding type compatibility check                                   
 /// Purely cosmetic, to avoid typing `template` before member function        
 template<CT::Data T, bool ADVANCED = false>
-LANGULUS(ALWAYSINLINE)
+LANGULUS(INLINED)
 bool CastsTo(DMeta from) {
    return from->template CastsTo<T, ADVANCED>();
 }
@@ -23,7 +23,7 @@ bool CastsTo(DMeta from) {
 /// A freestanding type compatibility check                                   
 /// Purely cosmetic, to avoid typing `template` before member function        
 template<CT::Data T>
-LANGULUS(ALWAYSINLINE)
+LANGULUS(INLINED)
 bool CastsTo(DMeta from, Count count) {
    return from->template CastsTo<T>(count);
 }

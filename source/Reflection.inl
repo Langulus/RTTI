@@ -14,14 +14,14 @@ namespace Langulus::RTTI
    /// Get the constexpr hash of a type                                       
    ///	@return the hash of the type                                         
    template<CT::Data T>
-   LANGULUS(ALWAYSINLINE)
+   LANGULUS(INLINED)
    constexpr Hash Meta::GenerateHash(const Token& name) noexcept {
       return {::std::hash<Token>()(name)};
    }
    
    /// Get the generated hash, making any meta derivation CT::Hashable        
    ///	@return the hash of the type                                         
-   LANGULUS(ALWAYSINLINE)
+   LANGULUS(INLINED)
    const Hash& Meta::GetHash() const noexcept {
       return mHash;
    }
