@@ -30,7 +30,8 @@ namespace Langulus::RTTI
       ::std::unordered_map<Lowercase, TMeta> mMetaTraits;
       // Database for meta verb definitions                             
       ::std::unordered_map<Lowercase, VMeta> mMetaVerbs;
-      ::std::unordered_set<VMeta> mUniqueVerbs;
+      // Verbs, mapped to their original C++ class name                 
+      ::std::unordered_map<::std::string, VMeta> mUniqueVerbs;
       // Database for verb definitions indexed by operator token        
       ::std::unordered_map<Lowercase, VMeta> mOperators;
       // Database for ambiguous tokens                                  
@@ -52,7 +53,7 @@ namespace Langulus::RTTI
       NOD() DMeta RegisterData(const Token&) SAFETY_NOEXCEPT();
       NOD() CMeta RegisterConstant(const Token&) SAFETY_NOEXCEPT();
       NOD() TMeta RegisterTrait(const Token&) SAFETY_NOEXCEPT();
-      NOD() VMeta RegisterVerb(const Token&, const Token&, const Token& = {}, const Token& = {}) SAFETY_NOEXCEPT();
+      NOD() VMeta RegisterVerb(const Token&, const Token&, const Token&, const Token& = {}, const Token& = {}) SAFETY_NOEXCEPT();
 
       void Unregister(DMeta) SAFETY_NOEXCEPT();
       void Unregister(TMeta) SAFETY_NOEXCEPT();

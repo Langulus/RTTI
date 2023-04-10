@@ -141,6 +141,7 @@ namespace Langulus::RTTI
       // reflection function might end up forever looping otherwise     
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          meta = Database.RegisterVerb(
+            NameOf<T>(),
             MetaVerb::GetReflectedPositiveVerbToken<T>(),
             MetaVerb::GetReflectedNegativeVerbToken<T>(),
             MetaVerb::GetReflectedPositiveVerbOperator<T>(),

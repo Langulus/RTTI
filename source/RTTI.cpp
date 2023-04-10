@@ -24,8 +24,8 @@ namespace Langulus::RTTI
          delete pair.second;
       for (auto& pair : mMetaTraits)
          delete pair.second;
-      for (auto v : mUniqueVerbs)
-         delete v;
+      for (auto& pair : mUniqueVerbs)
+         delete pair.second;
    }
 
    /// Convert a token to a lowercase string                                  
@@ -222,12 +222,17 @@ namespace Langulus::RTTI
 
    /// Register a verb definition                                             
    ///   @attention assumes tokens are not yet registered                     
+   ///   @param cppname - the original verb class name                        
    ///   @param token - the positive verb token to reserve                    
    ///   @param tokenReverse - the negative verb token to reserve             
    ///   @param op - the positive verb operator to reserve (optional)         
    ///   @param opReverse - the negative verb operator to reserve (optional)  
    ///   @return the newly defined meta verb for that token configuration     
-   VMeta Interface::RegisterVerb(const Token& token, const Token& tokenReverse, const Token& op, const Token& opReverse) SAFETY_NOEXCEPT() {
+   VMeta Interface::RegisterVerb(const Token& cppname, const Token& token, const Token& tokenReverse, const Token& op, const Token& opReverse) SAFETY_NOEXCEPT() {
+      const ::std::string cppnamed {cppname};
+      LANGULUS_ASSUME(DevAssumes, mUniqueVerbs.find(cppnamed) == mUniqueVerbs.end(),
+         "Verb already registered");
+
       auto lc1 = ToLowercase(token);
       auto lc2 = ToLowercase(tokenReverse);
       LANGULUS_ASSUME(DevAssumes, !GetMetaVerb(lc1) && !GetMetaVerb(lc2),
@@ -248,7 +253,7 @@ namespace Langulus::RTTI
       }
 
       const auto newDefinition = new MetaVerb {};
-      mUniqueVerbs.insert(newDefinition);
+      mUniqueVerbs[cppnamed] = newDefinition;
       VERBOSE("RTTI: Verb " << token << "/" << tokenReverse << " registered");
 
       mMetaVerbs.insert({lc1, newDefinition});
@@ -367,7 +372,7 @@ namespace Langulus::RTTI
       UnregisterAmbiguous(definition->mTokenReverse, definition);
 
       VERBOSE("RTTI: Verb " << definition->mToken << "/" << definition->mTokenReverse << " unregistered");
-      mUniqueVerbs.erase(definition);
+      mUniqueVerbs.erase(::std::string {definition->mCppName});
       delete definition;
    }
 
@@ -444,12 +449,12 @@ namespace Langulus::RTTI
       }
 
       for (auto meta = mUniqueVerbs.begin(); meta != mUniqueVerbs.end();) {
-         if ((*meta)->mLibraryName != library) {
+         if (meta->second->mLibraryName != library) {
             ++meta;
             continue;
          }
 
-         VMeta definition = *meta;
+         VMeta definition = meta->second;
          const auto lc1 = ToLowercase(definition->mToken);
          const auto lc2 = ToLowercase(definition->mTokenReverse);
          LANGULUS_ASSUME(DevAssumes,
@@ -474,8 +479,8 @@ namespace Langulus::RTTI
          }
 
          VERBOSE("RTTI: Verb " << definition->mToken << "/" << definition->mTokenReverse << " unregistered (" << library << ")");
-         UnregisterAmbiguous(definition->mToken, *meta);
-         UnregisterAmbiguous(definition->mTokenReverse, *meta);
+         UnregisterAmbiguous(definition->mToken, meta->second);
+         UnregisterAmbiguous(definition->mTokenReverse, meta->second);
          meta = mUniqueVerbs.erase(meta);
          delete definition;
       }
