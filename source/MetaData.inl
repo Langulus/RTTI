@@ -568,7 +568,7 @@ namespace Langulus::RTTI
                };
             }
 
-            // Wrap the destructor of the type inside a lambda          
+            // Wrap the destructor of the origin type inside a lambda   
             if constexpr (CT::Destroyable<T> && !CT::Meta<T>) {
                generated.mDestructor = [](void* at) {
                   auto atT = static_cast<T*>(at);
@@ -576,7 +576,7 @@ namespace Langulus::RTTI
                };
             }
 
-            // Wrap the == operator of the type inside a lambda         
+            // Wrap the == operator of the origin type inside a lambda  
             if constexpr (CT::Comparable<T, T>) {
                generated.mComparer = [](const void* t1, const void* t2) {
                   auto t1T = static_cast<const T*>(t1);
