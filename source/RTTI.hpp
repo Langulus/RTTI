@@ -49,6 +49,7 @@ namespace Langulus::RTTI
       NOD() CMeta GetMetaConstant(const Token&) const noexcept;
       NOD() VMeta GetOperator(const Token&) const noexcept;
       NOD() const MetaList& GetAmbiguousMeta(const Token&) const noexcept;
+      NOD() const Meta* DisambiguateMeta(const Token&) const;
 
       NOD() DMeta RegisterData(const Token&) SAFETY_NOEXCEPT();
       NOD() CMeta RegisterConstant(const Token&) SAFETY_NOEXCEPT();

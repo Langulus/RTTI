@@ -136,6 +136,79 @@ namespace Langulus::RTTI
       }
       return found->second;
    }
+   
+   /// Disambiguate a token                                                   
+   ///   @param keyword - the token to search for                             
+   ///   @return the disambiguated token; throws if not found/ambiguous       
+   const Meta* Interface::DisambiguateMeta(const Token& keyword) const {
+      auto& symbols = GetAmbiguousMeta(keyword);
+      if (symbols.empty())
+         LANGULUS_THROW(Meta, "Keyword not found");
+
+      if (symbols.size() > 1) {
+         // Collect all origin types, and work with those               
+         // Also, GetAmbiguousMeta works only with the last part of the 
+         // keyword, but the keyword might contain hints as to which    
+         // ambiguous meta to pick. Discard symbols that do not         
+         // contain the provided keyword (not case sensitive)           
+         const auto lowercased = ToLowercase(keyword);
+         ::std::unordered_set<const Meta*> origins;
+         for (auto& meta : symbols) {
+            const auto meta_lc_token = ToLowercase(meta->mToken);
+            if (!meta_lc_token.find(lowercased))
+               continue;
+
+            const auto dmeta = dynamic_cast<DMeta>(meta);
+            if (dmeta) {
+               if (dmeta->mOrigin)
+                  origins.insert(dmeta->mOrigin);
+               else
+                  origins.insert(dmeta);
+            }
+            else origins.insert(dmeta);
+         }
+
+         if (origins.empty())
+            LANGULUS_THROW(Meta, "No relevant origins for keyword");
+
+         if (origins.size() == 1) {
+            // Candidate types reduced to a single relevant origin      
+            return *origins.begin();
+         }
+
+         // Ambiguity, report error                                     
+         {
+            auto tab = Logger::Error(
+               "Ambiguous symbol: ", keyword,
+               "; Could be one of: ", Logger::Tabs {}
+            );
+
+            for (auto& meta : origins) {
+               switch (meta->GetMetaType()) {
+               case Meta::Data:
+                  Logger::Verbose(Logger::Red, meta->mCppName,
+                     " (meta data)");
+                  break;
+               case Meta::Trait:
+                  Logger::Verbose(Logger::Red, meta->mCppName,
+                     " (meta trait)");
+                  break;
+               case Meta::Constant:
+                  Logger::Verbose(Logger::Red, meta->mCppName,
+                     " (meta constant)");
+                  break;
+               default:
+                  LANGULUS_THROW(Meta, "Unhandled meta type");
+               }
+            }
+         }
+
+         LANGULUS_THROW(Meta, "Ambiguous symbol");
+      }
+
+      // No ambiguity, just return                                      
+      return *symbols.begin();
+   }
 
    /// Register most relevant token to the ambiguous token map                
    ///   @param token - the token to register                                 
