@@ -431,14 +431,31 @@ namespace Langulus::RTTI
          meta = ::std::make_unique<MetaData>();
       #endif
 
-      // Then we nest to register all types variations below the        
-      // provided one, by shaving off pointers and constness one by one 
+      // Then we nest to register all primary type variations for the   
+      // provided one, by adding/removing pointers and constness        
       // The last, fully decayed type, is the origin type               
-      // Incomplete origin types are never reflected                    
-      if constexpr (CT::Constant<T> && CT::Complete<Decvq<T>>)
-         (void) MetaData::Of<Decvq<T>>();
-      if constexpr (CT::Sparse<T> && CT::Complete<Deptr<T>>)
-         (void) MetaData::Of<Deptr<T>>();
+      // Incomplete origin types are detected, and never reflected      
+      if constexpr (CT::Constant<T>) {
+         // Make sure we register the mutable alternative               
+         if constexpr (CT::Complete<Decvq<T>>)
+            (void)MetaData::Of<Decvq<T>>();
+      }
+      else if constexpr (CT::Complete<T>) {
+         // Make sure we register the immutable alternative             
+         (void)MetaData::Of<const T>();
+      }
+
+      if constexpr (CT::Sparse<T>) {
+         // Make sure we register the depointered alternative           
+         if constexpr (CT::Complete<Deptr<T>>)
+            (void)MetaData::Of<Deptr<T>>();
+      }
+      else {
+         // Make sure we register the pointered alternative             
+         // (both mutable and constant)                                 
+         (void)MetaData::Of<T*>();
+         (void)MetaData::Of<const T*>();
+      }
 
       // We'll try to explicitly or implicitly reflect it               
       if constexpr (CT::Reflectable<T>) {

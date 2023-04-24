@@ -43,25 +43,55 @@ namespace Langulus::RTTI
    public:
       ~Interface();
 
-      NOD() DMeta GetMetaData(const Token&) const noexcept;
-      NOD() TMeta GetMetaTrait(const Token&) const noexcept;
-      NOD() VMeta GetMetaVerb(const Token&) const noexcept;
-      NOD() CMeta GetMetaConstant(const Token&) const noexcept;
-      NOD() VMeta GetOperator(const Token&) const noexcept;
-      NOD() const MetaList& GetAmbiguousMeta(const Token&) const noexcept;
-      NOD() const Meta* DisambiguateMeta(const Token&) const;
+      NOD() LANGULUS_API(RTTI)
+      DMeta GetMetaData(const Token&) const noexcept;
 
-      NOD() DMeta RegisterData(const Token&) SAFETY_NOEXCEPT();
-      NOD() CMeta RegisterConstant(const Token&) SAFETY_NOEXCEPT();
-      NOD() TMeta RegisterTrait(const Token&) SAFETY_NOEXCEPT();
-      NOD() VMeta RegisterVerb(const Token&, const Token&, const Token&, const Token& = {}, const Token& = {}) SAFETY_NOEXCEPT();
+      NOD() LANGULUS_API(RTTI)
+      TMeta GetMetaTrait(const Token&) const noexcept;
 
+      NOD() LANGULUS_API(RTTI)
+      VMeta GetMetaVerb(const Token&) const noexcept;
+
+      NOD() LANGULUS_API(RTTI)
+      CMeta GetMetaConstant(const Token&) const noexcept;
+
+      NOD() LANGULUS_API(RTTI)
+      VMeta GetOperator(const Token&) const noexcept;
+
+      NOD() LANGULUS_API(RTTI)
+      const MetaList& GetAmbiguousMeta(const Token&) const noexcept;
+
+      NOD() LANGULUS_API(RTTI)
+      const Meta* DisambiguateMeta(const Token&) const;
+
+      NOD() LANGULUS_API(RTTI)
+      DMeta RegisterData(const Token&) SAFETY_NOEXCEPT();
+
+      NOD() LANGULUS_API(RTTI)
+      CMeta RegisterConstant(const Token&) SAFETY_NOEXCEPT();
+
+      NOD() LANGULUS_API(RTTI)
+      TMeta RegisterTrait(const Token&) SAFETY_NOEXCEPT();
+
+      NOD() LANGULUS_API(RTTI)
+      VMeta RegisterVerb(const Token&, const Token&, const Token&, const Token& = {}, const Token& = {}) SAFETY_NOEXCEPT();
+
+      LANGULUS_API(RTTI)
       void Unregister(DMeta) SAFETY_NOEXCEPT();
+
+      LANGULUS_API(RTTI)
       void Unregister(TMeta) SAFETY_NOEXCEPT();
+
+      LANGULUS_API(RTTI)
       void Unregister(VMeta) SAFETY_NOEXCEPT();
+
+      LANGULUS_API(RTTI)
       void Unregister(CMeta) SAFETY_NOEXCEPT();
+
+      LANGULUS_API(RTTI)
       void Unregister(const Meta*) SAFETY_NOEXCEPT();
 
+      LANGULUS_API(RTTI)
       void UnloadLibrary(const Token&);
    };
 
