@@ -6,7 +6,9 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #pragma once
-#include <LangulusRTTI.hpp>
+#include <RTTI/MetaData.hpp>
+#include <RTTI/MetaTrait.hpp>
+#include <RTTI/MetaVerb.hpp>
 #include <cstdint>
 #include <cstddef>
 #include <vector>
@@ -21,9 +23,6 @@ namespace Langulus::Flow {
 
 namespace Langulus::Anyness {
    class Block {};
-}
-
-namespace Langulus::Anyness {
    class Trait : public Block {};
 }
 

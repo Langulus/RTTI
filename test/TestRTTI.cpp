@@ -52,16 +52,16 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
 			auto found3 = RTTI::Database.GetAmbiguousMeta("one");
 			auto found4 = RTTI::Database.GetAmbiguousMeta("two");
 			auto found5 = RTTI::Database.GetAmbiguousMeta("three");
-			REQUIRE(found.size() == 3);
+			REQUIRE(found.size() == 6);
 			REQUIRE(found.find(n1t) != found.end());
 			REQUIRE(found.find(n2t) != found.end());
 			REQUIRE(found.find(n3t) != found.end());
-			REQUIRE(found2.size() == 2);
+			REQUIRE(found2.size() == 3);
 			REQUIRE(found2.find(vvv) != found2.end());
 			REQUIRE(found2.find(n1c) != found2.end());
-			REQUIRE(found3.size() == 2);
-			REQUIRE(found4.size() == 2);
-			REQUIRE(found5.size() == 2);
+			REQUIRE(found3.size() == 9);
+			REQUIRE(found4.size() == 9);
+			REQUIRE(found5.size() == 9);
 		}
 	}
 }

@@ -61,7 +61,7 @@ namespace Langulus::RTTI
 
       //TODO of offset is outside instance limits, then mark as static, instead of throw?
       Member m;
-      m.mTypeRetriever = [] { return MetaData::Of<DATA>(); };
+      m.mTypeRetriever = +[] { return MetaData::Of<DATA>(); };
       m.mOffset = static_cast<Offset>(offset);
       m.mCount = ExtentOf<DATA>;
       m.mName = name;
@@ -79,7 +79,7 @@ namespace Langulus::RTTI
    LANGULUS(INLINED)
    Member Member::FromTagged(DATA OWNER::* member, const Token& name) {
       auto result = Member::From(member, name);
-      result.mTraitRetriever = [] { return MetaTrait::Of<TRAIT>(); };
+      result.mTraitRetriever = +[] { return MetaTrait::Of<TRAIT>(); };
       return result;
    }
 
@@ -89,7 +89,7 @@ namespace Langulus::RTTI
    DMeta Member::GetType() const {
       LANGULUS_ASSUME(DevAssumes, mTypeRetriever != nullptr,
          "Invalid member type retriever");
-      return mTypeRetriever();
+      return (*mTypeRetriever)();
    }
 
    /// Get the reflected member trait at runtime                              
@@ -97,7 +97,7 @@ namespace Langulus::RTTI
    LANGULUS(INLINED)
    TMeta Member::GetTrait() const {
       if (mTraitRetriever)
-         return mTraitRetriever();
+         return (*mTraitRetriever)();
       return nullptr;
    }
 

@@ -624,6 +624,27 @@ namespace Langulus
          Token mInfo {};
       };
 
+      ///                                                                     
+      /// Different pool tactics you can assign to your data types            
+      /// Used primarily for advanced tweaking of a final product             
+      /// Pooling works only if managed memory feature is enabled             
+      ///                                                                     
+      enum class PoolTactic {
+         // Data instances will be pooled in the default pool chain     
+         // If that pool chain becomes too long, it becomes costly to   
+         // find entries                                                
+         Default = 0,
+
+         // Data instances will be pooled based on their allocation page
+         // There will be pools dedicated for each allocation page size 
+         // This effectively narrows the search for entries a bit       
+         Size,
+
+         // Data instances will be pooled based on their type           
+         // Each meta definition will have its own pool chain           
+         Type
+      };
+
    } // namespace Langulus::RTTI
 
 } // namespace Langulus

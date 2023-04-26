@@ -29,27 +29,6 @@ namespace Langulus::RTTI
       Count mElementCount;
    };
 
-   ///                                                                        
-   /// Different pool tactics you can assign to your data types               
-   /// Used primarily for advanced tweaking of a final product                
-   /// Pooling works only if managed memory feature is enabled                
-   ///                                                                        
-   enum class PoolTactic {
-      // Data instances will be pooled in the default pool chain        
-      // If that pool chain becomes too long, it becomes costly to find 
-      // entries                                                        
-      Default = 0,
-
-      // Data instances will be pooled based on their allocation page   
-      // There will be pools dedicated for each allocation page size    
-      // This effectively narrows the search for entries a bit          
-      Size,
-
-      // Data instances will be pooled based on their type              
-      // Each meta definition will have its own pool chain              
-      Type
-   };
-
    template<class T>
    constexpr Size GetAllocationPageOf() noexcept;
 
@@ -104,9 +83,6 @@ namespace Langulus::RTTI
    using FVerbMutable = FDispatchMutable;
    using FVerbConstant = FDispatchConstant;
 
-   using FTypeRetriever = DMeta(*)();
-   using FTraitRetriever = TMeta(*)();
-
 
    ///                                                                        
    ///   Used to reflect a member variable                                    
@@ -115,6 +91,9 @@ namespace Langulus::RTTI
    struct Member {
       LANGULUS(UNALLOCATABLE) true;
       LANGULUS(UNINSERTABLE) true;
+
+      using FTypeRetriever = DMeta(*)();
+      using FTraitRetriever = TMeta(*)();
 
       // Type of data                                                   
       // We can't get at reflection time, so we generate a lambda that  
