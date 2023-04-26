@@ -49,6 +49,7 @@ namespace Langulus::RTTI
    ///   @param name - variable name                                          
    ///   @return the generated member descriptor                              
    template<CT::Data OWNER, CT::Data DATA>
+   LANGULUS(INLINED)
    Member Member::From(DATA OWNER::* member, const Token& name) {
       alignas(OWNER) static const Byte storage[sizeof(OWNER)];
       const auto This = reinterpret_cast<const OWNER*>(storage);
@@ -61,7 +62,7 @@ namespace Langulus::RTTI
 
       //TODO of offset is outside instance limits, then mark as static, instead of throw?
       Member m;
-      m.mTypeRetriever = +[] { return MetaData::Of<DATA>(); };
+      m.mTypeRetriever = MetaData::Of<DATA>;
       m.mOffset = static_cast<Offset>(offset);
       m.mCount = ExtentOf<DATA>;
       m.mName = name;
@@ -78,8 +79,8 @@ namespace Langulus::RTTI
    template<CT::Decayed TRAIT, CT::Data OWNER, CT::Data DATA>
    LANGULUS(INLINED)
    Member Member::FromTagged(DATA OWNER::* member, const Token& name) {
-      auto result = Member::From(member, name);
-      result.mTraitRetriever = +[] { return MetaTrait::Of<TRAIT>(); };
+      Member result = Member::From(member, name);
+      result.mTraitRetriever = MetaTrait::Of<TRAIT>;
       return result;
    }
 
@@ -89,7 +90,7 @@ namespace Langulus::RTTI
    DMeta Member::GetType() const {
       LANGULUS_ASSUME(DevAssumes, mTypeRetriever != nullptr,
          "Invalid member type retriever");
-      return (*mTypeRetriever)();
+      return mTypeRetriever();
    }
 
    /// Get the reflected member trait at runtime                              
@@ -97,7 +98,7 @@ namespace Langulus::RTTI
    LANGULUS(INLINED)
    TMeta Member::GetTrait() const {
       if (mTraitRetriever)
-         return (*mTraitRetriever)();
+         return mTraitRetriever();
       return nullptr;
    }
 
@@ -395,6 +396,7 @@ namespace Langulus::RTTI
    /// Reflect or return an already reflected type meta definition            
    ///   @tparam T - the type to reflect                                      
    template<CT::Data T>
+   LANGULUS(NOINLINE)
    DMeta MetaData::Of() requires (!::std::is_reference_v<T>) {
       static_assert(CT::Complete<T>, "Can't reflect incomplete type");
       using DT = Decay<T>;

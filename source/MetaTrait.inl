@@ -31,6 +31,7 @@ namespace Langulus::RTTI
    /// duplications                                                           
    ///   @tparam T - the type to reflect (will always be decayed)             
    template<CT::Data T>
+   LANGULUS(NOINLINE)
    TMeta MetaTrait::Of() requires CT::Decayed<T> {
       // This check is not standard, but doesn't hurt afaik             
       static_assert(sizeof(T) > 0, "Can't reflect an incomplete type");

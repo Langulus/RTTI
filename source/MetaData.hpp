@@ -83,6 +83,9 @@ namespace Langulus::RTTI
    using FVerbMutable = FDispatchMutable;
    using FVerbConstant = FDispatchConstant;
 
+   using FTypeRetriever = DMeta(*)();
+   using FTraitRetriever = TMeta(*)();
+
 
    ///                                                                        
    ///   Used to reflect a member variable                                    
@@ -92,13 +95,10 @@ namespace Langulus::RTTI
       LANGULUS(UNALLOCATABLE) true;
       LANGULUS(UNINSERTABLE) true;
 
-      using FTypeRetriever = DMeta(*)();
-      using FTraitRetriever = TMeta(*)();
-
       // Type of data                                                   
       // We can't get at reflection time, so we generate a lambda that  
       // retrieves it when required                                     
-      FTypeRetriever mTypeRetriever;
+      FTypeRetriever mTypeRetriever {};
       // Member offset. This is relative to the type it is offsetted    
       // in! If accessed through a derived type, that offset might      
       // be wrong! Type must be resolved first!                         
@@ -108,7 +108,7 @@ namespace Langulus::RTTI
       // Trait tag                                                      
       // We can't get at reflection time, so we generate a lambda that  
       // retrieves it when required                                     
-      FTraitRetriever mTraitRetriever;
+      FTraitRetriever mTraitRetriever {};
       // Member token                                                   
       Token mName {};
 
@@ -156,7 +156,7 @@ namespace Langulus::RTTI
       // Functions to call, paired with their argument types            
       // For functions that can mutate the context                      
       using MutableOverloadList = ::std::unordered_map<Signature, FVerbMutable>;
-      MutableOverloadList mOverloadsMutable;
+      MutableOverloadList mOverloadsMutable {};
       
       // Functions to call, paired with their argument types            
       // For functions that can't mutate the context                    
@@ -182,8 +182,8 @@ namespace Langulus::RTTI
 
       MetaType GetMetaType() const noexcept final { return Meta::Constant; }
 
-      DMeta mValueType;
-      const void* mPtrToValue;
+      DMeta mValueType {};
+      const void* mPtrToValue {};
 
    protected:
       template<CT::Data T>
@@ -338,41 +338,41 @@ namespace Langulus::RTTI
       Anyness::Inner::Pool* mPool {};
 
       // Default constructor wrapped in a lambda upon reflection        
-      FDefaultConstruct mDefaultConstructor;
+      FDefaultConstruct mDefaultConstructor {};
       // Descriptor constructor wrapped in a lambda upon reflection     
-      FDescriptorConstruct mDescriptorConstructor;
+      FDescriptorConstruct mDescriptorConstructor {};
       // Copy constructor wrapped in a lambda upon reflection           
-      FCopyConstruct mCopyConstructor;
+      FCopyConstruct mCopyConstructor {};
       // Disowned constructor wrapped in a lambda upon reflection       
-      FCopyConstruct mDisownConstructor;
+      FCopyConstruct mDisownConstructor {};
       // Cloned constructor wrapped in a lambda upon reflection         
-      FCopyConstruct mCloneConstructor;
+      FCopyConstruct mCloneConstructor {};
       // Move constructor wrapped in a lambda upon reflection           
-      FMoveConstruct mMoveConstructor;
+      FMoveConstruct mMoveConstructor {};
       // Abandon constructor wrapped in a lambda upon reflection        
-      FMoveConstruct mAbandonConstructor;
+      FMoveConstruct mAbandonConstructor {};
       // Destructor wrapped in a lambda upon reflection                 
-      FDestroy mDestructor;
+      FDestroy mDestructor {};
       // The == operator, wrapped in a lambda upon reflection           
-      FCompare mComparer;
+      FCompare mComparer {};
       // Copy-assignment operator, wrapped in a lambda upon reflection  
-      FCopy mCopier;
+      FCopy mCopier {};
       // Disown-assignment operator, wrapped in a lambda upon reflection
-      FCopy mDisownCopier;
+      FCopy mDisownCopier {};
       // Clone-assignment operator, wrapped in a lambda upon reflection 
-      FCopy mCloneCopier;
+      FCopy mCloneCopier {};
       // Move-assignment, wrapped in a lambda upon reflection           
-      FMove mMover;
+      FMove mMover {};
       // Abandon-assignment, wrapped in a lambda upon reflection        
-      FMove mAbandonMover;
+      FMove mAbandonMover {};
       // The ClassBlock method, wrapped in a lambda upon reflection     
-      FResolve mResolver;
+      FResolve mResolver {};
       // The GetHash() method, wrapped in a lambda                      
-      FHash mHasher;
+      FHash mHasher {};
       // The Do verb, wrapped in a lambda (mutable context)             
-      FDispatchMutable mDispatcherMutable;
+      FDispatchMutable mDispatcherMutable {};
       // The Do verb, wrapped in a lambda	(immutable context)           
-      FDispatchConstant mDispatcherConstant;
+      FDispatchConstant mDispatcherConstant {};
 
    protected:
       template<CT::Data T>
