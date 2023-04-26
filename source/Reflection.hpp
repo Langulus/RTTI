@@ -7,6 +7,7 @@
 ///                                                                           
 #pragma once
 #include "Config.hpp"
+#include <Core/TypeList.hpp>
 #include <vector>
 
 /// You can provide a custom token to your data type, instead of using NameOf 
@@ -498,6 +499,44 @@ namespace Langulus::CT
    /// Excludes boolean types and character types, unless wrapped in another  
    template<class... T>
    concept SparseNumber = ((Number<T> && Sparse<T>) && ...);
+   
+   namespace Inner
+   {
+      template<class T>
+      concept Vector = Typed<T> && DenseNumber<TypeOf<T>> && requires {
+            {Decay<T>::MemberCount} -> UnsignedInteger;
+         }
+         && sizeof(T) == sizeof(TypeOf<T>) * Decay<T>::MemberCount
+         && Decay<T>::MemberCount > 1;
+
+      template<class T>
+      concept Scalar = DenseNumber<T> 
+         || (Typed<T> && DenseNumber<TypeOf<T>> && requires {
+               {Decay<T>::MemberCount} -> UnsignedInteger;
+            }
+            && sizeof(T) == sizeof(TypeOf<T>)
+            && Decay<T>::MemberCount == 1)
+         || (CT::Number<T> && CT::Array<T> && ExtentOf<T> == 1);
+   }
+         
+   /// Vector concept                                                         
+   /// Any dense type that is LANGULUS(TYPED) as a dense number,              
+   /// has MemberCount that is at least 2, and T's size is exactly the same   
+   /// as sizeof(CTTI_InnerType) * MemberCount                                
+   template<class... T>
+   concept Vector = (Inner::Vector<T> && ...);
+
+   /// Scalar concept                                                         
+   /// Any dense type that is LANGULUS(TYPED) as a dense number,              
+   /// has MemberCount of exactly 1, and its size is exactly the same         
+   /// as sizeof(CTTI_InnerType)                                              
+   /// Alternatively, a bounded array of extent 1 is also considered scalar   
+   template<class... T>
+   concept Scalar = (Inner::Scalar<T> && ...);
+
+   /// Scalar-or-vector concept                                               
+   template<class... T>
+   concept ScalarOrVector = ((Vector<T> || Scalar<T>) && ...);
 
 } // namespace Langulus::CT
 
@@ -573,115 +612,21 @@ namespace Langulus
          LANGULUS_ERROR("Unsupported atomic size");
    }
 
-} // namespace Langulus
+   namespace RTTI
+   {
 
-namespace Langulus::RTTI
-{
-
-   ///                                                                        
-   ///   Meta                                                                 
-   ///                                                                        
-   /// Base for meta definitions                                              
-   ///                                                                        
-   struct LANGULUS_API(RTTI) Meta {
-   public:
-      LANGULUS(UNALLOCATABLE) true;
-
-      enum MetaType {
-         Data, Trait, Verb, Constant
+      /// Triplet used for named constants reflections inside data types      
+      ///   @tparam T - type of the constant                                  
+      template<class T>
+      struct CMetaTriplet {
+         Token mToken;
+         T mValue;
+         Token mInfo {};
       };
 
-      virtual MetaType GetMetaType() const noexcept = 0;
+   } // namespace Langulus::RTTI
 
-      // Each reflection primitive has a unique token, but that         
-      // uniqueness is checked only if MANAGED_REFLECTION feature is    
-      // enabled                                                        
-      Token mToken;
-      // Each reflection may or may not have some info                  
-      Token mInfo {"<no info provided>"};
-      // Original name of the type                                      
-      Token mCppName;
-      // Each reflected type has an unique hash                         
-      Hash mHash {};
-      // Major version                                                  
-      Count mVersionMajor {1};
-      // Minor version                                                  
-      Count mVersionMinor {0};
-      // References, increased each time a definition is merged,        
-      // and decreases each time a definition is unregistered           
-      Count mReferences {1};
-      // The shared library that defined the module, used to unload     
-      // definitions when module is unloaded                            
-      Token mLibraryName;
-
-      NOD() const Hash& GetHash() const noexcept;
-
-      template<CT::Data T>
-      NOD() static constexpr Hash GenerateHash(const Token&) noexcept;
-
-      IF_LANGULUS_MANAGED_REFLECTION(
-         NOD() Token GetShortestUnambiguousToken() const
-      );
-
-      virtual ~Meta() = default;
-   };
-
-   /// Triplet used for named constants reflections inside data types         
-   ///   @tparam T - type of the constant                                     
-   template<class T>
-   struct CMetaTriplet {
-      Token mToken;
-      T mValue;
-      Token mInfo {};
-   };
-
-} // namespace Langulus::RTTI
-
-namespace Langulus::CT
-{
-   /// Concept for meta definitions                                           
-   template<class... T>
-   concept Meta = (DerivedFrom<T, RTTI::Meta> && ...);
-}
-
-namespace std
-{
-   using ::Langulus::RTTI::DMeta;
-   using ::Langulus::RTTI::TMeta;
-   using ::Langulus::RTTI::VMeta;
-
-   template<>
-   struct hash<DMeta> {
-      size_t operator()(DMeta k) const noexcept;
-   };
-   template<>
-   struct hash<vector<DMeta>> {
-      size_t operator()(const vector<DMeta>& k) const noexcept;
-   };
-   template<>
-   struct hash<TMeta> {
-      size_t operator()(TMeta k) const noexcept;
-   };
-   template<>
-   struct hash<VMeta> {
-      size_t operator()(VMeta k) const noexcept;
-   };
-}
-
-#include "Fundamental.hpp"
-#include "NameOf.hpp"
-#include "Byte.hpp"
-
-#include "MetaData.hpp"
-#include "MetaTrait.hpp"
-#include "MetaVerb.hpp"
-
-#include "MetaData.inl"
-#include "MetaTrait.inl"
-#include "MetaVerb.inl"
-
-#include "Reflection.inl"
-
+} // namespace Langulus
 
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
    #define LANGULUS_RTTI_BOUNDARY(a) \

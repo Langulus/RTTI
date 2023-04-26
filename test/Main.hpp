@@ -65,6 +65,7 @@ namespace One::Two::Three {
 
 namespace Verbs
 {
+
    ///                                                                        
    /// A testing verb, similar to the ones used in Langulus::Flow             
    ///                                                                        
@@ -126,6 +127,7 @@ namespace Verbs
          return false;
       }
    };
+
 }
 
 struct ImplicitlyReflectedData {

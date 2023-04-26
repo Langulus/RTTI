@@ -8,6 +8,7 @@
 #pragma once
 #include "Reflection.hpp"
 #include "Byte.hpp"
+#include "Assumptions.hpp"
 
 namespace Langulus
 {
@@ -173,7 +174,7 @@ namespace Langulus
       }
 
       template<class ALT_T>
-      using Nested = decltype(Nest(Uneval<ALT_T>()));
+      using Nested = decltype(Nest(Fake<ALT_T>()));
    };
    
    /// Move data                                                              
@@ -235,7 +236,7 @@ namespace Langulus
       }
 
       template<class ALT_T>
-      using Nested = decltype(Nest(Uneval<ALT_T>()));
+      using Nested = decltype(Nest(Fake<ALT_T>()));
    };
    
    /// Abandon a value                                                        

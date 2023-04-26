@@ -6,7 +6,7 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #pragma once
-#include <LangulusLogger.hpp>
+#include <Core/Exceptions.hpp>
 
 /// Reflections will be registered in a centralized location, allowing for    
 /// runtime type modification. Meta primitives will always be in the same     
@@ -45,3 +45,6 @@
 #endif
 
 LANGULUS_EXCEPTION(Meta);
+
+/// Make the rest of the code aware, that Langulus::RTTI has been included    
+#define LANGULUS_LIBRARY_RTTI() 1

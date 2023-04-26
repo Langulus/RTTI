@@ -7,7 +7,6 @@
 ///                                                                           
 #pragma once
 #include "MetaVerb.hpp"
-#include "Hashing.hpp"
 
 namespace Langulus::RTTI
 {

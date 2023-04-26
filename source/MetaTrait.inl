@@ -7,7 +7,6 @@
 ///                                                                           
 #pragma once
 #include "MetaTrait.hpp"
-#include "Hashing.hpp"
 
 namespace Langulus::RTTI
 {

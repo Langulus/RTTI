@@ -7,6 +7,7 @@
 ///                                                                           
 #pragma once
 #include "Config.hpp"
+#include <Logger/Logger.hpp>
 
 namespace Langulus
 {
@@ -87,4 +88,4 @@ namespace Langulus
 #endif
 
 /// Convenience macro for specifying temporary lazyness                       
-#define TODO() LANGULUS_THROW(TODO, "Unfinished code")
+#define TODO() LANGULUS_THROW(ToDo, "Unfinished code")

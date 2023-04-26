@@ -6,7 +6,8 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #pragma once
-#include "Reflection.hpp"
+#include "Meta.hpp"
+#include "Byte.hpp"
 #include <unordered_map>
 
 namespace Langulus::Anyness::Inner
@@ -58,50 +59,53 @@ namespace Langulus::RTTI
    ///                                                                        
    /// The default constructor, wrapped in a lambda expression if available   
    /// Takes a pointer for a placement-new expression                         
-   using FDefaultConstruct = TFunctor<void(void*)>;
+   using FDefaultConstruct = void(*)(void*);
 
    /// Constructor by descriptor                                              
    /// Takes a pointer for a placement-new expression, and a descriptor Any   
-   using FDescriptorConstruct = TFunctor<void(void*, const ::Langulus::Anyness::Block&)>;
+   using FDescriptorConstruct = void(*)(void*, const Anyness::Block&);
 
    /// The copy/disown/clone constructor, wrapped in a lambda expression      
    /// Takes a pointer for a placement-new expression, and a source           
-   using FCopyConstruct = TFunctor<void(const void* from, void* to)>;
+   using FCopyConstruct = void(*)(const void* from, void* to);
 
    /// The move/abandon constructor, wrapped in a lambda expression           
    /// Takes a pointer for a placement-new expression, and a source           
-   using FMoveConstruct = TFunctor<void(void* from, void* to)>;
+   using FMoveConstruct = void(*)(void* from, void* to);
 
    /// The destructor, wrapped in a lambda expression                         
    /// Takes the pointer to the instance for destruction                      
-   using FDestroy = TFunctor<void(void*)>;
+   using FDestroy = void(*)(void*);
 
    /// The == operator, wrapped in a lambda expression if available           
    /// Compares two instances for equality                                    
-   using FCompare = TFunctor<bool(const void*, const void*)>;
+   using FCompare = bool(*)(const void*, const void*);
 
    /// The copy/disown/clone-assignment operator, wrapped in a lambda         
-   using FCopy = TFunctor<void(const void* from, void* to)>;
+   using FCopy = void(*)(const void* from, void* to);
 
    /// The move/abandon-assignment operator, wrapped in a lambda expression   
-   using FMove = TFunctor<void(void* from, void* to)>;
+   using FMove = void(*)(void* from, void* to);
 
    /// The class type function, wrapped in a lambda expression                
    /// Returns the typed memory block of the class instance                   
-   using FResolve = TFunctor<::Langulus::Anyness::Block(const void*)>;
+   using FResolve = Anyness::Block(*)(const void*);
 
    /// The hash getter, wrapped in a lambda expression                        
    /// Takes the pointer to the instance for hashing                          
    /// Returns the hash                                                       
-   using FHash = TFunctor<Hash(const void*)>;
+   using FHash = Hash(*)(const void*);
 
    /// A custom verb dispatcher, wrapped in a lambda expression               
    /// Takes the pointer to the instance that will dispatch, and a verb       
    /// There is a mutable and immutable version of this                       
-   using FDispatchMutable = TFunctor<void(void*, Flow::Verb&)>;
-   using FDispatchConstant = TFunctor<void(const void*, Flow::Verb&)>;
+   using FDispatchMutable = void(*)(void*, Flow::Verb&);
+   using FDispatchConstant = void(*)(const void*, Flow::Verb&);
    using FVerbMutable = FDispatchMutable;
    using FVerbConstant = FDispatchConstant;
+
+   using FTypeRetriever = DMeta(*)();
+   using FTraitRetriever = TMeta(*)();
 
 
    ///                                                                        
@@ -112,13 +116,10 @@ namespace Langulus::RTTI
       LANGULUS(UNALLOCATABLE) true;
       LANGULUS(UNINSERTABLE) true;
 
-      using TypeRetriever = TFunctor<DMeta()>;
-      using TraitRetriever = TFunctor<TMeta()>;
-
       // Type of data                                                   
       // We can't get at reflection time, so we generate a lambda that  
       // retrieves it when required                                     
-      TypeRetriever mTypeRetriever;
+      FTypeRetriever mTypeRetriever;
       // Member offset. This is relative to the type it is offsetted    
       // in! If accessed through a derived type, that offset might      
       // be wrong! Type must be resolved first!                         
@@ -128,7 +129,7 @@ namespace Langulus::RTTI
       // Trait tag                                                      
       // We can't get at reflection time, so we generate a lambda that  
       // retrieves it when required                                     
-      TraitRetriever mTraitRetriever;
+      FTraitRetriever mTraitRetriever;
       // Member token                                                   
       Token mName {};
 

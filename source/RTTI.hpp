@@ -6,7 +6,7 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #pragma once
-#include "Config.hpp"
+#include "Hashing.hpp"
 #include <unordered_map>
 #include <unordered_set>
 

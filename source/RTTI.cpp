@@ -5,9 +5,13 @@
 /// Distributed under GNU General Public License v3+                          
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
-#include "Reflection.hpp"
 #include "RTTI.hpp"
+#include "MetaData.hpp"
+#include "MetaVerb.hpp"
+#include "MetaTrait.hpp"
+#include "Assumptions.hpp"
 #include <algorithm>
+#include <cctype>
 
 #define VERBOSE(a) //Logger::Verbose() << a;
 

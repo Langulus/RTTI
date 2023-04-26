@@ -6,8 +6,9 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #pragma once
-#include "Reflection.hpp"
-#include "Assumptions.hpp"
+#include "MetaData.hpp"
+#include "MetaVerb.hpp"
+#include "MetaTrait.hpp"
 
 #if defined(_MSC_VER)
    #define BIG_CONSTANT(x) (x)
@@ -493,7 +494,7 @@ namespace Langulus
       else if constexpr (sizeof(Hash) == 16)
          Inner::MurmurHash3_x64_128<TAIL, SEED>(ptr, len, &result);
       else
-         TODO();
+         LANGULUS_ERROR("Not implemented");
       return result;
    }
 
@@ -515,7 +516,7 @@ namespace Langulus
    ///   @param head, rest... - the data to hash                              
    ///   @return the hash                                                     
    template<uint32_t SEED = DefaultHashSeed, class T, class... MORE>
-   constexpr Hash HashData(const T& head, const MORE&... rest) {
+   constexpr Hash HashOf(const T& head, const MORE&... rest) {
       if constexpr (sizeof...(MORE) == 0) {
          if constexpr (CT::Same<T, Hash>) {
             // Provided type is already a hash, just propagate it       
@@ -581,7 +582,7 @@ namespace Langulus
          // Combine all data into a single array of hashes, and then    
          // hash that array as a whole                                  
          const Hash coalesced[1 + sizeof...(MORE)] {
-            HashData<SEED>(head), HashData<SEED>(rest)...
+            HashOf<SEED>(head), HashOf<SEED>(rest)...
          };
          return HashBytes<SEED, false>(coalesced, sizeof(coalesced));
       }
@@ -594,6 +595,10 @@ namespace Langulus
 
 namespace std
 {
+   using ::Langulus::RTTI::DMeta;
+   using ::Langulus::RTTI::TMeta;
+   using ::Langulus::RTTI::VMeta;
+
    LANGULUS(INLINED)
    size_t hash<DMeta>::operator()(DMeta k) const noexcept {
       return k->mHash.mHash;
@@ -607,7 +612,7 @@ namespace std
          coalesced.emplace_back(i->mHash);
 
       return ::Langulus::HashBytes<::Langulus::DefaultHashSeed, false>(
-         coalesced.data(), 
+         coalesced.data(),
          static_cast<int>(coalesced.size() * sizeof(Hash))
       ).mHash;
    }
@@ -621,4 +626,25 @@ namespace std
    size_t hash<VMeta>::operator()(VMeta k) const noexcept {
       return k->mHash.mHash;
    }
-}
+
+} // namespace std
+
+namespace Langulus::RTTI
+{
+   
+   /// Get the constexpr hash of a type                                       
+   ///	@return the hash of the type                                         
+   template<CT::Data T>
+   LANGULUS(INLINED)
+   constexpr Hash Meta::GenerateHash(const Token& name) noexcept {
+      return {::std::hash<Token>()(name)};
+   }
+   
+   /// Get the generated hash, making any meta derivation CT::Hashable        
+   ///	@return the hash of the type                                         
+   LANGULUS(INLINED)
+   const Hash& Meta::GetHash() const noexcept {
+      return mHash;
+   }
+   
+} // namespace Langulus::RTTI

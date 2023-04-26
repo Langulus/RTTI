@@ -6,8 +6,5 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #pragma once
-#include "../source/Reflection.hpp"
-#include "../source/Utilities.hpp"
-#include "../source/Assumptions.hpp"
-
-#define LANGULUS_LIBRARY_RTTI() 1
+#include "../../source/MetaTrait.hpp"
+#include "../../source/MetaTrait.inl"

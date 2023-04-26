@@ -104,7 +104,7 @@ namespace Langulus::CT
    template<class T>
    concept StatelessVerb = requires {{
       T::ExecuteStateless(
-         Uneval<::Langulus::Flow::Verb&>()
+         Fake<::Langulus::Flow::Verb&>()
       )} -> CT::Same<bool>;
    };
 
