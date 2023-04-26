@@ -737,8 +737,8 @@ namespace Langulus::RTTI
             if constexpr (requires { typename DT::CTTI_Conversions; })
                generated.SetConverters<T>(typename DT::CTTI_Conversions {});
 
-            // Set reflected named values                               
-            if constexpr (requires { DT::CTTI_NamedValues; }) {
+            // Reflected named values if this type is origin type       
+            if constexpr (CT::Decayed<T> && requires { DT::CTTI_NamedValues; }) {
                static_assert(CT::Comparable<T, T>, 
                   "Named values specified for type, but type instances are not comparable");
 
