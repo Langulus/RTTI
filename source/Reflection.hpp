@@ -120,10 +120,12 @@
 #define LANGULUS_NULLIFIABLE() \
    public: static constexpr bool CTTI_Nullifiable = 
 
-/// You can choose how a given type is pooled, if managed memory is enabled   
-/// See RTTI::PoolTactic for options                                          
-#define LANGULUS_POOL_TACTIC() \
-   public: static constexpr ::Langulus::RTTI::PoolTactic CTTI_Pool = 
+#if LANGULUS_FEATURE(MANAGED_MEMORY)
+   /// You can choose how a given type is pooled, if managed memory is        
+   /// enabled. See RTTI::PoolTactic for options                              
+   #define LANGULUS_POOL_TACTIC() \
+      public: static constexpr ::Langulus::RTTI::PoolTactic CTTI_Pool = 
+#endif
 
 /// You can make types concretizable, by using LANGULUS(CONCRETE) Type        
 /// When dynamically creating your abstract objects, the most concrete type   
@@ -624,36 +626,49 @@ namespace Langulus
          Token mInfo {};
       };
 
+#if LANGULUS_FEATURE(MANAGED_MEMORY)
       ///                                                                     
       /// Different pool tactics you can assign to your data types            
       /// Used primarily for advanced tweaking of a final product             
       /// Pooling works only if managed memory feature is enabled             
       ///                                                                     
       enum class PoolTactic {
-         // Data instances will be pooled in the default pool chain     
-         // If that pool chain becomes too long, it becomes costly to   
-         // find entries                                                
+         // Data instances will be pooled in the default pool chain,    
+         // unless data was reflected from a boundary that is not MAIN  
          Default = 0,
 
-         // Data instances will be pooled based on their allocation page
+         // Data instances will be pooled based on their size           
          // There will be pools dedicated for each allocation page size 
          // This effectively narrows the search for entries a bit       
          Size,
 
          // Data instances will be pooled based on their type           
          // Each meta definition will have its own pool chain           
+         // This is the default pooling tactic for any meta data that   
+         // is not reflected inside the "MAIN" boundary. See            
+         // LANGULUS_RTTI_BOUNDARY for more information on that.        
          Type
       };
+#endif
 
    } // namespace Langulus::RTTI
 
 } // namespace Langulus
 
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+   /// The Langulus::RTTI::Boundary symbol is intentionally left undefined,   
+   /// so that it is mandatory for you to define it inside your executables   
+   /// or mods. It's a simple compile-time string, that is attached upon data 
+   /// reflection, so that RTTI can track from which library a type was       
+   /// reflected, and thus unregister it when shared object is unloaded.      
+   /// The boundary also affects pooling tactics, because if boundary is not  
+   /// equal exactly to "MAIN", pooling will be PoolTactic::Type by default,  
+   /// so that allocation that happen from external libraries can be easily   
+   /// tracked.                                                               
    #define LANGULUS_RTTI_BOUNDARY(a) \
       namespace Langulus::RTTI \
       { \
-         Token Library = a; \
+         Token Boundary = a; \
       }
 #else
    #define LANGULUS_RTTI_BOUNDARY(a)

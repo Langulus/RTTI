@@ -10,15 +10,6 @@
 #include "Byte.hpp"
 #include <unordered_map>
 
-namespace Langulus::Anyness::Inner
-{
-   #if LANGULUS_FEATURE(MANAGED_MEMORY)
-      class Pool;
-   #else
-      using Pool = void;
-   #endif
-}
-
 namespace Langulus::RTTI
 {
 
@@ -332,10 +323,13 @@ namespace Langulus::RTTI
       Token mFileExtensions {};
       // Suffix                                                         
       Token mSuffix {};
+
+#if LANGULUS_FEATURE(MANAGED_MEMORY)
       // The pooling tactic used for the type                           
       PoolTactic mPoolTactic = PoolTactic::Default;
       // The pool chain for the type                                    
-      Anyness::Inner::Pool* mPool {};
+      void* mPool {};
+#endif
 
       // Default constructor wrapped in a lambda upon reflection        
       FDefaultConstruct mDefaultConstructor {};

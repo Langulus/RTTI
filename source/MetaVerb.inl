@@ -208,7 +208,7 @@ namespace Langulus::RTTI
       }
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         const_cast<MetaVerb*>(meta)->mLibraryName = RTTI::Library;
+         const_cast<MetaVerb*>(meta)->mLibraryName = RTTI::Boundary;
          return meta;
       #else
          return meta.get();

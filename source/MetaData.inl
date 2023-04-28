@@ -507,8 +507,16 @@ namespace Langulus::RTTI
             generated.mAllocationTable[bit] = ::std::max(minElements, elements);
          }
 
-         if constexpr (CT::Dense<T> && requires { T::CTTI_Pool; })
-            generated.mPoolTactic = T::CTTI_Pool;
+         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+            generated.mLibraryName = RTTI::Boundary;
+
+            if constexpr (CT::Dense<T> && requires { T::CTTI_Pool; })
+               generated.mPoolTactic = T::CTTI_Pool;
+         
+            if (RTTI::Boundary != "MAIN" && generated.mPoolTactic == PoolTactic::Default)
+               generated.mPoolTactic = PoolTactic::Type;
+         #endif
+
          if constexpr (CT::Dense<T> && requires { T::CTTI_Files; })
             generated.mFileExtensions = T::CTTI_Files;
          if constexpr (CT::Dense<T> && requires { T::CTTI_Suffix; })
@@ -759,7 +767,7 @@ namespace Langulus::RTTI
                         Database.RegisterConstant(staticNames[i]));
                      LANGULUS_ASSERT(cmeta, Meta,
                         "Meta constant conflict on registration");
-                     const_cast<MetaConst*>(cmeta)->mLibraryName = RTTI::Library;
+                     const_cast<MetaConst*>(cmeta)->mLibraryName = RTTI::Boundary;
                   #else
                      staticMC[i] = ::std::make_unique<MetaConst>();
                      const auto cmeta = staticMC[i].get();
@@ -791,7 +799,6 @@ namespace Langulus::RTTI
       }
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         const_cast<MetaData*>(meta)->mLibraryName = RTTI::Library;
          return meta;
       #else
          return meta.get();

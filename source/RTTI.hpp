@@ -101,9 +101,15 @@ namespace Langulus::RTTI
    LANGULUS_API(RTTI) extern Interface Database;
 
    ///                                                                        
-   ///   Library identifier, local to every shared library                    
-   /// It's your responsibility to define it                                  
+   ///   Boundary identifier, local to every shared library/executable        
+   ///   It's a simple compile-time string, that is attached upon data        
+   /// reflection, so that RTTI can track from which library a type was       
+   /// reflected, and thus unregister it when shared object is unloaded.      
+   /// The boundary also affects pooling tactics, because if boundary is not  
+   /// equal exactly to "MAIN", pooling will be PoolTactic::Type by default,  
+   /// so that allocation that happens from external libraries can be easily  
+   /// tracked and not pollute other pools.                                   
    ///                                                                        
-   extern Token Library;
+   extern Token Boundary;
 
 } // namespace Langulus::RTTI
