@@ -507,7 +507,7 @@ namespace Langulus::RTTI
             generated.mAllocationTable[bit] = ::std::max(minElements, elements);
          }
 
-         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         #if LANGULUS_FEATURE(MANAGED_MEMORY)
             generated.mLibraryName = RTTI::Boundary;
 
             if constexpr (CT::Dense<T> && requires { T::CTTI_Pool; })
