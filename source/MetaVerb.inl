@@ -98,7 +98,7 @@ namespace Langulus::RTTI
    /// Meta of a void always returns nullptr                                  
    ///   @return nullptr                                                      
    template<CT::Void T>
-   constexpr VMeta MetaVerb::Of() requires CT::Decayed<T> {
+   constexpr VMeta MetaVerb::Of() {
       return nullptr;
    }
 
@@ -106,34 +106,25 @@ namespace Langulus::RTTI
    /// Reflection is done only on decayed types to avoid static variable      
    /// duplications                                                           
    ///   @tparam T - the type to reflect (will always be decayed)             
-   template<CT::Data T>
+   template<CT::Decayed T>
    LANGULUS(NOINLINE)
-   VMeta MetaVerb::Of() requires CT::Decayed<T> {
+   VMeta MetaVerb::Of() {
       // This check is not standard, but doesn't hurt afaik             
       static_assert(sizeof(T) > 0, "Can't reflect an incomplete type");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         static constinit VMeta meta;
-      #else
-         static constinit ::std::unique_ptr<MetaVerb> meta;
-      #endif
-
-      // Never proceed with reflection, if already reflected            
-      if (meta) {
-         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            return meta;
-         #else
-            return meta.get();
-         #endif
-      }
-
-      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
-         // previously in another translation unit. This is available   
-         // only if MANAGED_REFLECTION feature is enabled               
-         meta = Database.GetMetaVerb(MetaVerb::GetReflectedPositiveVerbToken<T>());
+         // previously in another library. Unfortunately we can't keep  
+         // a static pointer to the meta, because forementioned library 
+         // might be reloaded, and thus produce new pointer.            
+         VMeta meta = Database.GetMetaVerb(MetaVerb::GetReflectedPositiveVerbToken<T>());
          if (meta)
             return meta;
+      #else
+         // Keep a static meta pointer for each translation unit        
+         static constinit ::std::unique_ptr<MetaVerb> meta;
+         if (meta)
+            return meta.get();
       #endif
 
       // If this is reached, then verb is not defined yet               

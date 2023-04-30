@@ -28,9 +28,9 @@ namespace Langulus::RTTI
 
    public:
       template<CT::Void T>
-      NOD() static constexpr TMeta Of() requires CT::Decayed<T>;
-      template<CT::Data T>
-      NOD() static TMeta Of() requires CT::Decayed<T>;
+      NOD() static constexpr TMeta Of();
+      template<CT::Decayed T>
+      NOD() static TMeta Of();
       
       NOD() bool constexpr Is(TMeta) const noexcept;
       template<CT::Data T>

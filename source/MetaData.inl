@@ -402,27 +402,18 @@ namespace Langulus::RTTI
       using DT = Decay<T>;
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         static constinit DMeta meta {};
-      #else
-         static constinit ::std::unique_ptr<MetaData> meta;
-      #endif
-
-      // Never proceed with reflection, if already reflected            
-      if (meta) {
-         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            return meta;
-         #else
-            return meta.get();
-         #endif
-      }
-
-      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
-         // previously in another translation unit. This is available   
-         // only if MANAGED_REFLECTION feature is enabled               
-         meta = Database.GetMetaData(GetReflectedToken<T>());
+         // previously in another library. Unfortunately we can't keep  
+         // a static pointer to the meta, because forementioned library 
+         // might be reloaded, and thus produce new pointer.            
+         DMeta meta = Database.GetMetaData(GetReflectedToken<T>());
          if (meta)
             return meta;
+      #else
+         // Keep a static meta pointer for each translation unit        
+         static constinit ::std::unique_ptr<MetaData> meta;
+         if (meta)
+            return meta.get();
       #endif
 
       // If this is reached, then type is not defined yet               
