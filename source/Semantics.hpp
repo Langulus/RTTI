@@ -67,7 +67,7 @@ namespace Langulus
 
       /// Checks if a type has no special semantics                           
       template<class... T>
-      concept NotSemantic = !Semantic<T...>;
+      concept NotSemantic = !Semantic<T...> && !(DerivedFrom<T, Anyness::Descriptor> && ...);
 
       /// Check if a type is copied                                           
       template<class... T>
@@ -636,7 +636,6 @@ namespace Langulus::CT
       concept MoveAssignable = requires (T& a) {
          {SemanticAssign(a, Move(a))} -> Exact<T&>;
       };
-
 
       /// Check if T is semantic-constructible by S                           
       template<class S, class T>

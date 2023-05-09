@@ -33,7 +33,7 @@ namespace Langulus::RTTI
 
    /// Constructor by descriptor                                              
    /// Takes a pointer for a placement-new expression, and a descriptor Any   
-   using FDescriptorConstruct = void(*)(void*, const Anyness::Block&);
+   using FDescriptorConstruct = void(*)(void*, const Anyness::Descriptor&);
 
    /// The copy/disown/clone constructor, wrapped in a lambda expression      
    /// Takes a pointer for a placement-new expression, and a source           
