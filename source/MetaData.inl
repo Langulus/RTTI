@@ -367,8 +367,9 @@ namespace Langulus::RTTI
    ///   @return the token                                                    
    template<CT::Data T>
    constexpr Token MetaData::GetReflectedToken() noexcept {
-      if constexpr (requires { T::CTTI_Name; })
-         return T::CTTI_Name;
+      using DT = Decay<T>;
+      if constexpr (CT::Decayed<T> && requires { DT::CTTI_Name; })
+         return DT::CTTI_Name;
       else
          return NameOf<T>();
    }
