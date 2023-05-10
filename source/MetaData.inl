@@ -61,7 +61,7 @@ namespace Langulus::RTTI
 
       //TODO of offset is outside instance limits, then mark as static, instead of throw?
       Member m;
-      m.mTypeRetriever = MetaData::Of<DATA>;
+      m.mTypeRetriever = MetaData::Of<Deext<DATA>>;
       m.mOffset = static_cast<Offset>(offset);
       m.mCount = ExtentOf<DATA>;
       m.mName = name;
@@ -389,11 +389,15 @@ namespace Langulus::RTTI
       return MetaData::Of<Decvq<Deref<T>>>();
    }
 
-   /// Reflect or return an already reflected sparse type meta definition     
+   /// Reflect a pointer, optimized to reuse origin type properties           
+   /// A generalized reflection routine increases build time significantly    
    ///   @tparam T - the type to reflect                                      
    template<CT::SparseData T>
    LANGULUS(NOINLINE)
    DMeta MetaData::Of() {
+      static_assert(CT::Complete<T>, "Can't reflect incomplete type");
+      static_assert(!CT::Array<T>, "Can't reflect a bounded array type");
+
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
          // previously in another library. Unfortunately we can't keep  
@@ -472,13 +476,80 @@ namespace Langulus::RTTI
          return meta.get();
       #endif
    }
-   
-   /// Reflect or return an already reflected dense type meta definition      
+
+   /// Reflect a constant dense type, optimized to reuse origin type          
+   /// A generalized reflection routine increases build time significantly    
    ///   @tparam T - the type to reflect                                      
    template<CT::DenseData T>
    LANGULUS(NOINLINE)
-   DMeta MetaData::Of() {
+   DMeta MetaData::Of() requires CT::Constant<T> {
       static_assert(CT::Complete<T>, "Can't reflect incomplete type");
+      static_assert(!CT::Array<T>, "Can't reflect a bounded array type");
+
+      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         // Try to get the definition, type might have been reflected   
+         // previously in another library. Unfortunately we can't keep  
+         // a static pointer to the meta, because forementioned library 
+         // might be reloaded, and thus produce new pointer.            
+         DMeta meta = Database.GetMetaData(GetReflectedToken<T>());
+         if (meta)
+            return meta;
+
+         // If this is reached, then type is not defined yet            
+         // We immediately request its spot in the database, or the     
+         // reflection function might end up forever looping otherwise  
+         meta = Database.RegisterData(GetReflectedToken<T>());
+         auto& generated = *const_cast<MetaData*>(meta);
+      #else
+         // Keep a static meta pointer for each translation unit        
+         static constinit ::std::unique_ptr<MetaData> meta;
+         if (meta)
+            return meta.get();
+
+         // If this is reached, then type is not defined yet            
+         // We immediately place it in the static here, or the          
+         // reflection function might end up forever looping otherwise  
+         meta = ::std::make_unique<MetaData>();
+         auto& generated = *const_cast<MetaData*>(meta.get());
+      #endif
+
+      // Reflect the origin type and propagate its properties           
+      auto denser = MetaData::Of<Decay<T>>();
+      generated = *denser;
+      generated.mOrigin = denser;
+
+      #if LANGULUS_FEATURE(MANAGED_MEMORY)
+         // Set library boundary                                        
+         generated.mLibraryName = RTTI::Boundary;
+
+         // If pool tactic is default, turn it Typed if outside MAIN    
+         if (generated.mPoolTactic == PoolTactic::Default) {
+            generated.mPoolTactic = RTTI::Boundary != "MAIN"
+               ? PoolTactic::Type
+               : PoolTactic::Default;
+         }
+      #endif
+      
+      // Overwrite constant-specific stuff                              
+      generated.mToken = GetReflectedToken<T>();
+      generated.mCppName = NameOf<T>();
+      generated.mHash = Meta::GenerateHash<T>(GetReflectedToken<T>());
+      generated.mIsConstant = true;
+      
+      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         return meta;
+      #else
+         return meta.get();
+      #endif
+   }
+
+   /// Reflect a fully decayed (origin) type                                  
+   ///   @tparam T - the type to reflect                                      
+   template<CT::DenseData T>
+   LANGULUS(NOINLINE)
+   DMeta MetaData::Of() requires CT::Mutable<T> {
+      static_assert(CT::Complete<T>, "Can't reflect incomplete type");
+      static_assert(!CT::Array<T>, "Can't reflect a bounded array type");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
@@ -524,23 +595,20 @@ namespace Langulus::RTTI
          generated.mIsNullifiable = CT::Nullifiable<T>;
          generated.mSize = sizeof(T);
          generated.mAlignment = alignof(T);
-         generated.mIsSparse = CT::Sparse<T>;
-         generated.mIsConstant = CT::Constant<T>;
+         generated.mIsPOD = CT::POD<T>;
+         generated.mIsUninsertable = CT::Uninsertable<T>;
+         generated.mIsUnallocatable = CT::Unallocatable<T>;
 
-         using DT = Decay<T>;
-
-         if constexpr (CT::Decayed<T>)
-            generated.mOrigin = &generated;
-         else
-            generated.mOrigin = MetaData::Of<DT>(); // TODO can be further optimized, by reflecting only Decayed<T>, and copied by const T
+         // This is the origin type, so self-refer                      
+         generated.mOrigin = &generated;
 
          // Calculate the allocation page and table                     
          // It is the same, regardless if T is const or not             
-         generated.mAllocationPage = GetAllocationPageOf<DT>();
-         constexpr auto minElements = GetAllocationPageOf<DT>() / sizeof(DT);
+         generated.mAllocationPage = GetAllocationPageOf<T>();
+         constexpr auto minElements = GetAllocationPageOf<T>() / sizeof(T);
          for (Size bit = 0; bit < sizeof(Size) * 8; ++bit) {
             const Size threshold = Size {1} << bit;
-            const Size elements = threshold / sizeof(DT);
+            const Size elements = threshold / sizeof(T);
             generated.mAllocationTable[bit] = ::std::max(minElements, elements);
          }
 
@@ -564,32 +632,14 @@ namespace Langulus::RTTI
          if constexpr (requires { T::CTTI_VersionMinor; })
             generated.mVersionMinor = T::CTTI_VersionMinor;
 
-         generated.mIsPOD = CT::POD<T>;
-         generated.mIsUninsertable = CT::Uninsertable<T>;
-         generated.mIsUnallocatable = CT::Unallocatable<T>;
-
-         ReflectOriginType<DT>(generated);
+         ReflectOriginType<T>(generated);
       }
       
-      // Make sure we register the pointered alternatives               
+      // Make sure we register the pointered/immutable alternatives     
       // It's paramount we do this after this meta has been generated   
-      // (both mutable and constant)                                    
       (void)MetaData::Of<T*>();
       (void)MetaData::Of<const T*>();
-      
-      // Register all primary type variations for the provided type, by 
-      // adding/removing pointers and constness. The last, fully        
-      // decayed type, is the origin type. Incomplete origin types are  
-      // detected, and never reflected                                  
-      if constexpr (CT::Constant<T>) {
-         // Make sure we register the mutable alternative               
-         if constexpr (CT::Complete<Decvq<T>>)
-            (void)MetaData::Of<Decvq<T>>();
-      }
-      else {
-         // Make sure we register the immutable alternative             
-         (void)MetaData::Of<const T>();
-      }
+      (void)MetaData::Of<const T>();
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          return meta;
@@ -857,7 +907,7 @@ namespace Langulus::RTTI
                   Database.RegisterConstant(staticNames[i]));
                LANGULUS_ASSERT(cmeta, Meta,
                   "Meta constant conflict on registration");
-               const_cast<MetaConst*>(cmeta)->mLibraryName = RTTI::Boundary;
+               cmeta->mLibraryName = RTTI::Boundary;
             #else
                staticMC[i] = ::std::make_unique<MetaConst>();
                const auto cmeta = staticMC[i].get();

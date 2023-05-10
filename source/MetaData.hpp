@@ -395,10 +395,12 @@ namespace Langulus::RTTI
       NOD() static constexpr DMeta Of();
       template<CT::DataReference T>
       NOD() static DMeta Of();
-      template<CT::DenseData T>
-      NOD() static DMeta Of();
       template<CT::SparseData T>
       NOD() static DMeta Of();
+      template<CT::DenseData T>
+      NOD() static DMeta Of() requires CT::Constant<T>;
+      template<CT::DenseData T>
+      NOD() static DMeta Of() requires CT::Mutable<T>;
 
       NOD() DMeta GetMostConcrete() const noexcept;
       NOD() AllocationRequest RequestSize(const Count&) const noexcept;
