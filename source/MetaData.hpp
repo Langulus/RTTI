@@ -373,7 +373,10 @@ namespace Langulus::RTTI
       static constexpr Token GetReflectedToken() noexcept;
 
       template<CT::Fundamental T>
-      void ReflectFundamentalType() noexcept;
+      static void ReflectFundamentalType(MetaData&) noexcept;
+
+      template<CT::Decayed T>
+      static void ReflectOriginType(MetaData&) noexcept;
 
       NOD() const Member* GetMemberInner(TMeta, DMeta, Offset&) const noexcept;
       NOD() Count GetMemberCountInner(TMeta, DMeta, Offset&) const noexcept;
@@ -390,10 +393,12 @@ namespace Langulus::RTTI
    public:
       template<CT::Void T>
       NOD() static constexpr DMeta Of();
-      template<CT::Data T>
-      NOD() static DMeta Of() requires (::std::is_reference_v<T>);
-      template<CT::Data T>
-      NOD() static DMeta Of() requires (!::std::is_reference_v<T>);
+      template<CT::DataReference T>
+      NOD() static DMeta Of();
+      template<CT::DenseData T>
+      NOD() static DMeta Of();
+      template<CT::SparseData T>
+      NOD() static DMeta Of();
 
       NOD() DMeta GetMostConcrete() const noexcept;
       NOD() AllocationRequest RequestSize(const Count&) const noexcept;
