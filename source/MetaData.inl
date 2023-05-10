@@ -442,7 +442,6 @@ namespace Langulus::RTTI
          // The denser type is incomplete, so nothing really is known   
          // about it                                                    
          generated.mInfo = "<incomplete type pointer>";
-         generated.mIsAbstract = true;
 
          // Set library boundary                                        
          IF_LANGULUS_MANAGED_MEMORY(generated.mLibraryName = RTTI::Boundary);
