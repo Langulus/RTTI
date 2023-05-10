@@ -445,7 +445,7 @@ namespace Langulus::RTTI
          generated.mIsAbstract = true;
 
          // Set library boundary                                        
-         generated.mLibraryName = RTTI::Boundary;
+         IF_LANGULUS_MANAGED_MEMORY(generated.mLibraryName = RTTI::Boundary);
       }
       
       // Overwrite pointer-specific stuff                               
