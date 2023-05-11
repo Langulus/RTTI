@@ -97,9 +97,11 @@ namespace Langulus
    ///   @tparam T - the type to copy                                         
    template<class T>
    struct Copied : A::Copied {
-      LANGULUS(TYPED) T;
-
+   private:
       const T& mValue;
+
+   public:
+      LANGULUS(TYPED) T;
 
       Copied() = delete;
       Copied(const Copied&) = delete;
@@ -124,6 +126,16 @@ namespace Langulus
 
       template<class ALT_T>
       using Nested = Copied<ALT_T>;
+
+      LANGULUS(INLINED)
+      const T& operator * () const noexcept {
+         return mValue;
+      }
+
+      LANGULUS(INLINED)
+      const T* operator -> () const noexcept {
+         return &mValue;
+      }
    };
    
    /// Copy a value                                                           
@@ -140,12 +152,14 @@ namespace Langulus
    ///   @tparam T - the type to move                                         
    template<class T>
    struct Moved : A::Moved {
+   protected:
+      T&& mValue;
+
+   public:
       LANGULUS(TYPED) T;
 
       static_assert(!::std::is_const_v<T>,
          "T must be mutable in order to be moved");
-
-      T&& mValue;
 
       Moved() = delete;
       Moved(const Moved&) = delete;
@@ -175,6 +189,16 @@ namespace Langulus
 
       template<class ALT_T>
       using Nested = decltype(Nest(Fake<ALT_T>()));
+
+      LANGULUS(INLINED)
+      T& operator * () const noexcept {
+         return mValue;
+      }
+
+      LANGULUS(INLINED)
+      T* operator -> () const noexcept {
+         return &mValue;
+      }
    };
    
    /// Move data                                                              
@@ -202,12 +226,14 @@ namespace Langulus
    ///   @tparam T - the type to abandon                                      
    template<class T>
    struct Abandoned : A::Abandoned {
+   protected:
+      T&& mValue;
+
+   public:
       LANGULUS(TYPED) T;
 
       static_assert(!::std::is_const_v<T>,
          "T must be mutable in order to be abandoned");
-
-      T&& mValue;
 
       Abandoned() = delete;
       Abandoned(const Abandoned&) = delete;
@@ -237,6 +263,16 @@ namespace Langulus
 
       template<class ALT_T>
       using Nested = decltype(Nest(Fake<ALT_T>()));
+
+      LANGULUS(INLINED)
+      T& operator * () const noexcept {
+         return mValue;
+      }
+
+      LANGULUS(INLINED)
+      T* operator -> () const noexcept {
+         return &mValue;
+      }
    };
    
    /// Abandon a value                                                        
@@ -264,9 +300,11 @@ namespace Langulus
    ///   @tparam T - the type to disown                                       
    template<class T>
    struct Disowned : A::Disowned {
-      LANGULUS(TYPED) T;
-
+   protected:
       const T& mValue;
+
+   public:
+      LANGULUS(TYPED) T;
 
       Disowned() = delete;
       Disowned(const Disowned&) = delete;
@@ -291,6 +329,16 @@ namespace Langulus
 
       template<class ALT_T>
       using Nested = Disowned<ALT_T>;
+
+      LANGULUS(INLINED)
+      const T& operator * () const noexcept {
+         return mValue;
+      }
+
+      LANGULUS(INLINED)
+      const T* operator -> () const noexcept {
+         return &mValue;
+      }
    };
    
    /// Disown a value                                                         
@@ -308,9 +356,11 @@ namespace Langulus
    ///   @tparam T - the type to clone                                        
    template<class T>
    struct Cloned : A::Cloned {
-      LANGULUS(TYPED) T;
-
+   protected:
       const T& mValue;
+
+   public:
+      LANGULUS(TYPED) T;
 
       Cloned() = delete;
       Cloned(const Cloned&) = delete;
@@ -335,6 +385,16 @@ namespace Langulus
 
       template<class ALT_T>
       using Nested = Cloned<ALT_T>;
+      
+      LANGULUS(INLINED)
+      const T& operator * () const noexcept {
+         return mValue;
+      }
+
+      LANGULUS(INLINED)
+      const T* operator -> () const noexcept {
+         return &mValue;
+      }
    };
    
    /// Clone a value                                                          
@@ -358,27 +418,27 @@ namespace Langulus
 
          if constexpr (S::Move) {
             if constexpr (!S::Keep && ::std::constructible_from<T, Abandoned<A>&&>)
-               return T {Abandon(value.mValue)};
+               return T {Abandon(*value)};
             else if constexpr (::std::constructible_from<T, Moved<A>&&>)
-               return T {Move(value.mValue)};
+               return T {Move(*value)};
             else if constexpr (::std::constructible_from<T, A&&>)
-               return T {::std::move(value.mValue)};
+               return T {::std::move(*value)};
             else if constexpr (::std::constructible_from<T, Copied<A>>)
-               return T {Copy(value.mValue)};
+               return T {Copy(*value)};
             else if constexpr (::std::constructible_from<T, const A&>)
-               return T {value.mValue};
+               return T {*value};
             else
                return Inner::Unsupported {};
          }
          else {
             if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
-               return T {Clone(value.mValue)};
+               return T {Clone(*value)};
             else if constexpr (!S::Keep && ::std::constructible_from<T, Disowned<A>&&>)
-               return T {Disown(value.mValue)};
+               return T {Disown(*value)};
             else if constexpr (::std::constructible_from<T, Copied<A>>)
-               return T {Copy(value.mValue)};
+               return T {Copy(*value)};
             else if constexpr (::std::constructible_from<T, const A&>)
-               return T {value.mValue};
+               return T {*value};
             else
                return Inner::Unsupported {};
          }
@@ -399,27 +459,27 @@ namespace Langulus
 
          if constexpr (S::Move) {
             if constexpr (!S::Keep && ::std::constructible_from<T, Abandoned<A>&&>)
-               return new T {Abandon(value.mValue)};
+               return new T {Abandon(*value)};
             else if constexpr (::std::constructible_from<T, Moved<A>&&>)
-               return new T {Move(value.mValue)};
+               return new T {Move(*value)};
             else if constexpr (::std::constructible_from<T, A&&>)
-               return new T {::std::move(value.mValue)};
+               return new T {::std::move(*value)};
             else if constexpr (::std::constructible_from<T, Copied<A>>)
-               return new T {Copy(value.mValue)};
+               return new T {Copy(*value)};
             else if constexpr (::std::constructible_from<T, const A&>)
-               return new T {value.mValue};
+               return new T {*value};
             else
                return Inner::Unsupported {};
          }
          else {
             if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
-               return new T {Clone(value.mValue)};
+               return new T {Clone(*value)};
             else if constexpr (!S::Keep && ::std::constructible_from<T, Disowned<A>&&>)
-               return new T {Disown(value.mValue)};
+               return new T {Disown(*value)};
             else if constexpr (::std::constructible_from<T, Copied<A>>)
-               return new T {Copy(value.mValue)};
+               return new T {Copy(*value)};
             else if constexpr (::std::constructible_from<T, const A&>)
-               return new T {value.mValue};
+               return new T {*value};
             else
                return Inner::Unsupported {};
          }
@@ -445,27 +505,27 @@ namespace Langulus
 
          if constexpr (S::Move) {
             if constexpr (!S::Keep && ::std::constructible_from<T, Abandoned<A>&&>)
-               return new (placement) T {Abandon(value.mValue)};
+               return new (placement) T {Abandon(*value)};
             else if constexpr (::std::constructible_from<T, Moved<A>&&>)
-               return new (placement) T {Move(value.mValue)};
+               return new (placement) T {Move(*value)};
             else if constexpr (::std::constructible_from<T, A&&>)
-               return new (placement) T {::std::move(value.mValue)};
+               return new (placement) T {::std::move(*value)};
             else if constexpr (::std::constructible_from<T, Copied<A>>)
-               return new (placement) T {Copy(value.mValue)};
+               return new (placement) T {Copy(*value)};
             else if constexpr (::std::constructible_from<T, const A&>)
-               return new (placement) T {value.mValue};
+               return new (placement) T {*value};
             else
                return Inner::Unsupported {};
          }
          else {
             if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
-               return new (placement) T {Clone(value.mValue)};
+               return new (placement) T {Clone(*value)};
             else if constexpr (!S::Keep && ::std::constructible_from<T, Disowned<A>&&>)
-               return new (placement) T {Disown(value.mValue)};
+               return new (placement) T {Disown(*value)};
             else if constexpr (::std::constructible_from<T, Copied<A>>)
-               return new (placement) T {Copy(value.mValue)};
+               return new (placement) T {Copy(*value)};
             else if constexpr (::std::constructible_from<T, const A&>)
-               return new (placement) T {value.mValue};
+               return new (placement) T {*value};
             else
                return Inner::Unsupported {};
          }
@@ -493,42 +553,42 @@ namespace Langulus
 
       LANGULUS_ASSUME(DevAssumes, type, "Invalid type");
       LANGULUS_ASSUME(DevAssumes, placement, "Invalid placement pointer");
-      LANGULUS_ASSUME(DevAssumes, value.mValue, "Invalid argument pointer");
+      LANGULUS_ASSUME(DevAssumes, *value, "Invalid argument pointer");
 
       if constexpr (S::Shallow) {
          // Abandon/Disown/Move/Copy                                    
          if constexpr (S::Move) {
             if constexpr (!S::Keep) {
                if (type->mAbandonConstructor) {
-                  type->mAbandonConstructor(value.mValue, placement);
+                  type->mAbandonConstructor(*value, placement);
                   return;
                }
             }
             else if (type->mMoveConstructor) {
-               type->mMoveConstructor(value.mValue, placement);
+               type->mMoveConstructor(*value, placement);
                return;
             }
          }
          else {
             if constexpr (!S::Keep) {
                if (type->mDisownConstructor) {
-                  type->mDisownConstructor(value.mValue, placement);
+                  type->mDisownConstructor(*value, placement);
                   return;
                }
             }
          }
 
          if (type->mCopyConstructor)
-            type->mCopyConstructor(value.mValue, placement);
+            type->mCopyConstructor(*value, placement);
          else
             LANGULUS_THROW(Construct, "Can't abandon/disown/move/copy-construct T from S");
       }
       else {
          // Clone/Copy                                                  
          if (type->mCloneConstructor)
-            type->mCloneConstructor(value.mValue, placement);
+            type->mCloneConstructor(*value, placement);
          else if (type->mCopyConstructor)
-            type->mCopyConstructor(value.mValue, placement);
+            type->mCopyConstructor(*value, placement);
          else
             LANGULUS_THROW(Construct, "Can't clone/copy-construct T from S");
       }
@@ -544,28 +604,28 @@ namespace Langulus
    LANGULUS(INLINED)
    decltype(auto) SemanticAssign(T& lhs, S&& rhs) {
       if constexpr (S::Move) {
-         if constexpr (!S::Keep && requires(T& a) { a = Abandon(rhs.mValue); })
-            return (lhs = Abandon(rhs.mValue));
-         else if constexpr (requires(T& a) { a = Move(rhs.mValue); })
-            return (lhs = Move(rhs.mValue));
-         else if constexpr (requires(T& a) { a = ::std::move(rhs.mValue); })
-            return (lhs = ::std::move(rhs.mValue));
-         else if constexpr (requires(T& a) { a = Copy(rhs.mValue); })
-            return (lhs = Copy(rhs.mValue));
-         else if constexpr (requires(T& a) { a = rhs.mValue; })
-            return (lhs = rhs.mValue);
+         if constexpr (!S::Keep && requires(T& a) { a = Abandon(*rhs); })
+            return (lhs = Abandon(*rhs));
+         else if constexpr (requires(T& a) { a = Move(*rhs); })
+            return (lhs = Move(*rhs));
+         else if constexpr (requires(T& a) { a = ::std::move(*rhs); })
+            return (lhs = ::std::move(*rhs));
+         else if constexpr (requires(T& a) { a = Copy(*rhs); })
+            return (lhs = Copy(*rhs));
+         else if constexpr (requires(T& a) { a = *rhs; })
+            return (lhs = *rhs);
          else
             return Inner::Unsupported {};
       }
       else {
-         if constexpr (!S::Shallow && requires(T& a) { a = Clone(rhs.mValue); })
-            return (lhs = Clone(rhs.mValue));
-         else if constexpr (!S::Keep && requires(T& a) { a = Disown(rhs.mValue); })
-            return (lhs = Disown(rhs.mValue));
-         else if constexpr (requires(T& a) { a = Copy(rhs.mValue); })
-            return (lhs = Copy(rhs.mValue));
-         else if constexpr (requires(T& a) { a = rhs.mValue; })
-            return (lhs = rhs.mValue);
+         if constexpr (!S::Shallow && requires(T& a) { a = Clone(*rhs); })
+            return (lhs = Clone(*rhs));
+         else if constexpr (!S::Keep && requires(T& a) { a = Disown(*rhs); })
+            return (lhs = Disown(*rhs));
+         else if constexpr (requires(T& a) { a = Copy(*rhs); })
+            return (lhs = Copy(*rhs));
+         else if constexpr (requires(T& a) { a = *rhs; })
+            return (lhs = *rhs);
          else
             return Inner::Unsupported {};
       }
