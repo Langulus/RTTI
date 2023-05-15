@@ -43,5 +43,4 @@ target_compile_definitions(LangulusRTTI
 
 if(LANGULUS_ENABLE_TESTING)
 	add_subdirectory(test)
-    langulus_copy_dlls(LangulusRTTITest ON LangulusRTTI)
 endif()
