@@ -200,7 +200,7 @@ namespace Langulus::RTTI
    ///   @param rhs - the ability to compare against                          
    ///   @return true if both abilities have the same verb                    
    LANGULUS(INLINED)
-   constexpr bool Ability::operator == (const Ability& rhs) const noexcept {
+   bool Ability::operator == (const Ability& rhs) const noexcept {
       return mVerb->Is(rhs.mVerb);
    }
    
@@ -316,6 +316,9 @@ namespace Langulus::RTTI
    Base Base::From() SAFETY_NOEXCEPT() {
       static_assert(!CT::Same<T, BASE>, 
          "Base duplication not allowed to avoid regress");
+      static_assert(MetaData::GetReflectedToken<T>() != MetaData::GetReflectedToken<BASE>(),
+         "T and BASE have the same LANGULUS(NAME) token, possibly due to "
+         "inheritance. Specify a different LANGULUS(NAME) for each!");
 
       Base result;
       result.mType = MetaData::Of<BASE>();

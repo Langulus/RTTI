@@ -209,7 +209,8 @@ namespace Langulus::RTTI
    /// Check if two meta definitions match exactly                            
    ///   @param other - the verb to compare against                           
    ///   @return true if verbs match                                          
-   constexpr bool MetaVerb::Is(VMeta other) const noexcept {
+   LANGULUS(INLINED)
+   bool MetaVerb::Is(VMeta other) const noexcept {
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // This function is reduced to a pointer match, if the meta    
          // database is centralized, because it guarantees that         
@@ -225,14 +226,16 @@ namespace Langulus::RTTI
    ///   @tparam T - the verb to compare against                              
    ///   @return true if verbs match                                          
    template<CT::Data T>
-   constexpr bool MetaVerb::Is() const {
+   LANGULUS(INLINED)
+   bool MetaVerb::Is() const {
       return Is(MetaVerb::Of<T>());
    }
    
    /// Compare verb definitions                                               
    ///   @param rhs - the verb definition to compare with                     
    ///   @return true if definitions match                                    
-   constexpr bool MetaVerb::operator == (const MetaVerb& rhs) const noexcept {
+   LANGULUS(INLINED)
+   bool MetaVerb::operator == (const MetaVerb& rhs) const noexcept {
       return Is(&rhs);
    }
 

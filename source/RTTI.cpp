@@ -43,14 +43,34 @@ namespace Langulus::RTTI
       return lc;
    }
 
-   /// Get the last, most relevant part of a token that my or may not have    
-   /// namespaces in it. Essentially finds last "::" and skip forward to that 
+   /// Get the last, most relevant part of a token that may or may not have   
+   /// namespaces in it. Essentially finds last "::" that isn't enclosed in   
+   /// a template <>, and skip forward to that                                
    ///   @param token - the token to scan                                     
    ///   @return the last token                                               
    Token ToLastToken(const Token& token) noexcept {
-      const auto found = token.find_last_of(':', token.size());
-      if (found != token.npos)
-         return token.substr(found + 1, token.size() - found - 1);
+      Count depth = 0;
+      for (Offset i = token.size() - 1; i < token.size(); --i) {
+         switch (token[i]) {
+         case ':':
+            // If no depth, then we found it                            
+            if (!depth)
+               return token.substr(i + 1, token.size() - i - 1);
+            break;
+         case '>':
+            // Open template scope                                      
+            ++depth;
+            break;
+         case '<':
+            // Close template scope                                     
+            if (depth)
+               --depth;
+            break;
+         default:
+            break;
+         }
+      }
+
       return token;
    }
 

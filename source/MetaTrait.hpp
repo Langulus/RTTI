@@ -32,11 +32,11 @@ namespace Langulus::RTTI
       template<CT::Decayed T>
       NOD() static TMeta Of();
       
-      NOD() bool constexpr Is(TMeta) const noexcept;
+      NOD() bool Is(TMeta) const noexcept;
       template<CT::Data T>
-      NOD() bool constexpr Is() const;
+      NOD() bool Is() const;
 
-      constexpr bool operator == (const MetaTrait&) const noexcept;
+      bool operator == (const MetaTrait&) const noexcept;
 
    protected:
       template<CT::Data T>

@@ -1,41 +1,47 @@
-cmake_minimum_required(VERSION 3.22)
-project(Langulus.RTTI)
-
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+cmake_minimum_required(VERSION 3.24)
+project(LangulusRTTI)
 
 # Check if this project is built as standalone, or a part of something else 
-if(PROJECT_IS_TOP_LEVEL)
-    if(LANGULUS_BUILD_SHARED_LIBRARIES)
-        add_compile_definitions(LANGULUS_EXPORT_ALL)
-        set(LANGULUS_LIBRARY_TYPE SHARED)
-    else()
-        set(LANGULUS_LIBRARY_TYPE STATIC)
-    endif()
-
+if(PROJECT_IS_TOP_LEVEL OR NOT LANGULUS)
+    # Populate the cmake directory											
     include(LangulusUtilities.cmake)
-    langulus_init_git_submodule(cmake)
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-    include(FetchLangulusModule)
-    include(HandleLangulusFeatures)
+    langulus_fetch_cmake()
 
+    # Handle feature flags and global definitions/requirements				
+    include(HandleLangulusFeatures)
     handle_langulus_features()
+
+    # Add Langulus::Core & Logger library                                   
+    include(FetchLangulusModule)
     fetch_langulus_module(Core)
     fetch_langulus_module(Logger)
-
-    add_compile_definitions(LANGULUS_ENABLE_TESTING)
-	enable_testing()
-	add_subdirectory(test)
 endif()
 
 # Build and install library                                                 
 if(LANGULUS_FEATURE_MANAGED_REFLECTION)
-    add_library(Langulus.RTTI ${LANGULUS_LIBRARY_TYPE} source/RTTI.cpp)
-    target_include_directories(Langulus.RTTI PUBLIC include)
-    target_link_libraries(Langulus.RTTI PUBLIC Langulus.Logger)
-else()
-    add_library(Langulus.RTTI INTERFACE)
-    target_include_directories(Langulus.RTTI INTERFACE include)
-    target_link_libraries(Langulus.RTTI INTERFACE Langulus.Logger)
+    set(LANGULUS_LOGGER_SOURCES source/RTTI.cpp)
 endif()
 
+add_library(LangulusRTTI ${LANGULUS_LIBRARY_TYPE}
+    $<TARGET_OBJECTS:LangulusLogger>
+    ${LANGULUS_LOGGER_SOURCES}
+)
+
+target_include_directories(LangulusRTTI
+    PUBLIC      include
+                $<TARGET_PROPERTY:LangulusLogger,INTERFACE_INCLUDE_DIRECTORIES>
+)
+
+target_link_libraries(LangulusRTTI
+    PUBLIC      LangulusCore
+                fmt
+)
+
+target_compile_definitions(LangulusRTTI
+    PRIVATE     LANGULUS_EXPORT_ALL
+)
+
+if(LANGULUS_ENABLE_TESTING)
+	add_subdirectory(test)
+    langulus_copy_dlls(LangulusRTTITest ON LangulusRTTI)
+endif()

@@ -155,7 +155,7 @@ namespace Langulus::RTTI
       ConstantOverloadList mOverloadsConstant {};
       
    public:
-      NOD() constexpr bool operator == (const Ability&) const noexcept;
+      NOD() bool operator == (const Ability&) const noexcept;
 
       template<CT::Dense T, CT::Data VERB, CT::Data... A>
       NOD() static Ability From() noexcept;
@@ -369,6 +369,8 @@ namespace Langulus::RTTI
       FDispatchConstant mDispatcherConstant {};
 
    protected:
+      friend struct Base;
+
       template<CT::Data T>
       static constexpr Token GetReflectedToken() noexcept;
 

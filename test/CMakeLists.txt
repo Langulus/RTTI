@@ -1,24 +1,19 @@
-project(Langulus.RTTI.Test)
-
-# Configure Catch2 library													
-download_project(
-	PROJ                Catch2
-	GIT_REPOSITORY      https://github.com/catchorg/Catch2.git
-	GIT_TAG             v2.x
-	UPDATE_DISCONNECTED 1
-)
-add_subdirectory(${Catch2_SOURCE_DIR} ${Catch2_BINARY_DIR})
+project(Langulus::RTTI::Test)
 
 if(LANGULUS_FEATURE_MANAGED_REFLECTION)
-	add_executable(Test.RTTI Main.cpp TestCTTI.cpp TestRTTI.cpp)
+	add_executable(LangulusRTTITest Main.cpp TestCTTI.cpp TestRTTI.cpp)
 else()
-	add_executable(Test.RTTI Main.cpp TestCTTI.cpp)
+	add_executable(LangulusRTTITest Main.cpp TestCTTI.cpp)
 endif()
 
-target_link_libraries(Test.RTTI PRIVATE Langulus.RTTI Catch2)
+target_link_libraries(LangulusRTTITest
+	PRIVATE		LangulusRTTI
+				Catch2
+)
 
-if (MSVC)
-    target_compile_options(Test.RTTI PRIVATE /bigobj)
-endif()
+add_test(
+	NAME		Langulus::RTTI::Test
+	COMMAND		LangulusRTTITest
+)
 
-add_test(NAME Test.RTTI COMMAND Test.RTTI)
+langulus_copy_dlls(LangulusRTTITest ON LangulusRTTITest)

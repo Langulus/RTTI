@@ -59,11 +59,11 @@ namespace Langulus::RTTI
       template<CT::Decayed T>
       NOD() static VMeta Of();
       
-      NOD() bool constexpr Is(VMeta) const noexcept;
+      NOD() bool Is(VMeta) const noexcept;
       template<CT::Data T>
-      NOD() bool constexpr Is() const;
+      NOD() bool Is() const;
 
-      constexpr bool operator == (const MetaVerb&) const noexcept;
+      bool operator == (const MetaVerb&) const noexcept;
 
    protected:
       template<CT::Data T>

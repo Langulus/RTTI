@@ -100,7 +100,8 @@ namespace Langulus::RTTI
    /// Check if two meta definitions match exactly                            
    ///   @param other - the trait to compare against                          
    ///   @return true if traits match                                         
-   constexpr bool MetaTrait::Is(TMeta other) const noexcept {
+   LANGULUS(INLINED)
+   bool MetaTrait::Is(TMeta other) const noexcept {
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // This function is reduced to a pointer match, if the meta    
          // database is centralized, because it guarantees that         
@@ -116,11 +117,13 @@ namespace Langulus::RTTI
    ///   @tparam T - the trait to compare against                             
    ///   @return true if traits match                                         
    template<CT::Data T>
-   constexpr bool MetaTrait::Is() const {
+   LANGULUS(INLINED)
+   bool MetaTrait::Is() const {
       return Is(MetaTrait::Of<T>());
    }
    
-   constexpr bool MetaTrait::operator == (const MetaTrait& rhs) const noexcept {
+   LANGULUS(INLINED)
+   bool MetaTrait::operator == (const MetaTrait& rhs) const noexcept {
       return Is(&rhs);
    }
 
