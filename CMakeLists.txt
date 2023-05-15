@@ -42,5 +42,6 @@ target_compile_definitions(LangulusRTTI
 )
 
 if(LANGULUS_ENABLE_TESTING)
+    enable_testing()
 	add_subdirectory(test)
 endif()
