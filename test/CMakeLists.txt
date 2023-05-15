@@ -1,4 +1,4 @@
-project(Langulus::RTTI::Test)
+project(LangulusRTTITest)
 
 if(LANGULUS_FEATURE_MANAGED_REFLECTION)
 	add_executable(LangulusRTTITest Main.cpp TestCTTI.cpp TestRTTI.cpp)
@@ -12,7 +12,7 @@ target_link_libraries(LangulusRTTITest
 )
 
 add_test(
-	NAME		Langulus::RTTI::Test
+	NAME		LangulusRTTITest
 	COMMAND		LangulusRTTITest
 )
 
