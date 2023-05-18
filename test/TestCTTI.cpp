@@ -295,30 +295,15 @@ TEMPLATE_TEST_CASE("Unsigned integer RTTI interpretation", "[metadata]", uint8_t
 
       WHEN("Interpreted as another type") {
          THEN("Requirements should be met") {
-            if constexpr (CT::Same<TestType, uint8_t>) {
-               // uint8_t is intentionally not considered a number by Langulus, 
-               // because it causes ambiguities with char types
-               REQUIRE_FALSE(CastsTo<A::Number>(meta));
-               REQUIRE_FALSE(CastsTo<A::Integer>(meta));
-               REQUIRE_FALSE(CastsTo<A::Unsigned>(meta));
-               REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta));
+            REQUIRE(CastsTo<A::Number>(meta));
+            REQUIRE(CastsTo<A::Integer>(meta));
+            REQUIRE(CastsTo<A::Unsigned>(meta));
+            REQUIRE(CastsTo<A::UnsignedInteger>(meta));
 
-               REQUIRE_FALSE(CastsTo<A::Number>(meta, 1));
-               REQUIRE_FALSE(CastsTo<A::Integer>(meta, 1));
-               REQUIRE_FALSE(CastsTo<A::Unsigned>(meta, 1));
-               REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta, 1));
-            }
-            else {
-               REQUIRE(CastsTo<A::Number>(meta));
-               REQUIRE(CastsTo<A::Integer>(meta));
-               REQUIRE(CastsTo<A::Unsigned>(meta));
-               REQUIRE(CastsTo<A::UnsignedInteger>(meta));
-
-               REQUIRE(CastsTo<A::Number>(meta, 1));
-               REQUIRE(CastsTo<A::Integer>(meta, 1));
-               REQUIRE(CastsTo<A::Unsigned>(meta, 1));
-               REQUIRE(CastsTo<A::UnsignedInteger>(meta, 1));
-            }
+            REQUIRE(CastsTo<A::Number>(meta, 1));
+            REQUIRE(CastsTo<A::Integer>(meta, 1));
+            REQUIRE(CastsTo<A::Unsigned>(meta, 1));
+            REQUIRE(CastsTo<A::UnsignedInteger>(meta, 1));
 
             REQUIRE_FALSE(CastsTo<A::Real>(meta));
             REQUIRE_FALSE(CastsTo<A::Signed>(meta));
@@ -728,23 +713,26 @@ SCENARIO("A reflected verb with CTTI traits", "[metaverb]") {
    }
 }
 
+struct TypeWithSuffix { LANGULUS(SUFFIX) "yeah"; };
+struct TypeWithoutSuffix {};
+
 SCENARIO("TypeSuffix", "[metadata]") {
    WHEN("Generating a suffix for uint8_t") {
-      constexpr auto token = TypeSuffix<uint8_t>();
+      constexpr auto token = SuffixOf<uint8_t>();
       THEN("Requirements should be met") {
          REQUIRE(token == "u8");
       }
    }
 
    WHEN("Generating a suffix for uint16_t") {
-      constexpr auto token = TypeSuffix<uint16_t>();
+      constexpr auto token = SuffixOf<uint16_t>();
       THEN("Requirements should be met") {
          REQUIRE(token == "u16");
       }
    }
 
    WHEN("Generating a suffix for uint32_t") {
-      constexpr auto token = TypeSuffix<uint32_t>();
+      constexpr auto token = SuffixOf<uint32_t>();
       THEN("Requirements should be met") {
          if constexpr (CT::Same<uint32_t, unsigned int>)
             REQUIRE(token == "u");
@@ -754,7 +742,7 @@ SCENARIO("TypeSuffix", "[metadata]") {
    }
    
    WHEN("Generating a suffix for uint64_t") {
-      constexpr auto token = TypeSuffix<uint64_t>();
+      constexpr auto token = SuffixOf<uint64_t>();
       THEN("Requirements should be met") {
          if constexpr (CT::Same<uint64_t, unsigned int>)
             REQUIRE(token == "u");
@@ -764,21 +752,21 @@ SCENARIO("TypeSuffix", "[metadata]") {
    }
 
    WHEN("Generating a suffix for int8_t") {
-      constexpr auto token = TypeSuffix<int8_t>();
+      constexpr auto token = SuffixOf<int8_t>();
       THEN("Requirements should be met") {
          REQUIRE(token == "i8");
       }
    }
 
    WHEN("Generating a suffix for int16_t") {
-      constexpr auto token = TypeSuffix<int16_t>();
+      constexpr auto token = SuffixOf<int16_t>();
       THEN("Requirements should be met") {
          REQUIRE(token == "i16");
       }
    }
 
    WHEN("Generating a suffix for int32_t") {
-      constexpr auto token = TypeSuffix<int32_t>();
+      constexpr auto token = SuffixOf<int32_t>();
       THEN("Requirements should be met") {
          if constexpr (CT::Same<int32_t, signed int>)
             REQUIRE(token == "i");
@@ -788,7 +776,7 @@ SCENARIO("TypeSuffix", "[metadata]") {
    }
    
    WHEN("Generating a suffix for int64_t") {
-      constexpr auto token = TypeSuffix<int64_t>();
+      constexpr auto token = SuffixOf<int64_t>();
       THEN("Requirements should be met") {
          if constexpr (CT::Same<int64_t, signed int>)
             REQUIRE(token == "i");
@@ -798,7 +786,7 @@ SCENARIO("TypeSuffix", "[metadata]") {
    }
 
    WHEN("Generating a suffix for float") {
-      constexpr auto token = TypeSuffix<float>();
+      constexpr auto token = SuffixOf<float>();
       THEN("Requirements should be met") {
          if constexpr (CT::Same<float, Real>)
             REQUIRE(token == "");
@@ -808,7 +796,7 @@ SCENARIO("TypeSuffix", "[metadata]") {
    }
 
    WHEN("Generating a suffix for double") {
-      constexpr auto token = TypeSuffix<double>();
+      constexpr auto token = SuffixOf<double>();
       THEN("Requirements should be met") {
          if constexpr (CT::Same<double, Real>)
             REQUIRE(token == "");
@@ -818,9 +806,23 @@ SCENARIO("TypeSuffix", "[metadata]") {
    }
 
    WHEN("Generating a suffix for bool") {
-      constexpr auto token = TypeSuffix<bool>();
+      constexpr auto token = SuffixOf<bool>();
       THEN("Requirements should be met") {
          REQUIRE(token == "b");
+      }
+   }
+
+   WHEN("Generating a suffix for a type with LANGULUS(SUFFIX)") {
+      constexpr auto token = SuffixOf<TypeWithSuffix>();
+      THEN("Requirements should be met") {
+         REQUIRE(token == "yeah");
+      }
+   }
+
+   WHEN("Generating a suffix for a type without LANGULUS(SUFFIX)") {
+      constexpr auto token = SuffixOf<TypeWithoutSuffix>();
+      THEN("Requirements should be met") {
+         REQUIRE(token == "");
       }
    }
 }

@@ -577,41 +577,43 @@ namespace Langulus
       || (sizeof(Decay<T1>) > sizeof(Decay<T2>)
    ), Decay<T1>, Decay<T2>>;
    
-   /// A type naming convention for standard number types                     
+   /// A type naming convention for standard number types, as well as         
+   /// anything reflected with LANGULUS(SUFFIX)                               
    ///   @return the suffix depending on the template argument                
    template<CT::Dense T>
-   constexpr Token TypeSuffix() {
-      using TT = TypeOf<T>;
-      if constexpr (CT::Same<TT, signed int>)
+   constexpr Token SuffixOf() {
+      if constexpr (requires { T::CTTI_Suffix; })
+         return T::CTTI_Suffix;
+      else if constexpr (CT::Same<T, signed int>)
          return "i";
-      else if constexpr (CT::Same<TT, unsigned int>)
+      else if constexpr (CT::Same<T, unsigned int>)
          return "u";
-      else if constexpr (CT::Same<TT, Real>)
+      else if constexpr (CT::Same<T, Real>)
          return "";
-      else if constexpr (CT::Same<TT, ::std::uint8_t>)
+      else if constexpr (CT::Same<T, ::std::uint8_t>)
          return "u8";
-      else if constexpr (CT::Same<TT, ::std::uint16_t>)
+      else if constexpr (CT::Same<T, ::std::uint16_t>)
          return "u16";
-      else if constexpr (CT::Same<TT, ::std::uint32_t>)
+      else if constexpr (CT::Same<T, ::std::uint32_t>)
          return "u32";
-      else if constexpr (CT::Same<TT, ::std::uint64_t>)
+      else if constexpr (CT::Same<T, ::std::uint64_t>)
          return "u64";
-      else if constexpr (CT::Same<TT, ::std::int8_t>)
+      else if constexpr (CT::Same<T, ::std::int8_t>)
          return "i8";
-      else if constexpr (CT::Same<TT, ::std::int16_t>)
+      else if constexpr (CT::Same<T, ::std::int16_t>)
          return "i16";
-      else if constexpr (CT::Same<TT, ::std::int32_t>)
+      else if constexpr (CT::Same<T, ::std::int32_t>)
          return "i32";
-      else if constexpr (CT::Same<TT, ::std::int64_t>)
+      else if constexpr (CT::Same<T, ::std::int64_t>)
          return "i64";
-      else if constexpr (CT::Same<TT, Float>)
+      else if constexpr (CT::Same<T, Float>)
          return "f";
-      else if constexpr (CT::Same<TT, Double>)
+      else if constexpr (CT::Same<T, Double>)
          return "d";
-      else if constexpr (CT::Same<TT, bool>)
+      else if constexpr (CT::Same<T, bool>)
          return "b";
       else
-         LANGULUS_ERROR("Unsupported atomic size");
+         return "";
    }
 
    namespace RTTI

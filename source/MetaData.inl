@@ -602,6 +602,7 @@ namespace Langulus::RTTI
          generated.mIsPOD = CT::POD<T>;
          generated.mIsUninsertable = CT::Uninsertable<T>;
          generated.mIsUnallocatable = CT::Unallocatable<T>;
+         generated.mSuffix = SuffixOf<T>();
 
          // This is the origin type, so self-refer                      
          generated.mOrigin = &generated;
@@ -629,8 +630,6 @@ namespace Langulus::RTTI
 
          if constexpr (requires { T::CTTI_Files; })
             generated.mFileExtensions = T::CTTI_Files;
-         if constexpr (requires { T::CTTI_Suffix; })
-            generated.mSuffix = T::CTTI_Suffix;
          if constexpr (requires { T::CTTI_VersionMajor; })
             generated.mVersionMajor = T::CTTI_VersionMajor;
          if constexpr (requires { T::CTTI_VersionMinor; })
