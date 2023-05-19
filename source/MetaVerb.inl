@@ -27,7 +27,7 @@ namespace Langulus::RTTI
 
          return T::CTTI_PositiveVerb;
       }
-      else return NameOf<T>();
+      else return CppNameOf<T>();
    }
 
    /// Get the reflected negative token for a verb                            
@@ -46,7 +46,7 @@ namespace Langulus::RTTI
 
          return T::CTTI_NegativeVerb;
       }
-      else return NameOf<T>();
+      else return CppNameOf<T>();
    }
 
    /// Get the reflected positive operator for a verb                         
@@ -117,7 +117,9 @@ namespace Langulus::RTTI
          // previously in another library. Unfortunately we can't keep  
          // a static pointer to the meta, because forementioned library 
          // might be reloaded, and thus produce new pointer.            
-         VMeta meta = Database.GetMetaVerb(MetaVerb::GetReflectedPositiveVerbToken<T>());
+         VMeta meta = Database.GetMetaVerb(
+            MetaVerb::GetReflectedPositiveVerbToken<T>()
+         );
          if (meta)
             return meta;
       #else
@@ -132,7 +134,7 @@ namespace Langulus::RTTI
       // reflection function might end up forever looping otherwise     
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          meta = Database.RegisterVerb(
-            NameOf<T>(),
+            CppNameOf<T>(),
             MetaVerb::GetReflectedPositiveVerbToken<T>(),
             MetaVerb::GetReflectedNegativeVerbToken<T>(),
             MetaVerb::GetReflectedPositiveVerbOperator<T>(),
@@ -174,7 +176,7 @@ namespace Langulus::RTTI
          if constexpr (requires { T::CTTI_Info; })
             generated.mInfo = T::CTTI_Info;
 
-         generated.mCppName = NameOf<T>();
+         generated.mCppName = CppNameOf<T>();
          generated.mHash = GetVerbHash<T>();
 
          // Reflect precedence                                          

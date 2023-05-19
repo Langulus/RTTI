@@ -10,11 +10,11 @@
 #include <Core/TypeList.hpp>
 #include <vector>
 
-/// You can provide a custom token to your data type, instead of using NameOf 
+/// Provide a custom token to your data type, instead of using CppNameOf      
 #define LANGULUS_NAME() \
    public: static constexpr ::Langulus::Token CTTI_Name = 
 
-/// You can provide a custom token to your verbs, instead of using NameOf     
+/// You can provide a custom token to your verbs, instead of using CppNameOf  
 /// When verbs are reflected with this, their positive and negative tokens    
 /// shall be the same. If you want them to be different, use POSITIVE and     
 /// NEGATIVE names explicitly instead                                         

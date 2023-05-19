@@ -371,9 +371,6 @@ namespace Langulus::RTTI
    protected:
       friend struct Base;
 
-      template<CT::Data T>
-      static constexpr Token GetReflectedToken() noexcept;
-
       template<CT::Fundamental T>
       static void ReflectFundamentalType(MetaData&) noexcept;
 

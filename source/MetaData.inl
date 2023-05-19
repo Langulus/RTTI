@@ -316,7 +316,7 @@ namespace Langulus::RTTI
    Base Base::From() SAFETY_NOEXCEPT() {
       static_assert(!CT::Same<T, BASE>, 
          "Base duplication not allowed to avoid regress");
-      static_assert(MetaData::GetReflectedToken<T>() != MetaData::GetReflectedToken<BASE>(),
+      static_assert(NameOf<T>() != NameOf<BASE>(),
          "T and BASE have the same LANGULUS(NAME) token, possibly due to "
          "inheritance. Specify a different LANGULUS(NAME) for each!");
 
@@ -363,20 +363,6 @@ namespace Langulus::RTTI
       return result;
    }
 
-   ///                                                                        
-   ///   MetaData implementation                                              
-   ///                                                                        
-   /// Get the reflected token for a type                                     
-   ///   @return the token                                                    
-   template<CT::Data T>
-   constexpr Token MetaData::GetReflectedToken() noexcept {
-      using DT = Decay<T>;
-      if constexpr (CT::Decayed<T> && requires { DT::CTTI_Name; })
-         return DT::CTTI_Name;
-      else
-         return NameOf<T>();
-   }
-
    /// Reflecting a void type always returns nullptr                          
    ///   @return nullptr                                                      
    template<CT::Void T>
@@ -407,14 +393,14 @@ namespace Langulus::RTTI
          // previously in another library. Unfortunately we can't keep  
          // a static pointer to the meta, because forementioned library 
          // might be reloaded, and thus produce new pointer.            
-         DMeta meta = Database.GetMetaData(GetReflectedToken<T>());
+         DMeta meta = Database.GetMetaData(NameOf<T>());
          if (meta)
             return meta;
 
          // If this is reached, then type is not defined yet            
          // We immediately request its spot in the database, or the     
          // reflection function might end up forever looping otherwise  
-         meta = Database.RegisterData(GetReflectedToken<T>());
+         meta = Database.RegisterData(NameOf<T>());
          auto& generated = *const_cast<MetaData*>(meta);
       #else
          // Keep a static meta pointer for each translation unit        
@@ -456,9 +442,9 @@ namespace Langulus::RTTI
       }
       
       // Overwrite pointer-specific stuff                               
-      generated.mToken = GetReflectedToken<T>();
-      generated.mCppName = NameOf<T>();
-      generated.mHash = Meta::GenerateHash<T>(GetReflectedToken<T>());
+      generated.mToken = NameOf<T>();
+      generated.mCppName = CppNameOf<T>();
+      generated.mHash = Meta::GenerateHash<T>(NameOf<T>());
       generated.mSize = sizeof(T);
       generated.mAlignment = alignof(T);
       generated.mIsSparse = true;
@@ -495,14 +481,14 @@ namespace Langulus::RTTI
          // previously in another library. Unfortunately we can't keep  
          // a static pointer to the meta, because forementioned library 
          // might be reloaded, and thus produce new pointer.            
-         DMeta meta = Database.GetMetaData(GetReflectedToken<T>());
+         DMeta meta = Database.GetMetaData(NameOf<T>());
          if (meta)
             return meta;
 
          // If this is reached, then type is not defined yet            
          // We immediately request its spot in the database, or the     
          // reflection function might end up forever looping otherwise  
-         meta = Database.RegisterData(GetReflectedToken<T>());
+         meta = Database.RegisterData(NameOf<T>());
          auto& generated = *const_cast<MetaData*>(meta);
       #else
          // Keep a static meta pointer for each translation unit        
@@ -535,9 +521,9 @@ namespace Langulus::RTTI
       #endif
       
       // Overwrite constant-specific stuff                              
-      generated.mToken = GetReflectedToken<T>();
-      generated.mCppName = NameOf<T>();
-      generated.mHash = Meta::GenerateHash<T>(GetReflectedToken<T>());
+      generated.mToken = NameOf<T>();
+      generated.mCppName = CppNameOf<T>();
+      generated.mHash = Meta::GenerateHash<T>(NameOf<T>());
       generated.mIsConstant = true;
       
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
@@ -560,14 +546,14 @@ namespace Langulus::RTTI
          // previously in another library. Unfortunately we can't keep  
          // a static pointer to the meta, because forementioned library 
          // might be reloaded, and thus produce new pointer.            
-         DMeta meta = Database.GetMetaData(GetReflectedToken<T>());
+         DMeta meta = Database.GetMetaData(NameOf<T>());
          if (meta)
             return meta;
 
          // If this is reached, then type is not defined yet            
          // We immediately request its spot in the database, or the     
          // reflection function might end up forever looping otherwise  
-         meta = Database.RegisterData(GetReflectedToken<T>());
+         meta = Database.RegisterData(NameOf<T>());
          MetaData& generated = *const_cast<MetaData*>(meta);
       #else
          // Keep a static meta pointer for each translation unit        
@@ -590,11 +576,11 @@ namespace Langulus::RTTI
       }
       else {
          // Type is implicitly reflected, so let's do our best          
-         generated.mToken = GetReflectedToken<T>();
+         generated.mToken = NameOf<T>();
          if constexpr (requires { T::CTTI_Info; })
             generated.mInfo = T::CTTI_Info;
-         generated.mCppName = NameOf<T>();
-         generated.mHash = Meta::GenerateHash<T>(GetReflectedToken<T>());
+         generated.mCppName = CppNameOf<T>();
+         generated.mHash = Meta::GenerateHash<T>(NameOf<T>());
          generated.mIsAbstract = CT::Abstract<T>;
          generated.mIsNullifiable = CT::Nullifiable<T>;
          generated.mSize = sizeof(T);

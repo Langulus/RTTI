@@ -315,7 +315,7 @@ namespace Langulus::RTTI
    ///   @tparam T - the type to get the name of                              
    ///   @return the type name                                                
    template<class T>
-   NOD() constexpr Token NameOf() noexcept {
+   NOD() constexpr Token CppNameOf() noexcept {
       return Inner::StatefulNameOfType<T>::Name.data();
    }
    
@@ -323,7 +323,7 @@ namespace Langulus::RTTI
    ///   @tparam T - the type to get the name of                              
    ///   @return the type name                                                
    template<class T>
-   NOD() constexpr Token LastNameOf() noexcept {
+   NOD() constexpr Token LastCppNameOf() noexcept {
       // Find the last ':' symbol, that is not inside <...> scope       
       Token name = Inner::StatefulNameOfType<T>::Name.data();
       size_t depth = 0;
@@ -354,8 +354,33 @@ namespace Langulus::RTTI
    ///   @tparam E - the constant to get the name of                          
    ///   @return the name of the constant                                     
    template<auto E>
-   NOD() constexpr Token NameOf() noexcept {
+   NOD() constexpr Token CppNameOf() noexcept {
       return Inner::StatefulNameOfEnum<E>::Name.data();
    }
 
 } // namespace Langulus::RTTI
+
+namespace Langulus
+{
+
+   ///                                                                        
+   ///   NameOf that also considers LANGULUS(NAME) reflection, if any         
+   ///                                                                        
+   template<CT::Data T>
+   constexpr Token NameOf() noexcept {
+      using DT = Decay<T>;
+      if constexpr (CT::Decayed<T> && requires { DT::CTTI_Name; })
+         return DT::CTTI_Name;
+      else
+         return RTTI::CppNameOf<T>();
+   }
+   
+   ///                                                                        
+   ///   NameOf for enum types                                                
+   ///                                                                        
+   template<auto E>
+   constexpr Token NameOf() noexcept {
+      return RTTI::CppNameOf<E>();
+   }
+
+} // namespace Langulus

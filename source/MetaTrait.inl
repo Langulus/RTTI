@@ -18,7 +18,7 @@ namespace Langulus::RTTI
       if constexpr (requires { T::CTTI_Trait; })
          return T::CTTI_Trait;
       else
-         return NameOf<T>();
+         return CppNameOf<T>();
    }
 
    template<CT::Void T>
@@ -81,7 +81,7 @@ namespace Langulus::RTTI
          generated.mToken = GetReflectedToken<T>();
          if constexpr (requires { T::CTTI_Info; })
             generated.mInfo = T::CTTI_Info;
-         generated.mCppName = NameOf<T>();
+         generated.mCppName = CppNameOf<T>();
          generated.mHash = Meta::GenerateHash<T>(GetReflectedToken<T>());
          if constexpr (requires { T::CTTI_VersionMajor; })
             generated.mVersionMajor = T::CTTI_VersionMajor;

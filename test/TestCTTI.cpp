@@ -716,7 +716,7 @@ SCENARIO("A reflected verb with CTTI traits", "[metaverb]") {
 struct TypeWithSuffix { LANGULUS(SUFFIX) "yeah"; };
 struct TypeWithoutSuffix {};
 
-SCENARIO("TypeSuffix", "[metadata]") {
+SCENARIO("SuffixOf", "[metadata]") {
    WHEN("Generating a suffix for uint8_t") {
       constexpr auto token = SuffixOf<uint8_t>();
       THEN("Requirements should be met") {
