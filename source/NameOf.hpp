@@ -19,13 +19,13 @@ namespace Langulus::RTTI
       /// These definitions might change in future compiler versions          
       /// and will probably need constant maintenance                         
       #if defined(__clang__)
-         constexpr Token Prefix = "Langulus::Token Langulus::RTTI::Inner::AsTemplateArgument() [T = ";
+         constexpr Token Prefix = "Langulus::Token Langulus::RTTI::Inner::IsolateTypename() [T = ";
          constexpr Token Suffix = "]";
       #elif defined(__GNUC__) && !defined(__clang__)
-         constexpr Token Prefix = "constexpr Langulus::Token Langulus::RTTI::Inner::AsTemplateArgument() [with T = ";
+         constexpr Token Prefix = "constexpr Langulus::Token Langulus::RTTI::Inner::IsolateTypename() [with T = ";
          constexpr Token Suffix = "; Langulus::Token = std::basic_string_view<char>]";
       #elif defined(_MSC_VER)
-         constexpr Token Prefix = "class std::basic_string_view<char,struct std::char_traits<char> > __cdecl Langulus::RTTI::Inner::AsTemplateArgument<";
+         constexpr Token Prefix = "class std::basic_string_view<char,struct std::char_traits<char> > __cdecl Langulus::RTTI::Inner::IsolateTypename<";
          constexpr Token Suffix = ">(void)";
       #else
          #error "No support for this compiler, \
@@ -34,22 +34,10 @@ namespace Langulus::RTTI
             (see above)"
       #endif
 
-      /// Pretty function used to wrap a type as a template argument          
-      /// Once we wrap and stringify it, we can isolate the typename itself   
-      ///   @tparam T - the type to get the name of                           
-      template<class T>
-      NOD() constexpr Token AsTemplateArgument() {
-         return LANGULUS(FUNCTION);
-      }
-
-      /// Pretty function used to wrap a constexpr constant as a template     
-      /// argument. Once we wrap and stringify it, we can isolate the name of 
-      /// an enum, if it's a named constant                                   
-      ///   @tparam T - the constant to get the name of                       
-      template<auto T>
-      NOD() constexpr Token AsTemplateArgument() {
-         return LANGULUS(FUNCTION);
-      }
+      /// Skip these patterns when demangling names                           
+      constexpr Token SkipPatterns[] {
+         "class", "struct", "enum", "Langulus::"
+      };
 
       /// Filter a literal matching at the front                              
       ///   @param str - the string view to modify as constexpr               
@@ -71,7 +59,7 @@ namespace Langulus::RTTI
       ///   @return the modified constexpr string view                        
       template<class T>
       NOD() constexpr Token IsolateTypename() {
-         auto original = AsTemplateArgument<T>();
+         Token original = LANGULUS(FUNCTION);
          SkipPrefix(original, Prefix);
          SkipSuffix(original, Suffix);
          return original;
@@ -83,17 +71,12 @@ namespace Langulus::RTTI
       ///   @return the modified constexpr string view                        
       template<auto T>
       NOD() constexpr Token IsolateConstant() {
-         auto original = AsTemplateArgument<T>();
+         Token original = LANGULUS(FUNCTION);
          SkipPrefix(original, Prefix);
          SkipSuffix(original, Suffix);
          return original;
       }
 
-      /// Skip these patterns when demangling names                           
-      constexpr Token SkipPatterns[] {
-         "class", "struct", "enum", "Langulus::"
-      };
-      
       /// Replace these patterns when demangling names                        
       constexpr ::std::pair<Token, Token> ReplacePatterns[] {
          {"const",  "const "},
@@ -109,102 +92,126 @@ namespace Langulus::RTTI
          {IsolateTypename<::std::uint64_t>(), "uint64"},
       };
 
+      /// Check if a token transition happens at the given offsets            
+      ///   @param source - what are we checking                              
+      ///   @param remaining - part of source that is potentially transitive  
+      ///   @param s - the offset in remaining to check if transitive         
+      ///   @return true if a transition occurs at the given offset           
+      NOD() constexpr bool IsTransition(const Token& source, const Token& remaining, Count s) {
+         return (
+               remaining.data() == source.data()
+               || IsAlpha(*(remaining.data()))
+               != IsAlpha(*(remaining.data() - 1))
+            ) && (
+               remaining.data() + s == source.data() + source.size()
+               || IsAlpha(*(remaining.data() + s))
+               != IsAlpha(*(remaining.data() + s - 1))
+            );
+      }
+
+      /// Perform a potential skip                                            
+      ///   @param remaining - [in/out] the remaining token                   
+      ///   @param recycle - [out]                                            
+      constexpr void Skip(const Token& source, Token& remaining, bool& recycle) {
+         while (remaining.size() > 0 && IsSpace(remaining[0])) {
+            remaining.remove_prefix(1);
+            recycle = true;
+         }
+
+         for (auto skip : SkipPatterns) {
+            if (!remaining.starts_with(skip))
+               continue;
+
+            // Skip the symbol only if it is at the border of an        
+            // alphabetical sequence, or at the edge of Original        
+            if (IsTransition(source, remaining, skip.size())) {
+               remaining.remove_prefix(skip.size());
+               recycle = true;
+               break;
+            }
+         }
+      }
+
+      /// Do the skip/replace scan without writing to any buffer, in order    
+      /// to anticipate the required buffer size                              
+      ///   @attention this function should be in sync with Normalize()       
+      ///   @return the required buffer size in bytes                         
+      NOD() constexpr ::std::size_t AnticipateSizeOfType(const Token& source) {
+         ::std::size_t it = 0;
+
+         Token remaining = source;
+         while (remaining.size() > 0) {
+            bool recycle = false;
+
+            // Do skips                                                 
+            Skip(source, remaining, recycle);
+            if (recycle || remaining.size() == 0)
+               continue;
+
+            // Do replacements                                          
+            for (auto replace : ReplacePatterns) {
+               if (!remaining.starts_with(replace.first))
+                  continue;
+
+               if (IsTransition(source, remaining, replace.first.size())) {
+                  it += replace.second.size();
+                  remaining.remove_prefix(replace.first.size());
+                  recycle = true;
+                  break;
+               }
+            }
+
+            if (recycle || remaining.size() == 0)
+               continue;
+
+            // Push anything else                                       
+            ++it;
+            remaining.remove_prefix(1);
+         }
+
+         ++it;
+         return it;
+      }
+
+      /// Do the skip/replace scan without writing to any buffer, in order    
+      /// to anticipate the required buffer size                              
+      ///   @attention this function should be in sync with Normalize()       
+      ///   @return the required buffer size in bytes                         
+      NOD() constexpr ::std::size_t AnticipateSizeOfEnum(const Token& source, const Token& enumName) {
+         ::std::size_t it = 0;
+
+         // Copy the normalized enum name                               
+         it += enumName.size();
+
+         // And reappend the named value                                
+         it += 2;
+
+         const auto nameStart = source.find_last_of(':');
+         auto name = source;
+         name.remove_prefix(nameStart + 1);
+         it += name.size();
+         return ++it;
+      }
+
       /// Inner structure, used to retain state computed at compile time      
       /// It's a workaround for the lack of static variables in constexpr     
       /// functions in c++20                                                  
       template<class T>
       struct StatefulNameOfType {
-         static constexpr Token Original = IsolateTypename<T>();
-
-         /// Check if a token transition happens at the given offsets         
-         static constexpr bool IsTransition(const Token& remaining, Count s) {
-            return (
-                  remaining.data() == Original.data()
-               || IsAlpha(*(remaining.data()    ))
-               != IsAlpha(*(remaining.data() - 1))
-            ) && (
-                  remaining.data() + s == Original.data() + Original.size()
-               || IsAlpha(*(remaining.data() + s    ))
-               != IsAlpha(*(remaining.data() + s - 1))
-            );
-         }
-
-         /// Perform a potential skip                                         
-         ///   @param remaining - [in/out] the remaining token                
-         ///   @param recycle - [out]                                         
-         static constexpr void Skip(Token& remaining, bool& recycle) {
-            while (remaining.size() > 0 && IsSpace(remaining[0])) {
-               remaining.remove_prefix(1);
-               recycle = true;
-            }
-
-            for (auto skip : SkipPatterns) {
-               if (!remaining.starts_with(skip))
-                  continue;
-
-               // Skip the symbol only if it is at the border of an     
-               // alphabetical sequence, or at the edge of Original     
-               if (IsTransition(remaining, skip.size())) {
-                  remaining.remove_prefix(skip.size());
-                  recycle = true;
-                  break;
-               }
-            }
-         }
-
-         /// Do the skip/replace scan without writing to any buffer, in order 
-         /// to anticipate the required buffer size                           
-         ///   @attention this function should be in sync with Normalize()    
-         ///   @return the required buffer size in bytes                      
-         NOD() static constexpr ::std::size_t AnticipateSize() {
-            ::std::size_t it = 0;
-            Token remaining = Original;
-            while (remaining.size() > 0) {
-               bool recycle = false;
-
-               // Do skips                                              
-               Skip(remaining, recycle);
-               if (recycle || remaining.size() == 0)
-                  continue;
-               
-               // Do replacements                                       
-               for (auto replace : ReplacePatterns) {
-                  if (!remaining.starts_with(replace.first))
-                     continue;
-
-                  if (IsTransition(remaining, replace.first.size())) {
-                     it += replace.second.size();
-                     remaining.remove_prefix(replace.first.size());
-                     recycle = true;
-                     break;
-                  }
-               }
-
-               if (recycle || remaining.size() == 0)
-                  continue;
-
-               // Push anything else                                    
-               ++it;
-               remaining.remove_prefix(1);
-            }
-
-            ++it;
-            return it;
-         }
-
          /// Do the skip/replace scan and return the demangled name           
          ///   @attention this function should be in sync with Anticipate()   
          ///   @return the normalized compile-time token for T                
          NOD() static constexpr auto Normalize() {
+            constexpr Token Original = IsolateTypename<T>();
             ::std::size_t it = 0;
-            ::std::array<char, AnticipateSize()> output {};
+            ::std::array<char, AnticipateSizeOfType(Original)> output {};
 
             Token remaining = Original;
             while (remaining.size() > 0) {
                bool recycle = false;
 
                // Do skips                                              
-               Skip(remaining, recycle);
+               Skip(Original, remaining, recycle);
                if (recycle || remaining.size() == 0)
                   continue;
                
@@ -213,7 +220,7 @@ namespace Langulus::RTTI
                   if (!remaining.starts_with(replace.first))
                      continue;
 
-                  if (IsTransition(remaining, replace.first.size())) {
+                  if (IsTransition(Original, remaining, replace.first.size())) {
                      for (auto c : replace.second)
                         output[it++] = c;
 
@@ -248,40 +255,15 @@ namespace Langulus::RTTI
       /// functions in c++20                                                  
       template<auto E>
       struct StatefulNameOfEnum {
-         static constexpr Token Original = IsolateConstant<E>();
-         static constexpr Token EnumName = StatefulNameOfType<decltype(E)>::Name.data();
-
-         /// Do the skip/replace scan without writing to any buffer, in order 
-         /// to anticipate the required buffer size                           
-         ///   @attention this function should be in sync with Normalize()    
-         ///   @return the required buffer size in bytes                      
-         NOD() static constexpr ::std::size_t AnticipateSize() {
-            ::std::size_t it = 0;
-
-            // Copy the normalized enum name                            
-            it += EnumName.size();
-
-            // And reappend the named value                             
-            it += 2;
-
-            constexpr auto nameStart = Original.find_last_of(':');
-            if constexpr (nameStart != Original.npos) {
-               auto name = Original;
-               name.remove_prefix(nameStart + 1);
-               it += name.size();
-            }
-            else LANGULUS_ERROR("Bad named value provided");
-
-            ++it;
-            return it;
-         }
-
          /// Do the skip/replace scan and return the demangled name           
          ///   @attention this function should be in sync with Anticipate()   
          ///   @return the normalized compile-time token for E                
          NOD() static constexpr auto Normalize() {
+            constexpr Token Original = IsolateConstant<E>();
+            constexpr Token EnumName = StatefulNameOfType<decltype(E)>::Name.data();
+
             ::std::size_t it = 0;
-            ::std::array<char, AnticipateSize()> output {};
+            ::std::array<char, AnticipateSizeOfEnum(Original, EnumName)> output {};
 
             // Copy the normalized enum name                            
             for (auto c : EnumName)
@@ -308,7 +290,6 @@ namespace Langulus::RTTI
       };
 
    } // namespace Inner
-
 
    /// Get the name of a type, templated or not, with consistently named      
    /// template arguments, even if nested, if such are required               
