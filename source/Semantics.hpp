@@ -714,62 +714,62 @@ namespace Langulus::CT
 
    /// Check if origin T is disown-constructible                              
    template<class... T>
-   concept DisownMakable = ((Complete<Decay<T>>
-      && Inner::DisownMakable<Decay<T>>) && ...);
+   concept DisownMakable = Complete<Decay<T>...>
+      && (Inner::DisownMakable<Decay<T>> && ...);
 
    /// Check if origin T is disown-assignable if mutable                      
    template<class... T>
-   concept DisownAssignable = ((Complete<Decay<T>>
-      && Inner::DisownAssignable<Decay<T>>) && ...);
+   concept DisownAssignable = Complete<Decay<T>...>
+      && (Inner::DisownAssignable<Decay<T>> && ...);
 
    /// Check if origin T is clone-constructible                               
    template<class... T>
-   concept CloneMakable = ((Complete<Decay<T>>
-      && Inner::CloneMakable<Decay<T>>) && ...);
+   concept CloneMakable = Complete<Decay<T>...>
+      && (Inner::CloneMakable<Decay<T>> && ...);
 
    /// Check if origin T is clone-assignable if mutable                       
    template<class... T>
-   concept CloneAssignable = ((Complete<Decay<T>>
-      && Inner::CloneAssignable<Decay<T>>) && ...);
+   concept CloneAssignable = Complete<Decay<T>...>
+      && (Inner::CloneAssignable<Decay<T>> && ...);
 
    /// Check if origin T is abandon-constructible                             
    template<class... T>
-   concept AbandonMakable = ((Complete<Decay<T>>
-      && Inner::AbandonMakable<Decay<T>>) && ...);
+   concept AbandonMakable = Complete<Decay<T>...>
+      && (Inner::AbandonMakable<Decay<T>> && ...);
 
    /// Check if origin T is abandon-assignable if mutable                     
    template<class... T>
-   concept AbandonAssignable = ((Complete<Decay<T>>
-      && Inner::AbandonAssignable<Decay<T>>) && ...);
+   concept AbandonAssignable = Complete<Decay<T>...>
+      && (Inner::AbandonAssignable<Decay<T>> && ...);
 
    /// Check if origin T is copy-constructible                                
    template<class... T>
-   concept CopyMakable = ((Complete<Decay<T>>
-      && Inner::CopyMakable<Decay<T>>) && ...);
+   concept CopyMakable = Complete<Decay<T>...>
+      && (Inner::CopyMakable<Decay<T>> && ...);
 
    /// Check if origin T is copy-assignable                                   
    template<class... T>
-   concept CopyAssignable = ((Complete<Decay<T>>
-      && Inner::CopyAssignable<Decay<T>>) && ...);
+   concept CopyAssignable = Complete<Decay<T>...>
+      && (Inner::CopyAssignable<Decay<T>> && ...);
          
    /// Check if origin T is move-constructible                                
    template<class... T>
-   concept MoveMakable = ((Complete<Decay<T>>
-      && Inner::MoveMakable<Decay<T>>) && ...);
+   concept MoveMakable = Complete<Decay<T>...>
+      && (Inner::MoveMakable<Decay<T>> && ...);
 
    /// Check if origin T is move-assignable                                   
    template<class... T>
-   concept MoveAssignable = ((Complete<Decay<T>>
-      && Inner::MoveAssignable<Decay<T>>) && ...);
+   concept MoveAssignable = Complete<Decay<T>...>
+      && (Inner::MoveAssignable<Decay<T>> && ...);
 
    /// Check if origin T is semantic-constructible by semantic S              
    template<class S, class... T>
-   concept SemanticMakable = ((Complete<Decay<T>>
-      && Inner::SemanticMakable<S, Decay<T>>) && ...);
+   concept SemanticMakable = Complete<Decay<T>...>
+      && (Inner::SemanticMakable<S, Decay<T>> && ...);
 
    /// Check if origin T is semantic-assignable by semantic S, if mutable     
    template<class S, class... T>
-   concept SemanticAssignable = ((Complete<Decay<T>>
-      && Inner::SemanticAssignable<S, Decay<T>>) && ...);
+   concept SemanticAssignable = Complete<Decay<T>...>
+      && (Inner::SemanticAssignable<S, Decay<T>> && ...);
 
 } // namespace Langulus::CT
