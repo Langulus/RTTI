@@ -290,7 +290,7 @@ namespace Langulus::CT
    concept Uninsertable = (Inner::Uninsertable<Decay<T>> && ...);
 
    template<class... T>
-   concept Insertable = !Uninsertable<T...>;
+   concept Insertable = (!Inner::Uninsertable<Decay<T>> && ...);
 
    /// You can make types unallocatable by the memory manager. This serves    
    /// not only as forcing the type to be either allocated by conventional    
@@ -300,7 +300,7 @@ namespace Langulus::CT
    concept Unallocatable = ((Inner::Unallocatable<Decay<T>> && Dense<T>) && ...);
 
    template<class... T>
-   concept Allocatable = !Unallocatable<T...>;
+   concept Allocatable = ((!Inner::Unallocatable<Decay<T>> && Dense<T>) && ...);
 
    /// A POD (Plain Old Data) type is any type with a static member           
    /// T::CTTI_POD set to true. If no such member exists, the type is         
