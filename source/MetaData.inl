@@ -274,7 +274,7 @@ namespace Langulus::RTTI
 
       return {
          MetaData::Of<DTO>(),
-         +[](const void* from, void* to) {
+         [](const void* from, void* to) {
             auto fromT = reinterpret_cast<const T*>(from);
             auto toT = reinterpret_cast<TO*>(to);
 
