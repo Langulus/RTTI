@@ -410,9 +410,12 @@ namespace Langulus
    ///   @tparam S - the semantic to use (deducible)                          
    ///   @param value - the constructor argument and the semantic             
    ///   @return the instance on the stack                                    
-   template<class T, CT::Semantic S>
+   template<CT::NotSemantic T, CT::Semantic S>
    NOD() LANGULUS(INLINED)
    auto SemanticMake(S&& value) {
+      static_assert(CT::Exact<TypeOf<S>, T>,
+         "S type must be exactly T (build-time optimization)");
+
       if constexpr (CT::Complete<T>) {
          using A = TypeOf<S>;
 
@@ -451,9 +454,12 @@ namespace Langulus
    ///   @tparam S - the semantic to use (deducible)                          
    ///   @param value - the constructor arguments and the semantic            
    ///   @return the instance on the heap                                     
-   template<class T, CT::Semantic S>
+   template<CT::NotSemantic T, CT::Semantic S>
    NOD() LANGULUS(INLINED)
    auto SemanticNew(S&& value) {
+      static_assert(CT::Exact<TypeOf<S>, T>,
+         "S type must be exactly T (build-time optimization)");
+
       if constexpr (CT::Complete<T>) {
          using A = TypeOf<S>;
 
@@ -495,9 +501,12 @@ namespace Langulus
    ///   @param placement - where to place the new instance                   
    ///   @param value - the constructor arguments and the semantic            
    ///   @return the instance on the heap                                     
-   template<class T, CT::Semantic S>
+   template<CT::NotSemantic T, CT::Semantic S>
    LANGULUS(INLINED)
    auto SemanticNew(void* placement, S&& value) {
+      static_assert(CT::Exact<TypeOf<S>, T>,
+         "S type must be exactly T (build-time optimization)");
+
       if constexpr (CT::Complete<T>) {
          LANGULUS_ASSUME(DevAssumes, placement, "Invalid placement pointer");
 
@@ -600,9 +609,12 @@ namespace Langulus
    ///   @param lhs - left hand side (what are we assigning to)               
    ///   @param rhs - right hand side (what are we assigning)                 
    ///   @return whatever the assignment operator returns                     
-   template<class T, CT::Semantic S>
+   template<CT::NotSemantic T, CT::Semantic S>
    LANGULUS(INLINED)
    decltype(auto) SemanticAssign(T& lhs, S&& rhs) {
+      static_assert(CT::Exact<TypeOf<S>, T>,
+         "S type must be exactly T (build-time optimization)");
+
       if constexpr (S::Move) {
          if constexpr (!S::Keep && requires(T& a) { a = Abandon(*rhs); })
             return (lhs = Abandon(*rhs));
