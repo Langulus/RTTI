@@ -7,6 +7,8 @@
 ///                                                                           
 #pragma once
 #include <Core/Exceptions.hpp>
+#include <Logger/Logger.hpp>
+
 
 /// Reflections will be registered in a centralized location, allowing for    
 /// runtime type modification. Meta primitives will always be in the same     

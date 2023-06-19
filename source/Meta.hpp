@@ -7,6 +7,7 @@
 ///                                                                           
 #pragma once
 #include "Reflection.hpp"
+#include <Core/Utilities.hpp>
 #include <vector>
 
 namespace Langulus::RTTI
@@ -98,3 +99,59 @@ namespace std
    };
 
 } // namespace std
+
+namespace fmt
+{
+
+   ///                                                                        
+   /// Extend FMT to be capable of logging any type with reflected named      
+   /// values                                                                 
+   ///                                                                        
+   template<Langulus::CT::HasNamedValues T>
+   struct formatter<T> {
+      template<class CONTEXT>
+      constexpr auto parse(CONTEXT& ctx) {
+         return ctx.begin();
+      }
+
+      template<class CONTEXT>
+      LANGULUS(INLINED)
+      auto format(T const& value, CONTEXT& ctx) {
+         using namespace Langulus;
+         using DT = Decay<T>;
+         auto& denseValue = DenseCast(value);
+         for (auto& constant : DT::CTTI_NamedValues) {
+            if (DT {constant.mValue} != denseValue)
+               continue;
+
+            return fmt::format_to(ctx.out(), "{}", constant.mToken);
+         }
+
+         return fmt::format_to(ctx.out(), "<bad named value>");
+      }
+   };
+   
+   ///                                                                        
+   /// Extend FMT to be capable of logging any meta definition                
+   ///                                                                        
+   template<Langulus::CT::Meta T>
+   struct formatter<T> {
+      template<class CONTEXT>
+      constexpr auto parse(CONTEXT& ctx) {
+         return ctx.begin();
+      }
+
+      template<class CONTEXT>
+      LANGULUS(INLINED)
+      auto format(T const& meta, CONTEXT& ctx) {
+         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+            auto asView = meta.GetShortestUnambiguousToken();
+         #else
+            auto asView = meta.mToken;
+         #endif
+
+         return fmt::format_to(ctx.out(), "{}", asView);
+      }
+   };
+
+} // namespace fmt

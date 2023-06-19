@@ -259,6 +259,11 @@ namespace Langulus::CT
       concept Typed = Complete<T> && requires {
          typename T::CTTI_InnerType;
       };
+      
+      template<class T>
+      concept HasNamedValues = Complete<T> && requires {
+         T::CTTI_NamedValues;
+      };
 
       /// Convenience function that wraps std::underlying_type_t for enums,   
       /// as well as anything with CTTI_InnerType defined                     
@@ -340,6 +345,10 @@ namespace Langulus::CT
    /// Use LANGULUS(PRODUCER) macro as member to tag such types               
    template<class... T>
    concept Producible = (Inner::Producible<Decay<T>> && ...);
+   
+   /// Check if a type has reflected named values                             
+   template<class... T>
+   concept HasNamedValues = (Inner::HasNamedValues<Decay<T>> && ...);
 
    /// Get the reflected producer type                                        
    template<class T>

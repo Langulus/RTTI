@@ -12,6 +12,8 @@ namespace Langulus::RTTI
 {
    
    /// Get the reflected token for a type                                     
+   /// If type wasn't reflected with LANGULUS(NAME), then the original C++    
+   /// name will be used                                                      
    ///   @return the token                                                    
    template<CT::Data T>
    constexpr Token MetaTrait::GetReflectedToken() noexcept {
@@ -21,6 +23,8 @@ namespace Langulus::RTTI
          return CppNameOf<T>();
    }
 
+   /// Get the meta definition of a void trait                                
+   ///   @return always nullptr                                               
    template<CT::Void T>
    constexpr TMeta MetaTrait::Of() {
       return nullptr;
@@ -122,6 +126,9 @@ namespace Langulus::RTTI
       return Is(MetaTrait::Of<T>());
    }
    
+   /// Compare two meta definitions                                           
+   ///   @param rhs - the right hand trait                                    
+   ///   @return true if both definitions are the exact same                  
    LANGULUS(INLINED)
    bool MetaTrait::operator == (const MetaTrait& rhs) const noexcept {
       return Is(&rhs);

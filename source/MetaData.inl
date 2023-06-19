@@ -875,7 +875,7 @@ namespace Langulus::RTTI
          generated.SetConverters<T>(typename T::CTTI_Conversions {});
 
       // Reflected named values if this type is origin type             
-      if constexpr (requires { T::CTTI_NamedValues; }) {
+      if constexpr (CT::HasNamedValues<T>) {
          static_assert(CT::Comparable<T, T>, 
             "Named values specified for type, but type instances are not comparable");
 
@@ -886,6 +886,7 @@ namespace Langulus::RTTI
             static constinit ::std::unique_ptr<MetaConst> staticMC[c] {};
          #endif
 
+         // Register each named values as a reflected constant          
          for (Offset i = 0; i < c; ++i) {
             staticNames[i] += generated.mToken;
             staticNames[i] += "::";
