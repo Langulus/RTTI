@@ -38,8 +38,11 @@ namespace Langulus::RTTI
    LANGULUS(NOINLINE)
    TMeta MetaTrait::Of() {
       // This check is not standard, but doesn't hurt afaik             
-      static_assert(sizeof(T) > 0, "Can't reflect an incomplete type");
-      
+      static_assert(sizeof(T) > 0,
+         "Can't reflect an incomplete type");
+      static_assert(!GetReflectedToken<T>().empty(),
+         "Invalid trait token is not allowed");
+
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
          // previously in another library. Unfortunately we can't keep  

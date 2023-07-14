@@ -364,4 +364,28 @@ namespace Langulus
       return RTTI::CppNameOf<E>();
    }
 
+   template<class CLASS>
+   struct Of {};
+
+   ///                                                                        
+   /// A constexpr custom name generator used in various places               
+   /// You have to define CustomName(Of<your type>)                           
+   ///                                                                        
+   template<class CLASS>
+   constexpr auto CustomName(Of<CLASS>&&) noexcept;
+
+   template<class CLASS>
+   struct CustomNameOf {
+   private:
+      // This intermediate step is required, so that we don't get:      
+      // warning : object backing the pointer will be destroyed at the  
+      //           end of the full-expression [-Wdangling-gsl]          
+      static constexpr auto GeneratedClassName = CustomName(Of<CLASS> {});
+
+   public:
+      static constexpr Token Generate() noexcept {
+         return Token {GeneratedClassName.data()};
+      }
+   };
+
 } // namespace Langulus

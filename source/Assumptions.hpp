@@ -27,8 +27,7 @@ namespace Langulus
    ///   @param message - an error message if condition doesn't hold          
    ///   @param location - the location of the error, if any                  
    template<unsigned LEVEL, class EXCEPTION = Except::Assertion, class... MORE>
-   LANGULUS(INLINED)
-   SAFETY_CONSTEXPR()
+   LANGULUS(INLINED) SAFETY_CONSTEXPR()
    void Assume(
       bool condition, 
       const char* message = "<unknown assumption failure>", 
@@ -39,17 +38,20 @@ namespace Langulus
          if (!condition) {
             // Log error message                                        
             if constexpr (LEVEL == 0)
-               Logger::Error("Assertion failure: ", message, " at ", location);
+               Logger::Error("Assertion failure: ",
+                  message, Forward<MORE>(additional_messages)...);
             else if constexpr (LEVEL == UserAssumes)
-               Logger::Error("User assumption failure: ", message, " at ", location);
+               Logger::Error("User assumption failure: ",
+                  message, Forward<MORE>(additional_messages)...);
             else if constexpr (LEVEL == DevAssumes)
-               Logger::Error("Dev assumption failure: ", message, " at ", location);
+               Logger::Error("Dev assumption failure: ",
+                  message, Forward<MORE>(additional_messages)...);
             else 
-               Logger::Error("Assumption level ", LEVEL," failure: ", message, " at ", location);
+               Logger::Error("Assumption level ", LEVEL," failure: ",
+                  message, Forward<MORE>(additional_messages)...);
 
-            // Log additional stuff, if provided                        
-            if constexpr (sizeof...(additional_messages))
-               Logger::Error(additional_messages...);
+            // Log location                                             
+            Logger::Error("At ", location);
 
             // Throw                                                    
             Throw<EXCEPTION>(message, location);

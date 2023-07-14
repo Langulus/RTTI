@@ -387,6 +387,7 @@ namespace Langulus::RTTI
    DMeta MetaData::Of() {
       static_assert(CT::Complete<T>, "Can't reflect incomplete type");
       static_assert(!CT::Array<T>, "Can't reflect a bounded array type");
+      static_assert(!NameOf<T>().empty(), "Invalid data token is not allowed");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
@@ -475,6 +476,7 @@ namespace Langulus::RTTI
    DMeta MetaData::Of() requires CT::Constant<T> {
       static_assert(CT::Complete<T>, "Can't reflect incomplete type");
       static_assert(!CT::Array<T>, "Can't reflect a bounded array type");
+      static_assert(!NameOf<T>().empty(), "Invalid data token is not allowed");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
@@ -540,6 +542,7 @@ namespace Langulus::RTTI
    DMeta MetaData::Of() requires CT::Mutable<T> {
       static_assert(CT::Complete<T>, "Can't reflect incomplete type");
       static_assert(!CT::Array<T>, "Can't reflect a bounded array type");
+      static_assert(!NameOf<T>().empty(), "Invalid data token is not allowed");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
