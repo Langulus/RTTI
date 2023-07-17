@@ -62,31 +62,41 @@ namespace Langulus
 } // namespace Langulus
 
 
-/// Convenience macro for declaring an assumption                             
-/// Throws Except::Assertion if condition isn't met                           
-///   @param level - the level at which assumption will be checked -          
-/// if level is larger than LANGULUS_SAFE(), no check will be performed;      
-/// Zero level assumptions are always checked                                 
-///   @param condition - the condition to check for failure                   
-///   @param message - the exception message, if condition doesn't hold       
-#if LANGULUS_COMPILER(CLANG) || LANGULUS_COMPILER(GCC)
-   #define LANGULUS_ASSUME(level, condition, message, ...) \
-      ::Langulus::Assume<level>(condition, message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
+#if LANGULUS(DEBUG)
+   /// Convenience macro for declaring an assumption                          
+   /// Throws Except::Assertion if condition isn't met                        
+   ///   @param level - the level at which assumption will be checked -       
+   /// if level is larger than LANGULUS_SAFE(), no check will be performed;   
+   /// Zero level assumptions are always checked                              
+   ///   @param condition - the condition to check for failure                
+   ///   @param message - the exception message, if condition doesn't hold    
+   #if LANGULUS_COMPILER(CLANG) || LANGULUS_COMPILER(GCC)
+      #define LANGULUS_ASSUME(level, condition, message, ...) \
+         ::Langulus::Assume<level>(condition, message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
 
-   #define LANGULUS_ASSERT(condition, exception, message, ...) \
-      ::Langulus::Assume<0, ::Langulus::Except::exception>(condition, message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
+      #define LANGULUS_ASSERT(condition, exception, message, ...) \
+         ::Langulus::Assume<0, ::Langulus::Except::exception>(condition, message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
 
-   #define LANGULUS_THROW(exception, message, ...) \
-      ::Langulus::Throw<::Langulus::Except::exception>(message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
+      #define LANGULUS_THROW(exception, message, ...) \
+         ::Langulus::Throw<::Langulus::Except::exception>(message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
+   #else
+      #define LANGULUS_ASSUME(level, condition, message, ...) \
+         ::Langulus::Assume<level>(condition, message, LANGULUS_LOCATION(), __VA_ARGS__)
+
+      #define LANGULUS_ASSERT(condition, exception, message, ...) \
+         ::Langulus::Assume<0, ::Langulus::Except::exception>(condition, message, LANGULUS_LOCATION(), __VA_ARGS__)
+
+      #define LANGULUS_THROW(exception, message, ...) \
+         ::Langulus::Throw<::Langulus::Except::exception>(message, LANGULUS_LOCATION(), __VA_ARGS__)
+   #endif
 #else
-   #define LANGULUS_ASSUME(level, condition, message, ...) \
-      ::Langulus::Assume<level>(condition, message, LANGULUS_LOCATION(), __VA_ARGS__)
+   #define LANGULUS_ASSUME(level, condition, message, ...) 
 
    #define LANGULUS_ASSERT(condition, exception, message, ...) \
-      ::Langulus::Assume<0, ::Langulus::Except::exception>(condition, message, LANGULUS_LOCATION(), __VA_ARGS__)
+      ::Langulus::Assume<0, ::Langulus::Except::exception>(condition)
 
    #define LANGULUS_THROW(exception, message, ...) \
-      ::Langulus::Throw<::Langulus::Except::exception>(message, LANGULUS_LOCATION(), __VA_ARGS__)
+      ::Langulus::Throw<::Langulus::Except::exception>()
 #endif
 
 /// Convenience macro for specifying temporary lazyness                       
