@@ -104,7 +104,8 @@
    public: static constexpr ::Langulus::Count CTTI_VersionMinor = 
 
 /// You can mark types as deep by using LANGULUS(DEEP) true / false inside    
-/// class, but to fit into CT::Deep concept, your type must also inherit Block
+/// class, but to fit into CT::Deep concept, your type must also inherit, and 
+/// be the same size as an Anyness::Block                                     
 #define LANGULUS_DEEP() \
    public: static constexpr bool CTTI_Deep = 
 
@@ -133,8 +134,8 @@
 #define LANGULUS_CONCRETE() \
    public: using CTTI_Concrete = 
 
-/// You can make types producible only by executing a Verbs::Create in        
-/// a provided type                                                           
+/// You can make types producible only by executing a Verbs::Create in the    
+/// context of specific producer                                              
 #define LANGULUS_PRODUCER() \
    public: using CTTI_Producer = 
 
@@ -148,7 +149,7 @@
 /// You can make types unallocatable by the memory manager. This serves not   
 /// only as forcing the type to be either allocated by conventional C++ means,
 /// or on the stack, but also optimizes away any memory manager searches,     
-/// when inserting pointers, when managed memory is enabled                   
+/// when inserting pointers (when managed memory is enabled)                  
 #define LANGULUS_UNALLOCATABLE() \
    public: static constexpr bool CTTI_Unallocatable =
 
@@ -159,6 +160,7 @@
    public: static constexpr ::Langulus::RTTI::CMetaTriplet<T> CTTI_NamedValues[] =
 
 /// You can give an optional suffix to your type                              
+/// That suffix is actively used when serializing to/deserializing from text  
 #define LANGULUS_SUFFIX() \
    public: static constexpr ::Langulus::Token CTTI_Suffix = 
 

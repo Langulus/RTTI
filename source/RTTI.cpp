@@ -10,7 +10,6 @@
 #include "MetaVerb.hpp"
 #include "MetaTrait.hpp"
 #include "Assumptions.hpp"
-#include <algorithm>
 #include <cctype>
 
 #define VERBOSE(...) //Logger::Verbose("RTTI: ", __VA_ARGS__)
@@ -30,17 +29,6 @@ namespace Langulus::RTTI
          delete pair.second;
       for (auto& pair : mUniqueVerbs)
          delete pair.second;
-   }
-
-   /// Convert a token to a lowercase string                                  
-   ///   @param token - the token to lowercase                                
-   ///   @return the lowercase string                                         
-   Lowercase ToLowercase(const Token& token) noexcept {
-      Lowercase lc {token};
-      ::std::transform(lc.begin(), lc.end(), lc.begin(),
-         [](char c) { return static_cast<char>(::std::tolower(c)); }
-      );
-      return lc;
    }
 
    /// Get the last, most relevant part of a token that may or may not have   
@@ -234,6 +222,19 @@ namespace Langulus::RTTI
       return *symbols.begin();
    }
 
+   /// Resolve a file extension                                               
+   ///   @param extension - the file extension to search for                  
+   ///   @return all meta definitions associated with the file extension      
+   const MetaList& Interface::ResolveFileExtension(const Token& extension) const {
+      const auto lc = ToLowercase(extension);
+      const auto found = mFileDatabase.find(lc);
+      if (found == mFileDatabase.end()) {
+         static MetaList fallback {};
+         return fallback;
+      }
+      return found->second;
+   }
+
    /// Register most relevant token to the ambiguous token map                
    ///   @param token - the token to register                                 
    ///   @param meta - the definition to add                                  
@@ -372,6 +373,19 @@ namespace Langulus::RTTI
       return newDefinition;
    }
 
+   /// Register file extension                                                
+   ///   @param token - the file extension token to reserve                   
+   ///   @param type - the data to associate file with                        
+   void Interface::RegisterFileExtension(const Token& token, DMeta type) SAFETY_NOEXCEPT() {
+      LANGULUS_ASSUME(DevAssumes, !token.empty(),
+         "Bad file extension");
+      LANGULUS_ASSUME(DevAssumes, type,
+         "Bad meta data for file extension ", token);
+
+      const auto lc = ToLowercase(token);
+      mFileDatabase[lc].emplace(type);
+   }
+
    /// Unregister a data definition                                           
    ///   @attention assumes definition is a valid pointer owned by this       
    ///   @attention definition may no longer be valid pointer after this call 
@@ -389,6 +403,26 @@ namespace Langulus::RTTI
       VERBOSE("Data ", definition->mToken, " unregistered");
       mMetaData.erase(lc);
       UnregisterAmbiguous(definition->mToken, definition);
+
+      // Unregister all file extensions                                 
+      const auto ext = definition->mFileExtensions;
+      Offset sequential = 0;
+      for (Offset e = 0; e < ext.size(); ++e) {
+         if (IsSpace(ext[e]) || ext[e] == ',') {
+            if (sequential) {
+               const auto lc = ToLowercase(
+                  ext.substr(e - sequential, sequential)
+               );
+               mFileDatabase[lc].erase(definition);
+            }
+
+            sequential = 0;
+            continue;
+         }
+
+         ++sequential;
+      }
+
       delete definition;
    }
 

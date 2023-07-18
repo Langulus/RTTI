@@ -12,8 +12,9 @@
 
 namespace Langulus::RTTI
 {
-   using Lowercase = ::std::string;
+
    using MetaList = ::std::unordered_set<const Meta*>;
+
 
    ///                                                                        
    ///   The RTTI interface                                                   
@@ -36,6 +37,8 @@ namespace Langulus::RTTI
       ::std::unordered_map<Lowercase, VMeta> mOperators;
       // Database for ambiguous tokens                                  
       ::std::unordered_map<Lowercase, MetaList> mMetaAmbiguous;
+      // Meta data definitions, indexed by file extensions              
+      ::std::unordered_map<Lowercase, MetaList> mFileDatabase;
 
       void RegisterAmbiguous(const Token&, const Meta*) noexcept;
       void UnregisterAmbiguous(const Token&, const Meta*) noexcept;
@@ -65,6 +68,9 @@ namespace Langulus::RTTI
       const Meta* DisambiguateMeta(const Token&) const;
 
       NOD() LANGULUS_API(RTTI)
+      const MetaList& ResolveFileExtension(const Token&) const;
+
+      NOD() LANGULUS_API(RTTI)
       DMeta RegisterData(const Token&) SAFETY_NOEXCEPT();
 
       NOD() LANGULUS_API(RTTI)
@@ -75,6 +81,9 @@ namespace Langulus::RTTI
 
       NOD() LANGULUS_API(RTTI)
       VMeta RegisterVerb(const Token&, const Token&, const Token&, const Token& = {}, const Token& = {}) SAFETY_NOEXCEPT();
+      
+      LANGULUS_API(RTTI)
+      void RegisterFileExtension(const Token&, DMeta) SAFETY_NOEXCEPT();
 
       LANGULUS_API(RTTI)
       void Unregister(DMeta) SAFETY_NOEXCEPT();

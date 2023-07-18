@@ -617,8 +617,29 @@ namespace Langulus::RTTI
                generated.mPoolTactic = PoolTactic::Type;
          #endif
 
-         if constexpr (requires { T::CTTI_Files; })
+         if constexpr (requires { T::CTTI_Files; }) {
             generated.mFileExtensions = T::CTTI_Files;
+
+            // Register all file extensions                             
+            const auto ext = generated.mFileExtensions;
+            Offset sequential = 0;
+            for (Offset e = 0; e < ext.size(); ++e) {
+               if (IsSpace(ext[e]) || ext[e] == ',') {
+                  if (sequential) {
+                     const auto lc = ToLowercase(
+                        ext.substr(e - sequential, sequential)
+                     );
+                     Database.RegisterFileExtension(lc, &generated);
+                  }
+
+                  sequential = 0;
+                  continue;
+               }
+
+               ++sequential;
+            }
+         }
+
          if constexpr (requires { T::CTTI_VersionMajor; })
             generated.mVersionMajor = T::CTTI_VersionMajor;
          if constexpr (requires { T::CTTI_VersionMinor; })
