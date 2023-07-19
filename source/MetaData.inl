@@ -620,24 +620,24 @@ namespace Langulus::RTTI
          if constexpr (requires { T::CTTI_Files; }) {
             generated.mFileExtensions = T::CTTI_Files;
 
-            // Register all file extensions                             
-            const auto ext = generated.mFileExtensions;
-            Offset sequential = 0;
-            for (Offset e = 0; e < ext.size(); ++e) {
-               if (IsSpace(ext[e]) || ext[e] == ',') {
-                  if (sequential) {
-                     const auto lc = ToLowercase(
-                        ext.substr(e - sequential, sequential)
-                     );
-                     Database.RegisterFileExtension(lc, &generated);
+            #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+               // Register all file extensions                          
+               const auto ext = generated.mFileExtensions;
+               Offset sequential = 0;
+               for (Offset e = 0; e < ext.size(); ++e) {
+                  if (IsSpace(ext[e]) || ext[e] == ',') {
+                     if (sequential) {
+                        const auto lc = ext.substr(e - sequential, sequential);
+                        Database.RegisterFileExtension(lc, &generated);
+                     }
+
+                     sequential = 0;
+                     continue;
                   }
 
-                  sequential = 0;
-                  continue;
+                  ++sequential;
                }
-
-               ++sequential;
-            }
+            #endif
          }
 
          if constexpr (requires { T::CTTI_VersionMajor; })
