@@ -28,6 +28,8 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
 		const auto n2t = MetaData::Of<N2::Type>();
 		const auto n3t = MetaData::Of<N3::type>();
 		const auto vvv = MetaVerb::Of<Verbs::Create>();
+		const auto complexMeta = MetaData::Of<ImplicitlyReflectedDataWithTraits>();
+
 		//const auto nnn = MetaData::Of<ImplicitlyReflectedData>();
 
 		WHEN("Meta is retrieved by exact token, that is not case-sensitive") {
@@ -41,6 +43,7 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
 			REQUIRE(n1t == RTTI::Database.GetMetaData("n1::type"));
 			REQUIRE(n2t == RTTI::Database.GetMetaData("n2::type"));
 			REQUIRE(n3t == RTTI::Database.GetMetaData("n3::type"));
+			REQUIRE(complexMeta == RTTI::Database.GetMetaData("MyType"));
 			REQUIRE(nullptr == RTTI::Database.GetMetaData("Create"));
 			REQUIRE(vvv == RTTI::Database.GetMetaVerb("Create"));
 			REQUIRE(nullptr == RTTI::Database.GetMetaVerb("N1::Type"));
@@ -52,6 +55,7 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
 			auto found3 = RTTI::Database.GetAmbiguousMeta("one");
 			auto found4 = RTTI::Database.GetAmbiguousMeta("two");
 			auto found5 = RTTI::Database.GetAmbiguousMeta("three");
+			auto found6 = RTTI::Database.GetAmbiguousMeta("MyType");
 			REQUIRE(found.size() == 6);
 			REQUIRE(found.find(n1t) != found.end());
 			REQUIRE(found.find(n2t) != found.end());
@@ -62,6 +66,24 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
 			REQUIRE(found3.size() == 2);
 			REQUIRE(found4.size() == 2);
 			REQUIRE(found5.size() == 2);
+			REQUIRE(found6.size() == 1);
+		}
+
+		WHEN("Meta is retrieved by reflected file extension") {
+			auto foundtxt = RTTI::Database.ResolveFileExtension("txt");
+			REQUIRE(foundtxt.size() == 1);
+			REQUIRE(*foundtxt.begin() == MetaData::Of<ImplicitlyReflectedDataWithTraits>());
+
+			auto foundpdf = RTTI::Database.ResolveFileExtension("PDF");
+			REQUIRE(foundpdf.size() == 1);
+			REQUIRE(*foundpdf.begin() == MetaData::Of<ImplicitlyReflectedDataWithTraits>());
+
+			auto foundase = RTTI::Database.ResolveFileExtension("ase");
+			REQUIRE(foundase.size() == 1);
+			REQUIRE(*foundase.begin() == MetaData::Of<ImplicitlyReflectedData>());
+
+			auto foundasenotfound = RTTI::Database.ResolveFileExtension("asenotfound");
+			REQUIRE(foundasenotfound.size() == 0);
 		}
 	}
 }

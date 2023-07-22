@@ -666,7 +666,7 @@ SCENARIO("A simple type reflected with CTTI traits", "[metadata]") {
             REQUIRE(meta->mToken == "ImplicitlyReflectedData");
             REQUIRE(meta->mCppName == "ImplicitlyReflectedData");
             REQUIRE(meta->mInfo == "<no info provided>");
-            REQUIRE(meta->mFileExtensions == "");
+            REQUIRE(meta->mFileExtensions == "ASE");
             REQUIRE(meta->mVersionMajor == 1);
             REQUIRE(meta->mVersionMinor == 0);
             REQUIRE(meta->mIsDeep == false);

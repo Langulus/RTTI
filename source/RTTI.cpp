@@ -423,6 +423,13 @@ namespace Langulus::RTTI
          ++sequential;
       }
 
+      if (sequential) {
+         const auto lc = ToLowercase(
+            ext.substr(ext.size() - sequential, sequential)
+         );
+         mFileDatabase[lc].erase(definition);
+      }
+
       delete definition;
    }
 

@@ -637,6 +637,11 @@ namespace Langulus::RTTI
 
                   ++sequential;
                }
+
+               if (sequential) {
+                  const auto lc = ext.substr(ext.size() - sequential, sequential);
+                  Database.RegisterFileExtension(lc, &generated);
+               }
             #endif
          }
 
