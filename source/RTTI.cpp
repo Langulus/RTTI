@@ -326,7 +326,13 @@ namespace Langulus::RTTI
    ///   @param op - the positive verb operator to reserve (optional)         
    ///   @param opReverse - the negative verb operator to reserve (optional)  
    ///   @return the newly defined meta verb for that token configuration     
-   VMeta Interface::RegisterVerb(const Token& cppname, const Token& token, const Token& tokenReverse, const Token& op, const Token& opReverse) SAFETY_NOEXCEPT() {
+   VMeta Interface::RegisterVerb(
+      const Token& cppname,
+      const Token& token,
+      const Token& tokenReverse,
+      const Token& op,
+      const Token& opReverse
+   ) SAFETY_NOEXCEPT() {
       const ::std::string cppnamed {cppname};
       LANGULUS_ASSUME(DevAssumes, mUniqueVerbs.find(cppnamed) == mUniqueVerbs.end(),
          "Verb already registered");
@@ -386,164 +392,6 @@ namespace Langulus::RTTI
       mFileDatabase[lc].emplace(type);
    }
 
-   /// Unregister a data definition                                           
-   ///   @attention assumes definition is a valid pointer owned by this       
-   ///   @attention definition may no longer be valid pointer after this call 
-   ///   @param definition - the definition to remove                         
-   void Interface::Unregister(DMeta definition) SAFETY_NOEXCEPT() {
-      --const_cast<MetaData*>(definition)->mReferences;
-      if (definition->mReferences)
-         return;
-
-      // Time to remove the definition entirely                         
-      const auto lc = ToLowercase(definition->mToken);
-      LANGULUS_ASSUME(DevAssumes, definition && definition == GetMetaData(lc),
-         "Bad DMeta definition");
-
-      VERBOSE("Data ", definition->mToken, " unregistered");
-      mMetaData.erase(lc);
-      UnregisterAmbiguous(definition->mToken, definition);
-
-      // Unregister all file extensions                                 
-      const auto ext = definition->mFileExtensions;
-      Offset sequential = 0;
-      for (Offset e = 0; e < ext.size(); ++e) {
-         if (IsSpace(ext[e]) || ext[e] == ',') {
-            if (sequential) {
-               const auto lc = ToLowercase(
-                  ext.substr(e - sequential, sequential)
-               );
-               mFileDatabase[lc].erase(definition);
-            }
-
-            sequential = 0;
-            continue;
-         }
-
-         ++sequential;
-      }
-
-      if (sequential) {
-         const auto lc = ToLowercase(
-            ext.substr(ext.size() - sequential, sequential)
-         );
-         mFileDatabase[lc].erase(definition);
-      }
-
-      delete definition;
-   }
-
-   /// Unregister a trait definition                                          
-   ///   @attention assumes definition is a valid pointer owned by this       
-   ///   @attention definition may no longer be valid pointer after this call 
-   ///   @param definition - the definition to remove                         
-   void Interface::Unregister(TMeta definition) SAFETY_NOEXCEPT() {
-      --const_cast<MetaTrait*>(definition)->mReferences;
-      if (definition->mReferences)
-         return;
-
-      // Time to remove the definition entirely                         
-      const auto lc = ToLowercase(definition->mToken);
-      LANGULUS_ASSUME(DevAssumes, definition && definition == GetMetaTrait(lc),
-         "Bad TMeta definition");
-
-      VERBOSE("Trait ", definition->mToken, " unregistered");
-      mMetaTraits.erase(lc);
-      UnregisterAmbiguous(definition->mToken, definition);
-      delete definition;
-   }
-
-   /// Unregister a constant definition                                       
-   ///   @attention assumes definition is a valid pointer owned by this       
-   ///   @attention definition may no longer be valid pointer after this call 
-   ///   @param definition - the definition to remove                         
-   void Interface::Unregister(CMeta definition) SAFETY_NOEXCEPT() {
-      --const_cast<MetaConst*>(definition)->mReferences;
-      if (definition->mReferences)
-         return;
-
-      // Time to remove the definition entirely                         
-      const auto lc = ToLowercase(definition->mToken);
-      LANGULUS_ASSUME(DevAssumes, definition && definition == GetMetaConstant(lc),
-         "Bad CMeta definition");
-
-      VERBOSE("Constant ", definition->mToken, " unregistered");
-      mMetaConstants.erase(lc);
-      UnregisterAmbiguous(definition->mToken, definition);
-      delete definition;
-   }
-
-   /// Unregister a verb definition                                           
-   ///   @attention assumes definition is a valid pointer owned by this       
-   ///   @attention definition may no longer be valid pointer after this call 
-   ///   @param definition - the definition to remove                         
-   void Interface::Unregister(VMeta definition) SAFETY_NOEXCEPT() {
-      --const_cast<MetaVerb*>(definition)->mReferences;
-      if (definition->mReferences)
-         return;
-
-      // Time to remove the definition entirely                         
-      const auto lc1 = ToLowercase(definition->mToken);
-      const auto lc2 = ToLowercase(definition->mTokenReverse);
-      LANGULUS_ASSUME(DevAssumes, 
-         definition && definition == GetMetaVerb(lc1)
-                    && definition == GetMetaVerb(lc2),
-         "Bad VMeta definition"
-      );
-
-      mMetaVerbs.erase(lc1);
-      mMetaVerbs.erase(lc2);
-
-      if (definition->mOperator.size()) {
-         const auto op1 = IsolateOperator(definition->mOperator);
-         VERBOSE("Operator ", op1, " unregistered");
-         mOperators.erase(op1);
-      }
-
-      if (definition->mOperatorReverse.size()) {
-         const auto op2 = IsolateOperator(definition->mOperatorReverse);
-         VERBOSE("Operator ", op2, " unregistered");
-         mOperators.erase(op2);
-      }
-
-      UnregisterAmbiguous(definition->mToken, definition);
-      UnregisterAmbiguous(definition->mTokenReverse, definition);
-
-      VERBOSE("Verb ", definition->mToken, "/", definition->mTokenReverse, " unregistered");
-      mUniqueVerbs.erase(::std::string {definition->mCppName});
-      delete definition;
-   }
-
-   /// Unregister an unknown definition                                       
-   ///   @attention assumes definition is a valid pointer owned by this       
-   ///   @attention definition may no longer be valid pointer after this call 
-   ///   @param definition - the definition to remove                         
-   void Interface::Unregister(const Meta* definition) SAFETY_NOEXCEPT() {
-      auto asdata = dynamic_cast<DMeta>(definition);
-      if (asdata) {
-         Unregister(asdata);
-         return;
-      }
-
-      auto asverb = dynamic_cast<VMeta>(definition);
-      if (asverb) {
-         Unregister(asverb);
-         return;
-      }
-
-      auto astrait = dynamic_cast<TMeta>(definition);
-      if (astrait) {
-         Unregister(astrait);
-         return;
-      }
-
-      auto asconst = dynamic_cast<CMeta>(definition);
-      if (asconst) {
-         Unregister(asconst);
-         return;
-      }
-   }
-
    /// Runs through all definitions, and destroys all of those, that were     
    /// defined with the given library token                                   
    ///   @param library - the library token to search for                     
@@ -575,6 +423,34 @@ namespace Langulus::RTTI
 
          VERBOSE("Data ", Logger::Push, Logger::Cyan, meta->second->mToken, 
             Logger::Pop, Logger::Red, " unregistered (", library, ")");
+
+         if (!meta->second->mFileExtensions.empty()) {
+            // Unregister all file extensions, if any                   
+            const auto ext = meta->second->mFileExtensions;
+            Offset sequential = 0;
+            for (Offset e = 0; e < ext.size(); ++e) {
+               if (IsSpace(ext[e]) || ext[e] == ',') {
+                  if (sequential) {
+                     const auto lc = ToLowercase(
+                        ext.substr(e - sequential, sequential)
+                     );
+                     mFileDatabase[lc].erase(meta->second);
+                  }
+
+                  sequential = 0;
+                  continue;
+               }
+
+               ++sequential;
+            }
+
+            if (sequential) {
+               const auto lc = ToLowercase(
+                  ext.substr(ext.size() - sequential, sequential)
+               );
+               mFileDatabase[lc].erase(meta->second);
+            }
+         }
 
          UnregisterAmbiguous(meta->second->mToken, meta->second);
          delete meta->second;

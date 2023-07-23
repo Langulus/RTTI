@@ -86,21 +86,6 @@ namespace Langulus::RTTI
       void RegisterFileExtension(const Token&, DMeta) SAFETY_NOEXCEPT();
 
       LANGULUS_API(RTTI)
-      void Unregister(DMeta) SAFETY_NOEXCEPT();
-
-      LANGULUS_API(RTTI)
-      void Unregister(TMeta) SAFETY_NOEXCEPT();
-
-      LANGULUS_API(RTTI)
-      void Unregister(VMeta) SAFETY_NOEXCEPT();
-
-      LANGULUS_API(RTTI)
-      void Unregister(CMeta) SAFETY_NOEXCEPT();
-
-      LANGULUS_API(RTTI)
-      void Unregister(const Meta*) SAFETY_NOEXCEPT();
-
-      LANGULUS_API(RTTI)
       void UnloadLibrary(const Token&);
    };
 
