@@ -90,10 +90,11 @@ namespace Langulus
          ::Langulus::Throw<::Langulus::Except::exception>(message, LANGULUS_LOCATION(), __VA_ARGS__)
    #endif
 #else
-   #define LANGULUS_ASSUME(level, condition, message, ...) 
+   #define LANGULUS_ASSUME(level, condition, message, ...) \
+      ::Langulus::Assume<level>((condition)?true:false)
 
    #define LANGULUS_ASSERT(condition, exception, message, ...) \
-      ::Langulus::Assume<0, ::Langulus::Except::exception>(condition)
+      ::Langulus::Assume<0, ::Langulus::Except::exception>((condition)?true:false)
 
    #define LANGULUS_THROW(exception, message, ...) \
       ::Langulus::Throw<::Langulus::Except::exception>()
