@@ -154,8 +154,8 @@ namespace Langulus::RTTI
    ///   @return the disambiguated token; throws if not found/ambiguous       
    const Meta* Interface::DisambiguateMeta(const Token& keyword) const {
       auto& symbols = GetAmbiguousMeta(keyword);
-      if (symbols.empty())
-         LANGULUS_THROW(Meta, "Keyword not found");
+      LANGULUS_ASSERT(!symbols.empty(), Meta,
+         "Keyword not found", ": `", keyword, '`');
 
       if (symbols.size() > 1) {
          // Collect all origin types, and work with those               
@@ -180,8 +180,8 @@ namespace Langulus::RTTI
             else origins.insert(dmeta);
          }
 
-         if (origins.empty())
-            LANGULUS_THROW(Meta, "No relevant origins for keyword");
+         LANGULUS_ASSERT(!origins.empty(), Meta,
+            "No relevant origins for keyword", ": `", keyword, '`');
 
          if (origins.size() == 1) {
             // Candidate types reduced to a single relevant origin      
@@ -191,23 +191,23 @@ namespace Langulus::RTTI
          // Ambiguity, report error                                     
          {
             auto tab = Logger::Error(
-               "Ambiguous symbol: ", keyword,
-               "; Could be one of: ", Logger::Tabs {}
+               "Ambiguous symbol: `", keyword,
+               "`; Could be one of: ", Logger::Tabs {}
             );
 
             for (auto& meta : origins) {
                switch (meta->GetMetaType()) {
                case Meta::Data:
-                  Logger::Verbose(Logger::Red, meta->mCppName,
-                     " (meta data)");
+                  Logger::Verbose(Logger::Red, '`', meta->mCppName,
+                     "` (meta data)");
                   break;
                case Meta::Trait:
-                  Logger::Verbose(Logger::Red, meta->mCppName,
-                     " (meta trait)");
+                  Logger::Verbose(Logger::Red, '`', meta->mCppName,
+                     "` (meta trait)");
                   break;
                case Meta::Constant:
-                  Logger::Verbose(Logger::Red, meta->mCppName,
-                     " (meta constant)");
+                  Logger::Verbose(Logger::Red, '`', meta->mCppName,
+                     "` (meta constant)");
                   break;
                default:
                   LANGULUS_THROW(Meta, "Unhandled meta type");
