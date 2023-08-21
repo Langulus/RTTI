@@ -435,7 +435,7 @@ namespace Langulus::RTTI
                   ? PoolTactic::Type
                   : PoolTactic::Default;
             #else
-               generated.mPoolTactic = PoolTactic::Type;
+               generated.mPoolTactic = PoolTactic::Default;
             #endif
          #endif
       }
@@ -529,7 +529,7 @@ namespace Langulus::RTTI
                   ? PoolTactic::Type
                   : PoolTactic::Default;
             #else
-               generated.mPoolTactic = PoolTactic::Type;
+               generated.mPoolTactic = PoolTactic::Default;
             #endif
          }
       #endif
@@ -629,9 +629,6 @@ namespace Langulus::RTTI
          
             #if LANGULUS_FEATURE(MANAGED_REFLECTION)
                if (RTTI::Boundary != "MAIN" && generated.mPoolTactic == PoolTactic::Default)
-                  generated.mPoolTactic = PoolTactic::Type;
-            #else
-               if (generated.mPoolTactic == PoolTactic::Default)
                   generated.mPoolTactic = PoolTactic::Type;
             #endif
          #endif
