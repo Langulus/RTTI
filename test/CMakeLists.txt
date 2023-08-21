@@ -1,10 +1,8 @@
-project(LangulusRTTITest)
-
-if(LANGULUS_FEATURE_MANAGED_REFLECTION)
-	add_executable(LangulusRTTITest Main.cpp TestCTTI.cpp TestRTTI.cpp)
-else()
-	add_executable(LangulusRTTITest Main.cpp TestCTTI.cpp)
-endif()
+add_executable(LangulusRTTITest
+	Main.cpp
+	TestCTTI.cpp
+	$<$<BOOL:${LANGULUS_FEATURE_MANAGED_REFLECTION}>:TestRTTI.cpp>
+)
 
 target_link_libraries(LangulusRTTITest
 	PRIVATE		LangulusRTTI

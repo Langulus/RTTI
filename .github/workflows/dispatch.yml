@@ -7,7 +7,7 @@ jobs:
   build:
     strategy:
       matrix:
-        dependents: [SIMD, Anyness, Flow, Entity, Math]
+        dependents: [SIMD, Fractalloc, Anyness, Flow, Math, Entity]
     name: Trigger Langulus::${{matrix.dependents}}'s workflow
     runs-on: ubuntu-latest
     steps:

@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.24)
-project(LangulusRTTI)
+project(LangulusRTTI
+    VERSION         1.0.0
+    DESCRIPTION     "Langulus reflection library"
+    HOMEPAGE_URL    https://langulus.com
+    LANGUAGES       CXX
+)
 
 # Check if this project is built as standalone, or a part of something else 
 if(PROJECT_IS_TOP_LEVEL OR NOT LANGULUS)
@@ -18,13 +23,9 @@ if(PROJECT_IS_TOP_LEVEL OR NOT LANGULUS)
 endif()
 
 # Build and install library                                                 
-if(LANGULUS_FEATURE_MANAGED_REFLECTION)
-    set(LANGULUS_LOGGER_SOURCES source/RTTI.cpp)
-endif()
-
 add_library(LangulusRTTI ${LANGULUS_LIBRARY_TYPE}
     $<TARGET_OBJECTS:LangulusLogger>
-    ${LANGULUS_LOGGER_SOURCES}
+	$<$<BOOL:${LANGULUS_FEATURE_MANAGED_REFLECTION}>:source/RTTI.cpp>
 )
 
 target_include_directories(LangulusRTTI
