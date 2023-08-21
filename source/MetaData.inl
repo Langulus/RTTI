@@ -422,15 +422,21 @@ namespace Langulus::RTTI
          generated = *denser;
          generated.mDeptr = denser;
 
-         #if LANGULUS_FEATURE(MANAGED_MEMORY)
+         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
             // Set library boundary                                     
             generated.mLibraryName = RTTI::Boundary;
+         #endif
 
+         #if LANGULUS_FEATURE(MANAGED_MEMORY)
             // Pool tactic is always default for pointers, unless these 
             // pointers have been registered outside MAIN boundary      
-            generated.mPoolTactic = RTTI::Boundary != "MAIN" 
-               ? PoolTactic::Type
-               : PoolTactic::Default;
+            #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+               generated.mPoolTactic = RTTI::Boundary != "MAIN" 
+                  ? PoolTactic::Type
+                  : PoolTactic::Default;
+            #else
+               generated.mPoolTactic = PoolTactic::Type;
+            #endif
          #endif
       }
       else {
@@ -439,7 +445,7 @@ namespace Langulus::RTTI
          generated.mInfo = "<incomplete type pointer>";
 
          // Set library boundary                                        
-         IF_LANGULUS_MANAGED_MEMORY(generated.mLibraryName = RTTI::Boundary);
+         IF_LANGULUS_MANAGED_REFLECTION(generated.mLibraryName = RTTI::Boundary);
       }
       
       // Overwrite pointer-specific stuff                               
@@ -510,15 +516,21 @@ namespace Langulus::RTTI
       generated = *denser;
       generated.mOrigin = denser;
 
-      #if LANGULUS_FEATURE(MANAGED_MEMORY)
+      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Set library boundary                                        
          generated.mLibraryName = RTTI::Boundary;
+      #endif
 
+      #if LANGULUS_FEATURE(MANAGED_MEMORY)
          // If pool tactic is default, turn it Typed if outside MAIN    
          if (generated.mPoolTactic == PoolTactic::Default) {
-            generated.mPoolTactic = RTTI::Boundary != "MAIN"
-               ? PoolTactic::Type
-               : PoolTactic::Default;
+            #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+               generated.mPoolTactic = RTTI::Boundary != "MAIN"
+                  ? PoolTactic::Type
+                  : PoolTactic::Default;
+            #else
+               generated.mPoolTactic = PoolTactic::Type;
+            #endif
          }
       #endif
       
@@ -606,15 +618,22 @@ namespace Langulus::RTTI
             generated.mAllocationTable[bit] = ::std::max(minElements, elements);
          }
 
-         #if LANGULUS_FEATURE(MANAGED_MEMORY)
+         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
             // Consider the boundary and pool tactics                   
             generated.mLibraryName = RTTI::Boundary;
+         #endif
 
+         #if LANGULUS_FEATURE(MANAGED_MEMORY)
             if constexpr (requires { T::CTTI_Pool; })
                generated.mPoolTactic = T::CTTI_Pool;
          
-            if (RTTI::Boundary != "MAIN" && generated.mPoolTactic == PoolTactic::Default)
-               generated.mPoolTactic = PoolTactic::Type;
+            #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+               if (RTTI::Boundary != "MAIN" && generated.mPoolTactic == PoolTactic::Default)
+                  generated.mPoolTactic = PoolTactic::Type;
+            #else
+               if (generated.mPoolTactic == PoolTactic::Default)
+                  generated.mPoolTactic = PoolTactic::Type;
+            #endif
          #endif
 
          if constexpr (requires { T::CTTI_Files; }) {

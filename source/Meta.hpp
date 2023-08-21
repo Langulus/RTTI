@@ -45,22 +45,23 @@ namespace Langulus::RTTI
       // References, increased each time a definition is merged,        
       // and decreases each time a definition is unregistered           
       Count mReferences {1};
-      // The shared library that defined the module, used to unload     
-      // definitions when module is unloaded                            
-      Token mLibraryName;
 
       NOD() LANGULUS_API(RTTI)
       const Hash& GetHash() const noexcept;
-
-      IF_LANGULUS_MANAGED_REFLECTION(
-         NOD() LANGULUS_API(RTTI)
-         Token GetShortestUnambiguousToken() const
-      );
 
       template<CT::Data T>
       NOD() static constexpr Hash GenerateHash(const Token&) noexcept;
 
       virtual ~Meta() = default;
+
+      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         // The shared library that defined the module, used to unload  
+         // definitions when module is unloaded                         
+         Token mLibraryName;
+
+         NOD() LANGULUS_API(RTTI)
+         Token GetShortestUnambiguousToken() const;
+      #endif
    };
 
 } // namespace Langulus::RTTI
