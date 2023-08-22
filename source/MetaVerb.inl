@@ -122,7 +122,7 @@ namespace Langulus::RTTI
          // previously in another library. Unfortunately we can't keep  
          // a static pointer to the meta, because forementioned library 
          // might be reloaded, and thus produce new pointer.            
-         VMeta meta = Database.GetMetaVerb(
+         VMeta meta = Instance.GetMetaVerb(
             MetaVerb::GetReflectedPositiveVerbToken<T>()
          );
          if (meta)
@@ -138,7 +138,7 @@ namespace Langulus::RTTI
       // We immediately place it in the static here, because the        
       // reflection function might end up forever looping otherwise     
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         meta = Database.RegisterVerb(
+         meta = Instance.RegisterVerb(
             CppNameOf<T>(),
             MetaVerb::GetReflectedPositiveVerbToken<T>(),
             MetaVerb::GetReflectedNegativeVerbToken<T>(),

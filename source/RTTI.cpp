@@ -17,10 +17,10 @@
 namespace Langulus::RTTI
 {
 
-   Interface Database {};
+   Registry Instance {};
 
    /// Database destruction                                                   
-   Interface::~Interface() {
+   Registry::~Registry() {
       // If an exception happens here on a delete, then a meta likely   
       // wasn't unregistered upon mod unload. Thank me later            
       for (auto& pair : mMetaData)
@@ -82,7 +82,7 @@ namespace Langulus::RTTI
    /// Get an existing meta data definition by its token                      
    ///   @param token - the token of the data definition                      
    ///   @return the definition, or nullptr if not found                      
-   DMeta Interface::GetMetaData(const Token& token) const noexcept {
+   DMeta Registry::GetMetaData(const Token& token) const noexcept {
       const auto lc = ToLowercase(token);
       const auto found = mMetaData.find(lc);
       if (found == mMetaData.end())
@@ -93,7 +93,7 @@ namespace Langulus::RTTI
    /// Get an existing meta constant definition by its token                  
    ///   @param token - the token of the constant definition                  
    ///   @return the definition, or nullptr if not found                      
-   CMeta Interface::GetMetaConstant(const Token& token) const noexcept {
+   CMeta Registry::GetMetaConstant(const Token& token) const noexcept {
       const auto lc = ToLowercase(token);
       const auto found = mMetaConstants.find(lc);
       if (found == mMetaConstants.end())
@@ -104,7 +104,7 @@ namespace Langulus::RTTI
    /// Get an existing meta trait definition by its token                     
    ///   @param token - the token of the trait definition                     
    ///   @return the definition, or nullptr if not found                      
-   TMeta Interface::GetMetaTrait(const Token& token) const noexcept {
+   TMeta Registry::GetMetaTrait(const Token& token) const noexcept {
       const auto lc = ToLowercase(token);
       const auto found = mMetaTraits.find(lc);
       if (found == mMetaTraits.end())
@@ -116,7 +116,7 @@ namespace Langulus::RTTI
    ///   @param token - the token of the verb definition                      
    ///                  you can search by positive, as well as negative token 
    ///   @return the definition, or nullptr if not found                      
-   VMeta Interface::GetMetaVerb(const Token& token) const noexcept {
+   VMeta Registry::GetMetaVerb(const Token& token) const noexcept {
       const auto lc = ToLowercase(token);
       const auto found = mMetaVerbs.find(lc);
       if (found != mMetaVerbs.end())
@@ -128,7 +128,7 @@ namespace Langulus::RTTI
    ///   @param token - the operator of the verb definition                   
    ///                  you can search by positive, as well as negative       
    ///   @return the definition, or nullptr if not found                      
-   VMeta Interface::GetOperator(const Token& token) const noexcept {
+   VMeta Registry::GetOperator(const Token& token) const noexcept {
       const auto lc = IsolateOperator(token);
       const auto found = mOperators.find(lc);
       if (found != mOperators.end())
@@ -139,7 +139,7 @@ namespace Langulus::RTTI
    /// Get a list of all the interpretations for a single simple token        
    ///   @param token - the token to search for                               
    ///   @return the list of associated meta definitions                      
-   const MetaList& Interface::GetAmbiguousMeta(const Token& token) const noexcept {
+   const MetaList& Registry::GetAmbiguousMeta(const Token& token) const noexcept {
       const auto lc = ToLowercase(ToLastToken(token));
       const auto found = mMetaAmbiguous.find(lc);
       if (found == mMetaAmbiguous.end()) {
@@ -152,7 +152,7 @@ namespace Langulus::RTTI
    /// Disambiguate a token                                                   
    ///   @param keyword - the token to search for                             
    ///   @return the disambiguated token; throws if not found/ambiguous       
-   const Meta* Interface::DisambiguateMeta(const Token& keyword) const {
+   const Meta* Registry::DisambiguateMeta(const Token& keyword) const {
       auto& symbols = GetAmbiguousMeta(keyword);
       LANGULUS_ASSERT(!symbols.empty(), Meta,
          "Keyword not found", ": `", keyword, '`');
@@ -225,7 +225,7 @@ namespace Langulus::RTTI
    /// Resolve a file extension                                               
    ///   @param extension - the file extension to search for                  
    ///   @return all meta definitions associated with the file extension      
-   const MetaList& Interface::ResolveFileExtension(const Token& extension) const {
+   const MetaList& Registry::ResolveFileExtension(const Token& extension) const {
       const auto lc = ToLowercase(extension);
       const auto found = mFileDatabase.find(lc);
       if (found == mFileDatabase.end()) {
@@ -238,7 +238,7 @@ namespace Langulus::RTTI
    /// Register most relevant token to the ambiguous token map                
    ///   @param token - the token to register                                 
    ///   @param meta - the definition to add                                  
-   void Interface::RegisterAmbiguous(const Token& token, const Meta* meta) noexcept {
+   void Registry::RegisterAmbiguous(const Token& token, const Meta* meta) noexcept {
       auto ambiguous = ToLowercase(ToLastToken(token));
       const auto foundAmbiguous = mMetaAmbiguous.find(ambiguous);
       if (foundAmbiguous == mMetaAmbiguous.end())
@@ -250,7 +250,7 @@ namespace Langulus::RTTI
    /// Unregister most relevant token from the ambiguous token map            
    ///   @param token - the token to register                                 
    ///   @param meta - the definition to remove                               
-   void Interface::UnregisterAmbiguous(const Token& token, const Meta* meta) noexcept {
+   void Registry::UnregisterAmbiguous(const Token& token, const Meta* meta) noexcept {
       auto ambiguous = ToLowercase(ToLastToken(token));
       const auto foundAmbiguous = mMetaAmbiguous.find(ambiguous);
       if (foundAmbiguous != mMetaAmbiguous.end()) {
@@ -264,7 +264,7 @@ namespace Langulus::RTTI
    ///   @attention assumes token is not yet registered as data               
    ///   @param token - the data token to reserve                             
    ///   @return the newly defined meta data for that token                   
-   DMeta Interface::RegisterData(const Token& token) SAFETY_NOEXCEPT() {
+   DMeta Registry::RegisterData(const Token& token) SAFETY_NOEXCEPT() {
       auto lc = ToLowercase(token);
       LANGULUS_ASSUME(DevAssumes, !GetMetaData(lc),
          "Data already registered");
@@ -284,7 +284,7 @@ namespace Langulus::RTTI
    ///   @attention assumes token is not yet registered as constant           
    ///   @param token - the constant token to reserve                         
    ///   @return the newly defined meta constant for that token               
-   CMeta Interface::RegisterConstant(const Token& token) SAFETY_NOEXCEPT() {
+   CMeta Registry::RegisterConstant(const Token& token) SAFETY_NOEXCEPT() {
       auto lc = ToLowercase(token);
       LANGULUS_ASSUME(DevAssumes, !GetMetaConstant(lc),
          "Constant already registered");
@@ -303,7 +303,7 @@ namespace Langulus::RTTI
    ///   @attention assumes token is not yet registered as trait              
    ///   @param token - the trait token to reserve                            
    ///   @return the newly defined meta trait for that token                  
-   TMeta Interface::RegisterTrait(const Token& token) SAFETY_NOEXCEPT() {
+   TMeta Registry::RegisterTrait(const Token& token) SAFETY_NOEXCEPT() {
       auto lc = ToLowercase(token);
       LANGULUS_ASSUME(DevAssumes, !GetMetaTrait(lc),
          "Trait already registered");
@@ -326,7 +326,7 @@ namespace Langulus::RTTI
    ///   @param op - the positive verb operator to reserve (optional)         
    ///   @param opReverse - the negative verb operator to reserve (optional)  
    ///   @return the newly defined meta verb for that token configuration     
-   VMeta Interface::RegisterVerb(
+   VMeta Registry::RegisterVerb(
       const Token& cppname,
       const Token& token,
       const Token& tokenReverse,
@@ -382,7 +382,7 @@ namespace Langulus::RTTI
    /// Register file extension                                                
    ///   @param token - the file extension token to reserve                   
    ///   @param type - the data to associate file with                        
-   void Interface::RegisterFileExtension(const Token& token, DMeta type) SAFETY_NOEXCEPT() {
+   void Registry::RegisterFileExtension(const Token& token, DMeta type) SAFETY_NOEXCEPT() {
       LANGULUS_ASSUME(DevAssumes, !token.empty(),
          "Bad file extension");
       LANGULUS_ASSUME(DevAssumes, type,
@@ -395,7 +395,7 @@ namespace Langulus::RTTI
    /// Runs through all definitions, and destroys all of those, that were     
    /// defined with the given library token                                   
    ///   @param library - the library token to search for                     
-   void Interface::UnloadLibrary(const Token& library) {
+   void Registry::UnloadLibrary(const Token& library) {
       VERBOSE(Logger::Push, Logger::Underline, Logger::Red, 
          "Unloading library ", library, Logger::Pop);
 
@@ -519,7 +519,7 @@ namespace Langulus::RTTI
    /// Get the shortest possible token, that is not ambiguous                 
    ///   @return the token                                                    
    Token Meta::GetShortestUnambiguousToken() const {
-      auto& ambiguous = Database.GetAmbiguousMeta(mToken);
+      auto& ambiguous = Instance.GetAmbiguousMeta(mToken);
       if (ambiguous.size() == 1)
          return ToLastToken(mToken);
 

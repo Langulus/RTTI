@@ -394,14 +394,14 @@ namespace Langulus::RTTI
          // previously in another library. Unfortunately we can't keep  
          // a static pointer to the meta, because forementioned library 
          // might be reloaded, and thus produce new pointer.            
-         DMeta meta = Database.GetMetaData(NameOf<T>());
+         DMeta meta = Instance.GetMetaData(NameOf<T>());
          if (meta)
             return meta;
 
          // If this is reached, then type is not defined yet            
          // We immediately request its spot in the database, or the     
          // reflection function might end up forever looping otherwise  
-         meta = Database.RegisterData(NameOf<T>());
+         meta = Instance.RegisterData(NameOf<T>());
          auto& generated = *const_cast<MetaData*>(meta);
       #else
          // Keep a static meta pointer for each translation unit        
@@ -489,14 +489,14 @@ namespace Langulus::RTTI
          // previously in another library. Unfortunately we can't keep  
          // a static pointer to the meta, because forementioned library 
          // might be reloaded, and thus produce new pointer.            
-         DMeta meta = Database.GetMetaData(NameOf<T>());
+         DMeta meta = Instance.GetMetaData(NameOf<T>());
          if (meta)
             return meta;
 
          // If this is reached, then type is not defined yet            
          // We immediately request its spot in the database, or the     
          // reflection function might end up forever looping otherwise  
-         meta = Database.RegisterData(NameOf<T>());
+         meta = Instance.RegisterData(NameOf<T>());
          auto& generated = *const_cast<MetaData*>(meta);
       #else
          // Keep a static meta pointer for each translation unit        
@@ -561,14 +561,14 @@ namespace Langulus::RTTI
          // previously in another library. Unfortunately we can't keep  
          // a static pointer to the meta, because forementioned library 
          // might be reloaded, and thus produce new pointer.            
-         DMeta meta = Database.GetMetaData(NameOf<T>());
+         DMeta meta = Instance.GetMetaData(NameOf<T>());
          if (meta)
             return meta;
 
          // If this is reached, then type is not defined yet            
          // We immediately request its spot in the database, or the     
          // reflection function might end up forever looping otherwise  
-         meta = Database.RegisterData(NameOf<T>());
+         meta = Instance.RegisterData(NameOf<T>());
          MetaData& generated = *const_cast<MetaData*>(meta);
       #else
          // Keep a static meta pointer for each translation unit        
@@ -628,8 +628,8 @@ namespace Langulus::RTTI
                generated.mPoolTactic = T::CTTI_Pool;
          
             #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-               if (RTTI::Boundary != "MAIN" && generated.mPoolTactic == PoolTactic::Default)
-                  generated.mPoolTactic = PoolTactic::Type;
+            if (RTTI::Boundary != "MAIN" && generated.mPoolTactic == PoolTactic::Default)
+               generated.mPoolTactic = PoolTactic::Type;
             #endif
          #endif
 
@@ -644,7 +644,7 @@ namespace Langulus::RTTI
                   if (IsSpace(ext[e]) || ext[e] == ',') {
                      if (sequential) {
                         const auto lc = ext.substr(e - sequential, sequential);
-                        Database.RegisterFileExtension(lc, &generated);
+                        Instance.RegisterFileExtension(lc, &generated);
                      }
 
                      sequential = 0;
@@ -656,7 +656,7 @@ namespace Langulus::RTTI
 
                if (sequential) {
                   const auto lc = ext.substr(ext.size() - sequential, sequential);
-                  Database.RegisterFileExtension(lc, &generated);
+                  Instance.RegisterFileExtension(lc, &generated);
                }
             #endif
          }
@@ -939,7 +939,7 @@ namespace Langulus::RTTI
 
             #if LANGULUS_FEATURE(MANAGED_REFLECTION)
                const auto cmeta = const_cast<MetaConst*>(
-                  Database.RegisterConstant(staticNames[i]));
+                  Instance.RegisterConstant(staticNames[i]));
                LANGULUS_ASSERT(cmeta, Meta,
                   "Meta constant conflict on registration");
                cmeta->mLibraryName = RTTI::Boundary;
