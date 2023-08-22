@@ -17,11 +17,11 @@ namespace Langulus::RTTI
 
 
    ///                                                                        
-   ///   The RTTI interface                                                   
+   ///   The RTTI registry                                                    
    ///                                                                        
    /// Available only if managed reflection feature is enabled                
    ///                                                                        
-   class Interface {
+   class Registry {
    private:
       // Database for meta data definitions                             
       ::std::unordered_map<Lowercase, DMeta> mMetaData;
@@ -44,7 +44,7 @@ namespace Langulus::RTTI
       void UnregisterAmbiguous(const Token&, const Meta*) noexcept;
 
    public:
-      ~Interface();
+      ~Registry();
 
       NOD() LANGULUS_API(RTTI)
       DMeta GetMetaData(const Token&) const noexcept;
@@ -90,9 +90,9 @@ namespace Langulus::RTTI
    };
 
    ///                                                                        
-   ///   The global RTTI database                                             
+   ///   The global RTTI registry                                             
    ///                                                                        
-   LANGULUS_API(RTTI) extern Interface Database;
+   LANGULUS_API(RTTI) extern Registry Instance;
 
    ///                                                                        
    ///   Boundary identifier, local to every shared library/executable        
@@ -105,5 +105,76 @@ namespace Langulus::RTTI
    /// tracked and not pollute other pools.                                   
    ///                                                                        
    extern Token Boundary;
+
+   
+   NOD() LANGULUS(INLINED)
+   DMeta GetMetaData(const Token& token) noexcept {
+      return Instance.GetMetaData(token);
+   }
+
+   NOD() LANGULUS(INLINED)
+   TMeta GetMetaTrait(const Token& token) noexcept {
+      return Instance.GetMetaTrait(token);
+   }
+
+   NOD() LANGULUS(INLINED)
+   VMeta GetMetaVerb(const Token& token) noexcept {
+      return Instance.GetMetaVerb(token);
+   }
+
+   NOD() LANGULUS(INLINED)
+   CMeta GetMetaConstant(const Token& token) noexcept {
+      return Instance.GetMetaConstant(token);
+   }
+
+   NOD() LANGULUS(INLINED)
+   VMeta GetOperator(const Token& token) noexcept {
+      return Instance.GetOperator(token);
+   }
+
+   NOD() LANGULUS(INLINED)
+   const MetaList& GetAmbiguousMeta(const Token& token) noexcept {
+      return Instance.GetAmbiguousMeta(token);
+   }
+
+   NOD() LANGULUS(INLINED)
+   const Meta* DisambiguateMeta(const Token& token) {
+      return Instance.DisambiguateMeta(token);
+   }
+
+   NOD() LANGULUS(INLINED)
+   const MetaList& ResolveFileExtension(const Token& token) {
+      return Instance.ResolveFileExtension(token);
+   }
+
+   NOD() LANGULUS(INLINED)
+   DMeta RegisterData(const Token& token) SAFETY_NOEXCEPT() {
+      return Instance.RegisterData(token);
+   }
+
+   NOD() LANGULUS(INLINED)
+   CMeta RegisterConstant(const Token& token) SAFETY_NOEXCEPT() {
+      return Instance.RegisterConstant(token);
+   }
+
+   NOD() LANGULUS(INLINED)
+   TMeta RegisterTrait(const Token& token) SAFETY_NOEXCEPT() {
+      return Instance.RegisterTrait(token);
+   }
+
+   NOD() LANGULUS(INLINED)
+   VMeta RegisterVerb(const Token& a, const Token& b, const Token& c, const Token& d, const Token& e) SAFETY_NOEXCEPT() {
+      return Instance.RegisterVerb(a,b,c,d,e);
+   }
+      
+   LANGULUS(INLINED)
+   void RegisterFileExtension(const Token& a, DMeta b) SAFETY_NOEXCEPT() {
+      Instance.RegisterFileExtension(a, b);
+   }
+
+   LANGULUS(INLINED)
+   void UnloadLibrary(const Token& t) {
+      Instance.UnloadLibrary(t);
+   }
 
 } // namespace Langulus::RTTI

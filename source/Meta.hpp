@@ -46,7 +46,7 @@ namespace Langulus::RTTI
       // and decreases each time a definition is unregistered           
       Count mReferences {1};
 
-      NOD() LANGULUS_API(RTTI)
+      NOD()
       const Hash& GetHash() const noexcept;
 
       template<CT::Data T>

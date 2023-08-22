@@ -3,7 +3,6 @@ project(LangulusRTTI
     VERSION         1.0.0
     DESCRIPTION     "Langulus reflection library"
     HOMEPAGE_URL    https://langulus.com
-    LANGUAGES       CXX
 )
 
 # Check if this project is built as standalone, or a part of something else 
