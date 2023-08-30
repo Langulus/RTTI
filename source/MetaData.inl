@@ -24,7 +24,7 @@ namespace Langulus::RTTI
    ///   2. The byte size is never smaller than LANGULUS(ALIGN)               
    template<class T>
    constexpr Size GetAllocationPageOf() noexcept {
-      if constexpr (CT::Dense<T> && requires {{T::CTTI_AllocationPage} -> CT::Same<Size>;}) {
+      if constexpr (CT::Dense<T> and requires {{T::CTTI_AllocationPage} -> CT::Same<Size>;}) {
          constexpr Size candidate = T::CTTI_AllocationPage * sizeof(T);
          if constexpr (candidate < Alignment)
             return Alignment;
@@ -86,7 +86,7 @@ namespace Langulus::RTTI
    ///   @return return the type                                              
    LANGULUS(INLINED)
    DMeta Member::GetType() const {
-      LANGULUS_ASSUME(DevAssumes, mTypeRetriever != nullptr,
+      LANGULUS_ASSUME(DevAssumes, mTypeRetriever,
          "Invalid member type retriever");
       return mTypeRetriever();
    }
@@ -124,7 +124,7 @@ namespace Langulus::RTTI
    LANGULUS(INLINED)
    bool Member::TraitIs() const {
       const auto trait = GetTrait();
-      if (!trait)
+      if (not trait)
          return false;
       return trait->template Is<T>();
    }
@@ -135,7 +135,7 @@ namespace Langulus::RTTI
    LANGULUS(INLINED)
    bool Member::TraitIs(TMeta meta) const {
       const auto trait = GetTrait();
-      if (!trait)
+      if (not trait)
          return false;
       return trait->Is(meta);
    }
@@ -150,11 +150,11 @@ namespace Langulus::RTTI
       const auto type2 = rhs.GetType();
       const auto trait2 = rhs.GetTrait();
 
-      return (type1 == type2 || (type1 && type1->IsExact(type2)))
-         && mOffset == rhs.mOffset
-         && mCount == rhs.mCount
-         && (trait1 == trait2 || (trait1 && trait1->Is(trait2)))
-         && mName == rhs.mName;
+      return (type1 == type2 or (type1 and type1->IsExact(type2)))
+         and mOffset == rhs.mOffset
+         and mCount == rhs.mCount
+         and (trait1 == trait2 or (trait1 and trait1->Is(trait2)))
+         and mName == rhs.mName;
    }
 
    /// Reinterpret the member as a given type and access it (const, unsafe)   
@@ -262,7 +262,7 @@ namespace Langulus::RTTI
    ///   @return the converter                                                
    template<class T, class TO>
    Converter Converter::From() noexcept {
-      static_assert(!CT::Same<T, TO>,
+      static_assert(not CT::Same<T, TO>,
          "Conversion types can't be similar");
       static_assert(CT::Convertible<T, TO>,
          "Converter reflected, but conversion is not possible - "
@@ -307,14 +307,14 @@ namespace Langulus::RTTI
    /// Compare bases for equality                                             
    LANGULUS(INLINED)
    constexpr bool Base::operator == (const Base& other) const noexcept {
-      return mType == other.mType && mCount == other.mCount;
+      return mType == other.mType and mCount == other.mCount;
    }
 
    /// Create a base descriptor for the derived type T                        
    ///   @return the generated base descriptor                                
    template<CT::Dense T, CT::Dense BASE>
    Base Base::From() SAFETY_NOEXCEPT() {
-      static_assert(!CT::Same<T, BASE>, 
+      static_assert(not CT::Same<T, BASE>, 
          "Base duplication not allowed to avoid regress");
       static_assert(NameOf<T>() != NameOf<BASE>(),
          "T and BASE have the same LANGULUS(NAME) token, possibly due to "
@@ -348,7 +348,7 @@ namespace Langulus::RTTI
          // Imposed bases are excluded from serialization               
          result.mImposed = true;
 
-         if constexpr (!CT::Abstract<BASE> && sizeof(BASE) < sizeof(T)) {
+         if constexpr (!CT::Abstract<BASE> and sizeof(BASE) < sizeof(T)) {
             // The imposed type has a chance of being binary compatible 
             // when having a specific count                             
             result.mBinaryCompatible = 0 == sizeof(T) % sizeof(BASE);
@@ -386,8 +386,8 @@ namespace Langulus::RTTI
    LANGULUS(NOINLINE)
    DMeta MetaData::Of() {
       static_assert(CT::Complete<T>, "Can't reflect incomplete type");
-      static_assert(!CT::Array<T>, "Can't reflect a bounded array type");
-      static_assert(!NameOf<T>().empty(), "Invalid data token is not allowed");
+      static_assert(not CT::Array<T>, "Can't reflect a bounded array type");
+      static_assert(not NameOf<T>().empty(), "Invalid data token is not allowed");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
@@ -481,8 +481,8 @@ namespace Langulus::RTTI
    LANGULUS(NOINLINE)
    DMeta MetaData::Of() requires CT::Constant<T> {
       static_assert(CT::Complete<T>, "Can't reflect incomplete type");
-      static_assert(!CT::Array<T>, "Can't reflect a bounded array type");
-      static_assert(!NameOf<T>().empty(), "Invalid data token is not allowed");
+      static_assert(not CT::Array<T>, "Can't reflect a bounded array type");
+      static_assert(not NameOf<T>().empty(), "Invalid data token is not allowed");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
@@ -553,8 +553,8 @@ namespace Langulus::RTTI
    LANGULUS(NOINLINE)
    DMeta MetaData::Of() requires CT::Mutable<T> {
       static_assert(CT::Complete<T>, "Can't reflect incomplete type");
-      static_assert(!CT::Array<T>, "Can't reflect a bounded array type");
-      static_assert(!NameOf<T>().empty(), "Invalid data token is not allowed");
+      static_assert(not CT::Array<T>, "Can't reflect a bounded array type");
+      static_assert(not NameOf<T>().empty(), "Invalid data token is not allowed");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
@@ -641,7 +641,7 @@ namespace Langulus::RTTI
                const auto ext = generated.mFileExtensions;
                Offset sequential = 0;
                for (Offset e = 0; e < ext.size(); ++e) {
-                  if (IsSpace(ext[e]) || ext[e] == ',') {
+                  if (IsSpace(ext[e]) or ext[e] == ',') {
                      if (sequential) {
                         const auto lc = ext.substr(e - sequential, sequential);
                         Instance.RegisterFileExtension(lc, &generated);
@@ -731,7 +731,7 @@ namespace Langulus::RTTI
          generated.mProducer = MetaData::Of<CT::ProducerOf<T>>();
 
       // Wrap the default constructor of the type inside lambda         
-      if constexpr (CT::Defaultable<T> && !CT::Meta<T>) {
+      if constexpr (CT::Defaultable<T> and not CT::Meta<T>) {
          constexpr bool NoExcept = CT::DefaultableNoexcept<T>;
          generated.mDefaultConstructor =
             [](void* at) noexcept(NoExcept) {
@@ -741,17 +741,17 @@ namespace Langulus::RTTI
       }
          
       // Wrap the descriptor constructor of the type inside lambda      
-      if constexpr (CT::DescriptorMakable<T> && !CT::Meta<T>) {
+      if constexpr (CT::DescriptorMakable<T> and not CT::Meta<T>) {
          constexpr bool NoExcept = CT::DescriptorMakableNoexcept<T>;
          generated.mDescriptorConstructor = 
-            [](void* at, const Anyness::Descriptor& desc) noexcept(NoExcept) {
+            [](void* at, const Anyness::Neat& neat) noexcept(NoExcept) {
                auto atT = static_cast<T*>(at);
-               new (atT) T {desc};
+               new (atT) T {neat};
             };
       }
 
       // Wrap the copy constructor of the type inside lambda            
-      if constexpr (CT::CopyMakable<T> && !CT::Meta<T>) {
+      if constexpr (CT::CopyMakable<T> and not CT::Meta<T>) {
          generated.mCopyConstructor = 
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
@@ -761,7 +761,7 @@ namespace Langulus::RTTI
       }
             
       // Wrap the clone constructor of the type inside lambda           
-      if constexpr (CT::CloneMakable<T> && !CT::Meta<T>) {
+      if constexpr (CT::CloneMakable<T> and not CT::Meta<T>) {
          generated.mCloneConstructor = 
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
@@ -771,7 +771,7 @@ namespace Langulus::RTTI
       }
 
       // Wrap the disown constructor of the type inside lambda          
-      if constexpr (CT::DisownMakable<T> && !CT::Meta<T>) {
+      if constexpr (CT::DisownMakable<T> and not CT::Meta<T>) {
          generated.mDisownConstructor = 
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
@@ -781,7 +781,7 @@ namespace Langulus::RTTI
       }
 
       // Wrap the move constructor of the type inside a lambda          
-      if constexpr (CT::MoveMakable<T> && !CT::Meta<T>) {
+      if constexpr (CT::MoveMakable<T> and not CT::Meta<T>) {
          generated.mMoveConstructor = 
             [](void* from, void* to) {
                auto fromT = static_cast<T*>(from);
@@ -791,7 +791,7 @@ namespace Langulus::RTTI
       }
 
       // Wrap the abandon constructor of the type inside a lambda       
-      if constexpr (CT::AbandonMakable<T> && !CT::Meta<T>) {
+      if constexpr (CT::AbandonMakable<T> and not CT::Meta<T>) {
          generated.mAbandonConstructor = 
             [](void* from, void* to) {
                auto fromT = static_cast<T*>(from);
@@ -801,7 +801,7 @@ namespace Langulus::RTTI
       }
 
       // Wrap the destructor of the origin type inside a lambda         
-      if constexpr (CT::Destroyable<T> && !CT::Meta<T>) {
+      if constexpr (CT::Destroyable<T> and not CT::Meta<T>) {
          generated.mDestructor = 
             [](void* at) {
                auto atT = static_cast<T*>(at);
@@ -820,7 +820,7 @@ namespace Langulus::RTTI
       }
 
       // Wrap the copy-assignment of the type inside a lambda           
-      if constexpr (CT::CopyAssignable<T> && !CT::Meta<T>) {
+      if constexpr (CT::CopyAssignable<T> and not CT::Meta<T>) {
          generated.mCopier = 
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
@@ -830,7 +830,7 @@ namespace Langulus::RTTI
       }
 
       // Wrap the disown-assignment of the type inside a lambda         
-      if constexpr (CT::DisownAssignable<T> && !CT::Meta<T>) {
+      if constexpr (CT::DisownAssignable<T> and not CT::Meta<T>) {
          generated.mDisownCopier = 
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
@@ -840,7 +840,7 @@ namespace Langulus::RTTI
       }
             
       // Wrap the cloners of the type inside a lambda                   
-      if constexpr (CT::CloneAssignable<T> && !CT::Meta<T>) {
+      if constexpr (CT::CloneAssignable<T> and not CT::Meta<T>) {
          generated.mCloneCopier = 
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
@@ -850,7 +850,7 @@ namespace Langulus::RTTI
       }
 
       // Wrap the move-assignment of the type inside a lambda           
-      if constexpr (CT::MoveAssignable<T> && !CT::Meta<T>) {
+      if constexpr (CT::MoveAssignable<T> and not CT::Meta<T>) {
          generated.mMover = 
             [](void* from, void* to) {
                auto fromT = static_cast<T*>(from);
@@ -860,7 +860,7 @@ namespace Langulus::RTTI
       }
 
       // Wrap the move-assignment of the type inside a lambda           
-      if constexpr (CT::AbandonAssignable<T> && !CT::Meta<T>) {
+      if constexpr (CT::AbandonAssignable<T> and not CT::Meta<T>) {
          generated.mAbandonMover = 
             [](void* from, void* to) {
                auto fromT = static_cast<T*>(from);
@@ -879,7 +879,7 @@ namespace Langulus::RTTI
       }
 
       // Wrap the GetHash() method inside a lambda                      
-      if constexpr (CT::Hashable<T> || CT::Number<T> || CT::POD<T>) {
+      if constexpr (CT::Hashable<T> or CT::Number<T> or CT::POD<T>) {
          generated.mHasher = 
             [](const void* at) {
                auto atT = static_cast<const T*>(at);
@@ -1018,7 +1018,7 @@ namespace Langulus::RTTI
    ///   @return the conversion function                                      
    LANGULUS(INLINED)
    FCopyConstruct MetaData::GetConverter(DMeta meta) const noexcept {
-      if (!mOrigin)
+      if (not mOrigin)
          return FCopyConstruct {};
 
       const auto found = mOrigin->mConverters.find(meta);
@@ -1033,7 +1033,7 @@ namespace Langulus::RTTI
    ///   @param offset - considers only matches after that many matches       
    ///   @return the member interface if found, or nullptr if not             
    inline const Member* MetaData::GetMemberInner(TMeta trait, DMeta type, Offset& offset) const noexcept {
-      if (!mOrigin)
+      if (not mOrigin)
          return nullptr;
 
       // Search in all bases first                                      
@@ -1045,7 +1045,7 @@ namespace Langulus::RTTI
 
       // Then locally                                                   
       for (auto& member : mOrigin->mMembers) {
-         if (!member.TraitIs(trait) || !member.Is(type))
+         if (not member.TraitIs(trait) or not member.Is(type))
             continue;
 
          // Match found                                                 
@@ -1066,7 +1066,7 @@ namespace Langulus::RTTI
    ///   @param offset - considers only matches after that many matches       
    ///   @return the member interface if found, or nullptr if not             
    inline Count MetaData::GetMemberCountInner(TMeta trait, DMeta type, Offset& offset) const noexcept {
-      if (!mOrigin)
+      if (not mOrigin)
          return 0;
 
       // Search in all bases first                                      
@@ -1076,7 +1076,7 @@ namespace Langulus::RTTI
 
       // Then locally                                                   
       for (auto& member : mOrigin->mMembers) {
-         if (!member.TraitIs(trait) || !member.Is(type))
+         if (not member.TraitIs(trait) or not member.Is(type))
             continue;
 
          // Match found                                                 
@@ -1116,7 +1116,7 @@ namespace Langulus::RTTI
    /// Count the number of reflected members, in non-imposed bases included   
    ///   @return the number of members                                        
    inline Count MetaData::GetMemberCount() const noexcept {
-      if (!mOrigin)
+      if (not mOrigin)
          return 0;
 
       Count result = mOrigin->mMembers.size();
@@ -1195,11 +1195,11 @@ namespace Langulus::RTTI
    ///   @param type - the type of base to search for                         
    ///   @return true if a base is available                                  
    inline bool MetaData::HasBase(DMeta type) const {
-      if (!mOrigin || !type)
+      if (not mOrigin or not type)
          return false;
 
       for (auto& b : mOrigin->mBases) {
-         if (type->Is(b.mType) || b.mType->HasBase(type))
+         if (type->Is(b.mType) or b.mType->HasBase(type))
             return true;
       }
 
@@ -1327,7 +1327,7 @@ namespace Langulus::RTTI
    template<class T>
    LANGULUS(INLINED)
    Token MetaData::GetNamedValueOf(const T& value) const {
-      if (!mOrigin)
+      if (not mOrigin)
          return "";
 
       for (auto& constant : mOrigin->mNamedValues) {
@@ -1374,7 +1374,7 @@ namespace Langulus::RTTI
             if constexpr (BINARY_COMPATIBLE)
                return found.mBinaryCompatible;
             else
-               return mOrigin->mResolver || found.mBinaryCompatible;
+               return mOrigin->mResolver or found.mBinaryCompatible;
          }
       }
 
@@ -1404,7 +1404,7 @@ namespace Langulus::RTTI
    ///   @return true if this type interprets as other                        
    template<bool BINARY_COMPATIBLE>
    bool MetaData::CastsTo(DMeta other, Count count) const {
-      if (Is(other) && count == 1)
+      if (Is(other) and count == 1)
          return true;
 
       Base found {};
@@ -1416,18 +1416,18 @@ namespace Langulus::RTTI
             return false;
 
          if constexpr (BINARY_COMPATIBLE) {
-            if (found.mBinaryCompatible && count == found.mCount)
+            if (found.mBinaryCompatible and count == found.mCount)
                return true;
          }
          else {
-            if ((other->mIsAbstract || found.mBinaryCompatible) && count == found.mCount)
+            if ((other->mIsAbstract or found.mBinaryCompatible) and count == found.mCount)
                return true;
          }
          
          scanned += found.mCount;
       }
 
-      if (scanned == count && !other->mIsAbstract)
+      if (scanned == count and not other->mIsAbstract)
          return true;
 
       // At this point we're pretty sure that types are incompatible    
@@ -1451,7 +1451,7 @@ namespace Langulus::RTTI
    ///   @return true if this type is related to other                        
    LANGULUS(INLINED)
    bool MetaData::IsRelatedTo(DMeta other) const {
-      return Is(other) || HasBase(other) || HasDerivation(other);
+      return Is(other) or HasBase(other) or HasDerivation(other);
    }
    
    /// Check if this type is either same, base or a derivation of other       
@@ -1477,7 +1477,7 @@ namespace Langulus::RTTI
             continue;
 
          auto d = b.mType->GetDistanceTo(other);
-         if (d != Distance::Infinite && d + 1 < jumps)
+         if (d != Distance::Infinite and d + 1 < jumps)
             jumps = Distance{d + 1};
       }
 
@@ -1503,12 +1503,13 @@ namespace Langulus::RTTI
          // database is centralized, because it guarantees that         
          // definitions in separate translation units are always the    
          // same instance                                               
-         return mOrigin && other && mOrigin == other->mOrigin;
+         return mOrigin and other and mOrigin == other->mOrigin;
       #else
          return other
-            && mOrigin && other->mOrigin
-            && mOrigin->mHash == other->mOrigin->mHash
-            && mOrigin->mToken == other->mOrigin->mToken;
+            and mOrigin
+            and other->mOrigin
+            and mOrigin->mHash == other->mOrigin->mHash
+            and mOrigin->mToken == other->mOrigin->mToken;
       #endif
    }
    
@@ -1533,7 +1534,9 @@ namespace Langulus::RTTI
          // same instance                                               
          return this == other;
       #else
-         return other && mHash == other->mHash && mToken == other->mToken;
+         return other
+            and mHash == other->mHash
+            and mToken == other->mToken;
       #endif
    }
    
@@ -1576,7 +1579,9 @@ namespace Langulus::RTTI
          // same instance                                               
          return this == other;
       #else
-         return other && mHash == other->mHash && mToken == other->mToken;
+         return other
+            and mHash == other->mHash
+            and mToken == other->mToken;
       #endif
    }
    
