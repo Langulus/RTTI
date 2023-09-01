@@ -98,7 +98,7 @@ namespace Langulus::CT
 
    /// Checks if a verb is defaultable in any context                         
    template<class T>
-   concept DefaultableVerb = DefaultableVerbMutable<T> || DefaultableVerbConstant<T>;
+   concept DefaultableVerb = DefaultableVerbMutable<T> or DefaultableVerbConstant<T>;
 
    /// Checks if a verb is executable as stateless                            
    template<class T>

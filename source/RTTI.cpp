@@ -42,7 +42,7 @@ namespace Langulus::RTTI
          switch (token[i]) {
          case ':':
             // If no depth, then we found it                            
-            if (!depth)
+            if (not depth)
                return token.substr(i + 1, token.size() - i - 1);
             break;
          case '>':
@@ -69,10 +69,10 @@ namespace Langulus::RTTI
       // Skip skippable at the front and the back of token              
       auto l = token.data();
       auto r = token.data() + token.size();
-      while (l < r && *l <= 32)
+      while (l < r and *l <= 32)
          ++l;
 
-      while (r > l && *(r-1) <= 32)
+      while (r > l and *(r-1) <= 32)
          --r;
 
       // Lowercase the isolated token                                   
@@ -154,7 +154,7 @@ namespace Langulus::RTTI
    ///   @return the disambiguated token; throws if not found/ambiguous       
    const Meta* Registry::DisambiguateMeta(const Token& keyword) const {
       auto& symbols = GetAmbiguousMeta(keyword);
-      LANGULUS_ASSERT(!symbols.empty(), Meta,
+      LANGULUS_ASSERT(not symbols.empty(), Meta,
          "Keyword not found", ": `", keyword, '`');
 
       if (symbols.size() > 1) {
@@ -167,7 +167,7 @@ namespace Langulus::RTTI
          ::std::unordered_set<const Meta*> origins;
          for (auto& meta : symbols) {
             const auto meta_lc_token = ToLowercase(meta->mToken);
-            if (!meta_lc_token.find(lowercased))
+            if (not meta_lc_token.find(lowercased))
                continue;
 
             const auto dmeta = dynamic_cast<DMeta>(meta);
@@ -180,7 +180,7 @@ namespace Langulus::RTTI
             else origins.insert(dmeta);
          }
 
-         LANGULUS_ASSERT(!origins.empty(), Meta,
+         LANGULUS_ASSERT(not origins.empty(), Meta,
             "No relevant origins for keyword", ": `", keyword, '`');
 
          if (origins.size() == 1) {
@@ -266,7 +266,7 @@ namespace Langulus::RTTI
    ///   @return the newly defined meta data for that token                   
    DMeta Registry::RegisterData(const Token& token) SAFETY_NOEXCEPT() {
       auto lc = ToLowercase(token);
-      LANGULUS_ASSUME(DevAssumes, !GetMetaData(lc),
+      LANGULUS_ASSUME(DevAssumes, not GetMetaData(lc),
          "Data already registered");
 
       // If reached, then not found, so insert a new definition         
@@ -286,7 +286,7 @@ namespace Langulus::RTTI
    ///   @return the newly defined meta constant for that token               
    CMeta Registry::RegisterConstant(const Token& token) SAFETY_NOEXCEPT() {
       auto lc = ToLowercase(token);
-      LANGULUS_ASSUME(DevAssumes, !GetMetaConstant(lc),
+      LANGULUS_ASSUME(DevAssumes, not GetMetaConstant(lc),
          "Constant already registered");
 
       // If reached, then not found, so insert a new definition         
@@ -305,7 +305,7 @@ namespace Langulus::RTTI
    ///   @return the newly defined meta trait for that token                  
    TMeta Registry::RegisterTrait(const Token& token) SAFETY_NOEXCEPT() {
       auto lc = ToLowercase(token);
-      LANGULUS_ASSUME(DevAssumes, !GetMetaTrait(lc),
+      LANGULUS_ASSUME(DevAssumes, not GetMetaTrait(lc),
          "Trait already registered");
 
       // If reached, then not found, so emplace a new definition			
@@ -339,20 +339,20 @@ namespace Langulus::RTTI
 
       auto lc1 = ToLowercase(token);
       auto lc2 = ToLowercase(tokenReverse);
-      LANGULUS_ASSUME(DevAssumes, !GetMetaVerb(lc1) && !GetMetaVerb(lc2),
+      LANGULUS_ASSUME(DevAssumes, not GetMetaVerb(lc1) and not GetMetaVerb(lc2),
          "Verb already registered");
 
       Lowercase op1;
-      if (!op.empty()) {
+      if (not op.empty()) {
          op1 = IsolateOperator(op);
-         LANGULUS_ASSUME(DevAssumes, !GetOperator(op1),
+         LANGULUS_ASSUME(DevAssumes, not GetOperator(op1),
             "Positive operator already registered");
       }
 
       Lowercase op2;
-      if (!opReverse.empty()) {
+      if (not opReverse.empty()) {
          op2 = IsolateOperator(opReverse);
-         LANGULUS_ASSUME(DevAssumes, !GetOperator(op2),
+         LANGULUS_ASSUME(DevAssumes, not GetOperator(op2),
             "Negative operator already registered");
       }
 
@@ -364,12 +364,12 @@ namespace Langulus::RTTI
       if (lc1 != lc2)
          mMetaVerbs.insert({lc2, newDefinition});
 
-      if (!op1.empty()) {
+      if (not op1.empty()) {
          mOperators.insert({op1, newDefinition});
          VERBOSE("Operator ", op1, " registered");
       }
 
-      if (!op2.empty() && op1 != op2) {
+      if (not op2.empty() and op1 != op2) {
          mOperators.insert({op2, newDefinition});
          VERBOSE("Operator ", op1, " registered");
       }
@@ -383,7 +383,7 @@ namespace Langulus::RTTI
    ///   @param token - the file extension token to reserve                   
    ///   @param type - the data to associate file with                        
    void Registry::RegisterFileExtension(const Token& token, DMeta type) SAFETY_NOEXCEPT() {
-      LANGULUS_ASSUME(DevAssumes, !token.empty(),
+      LANGULUS_ASSUME(DevAssumes, not token.empty(),
          "Bad file extension");
       LANGULUS_ASSUME(DevAssumes, type,
          "Bad meta data for file extension ", token);
@@ -424,12 +424,12 @@ namespace Langulus::RTTI
          VERBOSE("Data ", Logger::Push, Logger::Cyan, meta->second->mToken, 
             Logger::Pop, Logger::Red, " unregistered (", library, ")");
 
-         if (!meta->second->mFileExtensions.empty()) {
+         if (not meta->second->mFileExtensions.empty()) {
             // Unregister all file extensions, if any                   
             const auto ext = meta->second->mFileExtensions;
             Offset sequential = 0;
             for (Offset e = 0; e < ext.size(); ++e) {
-               if (IsSpace(ext[e]) || ext[e] == ',') {
+               if (IsSpace(ext[e]) or ext[e] == ',') {
                   if (sequential) {
                      const auto lc = ToLowercase(
                         ext.substr(e - sequential, sequential)
@@ -482,9 +482,9 @@ namespace Langulus::RTTI
          VMeta definition = meta->second;
          const auto lc1 = ToLowercase(definition->mToken);
          const auto lc2 = ToLowercase(definition->mTokenReverse);
-         LANGULUS_ASSUME(DevAssumes,
-            definition && definition == GetMetaVerb(lc1)
-            && definition == GetMetaVerb(lc2),
+         LANGULUS_ASSUME(DevAssumes, definition
+            and definition == GetMetaVerb(lc1)
+            and definition == GetMetaVerb(lc2),
             "Bad VMeta definition"
          );
 

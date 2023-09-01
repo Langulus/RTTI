@@ -1352,7 +1352,7 @@ namespace Langulus::RTTI
 
       // Different types might be compatible via inheritance            
       // All the following operations are done in the origin            
-      if constexpr (!BINARY_COMPATIBLE) {
+      if constexpr (not BINARY_COMPATIBLE) {
          // We don't need binary compatibility                          
          if (HasBase(other))
             return true;

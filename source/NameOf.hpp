@@ -51,7 +51,7 @@ namespace Langulus::RTTI
       ///   @param str - the string view to modify as constexpr               
       ///   @param suffix - the suffix to skip                                
       constexpr void SkipSuffix(Token& str, const Token& suffix) {
-         if (str.size() >= suffix.size() && suffix.size() > 0 && str.ends_with(suffix))
+         if (str.size() >= suffix.size() and suffix.size() > 0 and str.ends_with(suffix))
             str.remove_suffix(suffix.size());
       }
 
@@ -100,11 +100,11 @@ namespace Langulus::RTTI
       NOD() constexpr bool IsTransition(const Token& source, const Token& remaining, Count s) {
          return (
                remaining.data() == source.data()
-               || IsAlpha(*(remaining.data()))
+               or IsAlpha(*(remaining.data()))
                != IsAlpha(*(remaining.data() - 1))
-            ) && (
+            ) and (
                remaining.data() + s == source.data() + source.size()
-               || IsAlpha(*(remaining.data() + s))
+               or IsAlpha(*(remaining.data() + s))
                != IsAlpha(*(remaining.data() + s - 1))
             );
       }
@@ -113,13 +113,13 @@ namespace Langulus::RTTI
       ///   @param remaining - [in/out] the remaining token                   
       ///   @param recycle - [out]                                            
       constexpr void Skip(const Token& source, Token& remaining, bool& recycle) {
-         while (remaining.size() > 0 && IsSpace(remaining[0])) {
+         while (remaining.size() > 0 and IsSpace(remaining[0])) {
             remaining.remove_prefix(1);
             recycle = true;
          }
 
          for (auto skip : SkipPatterns) {
-            if (!remaining.starts_with(skip))
+            if (not remaining.starts_with(skip))
                continue;
 
             // Skip the symbol only if it is at the border of an        
@@ -145,12 +145,12 @@ namespace Langulus::RTTI
 
             // Do skips                                                 
             Skip(source, remaining, recycle);
-            if (recycle || remaining.size() == 0)
+            if (recycle or remaining.size() == 0)
                continue;
 
             // Do replacements                                          
             for (auto replace : ReplacePatterns) {
-               if (!remaining.starts_with(replace.first))
+               if (not remaining.starts_with(replace.first))
                   continue;
 
                if (IsTransition(source, remaining, replace.first.size())) {
@@ -161,7 +161,7 @@ namespace Langulus::RTTI
                }
             }
 
-            if (recycle || remaining.size() == 0)
+            if (recycle or remaining.size() == 0)
                continue;
 
             // Push anything else                                       
@@ -212,12 +212,12 @@ namespace Langulus::RTTI
 
                // Do skips                                              
                Skip(Original, remaining, recycle);
-               if (recycle || remaining.size() == 0)
+               if (recycle or remaining.size() == 0)
                   continue;
                
                // Do replacements                                       
                for (auto replace : ReplacePatterns) {
-                  if (!remaining.starts_with(replace.first))
+                  if (not remaining.starts_with(replace.first))
                      continue;
 
                   if (IsTransition(Original, remaining, replace.first.size())) {
@@ -230,7 +230,7 @@ namespace Langulus::RTTI
                   }
                }
 
-               if (recycle || remaining.size() == 0)
+               if (recycle or remaining.size() == 0)
                   continue;
 
                // Push anything else                                    
@@ -240,7 +240,7 @@ namespace Langulus::RTTI
 
             // Last symbol might be ' ' due to the "const " replacement 
             // Make sure we remove it before returning                  
-            if (it && output[it-1] == ' ')
+            if (it and output[it-1] == ' ')
                output[it-1] = '\0';
             else
                output[it] = '\0';
@@ -350,7 +350,7 @@ namespace Langulus
    template<CT::Data T>
    constexpr Token NameOf() noexcept {
       using DT = Decay<T>;
-      if constexpr (CT::Decayed<T> && requires { DT::CTTI_Name; })
+      if constexpr (CT::Decayed<T> and requires { DT::CTTI_Name; })
          return DT::CTTI_Name;
       else
          return RTTI::CppNameOf<T>();

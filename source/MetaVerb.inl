@@ -112,9 +112,9 @@ namespace Langulus::RTTI
       // This check is not standard, but doesn't hurt afaik             
       static_assert(sizeof(T) > 0,
          "Can't reflect an incomplete type");
-      static_assert(!GetReflectedPositiveVerbToken<T>().empty(),
+      static_assert(not GetReflectedPositiveVerbToken<T>().empty(),
          "Invalid verb token is not allowed");
-      static_assert(!GetReflectedNegativeVerbToken<T>().empty(),
+      static_assert(not GetReflectedNegativeVerbToken<T>().empty(),
          "Invalid verb token is not allowed");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
@@ -225,7 +225,7 @@ namespace Langulus::RTTI
          // same instance                                               
          return this == other;
       #else
-         return other && mHash == other->mHash && mToken == other->mToken;
+         return other and mHash == other->mHash and mToken == other->mToken;
       #endif
    }	
    

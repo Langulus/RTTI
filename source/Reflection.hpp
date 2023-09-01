@@ -225,27 +225,27 @@ namespace Langulus::CT
       concept Uninsertable = T::CTTI_Uninsertable;
 
       template<class T>
-      concept Unallocatable = !Complete<T> || T::CTTI_Unallocatable;
+      concept Unallocatable = not Complete<T> or T::CTTI_Unallocatable;
 
       template<class T>
-      concept POD = Complete<T> && (::std::is_trivial_v<T> || T::CTTI_POD);
+      concept POD = Complete<T> and (::std::is_trivial_v<T> or T::CTTI_POD);
 
       template<class T>
-      concept Nullifiable = Complete<T> && T::CTTI_Nullifiable;
+      concept Nullifiable = Complete<T> and T::CTTI_Nullifiable;
 
       template<class T>
-      concept Concretizable = Complete<T> && requires {
+      concept Concretizable = Complete<T> and requires {
          typename T::CTTI_Concrete;
       };
 
       template<class T>
-      concept Producible = Complete<T> && requires {
+      concept Producible = Complete<T> and requires {
          typename T::CTTI_Producer;
       };
 
       template<class T>
       concept Abstract = Complete<T>
-         && (::std::is_abstract_v<T> || T::CTTI_Abstract);
+         and (::std::is_abstract_v<T> or T::CTTI_Abstract);
 
       template<class T>
       concept DispatcherMutable = requires (T* a, ::Langulus::Flow::Verb& b) {
@@ -258,12 +258,12 @@ namespace Langulus::CT
       };
       
       template<class T>
-      concept Typed = Complete<T> && requires {
+      concept Typed = Complete<T> and requires {
          typename T::CTTI_InnerType;
       };
       
       template<class T>
-      concept HasNamedValues = Complete<T> && requires {
+      concept HasNamedValues = Complete<T> and requires {
          T::CTTI_NamedValues;
       };
 
@@ -287,27 +287,27 @@ namespace Langulus::CT
    /// This field is automatically added when using LANGULUS(REFLECT) macro   
    /// inside the type you want to reflect                                    
    template<class... T>
-   concept Reflectable = (Inner::Reflectable<Decay<T>> && ...);
+   concept Reflectable = (Inner::Reflectable<Decay<T>> and ...);
 
    /// An uninsertable type is any type with a true static member             
    /// T::CTTI_Uninsertable. All types are insertable by default              
    /// Useful to mark some intermediate types, that are not supposed to be    
    /// inserted in containers                                                 
    template<class... T>
-   concept Uninsertable = (Inner::Uninsertable<Decay<T>> && ...);
+   concept Uninsertable = (Inner::Uninsertable<Decay<T>> and ...);
 
    template<class... T>
-   concept Insertable = (!Inner::Uninsertable<Decay<T>> && ...);
+   concept Insertable = (not Inner::Uninsertable<Decay<T>> and ...);
 
    /// You can make types unallocatable by the memory manager. This serves    
    /// not only as forcing the type to be either allocated by conventional    
    /// C++ means, or on the stack, but also optimizes away any memory manager 
    /// searches, when inserting pointers, if managed memory is enabled        
    template<class... T>
-   concept Unallocatable = ((Inner::Unallocatable<Decay<T>> && Dense<T>) && ...);
+   concept Unallocatable = ((Inner::Unallocatable<Decay<T>> and Dense<T>) and ...);
 
    template<class... T>
-   concept Allocatable = ((!Inner::Unallocatable<Decay<T>> && Dense<T>) && ...);
+   concept Allocatable = ((not Inner::Unallocatable<Decay<T>> and Dense<T>) and ...);
 
    /// A POD (Plain Old Data) type is any type with a static member           
    /// T::CTTI_POD set to true. If no such member exists, the type is         
@@ -317,7 +317,7 @@ namespace Langulus::CT
    /// All POD types are also directly serializable to binary                 
    /// Use LANGULUS(POD) macro as member to tag POD types                     
    template<class... T>
-   concept POD = (Inner::POD<Decay<T>> && ...);
+   concept POD = (Inner::POD<Decay<T>> and ...);
 
    /// A nullifiable type is any type with a static member                    
    /// T::CTTI_Nullifiable set to true. If no such member exists, the type    
@@ -326,7 +326,7 @@ namespace Langulus::CT
    /// runtime optimizations                                                  
    /// Use LANGULUS(NULLIFIABLE) macro as member to tag nullifiable types     
    template<class... T>
-   concept Nullifiable = (Inner::Nullifiable<Decay<T>> && ...);
+   concept Nullifiable = (Inner::Nullifiable<Decay<T>> and ...);
 
    /// A concretizable type is any type with a member type CTTI_Concrete      
    /// If no such member exists, the type is assumed NOT concretizable by     
@@ -334,7 +334,7 @@ namespace Langulus::CT
    /// when	allocating abstract types                                         
    /// Use LANGULUS(CONCRETIZABLE) macro as member to tag such types          
    template<class... T>
-   concept Concretizable = (Inner::Concretizable<Decay<T>> && ...);
+   concept Concretizable = (Inner::Concretizable<Decay<T>> and ...);
 
    /// Get the reflected concrete type                                        
    template<class T>
@@ -346,11 +346,11 @@ namespace Langulus::CT
    /// to be produced by executing Verbs::Create in the producer's context    
    /// Use LANGULUS(PRODUCER) macro as member to tag such types               
    template<class... T>
-   concept Producible = (Inner::Producible<Decay<T>> && ...);
+   concept Producible = (Inner::Producible<Decay<T>> and ...);
    
    /// Check if a type has reflected named values                             
    template<class... T>
-   concept HasNamedValues = (Inner::HasNamedValues<Decay<T>> && ...);
+   concept HasNamedValues = (Inner::HasNamedValues<Decay<T>> and ...);
 
    /// Get the reflected producer type                                        
    template<class T>
@@ -360,19 +360,19 @@ namespace Langulus::CT
    /// explicitly marked as LANGULUS(ABSTRACT)). Sparse types are never       
    /// abstract                                                               
    template<class... T>
-   concept Abstract = (Inner::Abstract<Decay<T>> && ...);
+   concept Abstract = (Inner::Abstract<Decay<T>> and ...);
 
    /// Check if all T have a mutable dispatcher (have `Do(Verb&)` method)     
    template<class... T>
-   concept DispatcherMutable = (Inner::DispatcherMutable<T> && ...);
+   concept DispatcherMutable = (Inner::DispatcherMutable<T> and ...);
 
    /// Check if all T have a constant dispatcher (have `Do(Verb&) const`)     
    template<class... T>
-   concept DispatcherConstant = (Inner::DispatcherConstant<T> && ...);
+   concept DispatcherConstant = (Inner::DispatcherConstant<T> and ...);
 
    /// Check if all T have a dispatcher, compatible with the cv-quality of T  
    template<class... T>
-   concept Dispatcher = ((DispatcherMutable<T> || (Constant<T> && DispatcherConstant<T>)) && ...);
+   concept Dispatcher = ((DispatcherMutable<T> or (Constant<T> and DispatcherConstant<T>)) and ...);
 
 } // namespace Langulus::CT
 
@@ -391,145 +391,145 @@ namespace Langulus::CT
 
    /// Check if a type has an underlying type defined                         
    template<class... T>
-   concept Typed = ((Inner::Typed<Decay<T>> && Data<TypeOf<T>>) && ...);
+   concept Typed = ((Inner::Typed<Decay<T>> and Data<TypeOf<T>>) and ...);
 
    /// Custom boolean concept (wrapped in another type)                       
    template<class... T>
-   concept CustomBool = ((Typed<T> &&
-      BuiltinBool<TypeOf<T>> && sizeof(T) == sizeof(TypeOf<T>)
-   ) && ...);
+   concept CustomBool = ((Typed<T> and
+      BuiltinBool<TypeOf<T>> and sizeof(T) == sizeof(TypeOf<T>)
+   ) and ...);
 
    /// Custom character concept (wrapped in another type)                     
    template<class... T>
-   concept CustomCharacter = ((Typed<T> &&
-      BuiltinCharacter<TypeOf<T>> && sizeof(T) == sizeof(TypeOf<T>)
-   ) && ...);
+   concept CustomCharacter = ((Typed<T> and
+      BuiltinCharacter<TypeOf<T>> and sizeof(T) == sizeof(TypeOf<T>)
+   ) and ...);
 
    /// Custom integer concept (wrapped in another type)                       
    /// Unlike CT::Integer, this includes character and boolean types          
    template<class... T>
-   concept CustomInteger = ((Typed<T> &&
-      ::std::is_integral_v<TypeOf<T>> && sizeof(T) == sizeof(TypeOf<T>)
-   ) && ...);
+   concept CustomInteger = ((Typed<T> and
+      ::std::is_integral_v<TypeOf<T>> and sizeof(T) == sizeof(TypeOf<T>)
+   ) and ...);
 
    /// Custom real concept (wrapped in another type)                          
    template<class... T>
-   concept CustomReal = ((Typed<T> &&
-      ::std::is_floating_point_v<TypeOf<T>> && sizeof(T) == sizeof(TypeOf<T>)
-   ) && ...);
+   concept CustomReal = ((Typed<T> and
+      ::std::is_floating_point_v<TypeOf<T>> and sizeof(T) == sizeof(TypeOf<T>)
+   ) and ...);
    
    /// Custom number concept (either sparse or dense)                         
    /// Any T that has underlying arithmetic type and is binary compatible     
    /// Unlike CT::BuiltinNumber, this one includes booleans and characters    
    template<class... T>
    concept CustomNumber = ((
-      CustomBool<T> || CustomCharacter<T> || CustomInteger<T> || CustomReal<T>
-   ) && ...);
+      CustomBool<T> or CustomCharacter<T> or CustomInteger<T> or CustomReal<T>
+   ) and ...);
 
    /// Any real concept, custom or not (either sparse or dense)               
    template<class... T>
-   concept Real = ((BuiltinReal<T> || CustomReal<T>) && ...);
+   concept Real = ((BuiltinReal<T> or CustomReal<T>) and ...);
 
    /// Dense real concept                                                     
    template<class... T>
-   concept DenseReal = ((Real<T> && Dense<T>) && ...);
+   concept DenseReal = ((Real<T> and Dense<T>) and ...);
 
    /// Sparse real concept                                                    
    template<class... T>
-   concept SparseReal = ((Real<T> && Sparse<T>) && ...);
+   concept SparseReal = ((Real<T> and Sparse<T>) and ...);
 
    /// Any integer concept, custom or not (either sparse or dense)            
    template<class... T>
-   concept Integer = ((BuiltinInteger<T> || CustomInteger<T>) && ...);
+   concept Integer = ((BuiltinInteger<T> or CustomInteger<T>) and ...);
 
    /// Dense integer concept                                                  
    template<class... T>
-   concept DenseInteger = ((Integer<T> && Dense<T>) && ...);
+   concept DenseInteger = ((Integer<T> and Dense<T>) and ...);
 
    /// Sparse integer concept                                                 
    template<class... T>
-   concept SparseInteger = ((Integer<T> && Sparse<T>) && ...);
+   concept SparseInteger = ((Integer<T> and Sparse<T>) and ...);
    
    /// Any signed integer concept, custom or not (either sparse or dense)     
    template<class... T>
-   concept SignedInteger = ((Signed<T> && Integer<T>) && ...);
+   concept SignedInteger = ((Signed<T> and Integer<T>) and ...);
 
    /// Any dense signed integer concept, custom or not                        
    template<class... T>
-   concept DenseSignedInteger = ((SignedInteger<T> && Dense<T>) && ...);
+   concept DenseSignedInteger = ((SignedInteger<T> and Dense<T>) and ...);
 
    /// Any sparse signed integer concept, custom or not                       
    template<class... T>
-   concept SparseSignedInteger = ((SignedInteger<T> && Sparse<T>) && ...);
+   concept SparseSignedInteger = ((SignedInteger<T> and Sparse<T>) and ...);
 
    /// Any unsigned integer concept, custom or not (either sparse or dense)   
    template<class... T>
-   concept UnsignedInteger = ((Unsigned<T> && Integer<T>) && ...);
+   concept UnsignedInteger = ((Unsigned<T> and Integer<T>) and ...);
 
    /// Any dense unsigned integer concept, custom or not                      
    template<class... T>
-   concept DenseUnsignedInteger = ((UnsignedInteger<T> && Dense<T>) && ...);
+   concept DenseUnsignedInteger = ((UnsignedInteger<T> and Dense<T>) and ...);
 
    /// Any sparse unsigned integer concept, custom or not                     
    template<class... T>
-   concept SparseUnsignedInteger = ((UnsignedInteger<T> && Sparse<T>) && ...);
+   concept SparseUnsignedInteger = ((UnsignedInteger<T> and Sparse<T>) and ...);
 
    /// Any bool concept, custom or not (either sparse or dense)               
    template<class... T>
-   concept Bool = ((BuiltinBool<T> || CustomBool<T>) && ...);
+   concept Bool = ((BuiltinBool<T> or CustomBool<T>) and ...);
 
    /// Dense bool concept                                                     
    template<class... T>
-   concept DenseBool = ((Bool<T> && Dense<T>) && ...);
+   concept DenseBool = ((Bool<T> and Dense<T>) and ...);
 
    /// Sparse bool concept                                                    
    template<class... T>
-   concept SparseBool = ((Bool<T> && Sparse<T>) && ...);
+   concept SparseBool = ((Bool<T> and Sparse<T>) and ...);
 
    /// Any character concept, custom or not (either sparse or dense)          
    template<class... T>
-   concept Character = ((BuiltinCharacter<T> || CustomCharacter<T>) && ...);
+   concept Character = ((BuiltinCharacter<T> or CustomCharacter<T>) and ...);
 
    /// Dense character concept                                                
    template<class... T>
-   concept DenseCharacter = ((Character<T> && Dense<T>) && ...);
+   concept DenseCharacter = ((Character<T> and Dense<T>) and ...);
 
    /// Sparse character concept                                               
    template<class... T>
-   concept SparseCharacter = ((Character<T> && Sparse<T>) && ...);
+   concept SparseCharacter = ((Character<T> and Sparse<T>) and ...);
 
    /// Any number concept, custom or not (either sparse or dense)             
    /// Excludes boolean and character types, unless wrapped in another type   
    template<class... T>
-   concept Number = ((BuiltinNumber<T> || CustomNumber<T>) && ...);
+   concept Number = ((BuiltinNumber<T> or CustomNumber<T>) and ...);
    
    /// Dense number concept                                                   
    /// Excludes boolean and character types, unless wrapped in another type   
    template<class... T>
-   concept DenseNumber = ((Number<T> && Dense<T>) && ...);
+   concept DenseNumber = ((Number<T> and Dense<T>) and ...);
 
    /// Sparse number concept                                                  
    /// Excludes boolean types and character types, unless wrapped in another  
    template<class... T>
-   concept SparseNumber = ((Number<T> && Sparse<T>) && ...);
+   concept SparseNumber = ((Number<T> and Sparse<T>) and ...);
    
    namespace Inner
    {
       template<class T>
-      concept Vector = Typed<T> && DenseNumber<TypeOf<T>> && requires {
+      concept Vector = Typed<T> and DenseNumber<TypeOf<T>> and requires {
             {Decay<T>::MemberCount} -> UnsignedInteger;
          }
-         && sizeof(T) == sizeof(TypeOf<T>) * Decay<T>::MemberCount
-         && Decay<T>::MemberCount > 1;
+         and sizeof(T) == sizeof(TypeOf<T>) * Decay<T>::MemberCount
+         and Decay<T>::MemberCount > 1;
 
       template<class T>
       concept Scalar = DenseNumber<T> 
-         || (Typed<T> && DenseNumber<TypeOf<T>> && requires {
+         or (Typed<T> and DenseNumber<TypeOf<T>> and requires {
                {Decay<T>::MemberCount} -> UnsignedInteger;
             }
-            && sizeof(T) == sizeof(TypeOf<T>)
-            && Decay<T>::MemberCount == 1)
-         || (CT::Number<T> && CT::Array<T> && ExtentOf<T> == 1);
+            and sizeof(T) == sizeof(TypeOf<T>)
+            and Decay<T>::MemberCount == 1)
+         or (CT::Number<T> and CT::Array<T> and ExtentOf<T> == 1);
    }
          
    /// Vector concept                                                         
@@ -537,7 +537,7 @@ namespace Langulus::CT
    /// has MemberCount that is at least 2, and T's size is exactly the same   
    /// as sizeof(CTTI_InnerType) * MemberCount                                
    template<class... T>
-   concept Vector = (Inner::Vector<T> && ...);
+   concept Vector = (Inner::Vector<T> and ...);
 
    /// Scalar concept                                                         
    /// Any dense type that is LANGULUS(TYPED) as a dense number,              
@@ -545,11 +545,11 @@ namespace Langulus::CT
    /// as sizeof(CTTI_InnerType)                                              
    /// Alternatively, a bounded array of extent 1 is also considered scalar   
    template<class... T>
-   concept Scalar = (Inner::Scalar<T> && ...);
+   concept Scalar = (Inner::Scalar<T> and ...);
 
    /// Scalar-or-vector concept                                               
    template<class... T>
-   concept ScalarOrVector = ((Vector<T> || Scalar<T>) && ...);
+   concept ScalarOrVector = ((Vector<T> or Scalar<T>) and ...);
 
 } // namespace Langulus::CT
 
@@ -581,11 +581,11 @@ namespace Langulus
    template<class T1, class T2>
    using Lossless = Conditional<
       // Always pick real numbers over integers if available            
-         (CT::Real<T1>&& CT::Integer<T2>)
+         (CT::Real<T1> and CT::Integer<T2>)
       // Always pick signed type if available                           
-      || (CT::Signed<T1> && CT::Unsigned<T2>)
+      or (CT::Signed<T1> and CT::Unsigned<T2>)
       // Always pick the larger type as a last resort                   
-      || (sizeof(Decay<T1>) > sizeof(Decay<T2>)
+      or (sizeof(Decay<T1>) > sizeof(Decay<T2>)
    ), Decay<T1>, Decay<T2>>;
    
    /// A type naming convention for standard number types, as well as         
