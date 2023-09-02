@@ -67,7 +67,7 @@ namespace Langulus
 
       /// Checks if a type has no special semantics                           
       template<class... T>
-      concept NotSemantic = ((not Semantic<T> /*and not DerivedFrom<T, Anyness::Neat>*/) and ...);
+      concept NotSemantic = ((not Semantic<T>) and ...);
 
       /// Check if a type is copied                                           
       template<class... T>
@@ -158,7 +158,7 @@ namespace Langulus
    public:
       LANGULUS(TYPED) T;
 
-      static_assert(!::std::is_const_v<T>,
+      static_assert(not ::std::is_const_v<T>,
          "T must be mutable in order to be moved");
 
       Moved() = delete;
@@ -232,7 +232,7 @@ namespace Langulus
    public:
       LANGULUS(TYPED) T;
 
-      static_assert(!::std::is_const_v<T>,
+      static_assert(not ::std::is_const_v<T>,
          "T must be mutable in order to be abandoned");
 
       Abandoned() = delete;
@@ -420,7 +420,7 @@ namespace Langulus
          using A = TypeOf<S>;
 
          if constexpr (S::Move) {
-            if constexpr (!S::Keep && ::std::constructible_from<T, Abandoned<A>&&>)
+            if constexpr (not S::Keep and ::std::constructible_from<T, Abandoned<A>&&>)
                return T {Abandon(*value)};
             else if constexpr (::std::constructible_from<T, Moved<A>&&>)
                return T {Move(*value)};
@@ -434,9 +434,9 @@ namespace Langulus
                return Inner::Unsupported {};
          }
          else {
-            if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
+            if constexpr (not S::Shallow and ::std::constructible_from<T, Cloned<A>&&>)
                return T {Clone(*value)};
-            else if constexpr (!S::Keep && ::std::constructible_from<T, Disowned<A>&&>)
+            else if constexpr (not S::Keep and ::std::constructible_from<T, Disowned<A>&&>)
                return T {Disown(*value)};
             else if constexpr (::std::constructible_from<T, Copied<A>>)
                return T {Copy(*value)};
@@ -464,7 +464,7 @@ namespace Langulus
          using A = TypeOf<S>;
 
          if constexpr (S::Move) {
-            if constexpr (!S::Keep && ::std::constructible_from<T, Abandoned<A>&&>)
+            if constexpr (not S::Keep and ::std::constructible_from<T, Abandoned<A>&&>)
                return new T {Abandon(*value)};
             else if constexpr (::std::constructible_from<T, Moved<A>&&>)
                return new T {Move(*value)};
@@ -478,9 +478,9 @@ namespace Langulus
                return Inner::Unsupported {};
          }
          else {
-            if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
+            if constexpr (not S::Shallow and ::std::constructible_from<T, Cloned<A>&&>)
                return new T {Clone(*value)};
-            else if constexpr (!S::Keep && ::std::constructible_from<T, Disowned<A>&&>)
+            else if constexpr (not S::Keep and ::std::constructible_from<T, Disowned<A>&&>)
                return new T {Disown(*value)};
             else if constexpr (::std::constructible_from<T, Copied<A>>)
                return new T {Copy(*value)};
@@ -513,7 +513,7 @@ namespace Langulus
          using A = TypeOf<S>;
 
          if constexpr (S::Move) {
-            if constexpr (!S::Keep && ::std::constructible_from<T, Abandoned<A>&&>)
+            if constexpr (not S::Keep and ::std::constructible_from<T, Abandoned<A>&&>)
                return new (placement) T {Abandon(*value)};
             else if constexpr (::std::constructible_from<T, Moved<A>&&>)
                return new (placement) T {Move(*value)};
@@ -527,9 +527,9 @@ namespace Langulus
                return Inner::Unsupported {};
          }
          else {
-            if constexpr (!S::Shallow && ::std::constructible_from<T, Cloned<A>&&>)
+            if constexpr (not S::Shallow and ::std::constructible_from<T, Cloned<A>&&>)
                return new (placement) T {Clone(*value)};
-            else if constexpr (!S::Keep && ::std::constructible_from<T, Disowned<A>&&>)
+            else if constexpr (not S::Keep and ::std::constructible_from<T, Disowned<A>&&>)
                return new (placement) T {Disown(*value)};
             else if constexpr (::std::constructible_from<T, Copied<A>>)
                return new (placement) T {Copy(*value)};
@@ -555,7 +555,7 @@ namespace Langulus
    LANGULUS(INLINED)
    void SemanticNewUnknown(RTTI::DMeta type, Byte* placement, S&& value) {
       static_assert(
-         CT::Exact<TypeOf<S>, Byte*> ||
+         CT::Exact<TypeOf<S>, Byte*> or
          CT::Exact<TypeOf<S>, const Byte*>,
          "Bad argument"
       );
@@ -567,7 +567,7 @@ namespace Langulus
       if constexpr (S::Shallow) {
          // Abandon/Disown/Move/Copy                                    
          if constexpr (S::Move) {
-            if constexpr (!S::Keep) {
+            if constexpr (not S::Keep) {
                if (type->mAbandonConstructor) {
                   type->mAbandonConstructor(*value, placement);
                   return;
@@ -579,7 +579,7 @@ namespace Langulus
             }
          }
          else {
-            if constexpr (!S::Keep) {
+            if constexpr (not S::Keep) {
                if (type->mDisownConstructor) {
                   type->mDisownConstructor(*value, placement);
                   return;
@@ -616,7 +616,7 @@ namespace Langulus
          "S type must be exactly T (build-time optimization)");
 
       if constexpr (S::Move) {
-         if constexpr (!S::Keep && requires(T& a) { a = Abandon(*rhs); })
+         if constexpr (not S::Keep and requires(T& a) { a = Abandon(*rhs); })
             return (lhs = Abandon(*rhs));
          else if constexpr (requires(T& a) { a = Move(*rhs); })
             return (lhs = Move(*rhs));
@@ -630,9 +630,9 @@ namespace Langulus
             return Inner::Unsupported {};
       }
       else {
-         if constexpr (!S::Shallow && requires(T& a) { a = Clone(*rhs); })
+         if constexpr (not S::Shallow and requires(T& a) { a = Clone(*rhs); })
             return (lhs = Clone(*rhs));
-         else if constexpr (!S::Keep && requires(T& a) { a = Disown(*rhs); })
+         else if constexpr (not S::Keep and requires(T& a) { a = Disown(*rhs); })
             return (lhs = Disown(*rhs));
          else if constexpr (requires(T& a) { a = Copy(*rhs); })
             return (lhs = Copy(*rhs));
@@ -711,13 +711,13 @@ namespace Langulus::CT
 
       /// Check if T is semantic-constructible by S                           
       template<class S, class T>
-      concept SemanticMakable = Semantic<S> && requires (T a) {
+      concept SemanticMakable = Semantic<S> and requires (T a) {
          {SemanticMake<T>(S {a})} -> Exact<T>;
       };
 
       /// Check if T is semantic-assignable if mutable                        
       template<class S, class T>
-      concept SemanticAssignable = Semantic<S> && requires (T a) {
+      concept SemanticAssignable = Semantic<S> and requires (T a) {
          {SemanticAssign(a, S {a})} -> Exact<T&>;
       };
 
@@ -727,61 +727,61 @@ namespace Langulus::CT
    /// Check if origin T is disown-constructible                              
    template<class... T>
    concept DisownMakable = Complete<Decay<T>...>
-      && (Inner::DisownMakable<Decay<T>> && ...);
+       and (Inner::DisownMakable<Decay<T>> and ...);
 
    /// Check if origin T is disown-assignable if mutable                      
    template<class... T>
    concept DisownAssignable = Complete<Decay<T>...>
-      && (Inner::DisownAssignable<Decay<T>> && ...);
+       and (Inner::DisownAssignable<Decay<T>> and ...);
 
    /// Check if origin T is clone-constructible                               
    template<class... T>
    concept CloneMakable = Complete<Decay<T>...>
-      && (Inner::CloneMakable<Decay<T>> && ...);
+       and (Inner::CloneMakable<Decay<T>> and ...);
 
    /// Check if origin T is clone-assignable if mutable                       
    template<class... T>
    concept CloneAssignable = Complete<Decay<T>...>
-      && (Inner::CloneAssignable<Decay<T>> && ...);
+       and (Inner::CloneAssignable<Decay<T>> and ...);
 
    /// Check if origin T is abandon-constructible                             
    template<class... T>
    concept AbandonMakable = Complete<Decay<T>...>
-      && (Inner::AbandonMakable<Decay<T>> && ...);
+       and (Inner::AbandonMakable<Decay<T>> and ...);
 
    /// Check if origin T is abandon-assignable if mutable                     
    template<class... T>
    concept AbandonAssignable = Complete<Decay<T>...>
-      && (Inner::AbandonAssignable<Decay<T>> && ...);
+       and (Inner::AbandonAssignable<Decay<T>> and ...);
 
    /// Check if origin T is copy-constructible                                
    template<class... T>
    concept CopyMakable = Complete<Decay<T>...>
-      && (Inner::CopyMakable<Decay<T>> && ...);
+       and (Inner::CopyMakable<Decay<T>> and ...);
 
    /// Check if origin T is copy-assignable                                   
    template<class... T>
    concept CopyAssignable = Complete<Decay<T>...>
-      && (Inner::CopyAssignable<Decay<T>> && ...);
+       and (Inner::CopyAssignable<Decay<T>> and ...);
          
    /// Check if origin T is move-constructible                                
    template<class... T>
    concept MoveMakable = Complete<Decay<T>...>
-      && (Inner::MoveMakable<Decay<T>> && ...);
+       and (Inner::MoveMakable<Decay<T>> and ...);
 
    /// Check if origin T is move-assignable                                   
    template<class... T>
    concept MoveAssignable = Complete<Decay<T>...>
-      && (Inner::MoveAssignable<Decay<T>> && ...);
+       and (Inner::MoveAssignable<Decay<T>> and ...);
 
    /// Check if origin T is semantic-constructible by semantic S              
    template<class S, class... T>
    concept SemanticMakable = Complete<Decay<T>...>
-      && (Inner::SemanticMakable<S, Decay<T>> && ...);
+       and (Inner::SemanticMakable<S, Decay<T>> and ...);
 
    /// Check if origin T is semantic-assignable by semantic S, if mutable     
    template<class S, class... T>
    concept SemanticAssignable = Complete<Decay<T>...>
-      && (Inner::SemanticAssignable<S, Decay<T>> && ...);
+       and (Inner::SemanticAssignable<S, Decay<T>> and ...);
 
 } // namespace Langulus::CT
