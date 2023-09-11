@@ -1,6 +1,7 @@
 ///                                                                           
 /// Langulus::RTTI                                                            
-/// Copyright(C) 2012 Dimo Markov <langulusteam@gmail.com>                    
+/// Copyright (c) 2012 Dimo Markov <team@langulus.com>                        
+/// Part of the Langulus framework, see https://langulus.com                  
 ///                                                                           
 /// Distributed under GNU General Public License v3+                          
 /// See LICENSE file, or https://www.gnu.org/licenses                         
@@ -19,9 +20,9 @@ namespace Langulus::RTTI
       /// These definitions might change in future compiler versions          
       /// and will probably need constant maintenance                         
       #if defined(__clang__)
-         constexpr Token Prefix = "Langulus::Token Langulus::RTTI::Inner::IsolateTypename() [T = ";
+         constexpr Token Prefix = "Token Langulus::RTTI::Inner::IsolateTypename() [T = ";
          constexpr Token Suffix = "]";
-      #elif defined(__GNUC__) && !defined(__clang__)
+      #elif defined(__GNUC__) and not defined(__clang__)
          constexpr Token Prefix = "constexpr Langulus::Token Langulus::RTTI::Inner::IsolateTypename() [with T = ";
          constexpr Token Suffix = "; Langulus::Token = std::basic_string_view<char>]";
       #elif defined(_MSC_VER)

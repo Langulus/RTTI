@@ -1,6 +1,7 @@
 ///                                                                           
-/// Langulus::Core                                                            
-/// Copyright(C) 2012 Dimo Markov <langulusteam@gmail.com>                    
+/// Langulus::RTTI                                                            
+/// Copyright (c) 2012 Dimo Markov <team@langulus.com>                        
+/// Part of the Langulus framework, see https://langulus.com                  
 ///                                                                           
 /// Distributed under GNU General Public License v3+                          
 /// See LICENSE file, or https://www.gnu.org/licenses                         
@@ -22,7 +23,7 @@ namespace Langulus
 
    /// Common Langulus assertion                                              
    ///   @tparam LEVEL - level of the assumption, configurable from CMake,    
-   /// using LANGULUS_ENABLE_ASSERTION_LEVEL and LANGULUS_ENABLE_SAFE_MODE    
+   /// using LANGULUS_ASSERTION_LEVEL and LANGULUS_SAFE_MODE                  
    ///   @param condition - the condition that must hold true                 
    ///   @param message - an error message if condition doesn't hold          
    ///   @param location - the location of the error, if any                  

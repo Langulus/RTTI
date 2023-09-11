@@ -1,6 +1,7 @@
 ///                                                                           
 /// Langulus::RTTI                                                            
-/// Copyright(C) 2012 Dimo Markov <langulusteam@gmail.com>                    
+/// Copyright (c) 2012 Dimo Markov <team@langulus.com>                        
+/// Part of the Langulus framework, see https://langulus.com                  
 ///                                                                           
 /// Distributed under GNU General Public License v3+                          
 /// See LICENSE file, or https://www.gnu.org/licenses                         
@@ -927,9 +928,9 @@ namespace Langulus::RTTI
          constexpr auto c = ExtentOf<decltype(T::CTTI_NamedValues)>;
          static T staticInstances[c];
          static ::std::string staticNames[c] {};
-         #if !LANGULUS_FEATURE(MANAGED_REFLECTION)
-            static constinit ::std::unique_ptr<MetaConst> staticMC[c] {};
-         #endif
+         IF_NOT_LANGULUS_MANAGED_REFLECTION(
+            static constinit ::std::unique_ptr<MetaConst> staticMC[c] {}
+         );
 
          // Register each named values as a reflected constant          
          for (Offset i = 0; i < c; ++i) {

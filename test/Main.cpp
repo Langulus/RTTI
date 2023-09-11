@@ -1,10 +1,11 @@
-///																									
-/// Langulus::RTTI																				
-/// Copyright(C) 2012 Dimo Markov <langulusteam@gmail.com>							
-///																									
-/// Distributed under GNU General Public License v3+									
-/// See LICENSE file, or https://www.gnu.org/licenses									
-///																									
+///                                                                           
+/// Langulus::RTTI                                                            
+/// Copyright (c) 2012 Dimo Markov <team@langulus.com>                        
+/// Part of the Langulus framework, see https://langulus.com                  
+///                                                                           
+/// Distributed under GNU General Public License v3+                          
+/// See LICENSE file, or https://www.gnu.org/licenses                         
+///                                                                           
 #include "Main.hpp"
 
 #define CATCH_CONFIG_RUNNER
@@ -62,6 +63,6 @@ int main(int argc, char* argv[]) {
    static_assert(not CT::SemanticAssignable<Copied<IncompleteType>, IncompleteType>,
       "Can't make an incomplete type");
 
-	Catch::Session session;
-	return session.run(argc, argv);
+   Catch::Session session;
+   return session.run(argc, argv);
 }
