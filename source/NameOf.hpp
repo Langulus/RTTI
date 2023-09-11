@@ -19,8 +19,11 @@ namespace Langulus::RTTI
       
       /// These definitions might change in future compiler versions          
       /// and will probably need constant maintenance                         
-      #if defined(__clang__)
+      #if defined(__clang__) and defined(_MSC_VER)
          constexpr Token Prefix = "Token Langulus::RTTI::Inner::IsolateTypename() [T = ";
+         constexpr Token Suffix = "]";
+      #elif defined(__clang__)
+         constexpr Token Prefix = "Langulus::Token Langulus::RTTI::Inner::IsolateTypename() [T = ";
          constexpr Token Suffix = "]";
       #elif defined(__GNUC__) and not defined(__clang__)
          constexpr Token Prefix = "constexpr Langulus::Token Langulus::RTTI::Inner::IsolateTypename() [with T = ";
