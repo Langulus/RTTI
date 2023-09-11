@@ -70,7 +70,7 @@ namespace Langulus
    /// Zero level assumptions are always checked                              
    ///   @param condition - the condition to check for failure                
    ///   @param message - the exception message, if condition doesn't hold    
-   #if LANGULUS_COMPILER(CLANG) || LANGULUS_COMPILER(GCC)
+   #if LANGULUS_COMPILER(CLANG) or LANGULUS_COMPILER(GCC)
       #define LANGULUS_ASSUME(level, condition, message, ...) \
          ::Langulus::Assume<level>((condition)?true:false, message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
 

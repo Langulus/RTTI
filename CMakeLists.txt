@@ -41,7 +41,7 @@ target_compile_definitions(LangulusRTTI
     PRIVATE     LANGULUS_EXPORT_ALL
 )
 
-if(LANGULUS_ENABLE_TESTING)
+if(LANGULUS_TESTING)
     enable_testing()
 	add_subdirectory(test)
 endif()
