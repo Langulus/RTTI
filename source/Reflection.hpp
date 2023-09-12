@@ -204,7 +204,7 @@
 /// Reflect a list of possible conversions                                    
 /// These will be automatically used by Verbs::Interpret if available         
 #define LANGULUS_CONVERSIONS(...) \
-   public: using CTTI_Conversions = ::Langulus::TTypeList<__VA_ARGS__>
+   public: using CTTI_Conversions = ::Langulus::TTypeList<void, __VA_ARGS__>
 
 /// You can make types CT::Typed and retrieve their inner type using TypeOf   
 /// by adding LANGULUS(TYPED) <inner type>; as a member                       

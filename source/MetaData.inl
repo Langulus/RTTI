@@ -263,41 +263,45 @@ namespace Langulus::RTTI
    ///   @return the converter                                                
    template<class T, class TO>
    Converter Converter::From() noexcept {
-      static_assert(not CT::Same<T, TO>,
-         "Conversion types can't be similar");
-      static_assert(CT::Convertible<T, TO>,
-         "Converter reflected, but conversion is not possible - "
-         "implement a public cast operator in T, or a public constructor in TO,"
-         " these can be either explicit or not");
+      if constexpr (CT::Void<TO>)
+         return {};
+      else {
+         static_assert(not CT::Same<T, TO>,
+            "Conversion types can't be similar");
+         static_assert(CT::Convertible<T, TO>,
+            "Converter reflected, but conversion is not possible - "
+            "implement a public cast operator in T, or a public constructor in TO,"
+            " these can be either explicit or not");
 
-      using DT = Decay<T>;
-      using DTO = Decay<TO>;
+         using DT = Decay<T>;
+         using DTO = Decay<TO>;
 
-      return {
-         MetaData::Of<DTO>(),
-         [](const void* from, void* to) {
-            auto fromT = reinterpret_cast<const T*>(from);
-            auto toT = reinterpret_cast<TO*>(to);
+         return {
+            MetaData::Of<DTO>(),
+            [](const void* from, void* to) {
+               auto fromT = reinterpret_cast<const T*>(from);
+               auto toT = reinterpret_cast<TO*>(to);
 
-            // These should be in sync with CT::Inner::Convertible      
-            if constexpr (requires (DT& from) { DTO {from}; }) {
-               new (&DenseCastMutable(toT)) DTO {
-                  DenseCastMutable(fromT)
-               };
+               // These should be in sync with CT::Inner::Convertible   
+               if constexpr (requires (DT & from) { DTO {from}; }) {
+                  new (&DenseCastMutable(toT)) DTO {
+                     DenseCastMutable(fromT)
+                  };
+               }
+               else if constexpr (requires (DT & from) { DTO {from.operator DTO()}; }) {
+                  new (&DenseCastMutable(toT)) DTO {
+                     DenseCastMutable(fromT).operator DTO()
+                  };
+               }
+               else if constexpr (requires (DT & from) { static_cast<DTO>(from); }) {
+                  new (&DenseCastMutable(toT)) DTO {
+                     static_cast<DTO>(DenseCastMutable(fromT))
+                  };
+               }
+               else LANGULUS_ERROR("Unhandled conversion route");
             }
-            else if constexpr (requires (DT& from) { DTO {from.operator DTO()}; }) {
-               new (&DenseCastMutable(toT)) DTO {
-                  DenseCastMutable(fromT).operator DTO()
-               };
-            }
-            else if constexpr (requires (DT& from) { static_cast<DTO>(from); }) {
-               new (&DenseCastMutable(toT)) DTO {
-                  static_cast<DTO>(DenseCastMutable(fromT))
-               };
-            }
-            else LANGULUS_ERROR("Unhandled conversion route");
-         }
-      };
+         };
+      }
    }
 
 
@@ -1001,8 +1005,10 @@ namespace Langulus::RTTI
          )...
       };
 
-      for (const auto& i : list)
-         mConverters.insert(i);
+      for (const auto& i : list) {
+         if (i.first)
+            mConverters.insert(i);
+      }
    }
 
    /// Get a converter to a specific static type                              

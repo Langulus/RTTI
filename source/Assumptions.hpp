@@ -64,20 +64,38 @@ namespace Langulus
 
 
 #if LANGULUS(DEBUG)
-   /// Convenience macro for declaring an assumption                          
-   /// Throws Except::Assertion if condition isn't met                        
-   ///   @param level - the level at which assumption will be checked -       
-   /// if level is larger than LANGULUS_SAFE(), no check will be performed;   
-   /// Zero level assumptions are always checked                              
-   ///   @param condition - the condition to check for failure                
-   ///   @param message - the exception message, if condition doesn't hold    
+   /// Convenience macros for declaring assumptions, assertions, etc.         
    #if LANGULUS_COMPILER(CLANG) or LANGULUS_COMPILER(GCC)
+      /// Logs error, and throws Except::Assertion if condition isn't met     
+      ///   @param level - the level at which assumption will be checked -    
+      ///                  if level is larger than LANGULUS_SAFE(), no check  
+      ///                  will be performed;                                 
+      ///   @attention zero level assumptions are always checked              
+      ///   @param condition - the condition to check for failure             
+      ///   @param message - the exception message, if condition doesn't hold 
       #define LANGULUS_ASSUME(level, condition, message, ...) \
          ::Langulus::Assume<level>((condition)?true:false, message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
 
+      /// Logs error, and throws an exception of your choice, if condition    
+      /// wasn't met                                                          
+      ///   @attention assertions are always checked, even in release builds  
+      ///              use assumptions instead, if that is not desired        
+      ///   @param condition - the condition to check for failure             
+      ///   @param exception - the exception to throw if condition isn't met  
+      ///   @param message - the exception message, if condition doesn't hold 
       #define LANGULUS_ASSERT(condition, exception, message, ...) \
          ::Langulus::Assume<0, ::Langulus::Except::exception>((condition)?true:false, message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
 
+      /// Logs error, and throws an exception of your choice                  
+      ///   @attention always throws (even in release builds)                 
+      ///   @param exception - the exception to throw                         
+      ///   @param message - the exception message                            
+      #define LANGULUS_OOPS(exception, message, ...) \
+         ::Langulus::Assume<0, ::Langulus::Except::exception>(false, message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
+
+      /// Just throws, without logging anything                               
+      ///   @param exception - the exception to throw                         
+      ///   @param message - the exception message                            
       #define LANGULUS_THROW(exception, message, ...) \
          ::Langulus::Throw<::Langulus::Except::exception>(message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
    #else
@@ -86,6 +104,9 @@ namespace Langulus
 
       #define LANGULUS_ASSERT(condition, exception, message, ...) \
          ::Langulus::Assume<0, ::Langulus::Except::exception>((condition)?true:false, message, LANGULUS_LOCATION(), __VA_ARGS__)
+
+      #define LANGULUS_OOPS(exception, message, ...) \
+         ::Langulus::Assume<0, ::Langulus::Except::exception>(false, message, LANGULUS_LOCATION(), __VA_ARGS__)
 
       #define LANGULUS_THROW(exception, message, ...) \
          ::Langulus::Throw<::Langulus::Except::exception>(message, LANGULUS_LOCATION(), __VA_ARGS__)
@@ -96,6 +117,9 @@ namespace Langulus
 
    #define LANGULUS_ASSERT(condition, exception, message, ...) \
       ::Langulus::Assume<0, ::Langulus::Except::exception>((condition)?true:false)
+
+   #define LANGULUS_OOPS(exception, message, ...) \
+      ::Langulus::Assume<0, ::Langulus::Except::exception>(false)
 
    #define LANGULUS_THROW(exception, message, ...) \
       ::Langulus::Throw<::Langulus::Except::exception>()
