@@ -72,19 +72,19 @@ namespace Langulus::RTTI
       const MetaList& ResolveFileExtension(const Token&) const;
 
       NOD() LANGULUS_API(RTTI)
-      DMeta RegisterData(const Token&) SAFETY_NOEXCEPT();
+      DMeta RegisterData(const Token&) IF_UNSAFE(noexcept);
 
       NOD() LANGULUS_API(RTTI)
-      CMeta RegisterConstant(const Token&) SAFETY_NOEXCEPT();
+      CMeta RegisterConstant(const Token&) IF_UNSAFE(noexcept);
 
       NOD() LANGULUS_API(RTTI)
-      TMeta RegisterTrait(const Token&) SAFETY_NOEXCEPT();
+      TMeta RegisterTrait(const Token&) IF_UNSAFE(noexcept);
 
       NOD() LANGULUS_API(RTTI)
-      VMeta RegisterVerb(const Token&, const Token&, const Token&, const Token& = {}, const Token& = {}) SAFETY_NOEXCEPT();
+      VMeta RegisterVerb(const Token&, const Token&, const Token&, const Token& = {}, const Token& = {}) IF_UNSAFE(noexcept);
       
       LANGULUS_API(RTTI)
-      void RegisterFileExtension(const Token&, DMeta) SAFETY_NOEXCEPT();
+      void RegisterFileExtension(const Token&, DMeta) IF_UNSAFE(noexcept);
 
       LANGULUS_API(RTTI)
       void UnloadLibrary(const Token&);
@@ -149,27 +149,27 @@ namespace Langulus::RTTI
    }
 
    NOD() LANGULUS(INLINED)
-   DMeta RegisterData(const Token& token) SAFETY_NOEXCEPT() {
+   DMeta RegisterData(const Token& token) IF_UNSAFE(noexcept) {
       return Instance.RegisterData(token);
    }
 
    NOD() LANGULUS(INLINED)
-   CMeta RegisterConstant(const Token& token) SAFETY_NOEXCEPT() {
+   CMeta RegisterConstant(const Token& token) IF_UNSAFE(noexcept) {
       return Instance.RegisterConstant(token);
    }
 
    NOD() LANGULUS(INLINED)
-   TMeta RegisterTrait(const Token& token) SAFETY_NOEXCEPT() {
+   TMeta RegisterTrait(const Token& token) IF_UNSAFE(noexcept) {
       return Instance.RegisterTrait(token);
    }
 
    NOD() LANGULUS(INLINED)
-   VMeta RegisterVerb(const Token& a, const Token& b, const Token& c, const Token& d, const Token& e) SAFETY_NOEXCEPT() {
+   VMeta RegisterVerb(const Token& a, const Token& b, const Token& c, const Token& d, const Token& e) IF_UNSAFE(noexcept) {
       return Instance.RegisterVerb(a,b,c,d,e);
    }
       
    LANGULUS(INLINED)
-   void RegisterFileExtension(const Token& a, DMeta b) SAFETY_NOEXCEPT() {
+   void RegisterFileExtension(const Token& a, DMeta b) IF_UNSAFE(noexcept) {
       Instance.RegisterFileExtension(a, b);
    }
 

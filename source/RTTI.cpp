@@ -265,7 +265,7 @@ namespace Langulus::RTTI
    ///   @attention assumes token is not yet registered as data               
    ///   @param token - the data token to reserve                             
    ///   @return the newly defined meta data for that token                   
-   DMeta Registry::RegisterData(const Token& token) SAFETY_NOEXCEPT() {
+   DMeta Registry::RegisterData(const Token& token) IF_UNSAFE(noexcept) {
       auto lc = ToLowercase(token);
       LANGULUS_ASSUME(DevAssumes, not GetMetaData(lc),
          "Data already registered");
@@ -285,7 +285,7 @@ namespace Langulus::RTTI
    ///   @attention assumes token is not yet registered as constant           
    ///   @param token - the constant token to reserve                         
    ///   @return the newly defined meta constant for that token               
-   CMeta Registry::RegisterConstant(const Token& token) SAFETY_NOEXCEPT() {
+   CMeta Registry::RegisterConstant(const Token& token) IF_UNSAFE(noexcept) {
       auto lc = ToLowercase(token);
       LANGULUS_ASSUME(DevAssumes, not GetMetaConstant(lc),
          "Constant already registered");
@@ -304,7 +304,7 @@ namespace Langulus::RTTI
    ///   @attention assumes token is not yet registered as trait              
    ///   @param token - the trait token to reserve                            
    ///   @return the newly defined meta trait for that token                  
-   TMeta Registry::RegisterTrait(const Token& token) SAFETY_NOEXCEPT() {
+   TMeta Registry::RegisterTrait(const Token& token) IF_UNSAFE(noexcept) {
       auto lc = ToLowercase(token);
       LANGULUS_ASSUME(DevAssumes, not GetMetaTrait(lc),
          "Trait already registered");
@@ -333,7 +333,7 @@ namespace Langulus::RTTI
       const Token& tokenReverse,
       const Token& op,
       const Token& opReverse
-   ) SAFETY_NOEXCEPT() {
+   ) IF_UNSAFE(noexcept) {
       const ::std::string cppnamed {cppname};
       LANGULUS_ASSUME(DevAssumes, mUniqueVerbs.find(cppnamed) == mUniqueVerbs.end(),
          "Verb already registered");
@@ -383,7 +383,7 @@ namespace Langulus::RTTI
    /// Register file extension                                                
    ///   @param token - the file extension token to reserve                   
    ///   @param type - the data to associate file with                        
-   void Registry::RegisterFileExtension(const Token& token, DMeta type) SAFETY_NOEXCEPT() {
+   void Registry::RegisterFileExtension(const Token& token, DMeta type) IF_UNSAFE(noexcept) {
       LANGULUS_ASSUME(DevAssumes, not token.empty(),
          "Bad file extension");
       LANGULUS_ASSUME(DevAssumes, type,

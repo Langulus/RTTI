@@ -402,27 +402,27 @@ namespace Langulus::CT
    /// Custom boolean concept (wrapped in another type)                       
    template<class... T>
    concept CustomBool = ((Typed<T> and
-      BuiltinBool<TypeOf<T>> and sizeof(T) == sizeof(TypeOf<T>)
-   ) and ...);
+         BuiltinBool<TypeOf<T>> and sizeof(T) == sizeof(TypeOf<T>)
+      ) and ...);
 
    /// Custom character concept (wrapped in another type)                     
    template<class... T>
    concept CustomCharacter = ((Typed<T> and
-      BuiltinCharacter<TypeOf<T>> and sizeof(T) == sizeof(TypeOf<T>)
-   ) and ...);
+         BuiltinCharacter<TypeOf<T>> and sizeof(T) == sizeof(TypeOf<T>)
+      ) and ...);
 
    /// Custom integer concept (wrapped in another type)                       
    /// Unlike CT::Integer, this includes character and boolean types          
    template<class... T>
    concept CustomInteger = ((Typed<T> and
-      ::std::is_integral_v<TypeOf<T>> and sizeof(T) == sizeof(TypeOf<T>)
-   ) and ...);
+         ::std::is_integral_v<TypeOf<T>> and sizeof(T) == sizeof(TypeOf<T>)
+      ) and ...);
 
    /// Custom real concept (wrapped in another type)                          
    template<class... T>
    concept CustomReal = ((Typed<T> and
-      ::std::is_floating_point_v<TypeOf<T>> and sizeof(T) == sizeof(TypeOf<T>)
-   ) and ...);
+         ::std::is_floating_point_v<TypeOf<T>> and sizeof(T) == sizeof(TypeOf<T>)
+      ) and ...);
    
    /// Custom number concept (either sparse or dense)                         
    /// Any T that has underlying arithmetic type and is binary compatible     
@@ -522,20 +522,20 @@ namespace Langulus::CT
    namespace Inner
    {
       template<class T>
-      concept Vector = Typed<T> and DenseNumber<TypeOf<T>> and requires {
-            {Decay<T>::MemberCount} -> UnsignedInteger;
-         }
-         and sizeof(T) == sizeof(TypeOf<T>) * Decay<T>::MemberCount
-         and Decay<T>::MemberCount > 1;
+      concept Vector = Typed<T>
+          and DenseNumber<TypeOf<T>>
+          and requires {{Decay<T>::MemberCount} -> UnsignedInteger;}
+          and sizeof(T) == sizeof(TypeOf<T>) * Decay<T>::MemberCount
+          and Decay<T>::MemberCount > 1;
 
       template<class T>
       concept Scalar = DenseNumber<T> 
-         or (Typed<T> and DenseNumber<TypeOf<T>> and requires {
-               {Decay<T>::MemberCount} -> UnsignedInteger;
-            }
-            and sizeof(T) == sizeof(TypeOf<T>)
-            and Decay<T>::MemberCount == 1)
-         or (CT::Number<T> and CT::Array<T> and ExtentOf<T> == 1);
+           or (Typed<T>
+              and DenseNumber<TypeOf<T>>
+              and requires {{Decay<T>::MemberCount} -> UnsignedInteger;}
+              and sizeof(T) == sizeof(TypeOf<T>)
+              and Decay<T>::MemberCount == 1)
+           or (CT::Number<T> and CT::Array<T> and ExtentOf<T> == 1);
    }
          
    /// Vector concept                                                         

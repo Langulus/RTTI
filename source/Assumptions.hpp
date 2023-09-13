@@ -28,15 +28,15 @@ namespace Langulus
    ///   @param message - an error message if condition doesn't hold          
    ///   @param location - the location of the error, if any                  
    template<unsigned LEVEL, class EXCEPTION = Except::Assertion, class... MORE>
-   LANGULUS(INLINED) SAFETY_CONSTEXPR()
+   LANGULUS(INLINED) IF_UNSAFE(constexpr)
    void Assume(
       bool condition, 
       const char* message = "<unknown assumption failure>", 
       const char* location = "<unknown location>",
       MORE&&... additional_messages
-   ) noexcept (LEVEL > LANGULUS_SAFE()) {
-      if constexpr (LEVEL <= LANGULUS_SAFE()) {
-         if (!condition) {
+   ) noexcept (LEVEL > LANGULUS(SAFE)) {
+      if constexpr (LEVEL <= LANGULUS(SAFE)) {
+         if (not condition) {
             // Log error message                                        
             if constexpr (LEVEL == 0)
                Logger::Error("Assertion failure: ",
@@ -74,7 +74,8 @@ namespace Langulus
       ///   @param condition - the condition to check for failure             
       ///   @param message - the exception message, if condition doesn't hold 
       #define LANGULUS_ASSUME(level, condition, message, ...) \
-         ::Langulus::Assume<level>((condition)?true:false, message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
+         ::Langulus::Assume<level>((condition)?true:false, message, \
+            LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
 
       /// Logs error, and throws an exception of your choice, if condition    
       /// wasn't met                                                          
@@ -84,32 +85,39 @@ namespace Langulus
       ///   @param exception - the exception to throw if condition isn't met  
       ///   @param message - the exception message, if condition doesn't hold 
       #define LANGULUS_ASSERT(condition, exception, message, ...) \
-         ::Langulus::Assume<0, ::Langulus::Except::exception>((condition)?true:false, message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
+         ::Langulus::Assume<0, ::Langulus::Except::exception>((condition)?true:false, message, \
+            LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
 
       /// Logs error, and throws an exception of your choice                  
       ///   @attention always throws (even in release builds)                 
       ///   @param exception - the exception to throw                         
       ///   @param message - the exception message                            
       #define LANGULUS_OOPS(exception, message, ...) \
-         ::Langulus::Assume<0, ::Langulus::Except::exception>(false, message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
+         ::Langulus::Assume<0, ::Langulus::Except::exception>(false, message, \
+            LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
 
       /// Just throws, without logging anything                               
       ///   @param exception - the exception to throw                         
       ///   @param message - the exception message                            
       #define LANGULUS_THROW(exception, message, ...) \
-         ::Langulus::Throw<::Langulus::Except::exception>(message, LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
+         ::Langulus::Throw<::Langulus::Except::exception>(message, \
+            LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
    #else
       #define LANGULUS_ASSUME(level, condition, message, ...) \
-         ::Langulus::Assume<level>((condition)?true:false, message, LANGULUS_LOCATION(), __VA_ARGS__)
+         ::Langulus::Assume<level>((condition)?true:false, message, \
+            LANGULUS_LOCATION(), __VA_ARGS__)
 
       #define LANGULUS_ASSERT(condition, exception, message, ...) \
-         ::Langulus::Assume<0, ::Langulus::Except::exception>((condition)?true:false, message, LANGULUS_LOCATION(), __VA_ARGS__)
+         ::Langulus::Assume<0, ::Langulus::Except::exception>((condition)?true:false, message, \
+            LANGULUS_LOCATION(), __VA_ARGS__)
 
       #define LANGULUS_OOPS(exception, message, ...) \
-         ::Langulus::Assume<0, ::Langulus::Except::exception>(false, message, LANGULUS_LOCATION(), __VA_ARGS__)
+         ::Langulus::Assume<0, ::Langulus::Except::exception>(false, message, \
+            LANGULUS_LOCATION(), __VA_ARGS__)
 
       #define LANGULUS_THROW(exception, message, ...) \
-         ::Langulus::Throw<::Langulus::Except::exception>(message, LANGULUS_LOCATION(), __VA_ARGS__)
+         ::Langulus::Throw<::Langulus::Except::exception>(message, \
+            LANGULUS_LOCATION(), __VA_ARGS__)
    #endif
 #else
    #define LANGULUS_ASSUME(level, condition, message, ...) \

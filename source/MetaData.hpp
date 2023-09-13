@@ -19,8 +19,10 @@ namespace Langulus::RTTI
    /// A simple request for allocating memory                                 
    /// It is used as optimization to avoid divisions by stride                
    struct AllocationRequest {
-      Size mByteSize;
-      Count mElementCount;
+      Size mByteSize IF_SAFE(= 0);
+      Count mElementCount IF_SAFE(= 0);
+
+      IF_UNSAFE(constexpr AllocationRequest() {})
    };
 
    template<class T>
@@ -254,7 +256,7 @@ namespace Langulus::RTTI
       NOD() constexpr bool operator == (const Base&) const noexcept;
 
       template<CT::Dense T, CT::Dense BASE>
-      NOD() static Base From() SAFETY_NOEXCEPT();
+      NOD() static Base From() IF_UNSAFE(noexcept);
    };
 
    using BaseList = ::std::span<const Base>;

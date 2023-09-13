@@ -318,7 +318,7 @@ namespace Langulus::RTTI
    /// Create a base descriptor for the derived type T                        
    ///   @return the generated base descriptor                                
    template<CT::Dense T, CT::Dense BASE>
-   Base Base::From() SAFETY_NOEXCEPT() {
+   Base Base::From() IF_UNSAFE(noexcept) {
       static_assert(not CT::Same<T, BASE>, 
          "Base duplication not allowed to avoid regress");
       static_assert(NameOf<T>() != NameOf<BASE>(),
