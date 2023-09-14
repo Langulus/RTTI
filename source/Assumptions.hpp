@@ -23,7 +23,7 @@ namespace Langulus
 
    /// Common Langulus assertion                                              
    ///   @tparam LEVEL - level of the assumption, configurable from CMake,    
-   /// using LANGULUS_ASSERTION_LEVEL and LANGULUS_SAFE_MODE                  
+   ///           using LANGULUS_ASSERTION_LEVEL and LANGULUS_SAFE_MODE        
    ///   @param condition - the condition that must hold true                 
    ///   @param message - an error message if condition doesn't hold          
    ///   @param location - the location of the error, if any                  
@@ -37,6 +37,7 @@ namespace Langulus
    ) noexcept (LEVEL > LANGULUS(SAFE)) {
       if constexpr (LEVEL <= LANGULUS(SAFE)) {
          if (not condition) {
+         #if LANGULUS(SAFE)
             // Log error message                                        
             if constexpr (LEVEL == 0)
                Logger::Error("Assertion failure: ",
@@ -48,11 +49,23 @@ namespace Langulus
                Logger::Error("Dev assumption failure: ",
                   message, Forward<MORE>(additional_messages)...);
             else 
-               Logger::Error("Assumption level ", LEVEL," failure: ",
+               Logger::Error("Assumption level ", LEVEL, " failure: ",
                   message, Forward<MORE>(additional_messages)...);
 
             // Log location                                             
             Logger::Error("At ", location);
+         #else
+            if constexpr (LEVEL == 0)
+               Logger::Error("Assertion failure");
+            else if constexpr (LEVEL == UserAssumes)
+               Logger::Error("User assumption failure");
+            else if constexpr (LEVEL == DevAssumes)
+               Logger::Error("Dev assumption failure");
+            else 
+               Logger::Error("Assumption level ", LEVEL, " failure");
+
+            Logger::Append(" (no additional information available due to unsafe build)");
+         #endif
 
             // Throw                                                    
             Throw<EXCEPTION>(message, location);
