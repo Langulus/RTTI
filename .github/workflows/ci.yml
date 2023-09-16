@@ -1,5 +1,5 @@
 name: Langulus::RTTI CI
-on: [push, pull_request, repository_dispatch] # Trigger on pushes to all branches and for all pull-requests
+on: [push, repository_dispatch]
 concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
@@ -7,49 +7,55 @@ concurrency:
 jobs:
   build:
     strategy:
-      fail-fast: false # do not abort on a failed job
+      fail-fast: false
       matrix:
         os: [ubuntu-22.04, windows-latest]
         build: [Debug, Release]
-        architecture: [x86, x64]
+        arch: [x86, x64]
         managed: [ON, OFF]
         cxx: [g++, clang++, cl]
         exclude:
           - os: ubuntu-22.04
             cxx: cl
-          - os: ubuntu-22.04
-            architecture: x86
           - os: windows-latest
             cxx: g++
           - os: windows-latest
             cxx: clang++
         include:
-          #- os: ubuntu-22.04
-          #  architecture: x86
-          #  cmake_args: "-DCMAKE_CXX_FLAGS=-m32"
           - os: ubuntu-22.04
-            architecture: x64
+            arch: x86
+            cmake_args: "-DCMAKE_CXX_FLAGS=-m32"
+          - os: ubuntu-22.04
+            arch: x64
             cmake_args: "-DCMAKE_CXX_FLAGS=-m64"
           - os: windows-latest
-            architecture: x86
+            arch: x86
             cmake_args: "-G \"Visual Studio 17 2022\" -A Win32"
           - os: windows-latest
-            architecture: x64
+            arch: x64
             cmake_args: "-G \"Visual Studio 17 2022\" -A x64"
           - managed: OFF
             suffix: ''
           - managed: ON
             suffix: '-managed'
 
-    name: "${{matrix.os}}-${{matrix.cxx}}-${{matrix.build}}-${{matrix.architecture}}${{matrix.suffix}}"
+    name: "${{matrix.os}}-${{matrix.cxx}}-${{matrix.build}}-${{matrix.arch}}${{matrix.suffix}}"
     runs-on: ${{matrix.os}}
     steps:
       - name: Dispatch Trigger
         if: ${{ startsWith(github.event.action, 'Dependency') }}
         run: >
           echo "Triggered by dependency: ${{github.event.client_payload.cause}}"
+
       - name: Clone
         uses: actions/checkout@v3
+
+      - if: matrix.os == 'ubuntu-22.04' && matrix.arch == 'x86'
+        name: Prepare Linux for cross-compilation
+        run: |
+          sudo apt update
+          sudo apt install g++-multilib
+
       - name: Configure
         run: >
           cmake
@@ -59,7 +65,9 @@ jobs:
           -DCMAKE_BUILD_TYPE=${{matrix.build}}
           -DLANGULUS_FEATURE_MANAGED_REFLECTION=${{matrix.managed}}
           ${{matrix.cmake_args}}
+
       - name: Build
         run: cmake --build out --config ${{matrix.build}}
+
       - name: Test
         run: cd out && ctest -V -C ${{matrix.build}}
