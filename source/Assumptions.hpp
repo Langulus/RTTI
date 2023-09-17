@@ -33,7 +33,7 @@ namespace Langulus
       bool condition, 
       const char* message = "<unknown assumption failure>", 
       const char* location = "<unknown location>",
-      MORE&&... additional_messages
+      UNUSED() MORE&&... additional_messages
    ) noexcept (LEVEL > LANGULUS(SAFE)) {
       if constexpr (LEVEL <= LANGULUS(SAFE)) {
          if (not condition) {
