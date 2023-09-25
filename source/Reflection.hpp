@@ -9,6 +9,7 @@
 #pragma once
 #include "Config.hpp"
 #include <Core/TypeList.hpp>
+#include <Core/Utilities.hpp>
 #include <vector>
 
 /// Provide a custom token to your data type, instead of using CppNameOf      
@@ -274,16 +275,24 @@ namespace Langulus::CT
       };
 
       /// Convenience function that wraps std::underlying_type_t for enums,   
-      /// as well as anything with CTTI_InnerType defined                     
+      /// as well as any array, or anything with CTTI_InnerType defined       
+      ///   - if T is an array, returns pointer of the array type             
+      ///   - if T is Typed, return pointer of the type                       
+      ///   - if T is an enum, return pointer of the underlying type          
+      ///   - otherwise just return a decayed T pointer                       
       template<class T>
       constexpr auto GetUnderlyingType() noexcept {
-         using DT = Decay<T>;
-         if constexpr (Typed<DT>)
-            return (typename DT::CTTI_InnerType*) nullptr;
-         else if constexpr (::std::is_enum_v<DT>)
-            return (::std::underlying_type_t<DT>*) nullptr;
-         else
-            return (DT*) nullptr;
+         if constexpr (Array<T>)
+            return (Deext<T>*) nullptr;
+         else {
+            using DT = Decay<T>;
+            if constexpr (Typed<DT>)
+               return (typename DT::CTTI_InnerType*) nullptr;
+            else if constexpr (CT::Enum<DT>)
+               return (::std::underlying_type_t<DT>*) nullptr;
+            else
+               return (Deref<T>*) nullptr;
+         }
       };
 
    } // namespace Langulus::CT::Inner
@@ -518,44 +527,79 @@ namespace Langulus::CT
    /// Excludes boolean types and character types, unless wrapped in another  
    template<class... T>
    concept SparseNumber = ((Number<T> and Sparse<T>) and ...);
-   
+
+   /// Single precision real number concept                                   
+   template<class... T>
+   concept Float   = (Same<::Langulus::Float, T> and ...);
+
+   /// Double precision real number concept                                   
+   template<class... T>
+   concept Double  = (Same<::Langulus::Double, T> and ...);
+
+   /// Size-related number concepts                                           
+   /// These concepts include character and byte types                        
+   template<class... T>
+   concept SignedInteger8  = ((CT::SignedInteger<T> and sizeof(Decay<T>) == 1) and ...);
+   template<class... T>
+   concept SignedInteger16 = ((CT::SignedInteger<T> and sizeof(Decay<T>) == 2) and ...);
+   template<class... T>
+   concept SignedInteger32 = ((CT::SignedInteger<T> and sizeof(Decay<T>) == 4) and ...);
+   template<class... T>
+   concept SignedInteger64 = ((CT::SignedInteger<T> and sizeof(Decay<T>) == 8) and ...);
+
+   template<class... T>
+   concept UnsignedInteger16 = (((CT::UnsignedInteger<T> or CT::Character<T>)
+       and sizeof(Decay<T>) == 2) and ...);
+
+   template<class... T>
+   concept UnsignedInteger32 = (((CT::UnsignedInteger<T> or CT::Character<T>)
+       and sizeof(Decay<T>) == 4) and ...);
+
+   template<class... T>
+   concept UnsignedInteger64 = (((CT::UnsignedInteger<T> or CT::Character<T>)
+       and sizeof(Decay<T>) == 8) and ...);
+
+   template<class... T>
+   concept Integer16 = ((SignedInteger16<T> or UnsignedInteger16<T>) and ...);
+   template<class... T>
+   concept Integer32 = ((SignedInteger32<T> or UnsignedInteger32<T>) and ...);
+   template<class... T>
+   concept Integer64 = ((SignedInteger64<T> or UnsignedInteger64<T>) and ...);
+
    namespace Inner
    {
       template<class T>
-      concept Vector = Typed<T>
-          and DenseNumber<TypeOf<T>>
-          and requires {{Decay<T>::MemberCount} -> UnsignedInteger;}
-          and sizeof(T) == sizeof(TypeOf<T>) * Decay<T>::MemberCount
-          and Decay<T>::MemberCount > 1;
+      constexpr Count CountOf() noexcept {
+         using DT = Decay<T>;
+         if constexpr (requires {{DT::MemberCount} -> UnsignedInteger; })
+            return DT::MemberCount * ExtentOf<T>;
+         else if constexpr (requires (DT a){{a.size()} -> UnsignedInteger; })
+            return DT {}.size() * ExtentOf<T>;
+         else
+            return ExtentOf<T>;
+      }
 
       template<class T>
-      concept Scalar = DenseNumber<T> 
-           or (Typed<T>
-              and DenseNumber<TypeOf<T>>
-              and requires {{Decay<T>::MemberCount} -> UnsignedInteger;}
-              and sizeof(T) == sizeof(TypeOf<T>)
-              and Decay<T>::MemberCount == 1)
-           or (CT::Number<T> and CT::Array<T> and ExtentOf<T> == 1);
+      concept Vector = (Typed<T> and CountOf<T>() > 1
+              and sizeof(T) == sizeof(TypeOf<T>) * CountOf<T>())
+           or (ExtentOf<T>) > 1;
+
+      template<class T>
+      concept Scalar = not Vector<T>;
    }
          
    /// Vector concept                                                         
-   /// Any dense type that is LANGULUS(TYPED) as a dense number,              
-   /// has MemberCount that is at least 2, and T's size is exactly the same   
-   /// as sizeof(CTTI_InnerType) * MemberCount                                
+   /// Any type that is Typed and has MemberCount that is at least 2, and     
+   /// the type's size is exactly equal to sizeof(TypeOf<T>) * CountOf<T>     
+   /// Additionally, bounded arrays with more than a single element are also  
+   /// considered Vector                                                      
    template<class... T>
    concept Vector = (Inner::Vector<T> and ...);
 
    /// Scalar concept                                                         
-   /// Any dense type that is LANGULUS(TYPED) as a dense number,              
-   /// has MemberCount of exactly 1, and its size is exactly the same         
-   /// as sizeof(CTTI_InnerType)                                              
-   /// Alternatively, a bounded array of extent 1 is also considered scalar   
+   /// Any type that isn't a Vector type                                      
    template<class... T>
    concept Scalar = (Inner::Scalar<T> and ...);
-
-   /// Scalar-or-vector concept                                               
-   template<class... T>
-   concept ScalarOrVector = ((Vector<T> or Scalar<T>) and ...);
 
 } // namespace Langulus::CT
 
@@ -563,37 +607,93 @@ namespace Langulus::CT
 namespace Langulus
 {
 
-   /// Casts a number to its underlying type                                  
+   /// Get the count of a counted type, or 0 if T is not counted              
+   /// Any type with a static constexpr unsigned MemberCount is counted       
+   template<class T>
+   constexpr Count CountOf = CT::Inner::CountOf<T>();
+
+   /// Casts a scalar to its underlying fundamental type (const)              
    /// If T::CTTI_InnerType exists, or if T is an enum, the inner type returns
-   ///   @tparam T - type of the number/enum to cast                          
-   ///   @param a - the number to cast                                        
+   ///   @tparam T - type of the scalar/enum to cast                          
+   ///   @param a - the scalar to cast                                        
    ///   @return a reference to the underlying type                           
-   template<CT::DenseNumber T>
+   template<CT::Scalar T>
    NOD() LANGULUS(INLINED)
-   constexpr decltype(auto) BuiltinCast(const T& a) noexcept {
-      if constexpr (CT::BuiltinNumber<T>) {
-         // Already built-in, just forward it                           
-         return a;
+   constexpr decltype(auto) FundamentalCast(const T& a) noexcept {
+      if constexpr (CT::Fundamental<T>) {
+         // Already fundamental, just forward it                        
+         return (a);
       }
-      else {
-         // Explicitly cast to a reference of the contained type        
-         return static_cast<const TypeOf<T>&>(a);
+      else if constexpr (CT::Typed<T> or CT::Enum<T>) {
+         // Explicitly cast to a reference of the contained type, and   
+         // nest down to the fundamentals                               
+         return FundamentalCast(static_cast<const TypeOf<T>&>(DenseCast(a)));
       }
+      else LANGULUS_ERROR("Shouldn't happen");
+   }
+   
+   /// Casts a scalar to its underlying fundamental type                      
+   /// If T::CTTI_InnerType exists, or if T is an enum, the inner type returns
+   ///   @tparam T - type of the scalar/enum to cast                          
+   ///   @param a - the scalar to cast                                        
+   ///   @return a reference to the underlying type                           
+   template<CT::Scalar T>
+   NOD() LANGULUS(INLINED)
+   constexpr decltype(auto) FundamentalCast(T& a) noexcept {
+      if constexpr (CT::Fundamental<T>) {
+         // Already fundamental, just forward it                        
+         return (a);
+      }
+      else if constexpr (CT::Typed<T> or CT::Enum<T>) {
+         // Explicitly cast to a reference of the contained type, and   
+         // nest down to the fundamentals                               
+         return FundamentalCast(static_cast<TypeOf<T>&>(DenseCast(a)));
+      }
+      else LANGULUS_ERROR("Shouldn't happen");
    }
 
-   /// When given two arithmetic types, choose the one that is most lossless  
-   /// after an arithmetic operation of any kind is performed between both    
-   /// Works with both custom and builtin arithmetic types                    
+   /// When given two types, choose the one that is most lossless             
+   /// after an arithmetic operation is performed between them                
+   ///   @attention this supports vectors and scalars, but doesn't evaluate   
+   ///              lossyness based on array extents or vector sizes!         
    template<class T1, class T2>
    using Lossless = Conditional<
-      // Always pick real numbers over integers if available            
-         (CT::Real<T1> and CT::Integer<T2>)
-      // Always pick signed type if available                           
-      or (CT::Signed<T1> and CT::Unsigned<T2>)
-      // Always pick the larger type as a last resort                   
-      or (sizeof(Decay<T1>) > sizeof(Decay<T2>)
-   ), Decay<T1>, Decay<T2>>;
-   
+         // Always prefer real numbers over integers                    
+            (CT::Real<TypeOf<T1>> and CT::Integer<TypeOf<T2>>)
+         // Always prefer signed types, unless they're smaller          
+         or (CT::Integer<TypeOf<T1>, TypeOf<T2>>
+            and sizeof(Decay<TypeOf<T1>>) >= sizeof(Decay<TypeOf<T2>>)
+            and CT::Signed<TypeOf<T1>> and CT::Unsigned<TypeOf<T2>>)
+         // Always prefer larger types, unless its integer over real    
+         or (sizeof(Decay<TypeOf<T1>>) > sizeof(Decay<TypeOf<T2>>)
+            and CT::Integer<TypeOf<T1>> == CT::Integer<TypeOf<T2>>
+      ), Decay<TypeOf<T1>>, Decay<TypeOf<T2>>>;
+    
+   /// Returns the extent overlap of two arrays/non arrays                    
+   /// An array to be considered array, it has to have more than one element  
+   ///   @tparam LHS - left type                                              
+   ///   @tparam RHS - right type                                             
+   ///   @return the overlapping count:                                       
+   ///           the smaller extent, if two arrays are provided;              
+   ///           the bigger extent, if one of the arguments isn't an array    
+   ///           1 if both arguments are not arrays                           
+   template<class LHS, class RHS>
+   NOD() constexpr Count OverlapExtents() noexcept {
+      constexpr auto lhs = ExtentOf<LHS>;
+      constexpr auto rhs = ExtentOf<RHS>;
+
+      if constexpr (lhs > 1 and rhs > 1)
+         return lhs < rhs ? lhs : rhs;
+      else if constexpr (lhs > 1)
+         return lhs;
+      else if constexpr (rhs > 1)
+         return rhs;
+      else
+         return 1;
+   }
+
+   #define OVERLAP_EXTENTS(l,r) OverlapExtents<decltype(l), decltype(r)>()
+
    /// A type naming convention for standard number types, as well as         
    /// anything reflected with LANGULUS(SUFFIX)                               
    ///   @return the suffix depending on the template argument                
@@ -685,8 +785,7 @@ namespace Langulus
    /// so that allocation that happen from external libraries can be easily   
    /// tracked.                                                               
    #define LANGULUS_RTTI_BOUNDARY(a) \
-      namespace Langulus::RTTI \
-      { \
+      namespace Langulus::RTTI { \
          Token Boundary = a; \
       }
 #else
