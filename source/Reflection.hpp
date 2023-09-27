@@ -651,23 +651,6 @@ namespace Langulus
       }
       else LANGULUS_ERROR("Shouldn't happen");
    }
-
-   /// When given two types, choose the one that is most lossless             
-   /// after an arithmetic operation is performed between them                
-   ///   @attention this supports vectors and scalars, but doesn't evaluate   
-   ///              lossyness based on array extents or vector sizes!         
-   template<class T1, class T2>
-   using Lossless = Conditional<
-         // Always prefer real numbers over integers                    
-            (CT::Real<TypeOf<T1>> and CT::Integer<TypeOf<T2>>)
-         // Always prefer signed types, unless they're smaller          
-         or (CT::Integer<TypeOf<T1>, TypeOf<T2>>
-            and sizeof(Decay<TypeOf<T1>>) >= sizeof(Decay<TypeOf<T2>>)
-            and CT::Signed<TypeOf<T1>> and CT::Unsigned<TypeOf<T2>>)
-         // Always prefer larger types, unless its integer over real    
-         or (sizeof(Decay<TypeOf<T1>>) > sizeof(Decay<TypeOf<T2>>)
-            and CT::Integer<TypeOf<T1>> == CT::Integer<TypeOf<T2>>
-      ), Decay<TypeOf<T1>>, Decay<TypeOf<T2>>>;
     
    /// Returns the extent overlap of two arrays/non arrays                    
    /// An array to be considered array, it has to have more than one element  
@@ -693,6 +676,95 @@ namespace Langulus
    }
 
    #define OVERLAP_EXTENTS(l,r) OverlapExtents<decltype(l), decltype(r)>()
+   
+   /// Returns the count overlap of two vectors/scalars                       
+   /// This is used to decide the output array size, for containing the       
+   /// result of an arithmetic operation                                      
+   ///   @tparam LHS - left type                                              
+   ///   @tparam RHS - right type                                             
+   ///   @return the overlapping count:                                       
+   ///           the smaller extent, if two arrays are provided;              
+   ///           the bigger extent, if one of the arguments isn't a vector    
+   ///           1 if both arguments are not arrays                           
+   template<class LHS, class RHS>
+   NOD() constexpr Count OverlapCounts() noexcept {
+      constexpr auto lhs = CountOf<LHS>;
+      constexpr auto rhs = CountOf<RHS>;
+
+      if constexpr (lhs > 1 and rhs > 1)
+         return lhs < rhs ? lhs : rhs;
+      else if constexpr (lhs > 1)
+         return lhs;
+      else if constexpr (rhs > 1)
+         return rhs;
+      else
+         return 1;
+   }
+
+   namespace Inner
+   {
+
+      /// When given two types, choose the one that is most lossless          
+      /// after an arithmetic operation is performed between them. If T1 or T2
+      /// is an array, an array of OverlapCount size will be given back       
+      ///   @attention this will discard any sparseness or other modifiers    
+      template<class T1, class T2>
+      constexpr auto Lossless() noexcept {
+         constexpr auto size = OverlapCounts<T1, T2>();
+         using LHS = Decay<TypeOf<T1>>;
+         using RHS = Decay<TypeOf<T2>>;
+
+         if constexpr (CT::Real<LHS, RHS>) {
+            // Always prefer the bigger real number                     
+            if constexpr (sizeof(LHS) >= sizeof(RHS))
+               return ::std::array<LHS, size> {};
+            else 
+               return ::std::array<RHS, size> {};
+         }
+         else if constexpr (CT::Real<LHS> and not CT::Real<RHS>) {
+            // Always prefer real numbers                               
+            return ::std::array<LHS, size> {};
+         }
+         else if constexpr (CT::Real<RHS> and not CT::Real<LHS>) {
+            // Always prefer real numbers                               
+            return ::std::array<RHS, size> {};
+         }
+         else if constexpr (CT::Signed<LHS> == CT::Signed<RHS>) {
+            // Both are signed integers, so pick the bigger one         
+            if constexpr (sizeof(LHS) >= sizeof(RHS))
+               return ::std::array<LHS, size> {};
+            else
+               return ::std::array<RHS, size> {};
+         }
+         else if constexpr (CT::Signed<LHS>) {
+            // LHS is signed, but RHS is not, so pick the signed one,   
+            // but also guarantee that size remains the bigger one      
+            if constexpr (sizeof(LHS) >= sizeof(RHS))
+               return ::std::array<LHS, size> {};
+            else
+               return ::std::array<::std::make_signed_t<RHS>, size> {};
+         }
+         else {
+            // RHS is signed, but LHS is not, so pick the signed one,   
+            // but also guarantee that size remains the bigger one      
+            if constexpr (sizeof(RHS) >= sizeof(LHS))
+               return ::std::array<RHS, size> {};
+            else
+               return ::std::array<::std::make_signed_t<LHS>, size> {};
+         }
+      }
+   }
+
+   /// When given two types, choose the one that is most lossless             
+   /// after an arithmetic operation is performed between them. If T1 or T2   
+   /// is an array, an array of OverlapCount size will be given back.         
+   ///   @attention this will discard any sparseness or other modifiers       
+   template<class T1, class T2, Count SIZE = decltype(Inner::Lossless<T1, T2>()) {}.size()>
+   using Lossless = Conditional<
+      SIZE == 1,
+      typename decltype(Inner::Lossless<T1, T2>())::value_type,
+      typename decltype(Inner::Lossless<T1, T2>())::value_type [SIZE]
+   >;
 
    /// A type naming convention for standard number types, as well as         
    /// anything reflected with LANGULUS(SUFFIX)                               
