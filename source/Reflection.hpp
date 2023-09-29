@@ -283,7 +283,7 @@ namespace Langulus::CT
       template<class T>
       constexpr auto GetUnderlyingType() noexcept {
          if constexpr (Array<T>)
-            return (Deext<T>*) nullptr;
+            return (Deref<Deext<T>>*) nullptr;
          else {
             using DT = Decay<T>;
             if constexpr (Typed<DT>)
