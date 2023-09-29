@@ -49,7 +49,8 @@ namespace Langulus
       }
 
       template<CT::BuiltinNumber T>
-      constexpr explicit operator T () const noexcept requires (CT::Dense<T> && !CT::Same<T, ::std::uint8_t>) {
+      constexpr explicit operator T () const noexcept
+      requires (CT::Dense<T> and not CT::Same<T, ::std::uint8_t>) {
          return static_cast<T>(mValue);
       }
 
