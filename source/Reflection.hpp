@@ -704,9 +704,19 @@ namespace Langulus
    namespace Inner
    {
 
-      /// When given two types, choose the one that is most lossless          
-      /// after an arithmetic operation is performed between them. If T1 or T2
-      /// is an array, an array of OverlapCount size will be given back       
+      /// When given two types, choose the one that is most lossless in terms 
+      /// of behavior, and capacity                                           
+      ///  - if T1 or T2 is an array, an array of OverlapCount size will be   
+      ///    given back. The array will be of the lossless decayed type       
+      ///  - if both types are reals, the bigger real will be returned        
+      ///  - if one of the type is a real, and the other an integer, the real 
+      ///    will be returned                                                 
+      ///  - if both types are integers with different signs, always returns  
+      ///    the signed equivalent of the bigger integer                      
+      ///  - if one of the types is not CT::Fundamental type, it will always  
+      ///    be preferred, as it may have custom behavior                     
+      ///  - if both types are not CT::Fundamental, the first type is always  
+      ///    preferred (fallback)                                             
       ///   @attention this will discard any sparseness or other modifiers    
       template<class T1, class T2>
       constexpr auto Lossless() noexcept {
@@ -714,43 +724,55 @@ namespace Langulus
          using LHS = Decay<TypeOf<T1>>;
          using RHS = Decay<TypeOf<T2>>;
 
-         if constexpr (CT::Real<LHS, RHS>) {
-            // Always prefer the bigger real number                     
-            if constexpr (sizeof(LHS) >= sizeof(RHS))
+         if constexpr (CT::Fundamental<LHS, RHS>) {
+            // Both types are fundamental                               
+            if constexpr (CT::Real<LHS, RHS>) {
+               // Always prefer the bigger real number                  
+               if constexpr (sizeof(LHS) >= sizeof(RHS))
+                  return ::std::array<LHS, size> {};
+               else
+                  return ::std::array<RHS, size> {};
+            }
+            else if constexpr (CT::Real<LHS> and not CT::Real<RHS>) {
+               // Always prefer real numbers                            
                return ::std::array<LHS, size> {};
-            else 
+            }
+            else if constexpr (CT::Real<RHS> and not CT::Real<LHS>) {
+               // Always prefer real numbers                            
                return ::std::array<RHS, size> {};
+            }
+            else if constexpr (CT::Signed<LHS> == CT::Signed<RHS>) {
+               // Both are signed integers, so pick the bigger one      
+               if constexpr (sizeof(LHS) >= sizeof(RHS))
+                  return ::std::array<LHS, size> {};
+               else
+                  return ::std::array<RHS, size> {};
+            }
+            else if constexpr (CT::Signed<LHS>) {
+               // LHS is signed, but RHS is not, so pick the signed one,
+               // but also guarantee that size remains the bigger one   
+               if constexpr (sizeof(LHS) >= sizeof(RHS))
+                  return ::std::array<LHS, size> {};
+               else
+                  return ::std::array<::std::make_signed_t<RHS>, size> {};
+            }
+            else {
+               // RHS is signed, but LHS is not, so pick the signed one,
+               // but also guarantee that size remains the bigger one   
+               if constexpr (sizeof(RHS) >= sizeof(LHS))
+                  return ::std::array<RHS, size> {};
+               else
+                  return ::std::array<::std::make_signed_t<LHS>, size> {};
+            }
          }
-         else if constexpr (CT::Real<LHS> and not CT::Real<RHS>) {
-            // Always prefer real numbers                               
-            return ::std::array<LHS, size> {};
-         }
-         else if constexpr (CT::Real<RHS> and not CT::Real<LHS>) {
-            // Always prefer real numbers                               
+         else if constexpr (CT::Fundamental<LHS>) {
+            // RHS isn't fundamental, so always prefer it               
             return ::std::array<RHS, size> {};
          }
-         else if constexpr (CT::Signed<LHS> == CT::Signed<RHS>) {
-            // Both are signed integers, so pick the bigger one         
-            if constexpr (sizeof(LHS) >= sizeof(RHS))
-               return ::std::array<LHS, size> {};
-            else
-               return ::std::array<RHS, size> {};
-         }
-         else if constexpr (CT::Signed<LHS>) {
-            // LHS is signed, but RHS is not, so pick the signed one,   
-            // but also guarantee that size remains the bigger one      
-            if constexpr (sizeof(LHS) >= sizeof(RHS))
-               return ::std::array<LHS, size> {};
-            else
-               return ::std::array<::std::make_signed_t<RHS>, size> {};
-         }
          else {
-            // RHS is signed, but LHS is not, so pick the signed one,   
-            // but also guarantee that size remains the bigger one      
-            if constexpr (sizeof(RHS) >= sizeof(LHS))
-               return ::std::array<RHS, size> {};
-            else
-               return ::std::array<::std::make_signed_t<LHS>, size> {};
+            // Either both types aren't fundamental, or the RHS one is  
+            // Just fallback to LHS                                     
+            return ::std::array<LHS, size> {};
          }
       }
    }
@@ -759,11 +781,11 @@ namespace Langulus
    /// after an arithmetic operation is performed between them. If T1 or T2   
    /// is an array, an array of OverlapCount size will be given back.         
    ///   @attention this will discard any sparseness or other modifiers       
-   template<class T1, class T2, Count SIZE = decltype(Inner::Lossless<T1, T2>()) {}.size()>
+   template<class T1, class T2,
+      class INNER = decltype(Inner::Lossless<T1, T2>()),
+      Count SIZE = INNER {}.size()>
    using Lossless = Conditional<
-      SIZE == 1,
-      typename decltype(Inner::Lossless<T1, T2>())::value_type,
-      typename decltype(Inner::Lossless<T1, T2>())::value_type [SIZE]
+      SIZE == 1, typename INNER::value_type, typename INNER::value_type [SIZE]
    >;
 
    /// A type naming convention for standard number types, as well as         
