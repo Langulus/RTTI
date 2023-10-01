@@ -265,9 +265,8 @@ namespace Langulus::CT
       };
       
       template<class T>
-      concept Typed = Complete<T> and requires {
-         typename T::CTTI_InnerType;
-      };
+      concept Typed = Complete<T> and (requires {typename T::CTTI_InnerType;}
+                                   or  requires {typename T::value_type;});
       
       template<class T>
       concept HasNamedValues = Complete<T> and requires {
@@ -275,7 +274,8 @@ namespace Langulus::CT
       };
 
       /// Convenience function that wraps std::underlying_type_t for enums,   
-      /// as well as any array, or anything with CTTI_InnerType defined       
+      /// as well as any array, or anything with CTTI_InnerType or            
+      /// value_type member type defined                                      
       ///   - if T is an array, returns pointer of the array type             
       ///   - if T is Typed, return pointer of the type                       
       ///   - if T is an enum, return pointer of the underlying type          
@@ -286,8 +286,12 @@ namespace Langulus::CT
             return (Deref<Deext<T>>*) nullptr;
          else {
             using DT = Decay<T>;
-            if constexpr (Typed<DT>)
-               return (typename DT::CTTI_InnerType*) nullptr;
+            if constexpr (Typed<DT>) {
+               if constexpr (requires {typename DT::CTTI_InnerType; })
+                  return (typename DT::CTTI_InnerType*) nullptr;
+               else
+                  return (typename DT::value_type*) nullptr;
+            }
             else if constexpr (CT::Enum<DT>)
                return (::std::underlying_type_t<DT>*) nullptr;
             else
@@ -589,17 +593,23 @@ namespace Langulus::CT
    }
          
    /// Vector concept                                                         
-   /// Any type that is Typed and has MemberCount that is at least 2, and     
-   /// the type's size is exactly equal to sizeof(TypeOf<T>) * CountOf<T>     
+   /// Any type that is Typed and has CountOf that is at least 2, and         
+   /// the T's size is exactly equal to sizeof(TypeOf<T>) * CountOf<T>        
    /// Additionally, bounded arrays with more than a single element are also  
    /// considered Vector                                                      
    template<class... T>
    concept Vector = (Inner::Vector<T> and ...);
 
+   template<class... T>
+   concept DenseVector = ((Dense<T> and Inner::Vector<T>) and ...);
+
    /// Scalar concept                                                         
    /// Any type that isn't a Vector type                                      
    template<class... T>
    concept Scalar = (Inner::Scalar<T> and ...);
+
+   template<class... T>
+   concept DenseScalar = ((Dense<T> and Inner::Scalar<T>) and ...);
 
 } // namespace Langulus::CT
 
