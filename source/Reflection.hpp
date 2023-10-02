@@ -577,10 +577,13 @@ namespace Langulus::CT
          using DT = Decay<T>;
          if constexpr (requires {{DT::MemberCount} -> UnsignedInteger; })
             return DT::MemberCount * ExtentOf<T>;
-         else if constexpr (requires (DT a){{a.size()} -> UnsignedInteger; })
-            return DT {}.size() * ExtentOf<T>;
-         else
-            return ExtentOf<T>;
+         else if constexpr (requires (DT a) {{a.size()} -> UnsignedInteger;}) {
+            if constexpr (IsConstexpr([] { return DT {}.size(); }))
+               return DT {}.size() * ExtentOf<T>;
+            else
+               return ExtentOf<T>;
+         }
+         else return ExtentOf<T>;
       }
 
       template<class T>
