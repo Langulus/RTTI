@@ -884,11 +884,11 @@ namespace Langulus::RTTI
       }
 
       // Wrap the GetHash() method inside a lambda                      
-      if constexpr (CT::Hashable<T> or CT::Number<T> or CT::POD<T>) {
+      if constexpr (CT::Hashable<T>) {
          generated.mHasher = 
             [](const void* at) {
                auto atT = static_cast<const T*>(at);
-               return HashOf(*atT);
+               return atT->GetHash();
             };
       }
 
@@ -1149,7 +1149,7 @@ namespace Langulus::RTTI
    ///   @param base - [in/out] base info ends up here if found               
    ///   @return true if a base is available                                  
    inline bool MetaData::GetBase(DMeta type, Offset offset, Base& base) const {
-      if (!mOrigin || !type)
+      if (not mOrigin or not type)
          return false;
 
       Count scanned {};
@@ -1170,9 +1170,9 @@ namespace Langulus::RTTI
             if (scanned == offset) {
                local.mOffset += b.mOffset;
                local.mCount *= b.mCount;
-               local.mBinaryCompatible = 
-                  b.mBinaryCompatible && local.mBinaryCompatible;
-               local.mImposed = b.mImposed || local.mImposed;
+               local.mBinaryCompatible = b.mBinaryCompatible
+                                      and local.mBinaryCompatible;
+               local.mImposed = b.mImposed or local.mImposed;
                base = local;
                return true;
             }
@@ -1271,9 +1271,10 @@ namespace Langulus::RTTI
          if (foundv != mAbilities.end()) {
             const auto& overloads = foundv->second.mOverloadsMutable;
             auto foundo = overloads.find({dmeta});
-            if (foundo != overloads.end())
+            if (foundo != overloads.end()) {
                // Specific overload is available                        
                return foundo->second;
+            }
 
             // Always fallback to default function, if reflected        
             foundo = overloads.find({});
@@ -1417,10 +1418,11 @@ namespace Langulus::RTTI
       Base found {};
       Count scanned {};
       while (GetBase(other, scanned, found)) {
-         if (found.mOffset != 0)
+         if (found.mOffset != 0) {
             // Base caused a memory gap, so early failure occurs        
             // All bases must fit neatly into the original type         
             return false;
+         }
 
          if constexpr (BINARY_COMPATIBLE) {
             if (found.mBinaryCompatible and count == found.mCount)

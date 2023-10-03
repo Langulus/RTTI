@@ -486,7 +486,7 @@ namespace Langulus
    ///   @param len - number of bytes to hash                                 
    ///   @return the hash                                                     
    template<uint32_t SEED = DefaultHashSeed, bool TAIL = true>
-   inline Hash HashBytes(void const* ptr, int len) noexcept {
+   constexpr Hash HashBytes(void const* ptr, int len) noexcept {
       Hash result;
       if constexpr (sizeof(Hash) == 4)
          Inner::MurmurHash3_x86_32<TAIL, SEED>(ptr, len, &result);
@@ -499,17 +499,6 @@ namespace Langulus
       return result;
    }
 
-   /// Hash a number                                                          
-   ///   @tparam SEED - the seed for the hash algorithm                       
-   ///   @tparam N - type to hash (deducible)                                 
-   ///   @param n - the number to hash                                        
-   ///   @return the hash for the number                                      
-   template<uint32_t SEED = DefaultHashSeed, CT::Number N>
-   constexpr Hash HashNumber(const N& n) noexcept {
-      constexpr bool TAIL = 0 != (sizeof(N) % sizeof(Hash));
-      return HashBytes<SEED, TAIL>(&n, sizeof(N));
-   }
-
    /// Hash any hashable data, including fundamental types                    
    ///   @tparam SEED - the seed for the hash algorithm                       
    ///   @tparam T - first type to hash (deducible)                           
@@ -518,68 +507,7 @@ namespace Langulus
    ///   @return the hash                                                     
    template<uint32_t SEED = DefaultHashSeed, class T, class... MORE>
    constexpr Hash HashOf(const T& head, const MORE&... rest) {
-      if constexpr (sizeof...(MORE) == 0) {
-         if constexpr (CT::Same<T, Hash>) {
-            // Provided type is already a hash, just propagate it       
-            if constexpr (CT::Sparse<T>) {
-               // Never dereference nullptr, return default hash instead
-               if (head == nullptr)
-                  return {};
-            }
-
-            return DenseCast(head);
-         }
-         else if constexpr (CT::Hashable<T>) {
-            // Hashable via a member GetHash() function                 
-            if constexpr (CT::Sparse<T>) {
-               // Never dereference nullptr, return default hash instead
-               if (head == nullptr)
-                  return {};
-               return head->GetHash();
-            }
-            else return head.GetHash();
-         }
-         else if constexpr (CT::Number<T>) {
-            // Numbers are built-in hashable                            
-            if constexpr (CT::Sparse<T>) {
-               // Never dereference nullptr, return default hash instead
-               if (head == nullptr)
-                  return {};
-            }
-
-            return HashNumber<SEED>(DenseCast(head));
-         }
-         else if constexpr (requires (::std::hash<T> h, const T& i) { h(i); }) {
-            // Hashable via std::hash, applies for pointers, too        
-            // Nullptr is acceptable here                               
-            ::std::hash<T> hasher;
-            return {hasher(head)};
-         }
-         else if constexpr (CT::POD<T>) {
-            // Explicitly marked POD type is always hashable, but be    
-            // careful for POD types with padding - the junk inbetween  
-            // members can interfere with the hash, giving unique       
-            // hashes where the same hashes should be produced. In such 
-            // cases it is recommended you add a custom GetHash() to    
-            // avoid the problem                                        
-            if constexpr (CT::Sparse<T>) {
-               // Never dereference nullptr, return default hash instead
-               if (head == nullptr)
-                  return {};
-            }
-
-            constexpr auto podsize = sizeof(Decay<T>);
-            constexpr bool TAIL = 0 != (podsize % sizeof(Hash));
-            return HashBytes<SEED, TAIL>(&DenseCast(head), podsize);
-         }
-         else if constexpr (CT::Sparse<T>) {
-            // As a last resort, even if not hashable, a sparse type    
-            // can always generate hash, by hashing the pointer         
-            return HashNumber<SEED>(reinterpret_cast<Pointer>(head));
-         }
-         else LANGULUS_ERROR("Can't hash data");
-      }
-      else {
+      if constexpr (sizeof...(MORE)) {
          // Combine all data into a single array of hashes, and then    
          // hash that array as a whole                                  
          const Hash coalesced[1 + sizeof...(MORE)] {
@@ -587,6 +515,54 @@ namespace Langulus
          };
          return HashBytes<SEED, false>(coalesced, sizeof(coalesced));
       }
+      else if constexpr (CT::Sparse<T>) {
+         // Hash pointers, never dereference them, unless they're       
+         // meta types                                                  
+         if (head == nullptr)
+            return {};
+
+      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         // When reflection is managed, meta pointer can be used        
+         // instead of the hash - this speeds up hashing in containers  
+         return HashBytes<SEED, false>(&head, sizeof(T));
+      #else
+         // Otherwise always dereference the meta and get its hash      
+         // as there may be many meta instances scattered in memory     
+         if constexpr (CT::Meta<T>)
+            return head->GetHash();
+         else
+            return HashBytes<SEED, false>(&head, sizeof(T));
+      #endif
+      }
+      else if constexpr (CT::Same<T, Hash>) {
+         // Provided type is already a hash, just propagate it          
+         return head;
+      }
+      else if constexpr (CT::Hashable<T>) {
+         // Hashable via a member GetHash() function                    
+         return head.GetHash();
+      }
+      else if constexpr (CT::POD<T>) {
+         // Explicitly marked POD type is always hashable, but be       
+         // careful for POD types with padding - the junk inbetween     
+         // members can interfere with the hash, giving unique          
+         // hashes where the same hashes should be produced. In such    
+         // cases it is recommended you add a custom GetHash() to       
+         // avoid the problem                                           
+         constexpr auto podsize = sizeof(T);
+         constexpr bool TAIL = 0 != (podsize % sizeof(Hash));
+         return HashBytes<SEED, TAIL>(&head, podsize);
+      }
+      else if constexpr (requires (::std::hash<T> h, const T& i) { h(i); }) {
+         // Hashable via std::hash (fallback for std containers)        
+         // Beware, hashing functions coming from std::hash may have    
+         // different implementations for different compilers, which    
+         // will likely result in different ordering inside unordered   
+         // containers. Nothing serious, unless you're pedantic like me 
+         ::std::hash<T> hasher;
+         return {hasher(head)};
+      }
+      else LANGULUS_ERROR("Can't hash data");
    }
 
 } // namespace Langulus
@@ -638,7 +614,7 @@ namespace Langulus::RTTI
    template<CT::Data T>
    LANGULUS(INLINED)
    constexpr Hash Meta::GenerateHash(const Token& name) noexcept {
-      return {::std::hash<Token>()(name)};
+      return HashBytes(name.data(), static_cast<int>(name.size()));
    }
    
    /// Get the generated hash, making any meta derivation CT::Hashable        
