@@ -521,18 +521,11 @@ namespace Langulus
          if (head == nullptr)
             return {};
 
-      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         // When reflection is managed, meta pointer can be used        
-         // instead of the hash - this speeds up hashing in containers  
-         return HashBytes<SEED, false>(&head, sizeof(T));
-      #else
-         // Otherwise always dereference the meta and get its hash      
-         // as there may be many meta instances scattered in memory     
+         // Always dereference meta and get its hash                    
          if constexpr (CT::Meta<T>)
             return head->GetHash();
          else
             return HashBytes<SEED, false>(&head, sizeof(T));
-      #endif
       }
       else if constexpr (CT::Same<T, Hash>) {
          // Provided type is already a hash, just propagate it          
