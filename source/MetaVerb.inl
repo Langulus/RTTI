@@ -93,7 +93,7 @@ namespace Langulus::RTTI
    template<CT::Data T>
    constexpr Hash MetaVerb::GetVerbHash() noexcept {
       const auto name = MetaVerb::GetReflectedPositiveVerbToken<T>();
-      return {::std::hash<Token>()(name)};
+      return HashBytes(name.data(), static_cast<int>(name.size()));
    }
 
    /// Meta of a void always returns nullptr                                  
