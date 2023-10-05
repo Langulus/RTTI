@@ -510,7 +510,7 @@ namespace Langulus
       if constexpr (sizeof...(MORE)) {
          // Combine all data into a single array of hashes, and then    
          // hash that array as a whole                                  
-         const Hash coalesced[1 + sizeof...(MORE)] {
+         alignas(Bitness/8) const Hash coalesced[1 + sizeof...(MORE)] {
             HashOf<SEED>(head), HashOf<SEED>(rest)...
          };
          return HashBytes<SEED, false>(coalesced, sizeof(coalesced));
@@ -542,9 +542,7 @@ namespace Langulus
          // hashes where the same hashes should be produced. In such    
          // cases it is recommended you add a custom GetHash() to       
          // avoid the problem                                           
-         constexpr auto podsize = sizeof(T);
-         constexpr bool TAIL = 0 != (podsize % sizeof(Hash));
-         return HashBytes<SEED, TAIL>(&head, podsize);
+         return HashBytes<SEED, alignof(T) < Bitness / 8>(&head, sizeof(T));
       }
       else if constexpr (requires (::std::hash<T> h, const T& i) { h(i); }) {
          // Hashable via std::hash (fallback for std containers)        
