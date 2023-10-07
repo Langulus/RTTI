@@ -159,7 +159,7 @@ namespace Langulus
    public:
       LANGULUS(TYPED) T;
 
-      static_assert(not ::std::is_const_v<T>,
+      static_assert(CT::Mutable<T>,
          "T must be mutable in order to be moved");
 
       Moved() = delete;
@@ -233,7 +233,7 @@ namespace Langulus
    public:
       LANGULUS(TYPED) T;
 
-      static_assert(not ::std::is_const_v<T>,
+      static_assert(CT::Mutable<T>,
          "T must be mutable in order to be abandoned");
 
       Abandoned() = delete;
@@ -561,9 +561,9 @@ namespace Langulus
          "Bad argument"
       );
 
-      LANGULUS_ASSUME(DevAssumes, type, "Invalid type");
+      LANGULUS_ASSUME(DevAssumes, type,      "Invalid type");
       LANGULUS_ASSUME(DevAssumes, placement, "Invalid placement pointer");
-      LANGULUS_ASSUME(DevAssumes, *value, "Invalid argument pointer");
+      LANGULUS_ASSUME(DevAssumes, *value,    "Invalid argument pointer");
 
       if constexpr (S::Shallow) {
          // Abandon/Disown/Move/Copy                                    
