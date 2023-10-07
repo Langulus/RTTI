@@ -9,18 +9,6 @@
 #include "Main.hpp"
 #include <catch2/catch.hpp>
 
-namespace N1 {
-   struct Type {};
-   struct Create {};
-}
-
-namespace N2 {
-   struct Type {};
-}
-
-namespace N3 {
-   struct type {};
-}
 
 SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
    GIVEN("Three reflected types with similar names in different namespaces") {
@@ -57,11 +45,11 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
          auto found4 = RTTI::GetAmbiguousMeta("two");
          auto found5 = RTTI::GetAmbiguousMeta("three");
          auto found6 = RTTI::GetAmbiguousMeta("MyType");
-         REQUIRE(found.size() == 6);
+         REQUIRE(found.size() == 9);
          REQUIRE(found.find(n1t) != found.end());
          REQUIRE(found.find(n2t) != found.end());
          REQUIRE(found.find(n3t) != found.end());
-         REQUIRE(found2.size() == 3);
+         REQUIRE(found2.size() == 4);
          REQUIRE(found2.find(vvv) != found2.end());
          REQUIRE(found2.find(n1c) != found2.end());
          REQUIRE(found3.size() == 2);
