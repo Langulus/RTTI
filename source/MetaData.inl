@@ -1544,8 +1544,7 @@ namespace Langulus::RTTI
    /// on the current level of indirection, but on the entire way to origin   
    ///   @param other - the type to compare against                           
    ///   @return true if types match                                          
-   LANGULUS(INLINED)
-   constexpr bool MetaData::IsSimilar(DMeta other) const noexcept {
+   inline constexpr bool MetaData::IsSimilar(DMeta other) const noexcept {
       return other and (IsExact(other)
           or IsExact(other->mDecvq)
           or (mDecvq and (mDecvq->IsExact(other)

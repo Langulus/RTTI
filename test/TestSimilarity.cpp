@@ -140,12 +140,13 @@ TEMPLATE_TEST_CASE("Real number RTTI interpretation", "[metadata]", float, doubl
 template<class... T>
 struct Sequence {
    static constexpr auto count = sizeof...(T);
-   DMeta meta[count]    {MetaData::Of<T>()...};
-   DMeta metac[count]   {MetaData::Of<const T>()...};
-   DMeta metav[count]   {MetaData::Of<volatile T>()...};
-   DMeta metap[count]   {MetaData::Of<T*>()...};
-   DMeta metacp[count]  {MetaData::Of<const T*>()...};
-   DMeta metacpc[count] {MetaData::Of<const T* const>()...};
+   DMeta meta[count]     {MetaData::Of<T>()...};
+   DMeta metac[count]    {MetaData::Of<const T>()...};
+   DMeta metav[count]    {MetaData::Of<volatile T>()...};
+   DMeta metap[count]    {MetaData::Of<T*>()...};
+   DMeta metacp[count]   {MetaData::Of<const T*>()...};
+   DMeta metacpc[count]  {MetaData::Of<const T* const>()...};
+   DMeta metacpcp[count] {MetaData::Of<const T* const*>()...};
 };
 
 TEST_CASE("MetaData::Is", "[is]") {
@@ -160,6 +161,7 @@ TEST_CASE("MetaData::Is", "[is]") {
          REQUIRE(sequence.meta   [i]->Is(sequence.metap[i]));
          REQUIRE(sequence.meta   [i]->Is(sequence.metacp[i]));
          REQUIRE(sequence.meta   [i]->Is(sequence.metacpc[i]));
+         REQUIRE(sequence.meta   [i]->Is(sequence.metacpcp[i]));
                                  
          REQUIRE(sequence.metac  [i]->Is(sequence.meta[i]));
          REQUIRE(sequence.metac  [i]->Is(sequence.metac[i]));
@@ -167,6 +169,7 @@ TEST_CASE("MetaData::Is", "[is]") {
          REQUIRE(sequence.metac  [i]->Is(sequence.metap[i]));
          REQUIRE(sequence.metac  [i]->Is(sequence.metacp[i]));
          REQUIRE(sequence.metac  [i]->Is(sequence.metacpc[i]));
+         REQUIRE(sequence.metac  [i]->Is(sequence.metacpcp[i]));
                                  
          REQUIRE(sequence.metav  [i]->Is(sequence.meta[i]));
          REQUIRE(sequence.metav  [i]->Is(sequence.metac[i]));
@@ -174,6 +177,7 @@ TEST_CASE("MetaData::Is", "[is]") {
          REQUIRE(sequence.metav  [i]->Is(sequence.metap[i]));
          REQUIRE(sequence.metav  [i]->Is(sequence.metacp[i]));
          REQUIRE(sequence.metav  [i]->Is(sequence.metacpc[i]));
+         REQUIRE(sequence.metav  [i]->Is(sequence.metacpcp[i]));
                                  
          REQUIRE(sequence.metap  [i]->Is(sequence.meta[i]));
          REQUIRE(sequence.metap  [i]->Is(sequence.metac[i]));
@@ -181,6 +185,7 @@ TEST_CASE("MetaData::Is", "[is]") {
          REQUIRE(sequence.metap  [i]->Is(sequence.metap[i]));
          REQUIRE(sequence.metap  [i]->Is(sequence.metacp[i]));
          REQUIRE(sequence.metap  [i]->Is(sequence.metacpc[i]));
+         REQUIRE(sequence.metap  [i]->Is(sequence.metacpcp[i]));
                                  
          REQUIRE(sequence.metacp [i]->Is(sequence.meta[i]));
          REQUIRE(sequence.metacp [i]->Is(sequence.metac[i]));
@@ -188,6 +193,7 @@ TEST_CASE("MetaData::Is", "[is]") {
          REQUIRE(sequence.metacp [i]->Is(sequence.metap[i]));
          REQUIRE(sequence.metacp [i]->Is(sequence.metacp[i]));
          REQUIRE(sequence.metacp [i]->Is(sequence.metacpc[i]));
+         REQUIRE(sequence.metacp [i]->Is(sequence.metacpcp[i]));
 
          REQUIRE(sequence.metacpc[i]->Is(sequence.meta[i]));
          REQUIRE(sequence.metacpc[i]->Is(sequence.metac[i]));
@@ -195,6 +201,16 @@ TEST_CASE("MetaData::Is", "[is]") {
          REQUIRE(sequence.metacpc[i]->Is(sequence.metap[i]));
          REQUIRE(sequence.metacpc[i]->Is(sequence.metacp[i]));
          REQUIRE(sequence.metacpc[i]->Is(sequence.metacpc[i]));
+         REQUIRE(sequence.metacpc[i]->Is(sequence.metacpcp[i]));
+
+
+         REQUIRE(sequence.metacpcp[i]->Is(sequence.meta[i]));
+         REQUIRE(sequence.metacpcp[i]->Is(sequence.metac[i]));
+         REQUIRE(sequence.metacpcp[i]->Is(sequence.metav[i]));
+         REQUIRE(sequence.metacpcp[i]->Is(sequence.metap[i]));
+         REQUIRE(sequence.metacpcp[i]->Is(sequence.metacp[i]));
+         REQUIRE(sequence.metacpcp[i]->Is(sequence.metacpc[i]));
+         REQUIRE(sequence.metacpcp[i]->Is(sequence.metacpcp[i]));
 
          for (int j = 0; j < sequence.count; ++j) {
             if (i == j)
@@ -207,6 +223,7 @@ TEST_CASE("MetaData::Is", "[is]") {
             REQUIRE_FALSE(sequence.meta   [j]->Is(sequence.metap[i]));
             REQUIRE_FALSE(sequence.meta   [j]->Is(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.meta   [j]->Is(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.meta   [j]->Is(sequence.metacpcp[i]));
 
             REQUIRE_FALSE(sequence.metac  [j]->Is(sequence.meta[i]));
             REQUIRE_FALSE(sequence.metac  [j]->Is(sequence.metac[i]));
@@ -214,6 +231,7 @@ TEST_CASE("MetaData::Is", "[is]") {
             REQUIRE_FALSE(sequence.metac  [j]->Is(sequence.metap[i]));
             REQUIRE_FALSE(sequence.metac  [j]->Is(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.metac  [j]->Is(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metac  [j]->Is(sequence.metacpcp[i]));
 
             REQUIRE_FALSE(sequence.metav  [j]->Is(sequence.meta[i]));
             REQUIRE_FALSE(sequence.metav  [j]->Is(sequence.metac[i]));
@@ -221,6 +239,7 @@ TEST_CASE("MetaData::Is", "[is]") {
             REQUIRE_FALSE(sequence.metav  [j]->Is(sequence.metap[i]));
             REQUIRE_FALSE(sequence.metav  [j]->Is(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.metav  [j]->Is(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metav  [j]->Is(sequence.metacpcp[i]));
 
             REQUIRE_FALSE(sequence.metap  [j]->Is(sequence.meta[i]));
             REQUIRE_FALSE(sequence.metap  [j]->Is(sequence.metac[i]));
@@ -228,6 +247,7 @@ TEST_CASE("MetaData::Is", "[is]") {
             REQUIRE_FALSE(sequence.metap  [j]->Is(sequence.metap[i]));
             REQUIRE_FALSE(sequence.metap  [j]->Is(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.metap  [j]->Is(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metap  [j]->Is(sequence.metacpcp[i]));
 
             REQUIRE_FALSE(sequence.metacp [j]->Is(sequence.meta[i]));
             REQUIRE_FALSE(sequence.metacp [j]->Is(sequence.metac[i]));
@@ -235,6 +255,7 @@ TEST_CASE("MetaData::Is", "[is]") {
             REQUIRE_FALSE(sequence.metacp [j]->Is(sequence.metap[i]));
             REQUIRE_FALSE(sequence.metacp [j]->Is(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.metacp [j]->Is(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metacp [j]->Is(sequence.metacpcp[i]));
 
             REQUIRE_FALSE(sequence.metacpc[j]->Is(sequence.meta[i]));
             REQUIRE_FALSE(sequence.metacpc[j]->Is(sequence.metac[i]));
@@ -242,6 +263,15 @@ TEST_CASE("MetaData::Is", "[is]") {
             REQUIRE_FALSE(sequence.metacpc[j]->Is(sequence.metap[i]));
             REQUIRE_FALSE(sequence.metacpc[j]->Is(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.metacpc[j]->Is(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metacpc[j]->Is(sequence.metacpcp[i]));
+
+            REQUIRE_FALSE(sequence.metacpcp[j]->Is(sequence.meta[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->Is(sequence.metac[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->Is(sequence.metav[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->Is(sequence.metap[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->Is(sequence.metacp[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->Is(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->Is(sequence.metacpcp[i]));
          }
       }
    }
@@ -259,6 +289,7 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
          REQUIRE_FALSE(sequence.meta   [i]->IsSimilar(sequence.metap[i]));
          REQUIRE_FALSE(sequence.meta   [i]->IsSimilar(sequence.metacp[i]));
          REQUIRE_FALSE(sequence.meta   [i]->IsSimilar(sequence.metacpc[i]));
+         REQUIRE_FALSE(sequence.meta   [i]->IsSimilar(sequence.metacpcp[i]));
                                        
          REQUIRE      (sequence.metac  [i]->IsSimilar(sequence.meta[i]));
          REQUIRE      (sequence.metac  [i]->IsSimilar(sequence.metac[i]));
@@ -266,6 +297,7 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
          REQUIRE_FALSE(sequence.metac  [i]->IsSimilar(sequence.metap[i]));
          REQUIRE_FALSE(sequence.metac  [i]->IsSimilar(sequence.metacp[i]));
          REQUIRE_FALSE(sequence.metac  [i]->IsSimilar(sequence.metacpc[i]));
+         REQUIRE_FALSE(sequence.metac  [i]->IsSimilar(sequence.metacpcp[i]));
                                        
          REQUIRE      (sequence.metav  [i]->IsSimilar(sequence.meta[i]));
          REQUIRE      (sequence.metav  [i]->IsSimilar(sequence.metac[i]));
@@ -273,6 +305,7 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
          REQUIRE_FALSE(sequence.metav  [i]->IsSimilar(sequence.metap[i]));
          REQUIRE_FALSE(sequence.metav  [i]->IsSimilar(sequence.metacp[i]));
          REQUIRE_FALSE(sequence.metav  [i]->IsSimilar(sequence.metacpc[i]));
+         REQUIRE_FALSE(sequence.metav  [i]->IsSimilar(sequence.metacpcp[i]));
                                        
          REQUIRE_FALSE(sequence.metap  [i]->IsSimilar(sequence.meta[i]));
          REQUIRE_FALSE(sequence.metap  [i]->IsSimilar(sequence.metac[i]));
@@ -280,6 +313,7 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
          REQUIRE      (sequence.metap  [i]->IsSimilar(sequence.metap[i]));
          REQUIRE      (sequence.metap  [i]->IsSimilar(sequence.metacp[i]));
          REQUIRE      (sequence.metap  [i]->IsSimilar(sequence.metacpc[i]));
+         REQUIRE_FALSE(sequence.metap  [i]->IsSimilar(sequence.metacpcp[i]));
                                        
          REQUIRE_FALSE(sequence.metacp [i]->IsSimilar(sequence.meta[i]));
          REQUIRE_FALSE(sequence.metacp [i]->IsSimilar(sequence.metac[i]));
@@ -287,6 +321,7 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
          REQUIRE      (sequence.metacp [i]->IsSimilar(sequence.metap[i]));
          REQUIRE      (sequence.metacp [i]->IsSimilar(sequence.metacp[i]));
          REQUIRE      (sequence.metacp [i]->IsSimilar(sequence.metacpc[i]));
+         REQUIRE_FALSE(sequence.metacp [i]->IsSimilar(sequence.metacpcp[i]));
 
          REQUIRE_FALSE(sequence.metacpc[i]->IsSimilar(sequence.meta[i]));
          REQUIRE_FALSE(sequence.metacpc[i]->IsSimilar(sequence.metac[i]));
@@ -294,6 +329,15 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
          REQUIRE      (sequence.metacpc[i]->IsSimilar(sequence.metap[i]));
          REQUIRE      (sequence.metacpc[i]->IsSimilar(sequence.metacp[i]));
          REQUIRE      (sequence.metacpc[i]->IsSimilar(sequence.metacpc[i]));
+         REQUIRE_FALSE(sequence.metacpc[i]->IsSimilar(sequence.metacpcp[i]));
+         
+         REQUIRE_FALSE(sequence.metacpcp[i]->IsSimilar(sequence.meta[i]));
+         REQUIRE_FALSE(sequence.metacpcp[i]->IsSimilar(sequence.metac[i]));
+         REQUIRE_FALSE(sequence.metacpcp[i]->IsSimilar(sequence.metav[i]));
+         REQUIRE_FALSE(sequence.metacpcp[i]->IsSimilar(sequence.metap[i]));
+         REQUIRE_FALSE(sequence.metacpcp[i]->IsSimilar(sequence.metacp[i]));
+         REQUIRE_FALSE(sequence.metacpcp[i]->IsSimilar(sequence.metacpc[i]));
+         REQUIRE      (sequence.metacpcp[i]->IsSimilar(sequence.metacpcp[i]));
          
          for (int j = 0; j < sequence.count; ++j) {
             if (i == j)
@@ -306,6 +350,7 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
             REQUIRE_FALSE(sequence.meta   [j]->IsSimilar(sequence.metap[i]));
             REQUIRE_FALSE(sequence.meta   [j]->IsSimilar(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.meta   [j]->IsSimilar(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.meta   [j]->IsSimilar(sequence.metacpcp[i]));
 
             REQUIRE_FALSE(sequence.metac  [j]->IsSimilar(sequence.meta[i]));
             REQUIRE_FALSE(sequence.metac  [j]->IsSimilar(sequence.metac[i]));
@@ -313,6 +358,7 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
             REQUIRE_FALSE(sequence.metac  [j]->IsSimilar(sequence.metap[i]));
             REQUIRE_FALSE(sequence.metac  [j]->IsSimilar(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.metac  [j]->IsSimilar(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metac  [j]->IsSimilar(sequence.metacpcp[i]));
 
             REQUIRE_FALSE(sequence.metav  [j]->IsSimilar(sequence.meta[i]));
             REQUIRE_FALSE(sequence.metav  [j]->IsSimilar(sequence.metac[i]));
@@ -320,6 +366,7 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
             REQUIRE_FALSE(sequence.metav  [j]->IsSimilar(sequence.metap[i]));
             REQUIRE_FALSE(sequence.metav  [j]->IsSimilar(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.metav  [j]->IsSimilar(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metav  [j]->IsSimilar(sequence.metacpcp[i]));
 
             REQUIRE_FALSE(sequence.metap  [j]->IsSimilar(sequence.meta[i]));
             REQUIRE_FALSE(sequence.metap  [j]->IsSimilar(sequence.metac[i]));
@@ -327,6 +374,7 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
             REQUIRE_FALSE(sequence.metap  [j]->IsSimilar(sequence.metap[i]));
             REQUIRE_FALSE(sequence.metap  [j]->IsSimilar(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.metap  [j]->IsSimilar(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metap  [j]->IsSimilar(sequence.metacpcp[i]));
 
             REQUIRE_FALSE(sequence.metacp [j]->IsSimilar(sequence.meta[i]));
             REQUIRE_FALSE(sequence.metacp [j]->IsSimilar(sequence.metac[i]));
@@ -334,6 +382,7 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
             REQUIRE_FALSE(sequence.metacp [j]->IsSimilar(sequence.metap[i]));
             REQUIRE_FALSE(sequence.metacp [j]->IsSimilar(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.metacp [j]->IsSimilar(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metacp [j]->IsSimilar(sequence.metacpcp[i]));
 
             REQUIRE_FALSE(sequence.metacpc[j]->IsSimilar(sequence.meta[i]));
             REQUIRE_FALSE(sequence.metacpc[j]->IsSimilar(sequence.metac[i]));
@@ -341,6 +390,15 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
             REQUIRE_FALSE(sequence.metacpc[j]->IsSimilar(sequence.metap[i]));
             REQUIRE_FALSE(sequence.metacpc[j]->IsSimilar(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.metacpc[j]->IsSimilar(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metacpc[j]->IsSimilar(sequence.metacpcp[i]));
+
+            REQUIRE_FALSE(sequence.metacpcp[j]->IsSimilar(sequence.meta[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->IsSimilar(sequence.metac[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->IsSimilar(sequence.metav[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->IsSimilar(sequence.metap[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->IsSimilar(sequence.metacp[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->IsSimilar(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->IsSimilar(sequence.metacpcp[i]));
          }
       }
    }
@@ -358,6 +416,7 @@ TEST_CASE("MetaData::IsExact", "[is]") {
          REQUIRE_FALSE(sequence.meta   [i]->IsExact(sequence.metap[i]));
          REQUIRE_FALSE(sequence.meta   [i]->IsExact(sequence.metacp[i]));
          REQUIRE_FALSE(sequence.meta   [i]->IsExact(sequence.metacpc[i]));
+         REQUIRE_FALSE(sequence.meta   [i]->IsExact(sequence.metacpcp[i]));
                                        
          REQUIRE_FALSE(sequence.metac  [i]->IsExact(sequence.meta[i]));
          REQUIRE      (sequence.metac  [i]->IsExact(sequence.metac[i]));
@@ -365,6 +424,7 @@ TEST_CASE("MetaData::IsExact", "[is]") {
          REQUIRE_FALSE(sequence.metac  [i]->IsExact(sequence.metap[i]));
          REQUIRE_FALSE(sequence.metac  [i]->IsExact(sequence.metacp[i]));
          REQUIRE_FALSE(sequence.metac  [i]->IsExact(sequence.metacpc[i]));
+         REQUIRE_FALSE(sequence.metac  [i]->IsExact(sequence.metacpcp[i]));
                                        
          REQUIRE_FALSE(sequence.metav  [i]->IsExact(sequence.meta[i]));
          REQUIRE_FALSE(sequence.metav  [i]->IsExact(sequence.metac[i]));
@@ -372,6 +432,7 @@ TEST_CASE("MetaData::IsExact", "[is]") {
          REQUIRE_FALSE(sequence.metav  [i]->IsExact(sequence.metap[i]));
          REQUIRE_FALSE(sequence.metav  [i]->IsExact(sequence.metacp[i]));
          REQUIRE_FALSE(sequence.metav  [i]->IsExact(sequence.metacpc[i]));
+         REQUIRE_FALSE(sequence.metav  [i]->IsExact(sequence.metacpcp[i]));
                                        
          REQUIRE_FALSE(sequence.metap  [i]->IsExact(sequence.meta[i]));
          REQUIRE_FALSE(sequence.metap  [i]->IsExact(sequence.metac[i]));
@@ -379,6 +440,7 @@ TEST_CASE("MetaData::IsExact", "[is]") {
          REQUIRE      (sequence.metap  [i]->IsExact(sequence.metap[i]));
          REQUIRE_FALSE(sequence.metap  [i]->IsExact(sequence.metacp[i]));
          REQUIRE_FALSE(sequence.metap  [i]->IsExact(sequence.metacpc[i]));
+         REQUIRE_FALSE(sequence.metap  [i]->IsExact(sequence.metacpcp[i]));
                                        
          REQUIRE_FALSE(sequence.metacp [i]->IsExact(sequence.meta[i]));
          REQUIRE_FALSE(sequence.metacp [i]->IsExact(sequence.metac[i]));
@@ -386,6 +448,7 @@ TEST_CASE("MetaData::IsExact", "[is]") {
          REQUIRE_FALSE(sequence.metacp [i]->IsExact(sequence.metap[i]));
          REQUIRE      (sequence.metacp [i]->IsExact(sequence.metacp[i]));
          REQUIRE_FALSE(sequence.metacp [i]->IsExact(sequence.metacpc[i]));
+         REQUIRE_FALSE(sequence.metacp [i]->IsExact(sequence.metacpcp[i]));
 
          REQUIRE_FALSE(sequence.metacpc[i]->IsExact(sequence.meta[i]));
          REQUIRE_FALSE(sequence.metacpc[i]->IsExact(sequence.metac[i]));
@@ -393,6 +456,15 @@ TEST_CASE("MetaData::IsExact", "[is]") {
          REQUIRE_FALSE(sequence.metacpc[i]->IsExact(sequence.metap[i]));
          REQUIRE_FALSE(sequence.metacpc[i]->IsExact(sequence.metacp[i]));
          REQUIRE      (sequence.metacpc[i]->IsExact(sequence.metacpc[i]));
+         REQUIRE_FALSE(sequence.metacpc[i]->IsExact(sequence.metacpcp[i]));
+         
+         REQUIRE_FALSE(sequence.metacpcp[i]->IsExact(sequence.meta[i]));
+         REQUIRE_FALSE(sequence.metacpcp[i]->IsExact(sequence.metac[i]));
+         REQUIRE_FALSE(sequence.metacpcp[i]->IsExact(sequence.metav[i]));
+         REQUIRE_FALSE(sequence.metacpcp[i]->IsExact(sequence.metap[i]));
+         REQUIRE_FALSE(sequence.metacpcp[i]->IsExact(sequence.metacp[i]));
+         REQUIRE_FALSE(sequence.metacpcp[i]->IsExact(sequence.metacpc[i]));
+         REQUIRE      (sequence.metacpcp[i]->IsExact(sequence.metacpcp[i]));
          
          for (int j = 0; j < sequence.count; ++j) {
             if (i == j)
@@ -405,6 +477,7 @@ TEST_CASE("MetaData::IsExact", "[is]") {
             REQUIRE_FALSE(sequence.meta   [j]->IsExact(sequence.metap[i]));
             REQUIRE_FALSE(sequence.meta   [j]->IsExact(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.meta   [j]->IsExact(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.meta   [j]->IsExact(sequence.metacpcp[i]));
 
             REQUIRE_FALSE(sequence.metac  [j]->IsExact(sequence.meta[i]));
             REQUIRE_FALSE(sequence.metac  [j]->IsExact(sequence.metac[i]));
@@ -412,6 +485,7 @@ TEST_CASE("MetaData::IsExact", "[is]") {
             REQUIRE_FALSE(sequence.metac  [j]->IsExact(sequence.metap[i]));
             REQUIRE_FALSE(sequence.metac  [j]->IsExact(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.metac  [j]->IsExact(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metac  [j]->IsExact(sequence.metacpcp[i]));
 
             REQUIRE_FALSE(sequence.metav  [j]->IsExact(sequence.meta[i]));
             REQUIRE_FALSE(sequence.metav  [j]->IsExact(sequence.metac[i]));
@@ -419,6 +493,7 @@ TEST_CASE("MetaData::IsExact", "[is]") {
             REQUIRE_FALSE(sequence.metav  [j]->IsExact(sequence.metap[i]));
             REQUIRE_FALSE(sequence.metav  [j]->IsExact(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.metav  [j]->IsExact(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metav  [j]->IsExact(sequence.metacpcp[i]));
 
             REQUIRE_FALSE(sequence.metap  [j]->IsExact(sequence.meta[i]));
             REQUIRE_FALSE(sequence.metap  [j]->IsExact(sequence.metac[i]));
@@ -426,6 +501,7 @@ TEST_CASE("MetaData::IsExact", "[is]") {
             REQUIRE_FALSE(sequence.metap  [j]->IsExact(sequence.metap[i]));
             REQUIRE_FALSE(sequence.metap  [j]->IsExact(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.metap  [j]->IsExact(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metap  [j]->IsExact(sequence.metacpcp[i]));
 
             REQUIRE_FALSE(sequence.metacp [j]->IsExact(sequence.meta[i]));
             REQUIRE_FALSE(sequence.metacp [j]->IsExact(sequence.metac[i]));
@@ -433,6 +509,7 @@ TEST_CASE("MetaData::IsExact", "[is]") {
             REQUIRE_FALSE(sequence.metacp [j]->IsExact(sequence.metap[i]));
             REQUIRE_FALSE(sequence.metacp [j]->IsExact(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.metacp [j]->IsExact(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metacp [j]->IsExact(sequence.metacpcp[i]));
 
             REQUIRE_FALSE(sequence.metacpc[j]->IsExact(sequence.meta[i]));
             REQUIRE_FALSE(sequence.metacpc[j]->IsExact(sequence.metac[i]));
@@ -440,6 +517,15 @@ TEST_CASE("MetaData::IsExact", "[is]") {
             REQUIRE_FALSE(sequence.metacpc[j]->IsExact(sequence.metap[i]));
             REQUIRE_FALSE(sequence.metacpc[j]->IsExact(sequence.metacp[i]));
             REQUIRE_FALSE(sequence.metacpc[j]->IsExact(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metacpc[j]->IsExact(sequence.metacpcp[i]));
+
+            REQUIRE_FALSE(sequence.metacpcp[j]->IsExact(sequence.meta[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->IsExact(sequence.metac[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->IsExact(sequence.metav[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->IsExact(sequence.metap[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->IsExact(sequence.metacp[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->IsExact(sequence.metacpc[i]));
+            REQUIRE_FALSE(sequence.metacpcp[j]->IsExact(sequence.metacpcp[i]));
          }
       }
    }
