@@ -491,15 +491,15 @@ namespace Langulus::RTTI
       NOD() Distance GetDistanceTo() const;
 
       NOD() constexpr bool Is(DMeta) const noexcept;
-      template<CT::Data T>
+      template<CT::Data...>
       NOD() constexpr bool Is() const;
 
       NOD() constexpr bool IsSimilar(DMeta) const noexcept;
-      template<CT::Data T>
+      template<CT::Data...>
       NOD() constexpr bool IsSimilar() const;
 
       NOD() constexpr bool IsExact(DMeta) const noexcept;
-      template<CT::Data T>
+      template<CT::Data...>
       NOD() constexpr bool IsExact() const;
 
       constexpr bool operator == (const MetaData&) const noexcept;

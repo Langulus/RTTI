@@ -1529,14 +1529,14 @@ namespace Langulus::RTTI
       return mOrigin and other and mOrigin->IsExact(other->mOrigin);
    }
    
-   /// Check if two meta definitions match loosely, ignoring all qualifiers   
-   /// Essentially checks if both reflections have the same mOrigin           
-   ///   @tparam T - the type to compare against                              
-   ///   @return true if types match                                          
-   template<CT::Data T>
+   /// Check if this type matches the origin of any of the provided types     
+   /// Essentially checks if reflections have the same mOrigin                
+   ///   @tparam T... - the types to compare against                          
+   ///   @return true if at least one of the types matches                    
+   template<CT::Data... T>
    LANGULUS(INLINED)
    constexpr bool MetaData::Is() const {
-      return Is(MetaData::Of<T>());
+      return (Is(MetaData::Of<T>()) or ...);
    }
    
    /// Check if two meta definitions match origin and sparseness, but ignores 
@@ -1553,14 +1553,14 @@ namespace Langulus::RTTI
          );
    }
    
-   /// Check if two meta definitions match origin and sparseness, but ignores 
-   /// `const` and `volatile` qualifiers                                      
-   ///   @tparam T - the type to compare against                              
-   ///   @return true if types match                                          
-   template<CT::Data T>
+   /// Check if this type matches any of the provided types' origins and      
+   /// sparseness, ignoring `const` and `volatile` qualifiers                 
+   ///   @tparam T... - the types to compare against                          
+   ///   @return true if at least one of the types matches                    
+   template<CT::Data... T>
    LANGULUS(INLINED)
    constexpr bool MetaData::IsSimilar() const {
-      return IsSimilar(MetaData::Of<T>());
+      return (IsSimilar(MetaData::Of<T>()) or ...);
    }
       
    /// Check if two meta definitions match exactly, including any qualifiers  
@@ -1581,13 +1581,13 @@ namespace Langulus::RTTI
       #endif
    }
    
-   /// Check if two meta definitions match exactly, including any qualifiers  
-   ///   @tparam T - the type to compare against                              
-   ///   @return true if types match                                          
-   template<CT::Data T>
+   /// Check if this type matches one of the provided types exactly           
+   ///   @tparam T... - the types to compare against                          
+   ///   @return true if at least one of the types matches                    
+   template<CT::Data... T>
    LANGULUS(INLINED)
    constexpr bool MetaData::IsExact() const {
-      return IsExact(MetaData::Of<T>());
+      return (IsExact(MetaData::Of<T>()) or ...);
    }
 
    LANGULUS(INLINED)
