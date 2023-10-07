@@ -149,7 +149,7 @@ struct ImplicitlyReflectedData {
    inline bool operator == (const ImplicitlyReflectedData&) const noexcept = default;
 };
 
-class ImplicitlyReflectedDataWithTraits : public ImplicitlyReflectedData {
+class alignas(128) ImplicitlyReflectedDataWithTraits : public ImplicitlyReflectedData {
 public:
    int member {};
    bool anotherMember {};
@@ -192,3 +192,16 @@ public:
       LANGULUS_PROPERTY(sparseMember)
    LANGULUS_PROPERTIES_END();
 };
+
+namespace N1 {
+   struct Type {};
+   struct Create {};
+}
+
+namespace N2 {
+   struct Type {};
+}
+
+namespace N3 {
+   struct type {};
+}

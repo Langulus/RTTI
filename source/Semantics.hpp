@@ -206,14 +206,14 @@ namespace Langulus
    template<CT::NotSemantic T>
    NOD() LANGULUS(INLINED)
    constexpr auto Move(T&& a) noexcept {
-      return Moved<T>{::std::forward<T>(a)};
+      return Moved<T> {::std::forward<T>(a)};
    }
 
    /// Move data                                                              
    template<CT::NotSemantic T>
    NOD() LANGULUS(INLINED)
    constexpr auto Move(T& a) noexcept {
-      return Moved<T>{::std::move(a)};
+      return Moved<T> {::std::move(a)};
    }
 
 

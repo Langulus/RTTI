@@ -353,7 +353,7 @@ namespace Langulus::RTTI
          // Imposed bases are excluded from serialization               
          result.mImposed = true;
 
-         if constexpr (!CT::Abstract<BASE> and sizeof(BASE) < sizeof(T)) {
+         if constexpr (not CT::Abstract<BASE> and sizeof(BASE) < sizeof(T)) {
             // The imposed type has a chance of being binary compatible 
             // when having a specific count                             
             result.mBinaryCompatible = 0 == sizeof(T) % sizeof(BASE);
@@ -381,19 +381,15 @@ namespace Langulus::RTTI
    template<CT::DataReference T>
    LANGULUS(INLINED)
    DMeta MetaData::Of() {
-      return MetaData::Of<Decvq<Deref<T>>>();
+      return MetaData::Of<Deref<T>>();
    }
 
    /// Reflect a pointer, optimized to reuse origin type properties           
-   /// A generalized reflection routine increases build time significantly    
+   /// (a generalized reflection routine increases build time significantly)  
    ///   @tparam T - the type to reflect                                      
    template<CT::SparseData T>
    LANGULUS(NOINLINE)
    DMeta MetaData::Of() {
-      static_assert(CT::Complete<T>, "Can't reflect incomplete type");
-      static_assert(not CT::Array<T>, "Can't reflect a bounded array type");
-      static_assert(not NameOf<T>().empty(), "Invalid data token is not allowed");
-
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
          // previously in another library. Unfortunately we can't keep  
@@ -452,6 +448,11 @@ namespace Langulus::RTTI
          // Set library boundary                                        
          IF_LANGULUS_MANAGED_REFLECTION(generated.mLibraryName = RTTI::Boundary);
       }
+
+      if constexpr (::std::is_const_v<T> or ::std::is_volatile_v<T>)
+         generated.mDecvq = MetaData::Of<Decvq<T>>();
+      else
+         generated.mDecvq = nullptr;
       
       // Overwrite pointer-specific stuff                               
       generated.mToken = NameOf<T>();
@@ -480,14 +481,22 @@ namespace Langulus::RTTI
    }
 
    /// Reflect a constant dense type, optimized to reuse origin type          
-   /// A generalized reflection routine increases build time significantly    
+   /// (a generalized reflection routine increases build time significantly)  
    ///   @tparam T - the type to reflect                                      
    template<CT::DenseData T>
    LANGULUS(NOINLINE)
-   DMeta MetaData::Of() requires CT::Constant<T> {
-      static_assert(CT::Complete<T>, "Can't reflect incomplete type");
-      static_assert(not CT::Array<T>, "Can't reflect a bounded array type");
-      static_assert(not NameOf<T>().empty(), "Invalid data token is not allowed");
+   DMeta MetaData::Of() requires (CT::Convoluted<T>) {
+      static_assert(CT::Complete<T>, 
+         "Can't reflect incomplete type - "
+         "make sure you have included the corresponding headers "
+         "before the point of reflection. "
+         "This could also be triggered due to an incomplete member in T");
+      static_assert(not CT::Array<T>, 
+         "Can't reflect a bounded array type - "
+         "either wrap your array in a type, or represent it as a raw pointer");
+      static_assert(not NameOf<T>().empty(), 
+         "Invalid data token is not allowed - "
+         "you have probably equipped your type with an empty LANGULUS(NAME)");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
@@ -520,6 +529,7 @@ namespace Langulus::RTTI
       auto denser = MetaData::Of<Decay<T>>();
       generated = *denser;
       generated.mOrigin = denser;
+      generated.mDecvq = MetaData::Of<Decvq<T>>();
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Set library boundary                                        
@@ -556,10 +566,18 @@ namespace Langulus::RTTI
    ///   @tparam T - the type to reflect                                      
    template<CT::DenseData T>
    LANGULUS(NOINLINE)
-   DMeta MetaData::Of() requires CT::Mutable<T> {
-      static_assert(CT::Complete<T>, "Can't reflect incomplete type");
-      static_assert(not CT::Array<T>, "Can't reflect a bounded array type");
-      static_assert(not NameOf<T>().empty(), "Invalid data token is not allowed");
+   DMeta MetaData::Of() requires (CT::Decayed<T>) {
+      static_assert(CT::Complete<T>, 
+         "Can't reflect incomplete type - "
+         "make sure you have included the corresponding headers "
+         "before the point of reflection. "
+         "This could also be triggered due to an incomplete member in T");
+      static_assert(not CT::Array<T>, 
+         "Can't reflect a bounded array type - "
+         "either wrap your array in a type, or represent it as a raw pointer");
+      static_assert(not NameOf<T>().empty(), 
+         "Invalid data token is not allowed - "
+         "you have probably equipped your type with an empty LANGULUS(NAME)");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
@@ -676,9 +694,9 @@ namespace Langulus::RTTI
       
       // Make sure we register the pointered/immutable alternatives     
       // It's paramount we do this after this meta has been generated   
-      (void)MetaData::Of<T*>();
-      (void)MetaData::Of<const T*>();
-      (void)MetaData::Of<const T>();
+      //(void)MetaData::Of<T*>();
+      //(void)MetaData::Of<const T*>();
+      //(void)MetaData::Of<const T>();
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          return meta;
@@ -1503,26 +1521,16 @@ namespace Langulus::RTTI
    }
 
    /// Check if two meta definitions match loosely, ignoring all qualifiers   
+   /// Essentially checks if both reflections have the same mOrigin           
    ///   @param other - the type to compare against                           
    ///   @return true if types match                                          
    LANGULUS(INLINED)
    constexpr bool MetaData::Is(DMeta other) const noexcept {
-      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         // This function is reduced to a pointer match, if the meta    
-         // database is centralized, because it guarantees that         
-         // definitions in separate translation units are always the    
-         // same instance                                               
-         return mOrigin and other and mOrigin == other->mOrigin;
-      #else
-         return other
-            and mOrigin
-            and other->mOrigin
-            and mOrigin->mHash == other->mOrigin->mHash
-            and mOrigin->mToken == other->mOrigin->mToken;
-      #endif
+      return mOrigin and other and mOrigin->IsExact(other->mOrigin);
    }
    
    /// Check if two meta definitions match loosely, ignoring all qualifiers   
+   /// Essentially checks if both reflections have the same mOrigin           
    ///   @tparam T - the type to compare against                              
    ///   @return true if types match                                          
    template<CT::Data T>
@@ -1531,7 +1539,32 @@ namespace Langulus::RTTI
       return Is(MetaData::Of<T>());
    }
    
-   /// Check if two meta definitions match exactly                            
+   /// Check if two meta definitions match origin and sparseness, but ignores 
+   /// `const` and `volatile` qualifiers. The qualifiers aren't ignored only  
+   /// on the current level of indirection, but on the entire way to origin   
+   ///   @param other - the type to compare against                           
+   ///   @return true if types match                                          
+   LANGULUS(INLINED)
+   constexpr bool MetaData::IsSimilar(DMeta other) const noexcept {
+      return other and (IsExact(other)
+          or IsExact(other->mDecvq)
+          or (mDecvq and (mDecvq->IsExact(other)
+                      or  mDecvq->IsExact(other->mDecvq)))
+          or (mDeptr and  mDeptr->IsSimilar(other->mDeptr))
+         );
+   }
+   
+   /// Check if two meta definitions match origin and sparseness, but ignores 
+   /// `const` and `volatile` qualifiers                                      
+   ///   @tparam T - the type to compare against                              
+   ///   @return true if types match                                          
+   template<CT::Data T>
+   LANGULUS(INLINED)
+   constexpr bool MetaData::IsSimilar() const {
+      return IsSimilar(MetaData::Of<T>());
+   }
+      
+   /// Check if two meta definitions match exactly, including any qualifiers  
    ///   @param other - the type to compare against                           
    ///   @return true if types match                                          
    LANGULUS(INLINED)
@@ -1549,7 +1582,7 @@ namespace Langulus::RTTI
       #endif
    }
    
-   /// Check if two meta definitions match exactly                            
+   /// Check if two meta definitions match exactly, including any qualifiers  
    ///   @tparam T - the type to compare against                              
    ///   @return true if types match                                          
    template<CT::Data T>

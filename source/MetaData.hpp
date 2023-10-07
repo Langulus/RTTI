@@ -301,9 +301,11 @@ namespace Langulus::RTTI
       // Will be nullptr for incomplete types                           
       DMeta mOrigin {};
       // The type, when a single pointer is removed                     
-      // When the last pointer is removed, mDeptr will become mOrigin   
-      // Can be nullptr for incomplete types                            
+      // It is nullptr, if the type isn't sparse                        
       DMeta mDeptr {};
+      // The type, when a const and volatile qualifiers are removed     
+      // It is nullptr, if the type doesn't have any qualifiers         
+      DMeta mDecvq {};
       // Default concretization                                         
       DMeta mConcrete {};
       // Dynamic producer of the type                                   
@@ -414,9 +416,9 @@ namespace Langulus::RTTI
       template<CT::SparseData T>
       NOD() static DMeta Of();
       template<CT::DenseData T>
-      NOD() static DMeta Of() requires CT::Constant<T>;
+      NOD() static DMeta Of() requires (CT::Convoluted<T>);
       template<CT::DenseData T>
-      NOD() static DMeta Of() requires CT::Mutable<T>;
+      NOD() static DMeta Of() requires (CT::Decayed<T>);
 
       NOD() DMeta GetMostConcrete() const noexcept;
       NOD() AllocationRequest RequestSize(const Count&) const noexcept;
@@ -491,6 +493,10 @@ namespace Langulus::RTTI
       NOD() constexpr bool Is(DMeta) const noexcept;
       template<CT::Data T>
       NOD() constexpr bool Is() const;
+
+      NOD() constexpr bool IsSimilar(DMeta) const noexcept;
+      template<CT::Data T>
+      NOD() constexpr bool IsSimilar() const;
 
       NOD() constexpr bool IsExact(DMeta) const noexcept;
       template<CT::Data T>
