@@ -153,7 +153,7 @@ TEST_CASE("MetaData::Is", "[is]") {
    Sequence<N1::Type, N1::Create, N2::Type, N3::type> sequence;
 
    WHEN("MetaData::Is is used to check similarity") {
-      for (int i = 0; i < sequence.count; ++i) {
+      for (unsigned i = 0; i < sequence.count; ++i) {
          // Compare horizontally                                        
          REQUIRE(sequence.meta   [i]->Is(sequence.meta[i]));
          REQUIRE(sequence.meta   [i]->Is(sequence.metac[i]));
@@ -212,7 +212,7 @@ TEST_CASE("MetaData::Is", "[is]") {
          REQUIRE(sequence.metacpcp[i]->Is(sequence.metacpc[i]));
          REQUIRE(sequence.metacpcp[i]->Is(sequence.metacpcp[i]));
 
-         for (int j = 0; j < sequence.count; ++j) {
+         for (unsigned j = 0; j < sequence.count; ++j) {
             if (i == j)
                continue;
 
@@ -281,7 +281,7 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
    Sequence<N1::Type, N1::Create, N2::Type, N3::type> sequence;
 
    WHEN("MetaData::IsSimilar is used to check similarity") {
-      for (int i = 0; i < sequence.count; ++i) {
+      for (unsigned i = 0; i < sequence.count; ++i) {
          // Compare horizontally                                        
          REQUIRE      (sequence.meta   [i]->IsSimilar(sequence.meta[i]));
          REQUIRE      (sequence.meta   [i]->IsSimilar(sequence.metac[i]));
@@ -339,7 +339,7 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
          REQUIRE_FALSE(sequence.metacpcp[i]->IsSimilar(sequence.metacpc[i]));
          REQUIRE      (sequence.metacpcp[i]->IsSimilar(sequence.metacpcp[i]));
          
-         for (int j = 0; j < sequence.count; ++j) {
+         for (unsigned j = 0; j < sequence.count; ++j) {
             if (i == j)
                continue;
 
@@ -408,7 +408,7 @@ TEST_CASE("MetaData::IsExact", "[is]") {
    Sequence<N1::Type, N1::Create, N2::Type, N3::type> sequence;
 
    WHEN("MetaData::IsExact is used to check similarity") {
-      for (int i = 0; i < sequence.count; ++i) {
+      for (unsigned i = 0; i < sequence.count; ++i) {
          // Compare horizontally                                        
          REQUIRE      (sequence.meta   [i]->IsExact(sequence.meta[i]));
          REQUIRE_FALSE(sequence.meta   [i]->IsExact(sequence.metac[i]));
@@ -466,7 +466,7 @@ TEST_CASE("MetaData::IsExact", "[is]") {
          REQUIRE_FALSE(sequence.metacpcp[i]->IsExact(sequence.metacpc[i]));
          REQUIRE      (sequence.metacpcp[i]->IsExact(sequence.metacpcp[i]));
          
-         for (int j = 0; j < sequence.count; ++j) {
+         for (unsigned j = 0; j < sequence.count; ++j) {
             if (i == j)
                continue;
 
