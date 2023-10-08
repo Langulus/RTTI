@@ -482,25 +482,25 @@ namespace Langulus::RTTI
       template<CT::Data T, bool BINARY_COMPATIBLE = false>
       NOD() bool CastsTo(Count) const;
 
-      NOD() bool IsRelatedTo(DMeta) const;
       template<CT::Data T>
       NOD() bool IsRelatedTo() const;
+      NOD() bool IsRelatedTo(DMeta) const;
 
-      NOD() Distance GetDistanceTo(DMeta) const;
       template<CT::Data T>
       NOD() Distance GetDistanceTo() const;
+      NOD() Distance GetDistanceTo(DMeta) const;
 
-      NOD() constexpr bool Is(DMeta) const noexcept;
-      template<CT::Data...>
+      template<CT::Data, CT::Data...>
       NOD() constexpr bool Is() const;
+      NOD() constexpr bool Is(DMeta) const noexcept;
 
-      NOD() constexpr bool IsSimilar(DMeta) const noexcept;
-      template<CT::Data...>
+      template<CT::Data, CT::Data...>
       NOD() constexpr bool IsSimilar() const;
+      NOD() constexpr bool IsSimilar(DMeta) const noexcept;
 
-      NOD() constexpr bool IsExact(DMeta) const noexcept;
-      template<CT::Data...>
+      template<CT::Data, CT::Data...>
       NOD() constexpr bool IsExact() const;
+      NOD() constexpr bool IsExact(DMeta) const noexcept;
 
       constexpr bool operator == (const MetaData&) const noexcept;
    };
