@@ -1519,6 +1519,16 @@ namespace Langulus::RTTI
    MetaData::Distance MetaData::GetDistanceTo() const {
       return GetDistanceTo(MetaData::Of<T>());
    }
+   
+   /// Check if this type matches the origin of any of the provided types     
+   /// Essentially checks if reflections have the same mOrigin                
+   ///   @tparam T1, TN... - the types to compare against                     
+   ///   @return true if at least one of the types matches                    
+   template<CT::Data T1, CT::Data... TN>
+   LANGULUS(INLINED)
+   constexpr bool MetaData::Is() const {
+      return mOrigin and mOrigin->template IsExact<Decay<T1>, Decay<TN>...>();
+   }
 
    /// Check if two meta definitions match loosely, ignoring all qualifiers   
    /// Essentially checks if both reflections have the same mOrigin           
@@ -1529,16 +1539,19 @@ namespace Langulus::RTTI
       return mOrigin and other and mOrigin->IsExact(other->mOrigin);
    }
    
-   /// Check if this type matches the origin of any of the provided types     
-   /// Essentially checks if reflections have the same mOrigin                
-   ///   @tparam T... - the types to compare against                          
+   /// Check if this type matches any of the provided types' origins and      
+   /// sparseness, ignoring `const` and `volatile` qualifiers                 
+   ///   @tparam T1, TN... - the types to compare against                     
    ///   @return true if at least one of the types matches                    
-   template<CT::Data... T>
-   LANGULUS(INLINED)
-   constexpr bool MetaData::Is() const {
-      return (Is(MetaData::Of<T>()) or ...);
+   template<CT::Data T1, CT::Data... TN>
+   constexpr bool MetaData::IsSimilar() const {
+      return IsExact<T1, TN...>()
+          or IsExact<Decvq<T1>, Decvq<TN>...>()
+          or (mDecvq and (mDecvq->template IsExact<T1, TN...>()
+                      or  mDecvq->template IsExact<Decvq<T1>, Decvq<TN>...>()))
+          or (mDeptr and  mDeptr->template IsSimilar<Deptr<T1>, Deptr<TN>...>());
    }
-   
+
    /// Check if two meta definitions match origin and sparseness, but ignores 
    /// `const` and `volatile` qualifiers. The qualifiers aren't ignored only  
    /// on the current level of indirection, but on the entire way to origin   
@@ -1553,16 +1566,15 @@ namespace Langulus::RTTI
          );
    }
    
-   /// Check if this type matches any of the provided types' origins and      
-   /// sparseness, ignoring `const` and `volatile` qualifiers                 
-   ///   @tparam T... - the types to compare against                          
+   /// Check if this type matches one of the provided types exactly           
+   ///   @tparam T1, TN... - the types to compare against                     
    ///   @return true if at least one of the types matches                    
-   template<CT::Data... T>
+   template<CT::Data T1, CT::Data... TN>
    LANGULUS(INLINED)
-   constexpr bool MetaData::IsSimilar() const {
-      return (IsSimilar(MetaData::Of<T>()) or ...);
+   constexpr bool MetaData::IsExact() const {
+      return IsExact(MetaData::Of<T1>()) or (IsExact(MetaData::Of<TN>()) or ...);
    }
-      
+
    /// Check if two meta definitions match exactly, including any qualifiers  
    ///   @param other - the type to compare against                           
    ///   @return true if types match                                          
@@ -1580,16 +1592,8 @@ namespace Langulus::RTTI
             and mToken == other->mToken;
       #endif
    }
-   
-   /// Check if this type matches one of the provided types exactly           
-   ///   @tparam T... - the types to compare against                          
-   ///   @return true if at least one of the types matches                    
-   template<CT::Data... T>
-   LANGULUS(INLINED)
-   constexpr bool MetaData::IsExact() const {
-      return (IsExact(MetaData::Of<T>()) or ...);
-   }
 
+   /// Compares two definitions exactly                                       
    LANGULUS(INLINED)
    constexpr bool MetaData::operator == (const MetaData& rhs) const noexcept {
       return IsExact(&rhs);
