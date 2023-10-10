@@ -107,43 +107,58 @@ namespace Langulus
       Copied() = delete;
       Copied(const Copied&) = delete;
       explicit constexpr Copied(Copied&&) noexcept = default;
+
+      LANGULUS(INLINED)
       explicit constexpr Copied(const T& value) noexcept
          : mValue {value} {
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
       }
       
-      /// Forward as copied                                                   
+      /// Forward as copied, or collapse the semantic                         
+      ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
       template<class ALT_T = T>
-      NOD() constexpr Copied<ALT_T> Forward() const noexcept {
+      LANGULUS(INLINED)
+      constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>, "Can't nest semantics");
-         return Copied<ALT_T>{mValue};
+         if constexpr (not ::std::constructible_from<ALT_T, Copied<ALT_T>>
+                       and ::std::copy_constructible<ALT_T>) {
+            // Collapse the semantic, when applying it to fundamentals  
+            // This way this wrapper is seamlessly integrated with the  
+            // standard C++20 semantics                                 
+            return static_cast<const ALT_T&>(mValue);
+         }
+         else return Copied<ALT_T> {mValue};
+      }
+
+      /// Forward as copied, never collapse                                   
+      ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
+      template<class ALT_T = T>
+      LANGULUS(INLINED)
+      constexpr decltype(auto) ForwardPerfect() const noexcept {
+         static_assert(CT::NotSemantic<ALT_T>, "Can't nest semantics");
+         return Copied<ALT_T> {mValue};
       }
 
       /// Copy something else                                                 
-      template<class ALT_T>
-      NOD() static constexpr Copied<ALT_T> Nest(const ALT_T& value) noexcept {
-         return Copied<ALT_T>{value};
+      LANGULUS(INLINED)
+      static constexpr decltype(auto) Nest(const auto& value) noexcept {
+         return Copied<Decvq<Deref<decltype(value)>>> {value};
       }
 
       template<class ALT_T>
       using Nested = Copied<ALT_T>;
 
       LANGULUS(INLINED)
-      const T& operator * () const noexcept {
-         return mValue;
-      }
+      const T& operator *  () const noexcept { return mValue; }
 
       LANGULUS(INLINED)
-      const T* operator -> () const noexcept {
-         return &mValue;
-      }
+      const T* operator -> () const noexcept { return &mValue; }
    };
    
    /// Copy a value                                                           
-   template<CT::NotSemantic T>
    NOD() LANGULUS(INLINED) 
-   constexpr auto Copy(const T& item) noexcept {
-      return Copied<T>{item};
+   constexpr auto Copy(const CT::NotSemantic auto& value) noexcept {
+      return Copied<Decvq<Deref<decltype(value)>>> {value};
    }
    
 
@@ -165,55 +180,73 @@ namespace Langulus
       Moved() = delete;
       Moved(const Moved&) = delete;
       explicit constexpr Moved(Moved&&) noexcept = default;
+
+      LANGULUS(INLINED)
       explicit constexpr Moved(T&& value) noexcept
          : mValue {::std::forward<T>(value)} {
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
       }
 
-      /// Forward as moved                                                    
+      /// Forward as moved, or collapse the semantic                          
+      ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
       template<class ALT_T = T>
-      NOD() constexpr Moved<ALT_T> Forward() const noexcept {
+      LANGULUS(INLINED)
+      constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>, "Can't nest semantics");
-         return Moved<ALT_T>{::std::forward<ALT_T>(mValue)};
+         if constexpr (not ::std::constructible_from<ALT_T, Moved<ALT_T>>
+                       and ::std::move_constructible<ALT_T>) {
+            // Collapse the semantic, when applying it to fundamentals  
+            // This way this wrapper is seamlessly integrated with the  
+            // standard C++20 semantics                                 
+            return ::std::forward<ALT_T>(mValue);
+         }
+         else return Moved<ALT_T> {::std::forward<ALT_T>(mValue)};
+      }
+
+      /// Forward as moved, never collapse                                    
+      ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
+      template<class ALT_T = T>
+      LANGULUS(INLINED)
+      constexpr decltype(auto) ForwardPerfect() const noexcept {
+         static_assert(CT::NotSemantic<ALT_T>, "Can't nest semantics");
+         return Moved<ALT_T> {::std::forward<ALT_T>(mValue)};
       }
 
       /// Move something else                                                 
-      template<class ALT_T>
-      NOD() static constexpr Moved<ALT_T> Nest(ALT_T& value) noexcept {
-         return Moved<ALT_T>{::std::move(value)};
+      LANGULUS(INLINED)
+      static constexpr decltype(auto) Nest(auto& value) noexcept {
+         return Moved<Decvq<Deref<decltype(value)>>> {::std::move(value)};
       }
 
-      template<class ALT_T>
-      NOD() static constexpr Moved<ALT_T> Nest(ALT_T&& value) noexcept {
-         return Moved<ALT_T>{::std::forward<ALT_T>(value)};
+      /// Move something else                                                 
+      LANGULUS(INLINED)
+      static constexpr decltype(auto) Nest(auto&& value) noexcept {
+         using ALT_T = Decvq<Deref<decltype(value)>>;
+         return Moved<ALT_T> {::std::forward<ALT_T>(value)};
       }
 
       template<class ALT_T>
       using Nested = decltype(Nest(Fake<ALT_T>()));
 
       LANGULUS(INLINED)
-      T& operator * () const noexcept {
-         return mValue;
-      }
+      T& operator *  () const noexcept { return mValue; }
 
       LANGULUS(INLINED)
-      T* operator -> () const noexcept {
-         return &mValue;
-      }
+      T* operator -> () const noexcept { return &mValue; }
    };
    
-   /// Move data                                                              
-   template<CT::NotSemantic T>
+   /// Move a value                                                           
    NOD() LANGULUS(INLINED)
-   constexpr auto Move(T&& a) noexcept {
-      return Moved<T> {::std::forward<T>(a)};
+   constexpr auto Move(CT::NotSemantic auto&& value) noexcept {
+      using T = Decvq<Deref<decltype(value)>>;
+      return Moved<T> {::std::forward<T>(value)};
    }
 
-   /// Move data                                                              
-   template<CT::NotSemantic T>
+   /// Move a value                                                           
    NOD() LANGULUS(INLINED)
-   constexpr auto Move(T& a) noexcept {
-      return Moved<T> {::std::move(a)};
+   constexpr auto Move(CT::NotSemantic auto& value) noexcept {
+      using T = Decvq<Deref<decltype(value)>>;
+      return Moved<T> {::std::move(value)};
    }
 
 
@@ -239,59 +272,68 @@ namespace Langulus
       Abandoned() = delete;
       Abandoned(const Abandoned&) = delete;
       explicit constexpr Abandoned(Abandoned&&) noexcept = default;
-      explicit constexpr Abandoned(T&& value) noexcept 
+
+      LANGULUS(INLINED)
+      explicit constexpr Abandoned(T&& value) noexcept
          : mValue {::std::forward<T>(value)} {
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
       }
       
-      /// Forward as abandoned                                                
+      /// Forward as abandoned, never collapse                                
+      ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
       template<class ALT_T = T>
-      NOD() constexpr Abandoned<ALT_T> Forward() const noexcept {
+      LANGULUS(INLINED)
+      constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>, "Can't nest semantics");
-         return Abandoned<ALT_T>{::std::forward<ALT_T>(mValue)};
+         return Abandoned<ALT_T> {::std::forward<ALT_T>(mValue)};
+      }
+
+      template<class ALT_T = T>
+      LANGULUS(INLINED)
+      constexpr decltype(auto) ForwardPerfect() const noexcept {
+         return Forward<ALT_T>();
       }
 
       /// Abandon something else                                              
-      template<class ALT_T>
-      NOD() static constexpr Abandoned<ALT_T> Nest(ALT_T& value) noexcept {
-         return Abandoned<ALT_T>{::std::move(value)};
+      LANGULUS(INLINED)
+      static constexpr decltype(auto) Nest(auto& value) noexcept {
+         using ALT_T = Decvq<Deref<decltype(value)>>;
+         return Abandoned<ALT_T> {::std::move(value)};
       }
 
-      template<class ALT_T>
-      NOD() static constexpr Abandoned<ALT_T> Nest(ALT_T&& value) noexcept {
-         return Abandoned<ALT_T>{::std::forward<ALT_T>(value)};
+      /// Abandon something else                                              
+      LANGULUS(INLINED)
+      static constexpr decltype(auto) Nest(auto&& value) noexcept {
+         using ALT_T = Decvq<Deref<decltype(value)>>;
+         return Abandoned<ALT_T> {::std::forward<ALT_T>(value)};
       }
 
       template<class ALT_T>
       using Nested = decltype(Nest(Fake<ALT_T>()));
 
       LANGULUS(INLINED)
-      T& operator * () const noexcept {
-         return mValue;
-      }
+      T& operator *  () const noexcept { return mValue; }
 
       LANGULUS(INLINED)
-      T* operator -> () const noexcept {
-         return &mValue;
-      }
+      T* operator -> () const noexcept { return &mValue; }
    };
    
    /// Abandon a value                                                        
    /// Same as Move, but resets only mandatory data inside source after move  
    /// essentially saving up on a couple of instructions                      
-   template<CT::NotSemantic T>
    NOD() LANGULUS(INLINED)
-   constexpr auto Abandon(T&& a) noexcept {
-      return Abandoned<T>{::std::forward<T>(a)};
+   constexpr auto Abandon(CT::NotSemantic auto&& value) noexcept {
+      using T = Decvq<Deref<decltype(value)>>;
+      return Abandoned<T> {::std::forward<T>(value)};
    }
 
    /// Abandon a value                                                        
    /// Same as Move, but resets only mandatory data inside source after move  
    /// essentially saving up on a couple of instructions                      
-   template<CT::NotSemantic T>
    NOD() LANGULUS(INLINED)
-   constexpr auto Abandon(T& a) noexcept {
-      return Abandoned<T>{::std::move(a)};
+   constexpr auto Abandon(CT::NotSemantic auto& value) noexcept {
+      using T = Decvq<Deref<decltype(value)>>;
+      return Abandoned<T> {::std::move(value)};
    }
 
 
@@ -310,44 +352,49 @@ namespace Langulus
       Disowned() = delete;
       Disowned(const Disowned&) = delete;
       explicit constexpr Disowned(Disowned&&) noexcept = default;
-      explicit constexpr Disowned(const T& value) noexcept 
+
+      LANGULUS(INLINED)
+      explicit constexpr Disowned(const T& value) noexcept
          : mValue {value} {
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
       }
       
-      /// Forward as disowned                                                 
+      /// Forward as disowned, never collapse                                 
+      ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
       template<class ALT_T = T>
-      NOD() constexpr Disowned<ALT_T> Forward() const noexcept {
+      LANGULUS(INLINED)
+      constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>, "Can't nest semantics");
-         return Disowned<ALT_T>{mValue};
+         return Disowned<ALT_T> {mValue};
+      }
+
+      template<class ALT_T = T>
+      LANGULUS(INLINED)
+      constexpr decltype(auto) ForwardPerfect() const noexcept {
+         return Forward<ALT_T>();
       }
 
       /// Disown something else                                               
-      template<class ALT_T>
-      NOD() static constexpr Disowned<ALT_T> Nest(const ALT_T& value) noexcept {
-         return Disowned<ALT_T>{value};
+      LANGULUS(INLINED)
+      static constexpr decltype(auto) Nest(const auto& value) noexcept {
+         return Disowned<Decvq<Deref<decltype(value)>>> {value};
       }
 
       template<class ALT_T>
       using Nested = Disowned<ALT_T>;
 
       LANGULUS(INLINED)
-      const T& operator * () const noexcept {
-         return mValue;
-      }
+      const T& operator *  () const noexcept { return mValue; }
 
       LANGULUS(INLINED)
-      const T* operator -> () const noexcept {
-         return &mValue;
-      }
+      const T* operator -> () const noexcept { return &mValue; }
    };
    
    /// Disown a value                                                         
    /// Same as a shallow-copy, but never references, saving some instructions 
-   template<CT::NotSemantic T>
    NOD() LANGULUS(INLINED)
-   constexpr auto Disown(const T& item) noexcept {
-      return Disowned<T>{item};
+   constexpr auto Disown(const CT::NotSemantic auto& value) noexcept {
+      return Disowned<Decvq<Deref<decltype(value)>>> {value};
    }
    
 
@@ -366,54 +413,59 @@ namespace Langulus
       Cloned() = delete;
       Cloned(const Cloned&) = delete;
       explicit constexpr Cloned(Cloned&&) noexcept = default;
+
+      LANGULUS(INLINED)
       explicit constexpr Cloned(const T& value) noexcept
          : mValue {value} {
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
       }
       
-      /// Forward as cloned                                                   
+      /// Forward as cloned, bever collapse                                   
       template<class ALT_T = T>
-      NOD() constexpr Cloned<ALT_T> Forward() const noexcept {
+      LANGULUS(INLINED)
+      constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>, "Can't nest semantics");
-         return Cloned<ALT_T>{mValue};
+         return Cloned<ALT_T> {mValue};
+      }
+
+      template<class ALT_T = T>
+      LANGULUS(INLINED)
+      constexpr decltype(auto) ForwardPerfect() const noexcept {
+         return Forward<ALT_T>();
       }
 
       /// Clone something else                                                
-      template<class ALT_T>
-      NOD() static constexpr Cloned<ALT_T> Nest(const ALT_T& value) noexcept {
-         return Cloned<ALT_T>{value};
+      LANGULUS(INLINED)
+      static constexpr decltype(auto) Nest(const auto& value) noexcept {
+         return Cloned<Decvq<Deref<decltype(value)>>> {value};
       }
 
       template<class ALT_T>
       using Nested = Cloned<ALT_T>;
       
       LANGULUS(INLINED)
-      const T& operator * () const noexcept {
-         return mValue;
-      }
+      const T& operator *  () const noexcept { return mValue; }
 
       LANGULUS(INLINED)
-      const T* operator -> () const noexcept {
-         return &mValue;
-      }
+      const T* operator -> () const noexcept { return &mValue; }
    };
    
    /// Clone a value                                                          
-   template<CT::NotSemantic T>
+   /// Does a deep-copy                                                       
    NOD() LANGULUS(INLINED)
-   constexpr auto Clone(const T& item) noexcept {
-      return Cloned<T>{item};
+   constexpr auto Clone(const CT::NotSemantic auto& value) noexcept {
+      return Cloned<Decvq<Deref<decltype(value)>>> {value};
    }
 
 
    /// Create an element on the stack, using the provided semantic            
    ///   @tparam T - the type to instantiate                                  
-   ///   @tparam S - the semantic to use (deducible)                          
    ///   @param value - the constructor argument and the semantic             
    ///   @return the instance on the stack                                    
-   template<CT::NotSemantic T, CT::Semantic S>
+   template<CT::NotSemantic T>
    NOD() LANGULUS(INLINED)
-   auto SemanticMake(S&& value) {
+   auto SemanticMake(CT::Semantic auto&& value) {
+      using S = Decay<decltype(value)>;
       static_assert(CT::Exact<TypeOf<S>, T>,
          "S type must be exactly T (build-time optimization)");
 
@@ -452,12 +504,12 @@ namespace Langulus
 
    /// Create an element on the heap, using the provided semantic             
    ///   @tparam T - the type to instantiate                                  
-   ///   @tparam S - the semantic to use (deducible)                          
    ///   @param value - the constructor arguments and the semantic            
    ///   @return the instance on the heap                                     
-   template<CT::NotSemantic T, CT::Semantic S>
+   template<CT::NotSemantic T>
    NOD() LANGULUS(INLINED)
-   auto SemanticNew(S&& value) {
+   auto SemanticNew(CT::Semantic auto&& value) {
+      using S = Decay<decltype(value)>;
       static_assert(CT::Exact<TypeOf<S>, T>,
          "S type must be exactly T (build-time optimization)");
 
@@ -498,13 +550,13 @@ namespace Langulus
    /// a placement new variant                                                
    ///   @attention assumes placement pointer is valid                        
    ///   @tparam T - the type to instantiate                                  
-   ///   @tparam S - the semantic to use (deducible)                          
    ///   @param placement - where to place the new instance                   
    ///   @param value - the constructor arguments and the semantic            
    ///   @return the instance on the heap                                     
-   template<CT::NotSemantic T, CT::Semantic S>
+   template<CT::NotSemantic T>
    LANGULUS(INLINED)
-   auto SemanticNew(void* placement, S&& value) {
+   auto SemanticNew(void* placement, CT::Semantic auto&& value) {
+      using S = Decay<decltype(value)>;
       static_assert(CT::Exact<TypeOf<S>, T>,
          "S type must be exactly T (build-time optimization)");
 
@@ -548,13 +600,12 @@ namespace Langulus
    ///   @attention assumes type is valid and complete                        
    ///   @attention assumes bit placement and TypeOf<S> are valid pointers    
    ///              that point to an instance of the provided type            
-   ///   @tparam S - the semantic to use (deducible)                          
    ///   @param type - the reflected type to instantiate                      
    ///   @param placement - where to place the new instance                   
    ///   @param value - the constructor arguments and the semantic            
-   template<CT::Semantic S>
    LANGULUS(INLINED)
-   void SemanticNewUnknown(RTTI::DMeta type, Byte* placement, S&& value) {
+   void SemanticNewUnknown(RTTI::DMeta type, Byte* placement, CT::Semantic auto&& value) {
+      using S = Decay<decltype(value)>;
       static_assert(
          CT::Exact<TypeOf<S>, Byte*> or
          CT::Exact<TypeOf<S>, const Byte*>,
@@ -605,14 +656,13 @@ namespace Langulus
    }
 
    /// Assign new value to an instance of T, using the provided semantic      
-   ///   @tparam T - the type to assign to (deducible)                        
-   ///   @tparam S - the semantic to use (deducible)                          
    ///   @param lhs - left hand side (what are we assigning to)               
    ///   @param rhs - right hand side (what are we assigning)                 
    ///   @return whatever the assignment operator returns                     
-   template<CT::NotSemantic T, CT::Semantic S>
    LANGULUS(INLINED)
-   decltype(auto) SemanticAssign(T& lhs, S&& rhs) {
+   decltype(auto) SemanticAssign(CT::NotSemantic auto& lhs, CT::Semantic auto&& rhs) {
+      using T = Deref<decltype(lhs)>;
+      using S = Decay<decltype(rhs)>;
       static_assert(CT::Exact<TypeOf<S>, T>,
          "S type must be exactly T (build-time optimization)");
 
@@ -650,6 +700,7 @@ namespace Langulus::CT
 {
    namespace Inner
    {
+
       /// Check if T is disown-constructible                                  
       template<class T>
       concept DisownMakable = requires (const T& a) {
