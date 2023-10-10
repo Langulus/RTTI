@@ -449,7 +449,7 @@ namespace Langulus::RTTI
          IF_LANGULUS_MANAGED_REFLECTION(generated.mLibraryName = RTTI::Boundary);
       }
 
-      if constexpr (::std::is_const_v<T> or ::std::is_volatile_v<T>)
+      if constexpr (CT::Convoluted<T>)
          generated.mDecvq = MetaData::Of<Decvq<T>>();
       else
          generated.mDecvq = nullptr;
