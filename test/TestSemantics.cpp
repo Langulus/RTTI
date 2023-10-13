@@ -409,38 +409,90 @@ SCENARIO("Testing semantics", "[semantics]") {
       }
    }
    
-   GIVEN("A ImplicitlyReflectedDataWithTraits2 type") {
-      auto meta = MetaData::Of<ImplicitlyReflectedDataWithTraits2>();
+   GIVEN("A Complex type") {
+      auto meta = MetaData::Of<Complex>();
       REQUIRE(meta);
 
       WHEN("Checked for reflected properties") {
-         static_assert(not CT::Defaultable<ImplicitlyReflectedDataWithTraits2>);
-         static_assert(    CT::Destroyable<ImplicitlyReflectedDataWithTraits2>);
+         static_assert(not CT::Defaultable<Complex>);
+         static_assert(    CT::Destroyable<Complex>);
 
-         static_assert(    CT::CopyMakable<ImplicitlyReflectedDataWithTraits2>);
-         static_assert(    CT::MoveMakable<ImplicitlyReflectedDataWithTraits2>);
-         static_assert(not CT::CloneMakable<ImplicitlyReflectedDataWithTraits2>);
-         static_assert(not CT::DisownMakable<ImplicitlyReflectedDataWithTraits2>);
-         static_assert(not CT::AbandonMakable<ImplicitlyReflectedDataWithTraits2>);
-         static_assert(not CT::DescriptorMakable<ImplicitlyReflectedDataWithTraits2>);
+         static_assert(    CT::CopyMakable<Complex>);
+         static_assert(    CT::MoveMakable<Complex>);
+         static_assert(not CT::CloneMakable<Complex>);
+         static_assert(not CT::DisownMakable<Complex>);
+         static_assert(not CT::AbandonMakable<Complex>);
+         static_assert(not CT::DescriptorMakable<Complex>);
 
-         static_assert(    CT::SemanticMakable<Copied, ImplicitlyReflectedDataWithTraits2>);
-         static_assert(    CT::SemanticMakable<Moved, ImplicitlyReflectedDataWithTraits2>);
-         static_assert(not CT::SemanticMakable<Cloned, ImplicitlyReflectedDataWithTraits2>);
-         static_assert(not CT::SemanticMakable<Disowned, ImplicitlyReflectedDataWithTraits2>);
-         static_assert(not CT::SemanticMakable<Abandoned, ImplicitlyReflectedDataWithTraits2>);
+         static_assert(    CT::SemanticMakable<Copied, Complex>);
+         static_assert(    CT::SemanticMakable<Moved, Complex>);
+         static_assert(not CT::SemanticMakable<Cloned, Complex>);
+         static_assert(not CT::SemanticMakable<Disowned, Complex>);
+         static_assert(not CT::SemanticMakable<Abandoned, Complex>);
 
-         static_assert(    CT::CopyAssignable<ImplicitlyReflectedDataWithTraits2>);
-         static_assert(    CT::MoveAssignable<ImplicitlyReflectedDataWithTraits2>);
-         static_assert(not CT::CloneAssignable<ImplicitlyReflectedDataWithTraits2>);
-         static_assert(not CT::DisownAssignable<ImplicitlyReflectedDataWithTraits2>);
-         static_assert(not CT::AbandonAssignable<ImplicitlyReflectedDataWithTraits2>);
+         static_assert(    CT::CopyAssignable<Complex>);
+         static_assert(    CT::MoveAssignable<Complex>);
+         static_assert(not CT::CloneAssignable<Complex>);
+         static_assert(not CT::DisownAssignable<Complex>);
+         static_assert(not CT::AbandonAssignable<Complex>);
 
-         static_assert(    CT::SemanticAssignable<Copied, ImplicitlyReflectedDataWithTraits2>);
-         static_assert(    CT::SemanticAssignable<Moved, ImplicitlyReflectedDataWithTraits2>);
-         static_assert(not CT::SemanticAssignable<Cloned, ImplicitlyReflectedDataWithTraits2>);
-         static_assert(not CT::SemanticAssignable<Disowned, ImplicitlyReflectedDataWithTraits2>);
-         static_assert(not CT::SemanticAssignable<Abandoned, ImplicitlyReflectedDataWithTraits2>);
+         static_assert(    CT::SemanticAssignable<Copied, Complex>);
+         static_assert(    CT::SemanticAssignable<Moved, Complex>);
+         static_assert(not CT::SemanticAssignable<Cloned, Complex>);
+         static_assert(not CT::SemanticAssignable<Disowned, Complex>);
+         static_assert(not CT::SemanticAssignable<Abandoned, Complex>);
+
+         THEN("Requirements should be met") {
+            REQUIRE      (meta->mDestructor);
+            REQUIRE_FALSE(meta->mDefaultConstructor);
+            REQUIRE      (meta->mCopyConstructor);
+            REQUIRE      (meta->mMoveConstructor);
+            REQUIRE_FALSE(meta->mCloneConstructor);
+            REQUIRE_FALSE(meta->mDisownConstructor);
+            REQUIRE_FALSE(meta->mAbandonConstructor);
+            REQUIRE_FALSE(meta->mDescriptorConstructor);
+
+            REQUIRE      (meta->mCopier);
+            REQUIRE      (meta->mMover);
+            REQUIRE_FALSE(meta->mCloneCopier);
+            REQUIRE_FALSE(meta->mDisownCopier);
+            REQUIRE_FALSE(meta->mAbandonMover);
+         }
+      }
+   }
+
+   GIVEN("A ContainsComplex type") {
+      auto meta = MetaData::Of<ContainsComplex>();
+      REQUIRE(meta);
+
+      WHEN("Checked for reflected properties") {
+         static_assert(not CT::Defaultable<ContainsComplex>);
+         static_assert(    CT::Destroyable<ContainsComplex>);
+
+         static_assert(    CT::CopyMakable<ContainsComplex>);
+         static_assert(    CT::MoveMakable<ContainsComplex>);
+         static_assert(not CT::CloneMakable<ContainsComplex>);
+         static_assert(not CT::DisownMakable<ContainsComplex>);
+         static_assert(not CT::AbandonMakable<ContainsComplex>);
+         static_assert(not CT::DescriptorMakable<ContainsComplex>);
+
+         static_assert(    CT::SemanticMakable<Copied, ContainsComplex>);
+         static_assert(    CT::SemanticMakable<Moved, ContainsComplex>);
+         static_assert(not CT::SemanticMakable<Cloned, ContainsComplex>);
+         static_assert(not CT::SemanticMakable<Disowned, ContainsComplex>);
+         static_assert(not CT::SemanticMakable<Abandoned, ContainsComplex>);
+
+         static_assert(    CT::CopyAssignable<ContainsComplex>);
+         static_assert(    CT::MoveAssignable<ContainsComplex>);
+         static_assert(not CT::CloneAssignable<ContainsComplex>);
+         static_assert(not CT::DisownAssignable<ContainsComplex>);
+         static_assert(not CT::AbandonAssignable<ContainsComplex>);
+
+         static_assert(    CT::SemanticAssignable<Copied, ContainsComplex>);
+         static_assert(    CT::SemanticAssignable<Moved, ContainsComplex>);
+         static_assert(not CT::SemanticAssignable<Cloned, ContainsComplex>);
+         static_assert(not CT::SemanticAssignable<Disowned, ContainsComplex>);
+         static_assert(not CT::SemanticAssignable<Abandoned, ContainsComplex>);
 
          THEN("Requirements should be met") {
             REQUIRE      (meta->mDestructor);
