@@ -477,14 +477,14 @@ namespace Langulus
       else if constexpr (S<T>::Move) {
          if constexpr (not S<T>::Keep) {
             // Abandon                                                  
-            if constexpr (requires { new T {Abandon(*value)}; })
-               return new (placement) T {Abandon(*value)};
+            if constexpr (requires { new T (Abandon(*value)); })
+               return new (placement) T (Abandon(*value));
             else if constexpr (not CT::Destroyable<T>) {
                // If type is not destroyable (like fundamentals), then  
                // it is always acceptable to abandon them - just use    
                // the standard move-semantics                           
-               if constexpr (requires { new T {::std::move(*value)}; })
-                  return new (placement) T {::std::move(*value)};
+               if constexpr (requires { new T (::std::move(*value)); })
+                  return new (placement) T (::std::move(*value));
                else
                   return Inner::Unsupported {};
             }
@@ -492,18 +492,18 @@ namespace Langulus
          }
          else {
             // Move                                                     
-            if constexpr (requires { new T {Move(*value)}; })
-               return new (placement) T {Move(*value)};
-            else if constexpr (requires { new T {::std::move(*value)}; })
-               return new (placement) T {::std::move(*value)};
+            if constexpr (requires { new T (Move(*value)); })
+               return new (placement) T (Move(*value));
+            else if constexpr (requires { new T (::std::move(*value)); })
+               return new (placement) T (::std::move(*value));
             else
                return Inner::Unsupported {};
          }
       }
       else if constexpr (not S<T>::Shallow) {
          // Clone                                                       
-         if constexpr (requires { new T {Clone(*value)}; })
-            return new (placement) T {Clone(*value)};
+         if constexpr (requires { new T (Clone(*value)); })
+            return new (placement) T (Clone(*value));
          else if constexpr (CT::POD<T>) {
             // If type is POD (like fundamentals, or trivials), then    
             // it is always acceptable to clone by memcpy               
@@ -514,17 +514,17 @@ namespace Langulus
       }
       else if constexpr (not S<T>::Keep) {
          // Disown                                                      
-         if constexpr (requires { new T {Disown(*value)}; })
-            return new (placement) T {Disown(*value)};
+         if constexpr (requires { new T (Disown(*value)); })
+            return new (placement) T (Disown(*value));
          else
             return Inner::Unsupported {};
       }
       else {
          // Copy                                                        
-         if constexpr (requires { new T {Copy(*value)}; })
-            return new (placement) T {Copy(*value)};
-         else if constexpr (requires { new T {*value}; })
-            return new (placement) T {*value};
+         if constexpr (requires { new T (Copy(*value)); })
+            return new (placement) T (Copy(*value));
+         else if constexpr (requires { new T (*value); })
+            return new (placement) T (*value);
          else
             return Inner::Unsupported {};
       }
