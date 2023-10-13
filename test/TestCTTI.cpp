@@ -228,7 +228,7 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
             REQUIRE(meta->mVersionMinor == 1);
             REQUIRE(meta->mIsDeep == true);
             REQUIRE(meta->mIsPOD == true);
-            REQUIRE(meta->mIsNullifiable == true);
+            REQUIRE(meta->mIsNullifiable == false); // not nullifiable due to being abstract
             IF_LANGULUS_MANAGED_MEMORY(REQUIRE(meta->mPoolTactic == PoolTactic::Size));
             REQUIRE(meta->mConcrete->Is<ImplicitlyReflectedData>());
             REQUIRE(meta->mIsUninsertable == true);

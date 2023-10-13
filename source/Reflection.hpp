@@ -229,6 +229,10 @@ namespace Langulus::CT
       };
 
       template<class T>
+      concept Abstract = Complete<T>
+         and (::std::is_abstract_v<T> or T::CTTI_Abstract);
+
+      template<class T>
       concept Uninsertable = T::CTTI_Uninsertable;
 
       template<class T>
@@ -238,7 +242,15 @@ namespace Langulus::CT
       concept POD = Complete<T> and (::std::is_trivial_v<T> or T::CTTI_POD);
 
       template<class T>
-      concept Nullifiable = Complete<T> and T::CTTI_Nullifiable;
+      concept Destroyable = not Fundamental<T> 
+                        and not POD<T> 
+                        and not Abstract<T>
+                        and ::std::destructible<T>;
+
+      template<class T>
+      concept Nullifiable = Complete<T>
+                    and not Abstract<T>
+                    and T::CTTI_Nullifiable;
 
       template<class T>
       concept Concretizable = Complete<T> and requires {
@@ -251,18 +263,24 @@ namespace Langulus::CT
       };
 
       template<class T>
-      concept Abstract = Complete<T>
-         and (::std::is_abstract_v<T> or T::CTTI_Abstract);
+      concept Defaultable = not Abstract<T> and requires { T {}; };
 
       template<class T>
-      concept DispatcherMutable = requires (T* a, ::Langulus::Flow::Verb& b) {
-         {DenseCast(a).Do(b)};
-      };
+      concept DefaultableNoexcept = Defaultable<T> and noexcept(T {});
+      
+      template<class T>
+      concept DescriptorMakable = not Abstract<T>
+          and ::std::constructible_from<T, const Anyness::Neat&>;
 
       template<class T>
-      concept DispatcherConstant = requires (const T* a, ::Langulus::Flow::Verb& b) {
-         {DenseCast(a).Do(b)};
-      };
+      concept DescriptorMakableNoexcept = DescriptorMakable<T>
+          and noexcept(T {Fake<const Anyness::Neat&>()});
+
+      template<class T>
+      concept DispatcherMutable  = requires (      T a, Flow::Verb b) { {a.Do(b)}; };
+
+      template<class T>
+      concept DispatcherConstant = requires (const T a, Flow::Verb b) { {a.Do(b)}; };
       
       template<class T>
       concept Typed = Complete<T> and (requires {typename T::CTTI_InnerType;}
@@ -301,6 +319,29 @@ namespace Langulus::CT
 
    } // namespace Langulus::CT::Inner
 
+   
+   /// Check if the origin T is default-constructible                         
+   template<class... T>
+   concept Defaultable = Complete<Decay<T>...>
+      and (Inner::Defaultable<Decay<T>> and ...);
+
+   template<class... T>
+   concept DefaultableNoexcept = Complete<Decay<T>...>
+      and (Inner::DefaultableNoexcept<Decay<T>> and ...);
+
+   /// Check if the origin T is descriptor-constructible                      
+   template<class... T>
+   concept DescriptorMakable = Complete<Decay<T>...>
+      and (Inner::DescriptorMakable<Decay<T>> and ...);
+
+   template<class... T>
+   concept DescriptorMakableNoexcept = Complete<Decay<T>...>
+      and (Inner::DescriptorMakableNoexcept<Decay<T>> and ...);
+
+   /// Check if the origin T requires its destructor being called             
+   template<class... T>
+   concept Destroyable = Complete<Decay<T>...>
+      and (Inner::Destroyable<Decay<T>> and ...);
 
    /// A reflected type is a type that has a public Reflection field          
    /// This field is automatically added when using LANGULUS(REFLECT) macro   
