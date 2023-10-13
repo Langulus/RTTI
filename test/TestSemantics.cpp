@@ -107,26 +107,26 @@ SCENARIO("Testing semantics", "[semantics]") {
 
          static_assert(    CT::CopyMakable<NonDestructible>);
          static_assert(    CT::MoveMakable<NonDestructible>);
-         static_assert(not CT::CloneMakable<NonDestructible>);
+         static_assert(    CT::CloneMakable<NonDestructible>);
          static_assert(not CT::DisownMakable<NonDestructible>);
          static_assert(    CT::AbandonMakable<NonDestructible>);
          static_assert(not CT::DescriptorMakable<NonDestructible>);
 
          static_assert(    CT::SemanticMakable<Copied, NonDestructible>);
          static_assert(    CT::SemanticMakable<Moved, NonDestructible>);
-         static_assert(not CT::SemanticMakable<Cloned, NonDestructible>);
+         static_assert(    CT::SemanticMakable<Cloned, NonDestructible>);
          static_assert(not CT::SemanticMakable<Disowned, NonDestructible>);
          static_assert(    CT::SemanticMakable<Abandoned, NonDestructible>);
 
          static_assert(    CT::CopyAssignable<NonDestructible>);
          static_assert(    CT::MoveAssignable<NonDestructible>);
-         static_assert(not CT::CloneAssignable<NonDestructible>);
+         static_assert(    CT::CloneAssignable<NonDestructible>);
          static_assert(not CT::DisownAssignable<NonDestructible>);
          static_assert(    CT::AbandonAssignable<NonDestructible>);
 
          static_assert(    CT::SemanticAssignable<Copied, NonDestructible>);
          static_assert(    CT::SemanticAssignable<Moved, NonDestructible>);
-         static_assert(not CT::SemanticAssignable<Cloned, NonDestructible>);
+         static_assert(    CT::SemanticAssignable<Cloned, NonDestructible>);
          static_assert(not CT::SemanticAssignable<Disowned, NonDestructible>);
          static_assert(    CT::SemanticAssignable<Abandoned, NonDestructible>);
 
@@ -135,14 +135,14 @@ SCENARIO("Testing semantics", "[semantics]") {
             REQUIRE_FALSE(meta->mDefaultConstructor);
             REQUIRE      (meta->mCopyConstructor);
             REQUIRE      (meta->mMoveConstructor);
-            REQUIRE_FALSE(meta->mCloneConstructor);
+            REQUIRE      (meta->mCloneConstructor);
             REQUIRE_FALSE(meta->mDisownConstructor);
             REQUIRE      (meta->mAbandonConstructor);
             REQUIRE_FALSE(meta->mDescriptorConstructor);
 
             REQUIRE      (meta->mCopier);
             REQUIRE      (meta->mMover);
-            REQUIRE_FALSE(meta->mCloneCopier);
+            REQUIRE      (meta->mCloneCopier);
             REQUIRE_FALSE(meta->mDisownCopier);
             REQUIRE      (meta->mAbandonMover);
          }
