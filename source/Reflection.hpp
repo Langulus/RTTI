@@ -245,7 +245,7 @@ namespace Langulus::CT
       concept Destroyable = not Fundamental<T> 
                         and not POD<T> 
                         and not Abstract<T>
-                        and ::std::destructible<T>;
+                        and ::std::is_destructible_v<T>;
 
       template<class T>
       concept Nullifiable = Complete<T>
