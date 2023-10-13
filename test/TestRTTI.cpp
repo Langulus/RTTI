@@ -60,11 +60,11 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
 
       WHEN("Meta is retrieved by reflected file extension") {
          auto foundtxt = RTTI::ResolveFileExtension("txt");
-         REQUIRE(foundtxt.size() == 2);
+         REQUIRE(foundtxt.size() == 1);
          REQUIRE(*foundtxt.begin() == MetaData::Of<ImplicitlyReflectedDataWithTraits>());
 
          auto foundpdf = RTTI::ResolveFileExtension("PDF");
-         REQUIRE(foundpdf.size() == 2);
+         REQUIRE(foundpdf.size() == 1);
          REQUIRE(*foundpdf.begin() == MetaData::Of<ImplicitlyReflectedDataWithTraits>());
 
          auto foundase = RTTI::ResolveFileExtension("ase");
