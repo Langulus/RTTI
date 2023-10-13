@@ -754,7 +754,7 @@ namespace Langulus::RTTI
          generated.mProducer = MetaData::Of<CT::ProducerOf<T>>();
 
       // Wrap the default constructor of the type inside lambda         
-      if constexpr (CT::Defaultable<T> and not CT::Meta<T>) {
+      if constexpr (CT::Defaultable<T>) {
          constexpr bool NoExcept = CT::DefaultableNoexcept<T>;
          generated.mDefaultConstructor =
             [](void* at) noexcept(NoExcept) {
@@ -762,9 +762,17 @@ namespace Langulus::RTTI
                new (atT) T {};
             };
       }
+      else if constexpr (CT::Nullifiable<T>) {
+         // Alternatively, if type is explicitly nullifiable and lacking
+         // a default constructor, we can still memset it to zero       
+         generated.mDefaultConstructor =
+            [](void* at) noexcept {
+               ::std::memset(at, 0, sizeof(T));
+            };
+      }
          
       // Wrap the descriptor constructor of the type inside lambda      
-      if constexpr (CT::DescriptorMakable<T> and not CT::Meta<T>) {
+      if constexpr (CT::DescriptorMakable<T>) {
          constexpr bool NoExcept = CT::DescriptorMakableNoexcept<T>;
          generated.mDescriptorConstructor = 
             [](void* at, const Anyness::Neat& neat) noexcept(NoExcept) {
@@ -774,57 +782,57 @@ namespace Langulus::RTTI
       }
 
       // Wrap the copy constructor of the type inside lambda            
-      if constexpr (CT::CopyMakable<T> and not CT::Meta<T>) {
+      if constexpr (CT::CopyMakable<T>) {
          generated.mCopyConstructor = 
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
                auto toT = static_cast<T*>(to);
-               SemanticNew<T>(toT, Copy(*fromT));
+               SemanticNew(toT, Copy(*fromT));
             };
       }
             
       // Wrap the clone constructor of the type inside lambda           
-      if constexpr (CT::CloneMakable<T> and not CT::Meta<T>) {
+      if constexpr (CT::CloneMakable<T>) {
          generated.mCloneConstructor = 
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
                auto toT = static_cast<T*>(to);
-               SemanticNew<T>(toT, Clone(*fromT));
+               SemanticNew(toT, Clone(*fromT));
             };
       }
 
       // Wrap the disown constructor of the type inside lambda          
-      if constexpr (CT::DisownMakable<T> and not CT::Meta<T>) {
+      if constexpr (CT::DisownMakable<T>) {
          generated.mDisownConstructor = 
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
                auto toT = static_cast<T*>(to);
-               SemanticNew<T>(toT, Disown(*fromT));
+               SemanticNew(toT, Disown(*fromT));
             };
       }
 
       // Wrap the move constructor of the type inside a lambda          
-      if constexpr (CT::MoveMakable<T> and not CT::Meta<T>) {
+      if constexpr (CT::MoveMakable<T>) {
          generated.mMoveConstructor = 
             [](void* from, void* to) {
                auto fromT = static_cast<T*>(from);
                auto toT = static_cast<T*>(to);
-               SemanticNew<T>(toT, Move(*fromT));
+               SemanticNew(toT, Move(*fromT));
             };
       }
 
       // Wrap the abandon constructor of the type inside a lambda       
-      if constexpr (CT::AbandonMakable<T> and not CT::Meta<T>) {
+      if constexpr (CT::AbandonMakable<T>) {
          generated.mAbandonConstructor = 
             [](void* from, void* to) {
                auto fromT = static_cast<T*>(from);
                auto toT = static_cast<T*>(to);
-               SemanticNew<T>(toT, Abandon(*fromT));
+               SemanticNew(toT, Abandon(*fromT));
             };
       }
 
       // Wrap the destructor of the origin type inside a lambda         
-      if constexpr (CT::Destroyable<T> and not CT::Meta<T>) {
+      if constexpr (CT::Destroyable<T>) {
          generated.mDestructor = 
             [](void* at) {
                auto atT = static_cast<T*>(at);
@@ -843,7 +851,7 @@ namespace Langulus::RTTI
       }
 
       // Wrap the copy-assignment of the type inside a lambda           
-      if constexpr (CT::CopyAssignable<T> and not CT::Meta<T>) {
+      if constexpr (CT::CopyAssignable<T>) {
          generated.mCopier = 
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
@@ -853,7 +861,7 @@ namespace Langulus::RTTI
       }
 
       // Wrap the disown-assignment of the type inside a lambda         
-      if constexpr (CT::DisownAssignable<T> and not CT::Meta<T>) {
+      if constexpr (CT::DisownAssignable<T>) {
          generated.mDisownCopier = 
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
@@ -863,7 +871,7 @@ namespace Langulus::RTTI
       }
             
       // Wrap the cloners of the type inside a lambda                   
-      if constexpr (CT::CloneAssignable<T> and not CT::Meta<T>) {
+      if constexpr (CT::CloneAssignable<T>) {
          generated.mCloneCopier = 
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
@@ -873,7 +881,7 @@ namespace Langulus::RTTI
       }
 
       // Wrap the move-assignment of the type inside a lambda           
-      if constexpr (CT::MoveAssignable<T> and not CT::Meta<T>) {
+      if constexpr (CT::MoveAssignable<T>) {
          generated.mMover = 
             [](void* from, void* to) {
                auto fromT = static_cast<T*>(from);
@@ -883,7 +891,7 @@ namespace Langulus::RTTI
       }
 
       // Wrap the move-assignment of the type inside a lambda           
-      if constexpr (CT::AbandonAssignable<T> and not CT::Meta<T>) {
+      if constexpr (CT::AbandonAssignable<T>) {
          generated.mAbandonMover = 
             [](void* from, void* to) {
                auto fromT = static_cast<T*>(from);

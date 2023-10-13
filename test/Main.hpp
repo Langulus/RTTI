@@ -193,6 +193,46 @@ public:
    LANGULUS_PROPERTIES_END();
 };
 
+class alignas(128) ImplicitlyReflectedDataWithTraits2 {
+public:
+   int member;
+   bool anotherMember {};
+   int anotherMemberArray [12] {};
+   int* sparseMember {};
+
+   inline operator int() const noexcept {
+      return member;
+   }
+
+   void Create(Flow::Verb&) const {
+      //++member;
+   }
+
+   void Create(Flow::Verb&) {
+      ++member;
+   }
+
+   LANGULUS(NAME) "ComplexType";
+   LANGULUS(INFO) "Info about ComplexType";
+   LANGULUS(FILES) "txt, pdf";
+   LANGULUS(VERSION_MAJOR) 2;
+   LANGULUS(VERSION_MINOR) 1;
+   IF_LANGULUS_MANAGED_MEMORY(LANGULUS(POOL_TACTIC) PoolTactic::Size);
+   LANGULUS(ALLOCATION_PAGE) 250;
+   LANGULUS_BASES(ImplicitlyReflectedData);
+   LANGULUS_VERBS(Verbs::Create);
+   LANGULUS_CONVERSIONS(int);
+
+   LANGULUS_PROPERTIES_START(ImplicitlyReflectedDataWithTraits2)
+      LANGULUS_PROPERTY(member),
+      LANGULUS_PROPERTY_TRAIT(anotherMember, Tag),
+      LANGULUS_PROPERTY(anotherMemberArray),
+      LANGULUS_PROPERTY(sparseMember)
+   LANGULUS_PROPERTIES_END();
+
+   ImplicitlyReflectedDataWithTraits2(int stuff) : member(stuff) {}
+};
+
 namespace N1 {
    struct Type {};
    struct Create {};

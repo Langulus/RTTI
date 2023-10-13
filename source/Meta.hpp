@@ -21,6 +21,7 @@ namespace Langulus::RTTI
    ///                                                                        
    struct Meta {
    public:
+      LANGULUS(ABSTRACT) true;
       LANGULUS(UNALLOCATABLE) true;
 
       enum MetaType {

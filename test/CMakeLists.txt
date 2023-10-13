@@ -3,6 +3,7 @@ add_executable(LangulusRTTITest
 	TestNameOf.cpp
 	TestCTTI.cpp
 	TestSimilarity.cpp
+	TestSemantics.cpp
 	$<$<BOOL:${LANGULUS_FEATURE_MANAGED_REFLECTION}>:TestRTTI.cpp>
 )
 

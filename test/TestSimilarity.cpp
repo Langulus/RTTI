@@ -26,7 +26,9 @@ bool CastsTo(DMeta from, Count count) {
    return from->template CastsTo<T>(count);
 }
 
-TEMPLATE_TEST_CASE("Unsigned integer RTTI interpretation", "[metadata]", uint8_t, uint16_t, uint32_t, uint64_t) {
+TEMPLATE_TEST_CASE("Unsigned integer RTTI interpretation", "[metadata]",
+   uint8_t, uint16_t, uint32_t, uint64_t
+) {
    GIVEN("An unsigned integer type") {
       auto meta = MetaData::Of<TestType>();
       REQUIRE(meta != nullptr);
@@ -63,7 +65,9 @@ TEMPLATE_TEST_CASE("Unsigned integer RTTI interpretation", "[metadata]", uint8_t
    }
 }
 
-TEMPLATE_TEST_CASE("Signed integer RTTI interpretation", "[metadata]", int8_t, int16_t, int32_t, int64_t) {
+TEMPLATE_TEST_CASE("Signed integer RTTI interpretation", "[metadata]",
+   int8_t, int16_t, int32_t, int64_t
+) {
    GIVEN("A signed integer type") {
       auto meta = MetaData::Of<TestType>();
       REQUIRE(meta != nullptr);
@@ -100,7 +104,9 @@ TEMPLATE_TEST_CASE("Signed integer RTTI interpretation", "[metadata]", int8_t, i
    }
 }
 
-TEMPLATE_TEST_CASE("Real number RTTI interpretation", "[metadata]", float, double) {
+TEMPLATE_TEST_CASE("Real number RTTI interpretation", "[metadata]",
+   float, double
+) {
    GIVEN("A real number type") {
       auto meta = MetaData::Of<TestType>();
       REQUIRE(meta != nullptr);
