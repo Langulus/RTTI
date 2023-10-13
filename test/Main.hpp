@@ -193,7 +193,7 @@ public:
    LANGULUS_PROPERTIES_END();
 };
 
-class alignas(128) ImplicitlyReflectedDataWithTraits2 {
+class alignas(128) Complex {
 public:
    int member;
    bool anotherMember {};
@@ -219,22 +219,26 @@ public:
    LANGULUS(VERSION_MINOR) 1;
    IF_LANGULUS_MANAGED_MEMORY(LANGULUS(POOL_TACTIC) PoolTactic::Size);
    LANGULUS(ALLOCATION_PAGE) 250;
-   LANGULUS_BASES(ImplicitlyReflectedData);
    LANGULUS_VERBS(Verbs::Create);
    LANGULUS_CONVERSIONS(int);
 
-   LANGULUS_PROPERTIES_START(ImplicitlyReflectedDataWithTraits2)
+   LANGULUS_PROPERTIES_START(Complex)
       LANGULUS_PROPERTY(member),
       LANGULUS_PROPERTY_TRAIT(anotherMember, Tag),
       LANGULUS_PROPERTY(anotherMemberArray),
       LANGULUS_PROPERTY(sparseMember)
    LANGULUS_PROPERTIES_END();
 
-   ImplicitlyReflectedDataWithTraits2(int stuff) : member(stuff) {}
-   ~ImplicitlyReflectedDataWithTraits2() {
+   Complex(int stuff) : member(stuff) {}
+   ~Complex() {
       if (sparseMember)
          delete sparseMember;
    }
+};
+
+class ContainsComplex {
+public:
+   Complex mData;
 };
 
 namespace N1 {
