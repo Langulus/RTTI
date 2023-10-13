@@ -231,6 +231,10 @@ public:
    LANGULUS_PROPERTIES_END();
 
    ImplicitlyReflectedDataWithTraits2(int stuff) : member(stuff) {}
+   ~ImplicitlyReflectedDataWithTraits2() {
+      if (sparseMember)
+         delete sparseMember;
+   }
 };
 
 namespace N1 {

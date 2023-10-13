@@ -239,13 +239,13 @@ namespace Langulus::CT
       concept Unallocatable = not Complete<T> or T::CTTI_Unallocatable;
 
       template<class T>
-      concept POD = Complete<T> and (::std::is_trivial_v<T> or T::CTTI_POD);
+      concept Destroyable = not ::std::is_trivially_destructible_v<T>
+                            and ::std::is_destructible_v<T>;
 
       template<class T>
-      concept Destroyable = not Fundamental<T> 
-                        and not POD<T> 
-                        and not Abstract<T>
-                        and ::std::is_destructible_v<T>;
+      concept POD = Complete<T> and (
+         T::CTTI_POD or ::std::is_trivial_v<T> or not Destroyable<T>);
+
 
       template<class T>
       concept Nullifiable = Complete<T>
@@ -371,7 +371,8 @@ namespace Langulus::CT
 
    /// A POD (Plain Old Data) type is any type with a static member           
    /// T::CTTI_POD set to true. If no such member exists, the type is         
-   /// assumed NOT POD by default, unless ::std::is_trivial.                  
+   /// assumed NOT POD by default, unless ::std::is_trivial, which seems to   
+   /// inconsistent across compilers.                                         
    /// POD types improve construction, destruction, copying, and cloning      
    /// by using some batching runtime optimizations                           
    /// All POD types are also directly serializable to binary                 
