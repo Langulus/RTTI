@@ -34,7 +34,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mDeptr == nullptr);
             REQUIRE(meta->mOrigin == nullptr);
             REQUIRE(meta->mIsConstant == false);
-            REQUIRE(meta->mDecvq == nullptr);
+            REQUIRE(meta->mDecvq == MetaData::Of<IncompleteType*>());
 
             REQUIRE(meta->mBases.size() == 0);
             REQUIRE(meta->mAbilities.size() == 0);
@@ -67,7 +67,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mIsConstant == false);
             REQUIRE(meta->mDeptr->mIsConstant == false);
             REQUIRE(meta->mDeptr->mDeptr == nullptr);
-            REQUIRE(meta->mDecvq == nullptr);
+            REQUIRE(meta->mDecvq == MetaData::Of<IncompleteType**>());
 
             REQUIRE(meta->mBases.size() == 0);
             REQUIRE(meta->mAbilities.size() == 0);
@@ -100,7 +100,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mIsConstant == false);
             REQUIRE(meta->mDeptr->mIsConstant == false);
             REQUIRE(meta->mDeptr->mDeptr == nullptr);
-            REQUIRE(meta->mDecvq == nullptr);
+            REQUIRE(meta->mDecvq == MetaData::Of<const IncompleteType**>());
 
             REQUIRE(meta->mBases.size() == 0);
             REQUIRE(meta->mAbilities.size() == 0);
@@ -133,7 +133,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mIsConstant == false);
             REQUIRE(meta->mDeptr->mIsConstant == true);
             REQUIRE(meta->mDeptr->mDeptr == nullptr);
-            REQUIRE(meta->mDecvq == nullptr);
+            REQUIRE(meta->mDecvq == MetaData::Of<const IncompleteType* const*>());
             REQUIRE(meta->mDeptr->mDecvq == MetaData::Of<const IncompleteType*>());
 
             REQUIRE(meta->mBases.size() == 0);
@@ -227,7 +227,7 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
             REQUIRE(meta->mVersionMajor == 2);
             REQUIRE(meta->mVersionMinor == 1);
             REQUIRE(meta->mIsDeep == true);
-            REQUIRE(meta->mIsPOD == true);
+            REQUIRE(meta->mIsPOD == false); // not POD due to being abstract
             REQUIRE(meta->mIsNullifiable == false); // not nullifiable due to being abstract
             IF_LANGULUS_MANAGED_MEMORY(REQUIRE(meta->mPoolTactic == PoolTactic::Size));
             REQUIRE(meta->mConcrete->Is<ImplicitlyReflectedData>());
@@ -239,7 +239,7 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
             REQUIRE(meta->mOrigin == meta);
             REQUIRE(meta->mIsConstant == false);
             REQUIRE(meta->mDeptr == nullptr);
-            REQUIRE(meta->mDecvq == nullptr);
+            REQUIRE(meta->mDecvq == MetaData::Of<ImplicitlyReflectedDataWithTraits>());
 
             REQUIRE(meta->mBases.size() == 1);
             REQUIRE(meta->mBases[0].mType->Is<ImplicitlyReflectedData>());

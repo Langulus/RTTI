@@ -229,8 +229,7 @@ namespace Langulus::CT
       };
 
       template<class T>
-      concept Abstract = Complete<T>
-         and (::std::is_abstract_v<T> or T::CTTI_Abstract);
+      concept Abstract = not Complete<T> or ::std::is_abstract_v<T> or T::CTTI_Abstract;
 
       template<class T>
       concept Uninsertable = T::CTTI_Uninsertable;
@@ -243,7 +242,7 @@ namespace Langulus::CT
                             and ::std::is_destructible_v<T>;
 
       template<class T>
-      concept POD = Complete<T> and (
+      concept POD = Complete<T> and not Abstract<T> and (
          T::CTTI_POD or ::std::is_trivial_v<T> or not Destroyable<T>);
 
 
@@ -268,14 +267,6 @@ namespace Langulus::CT
       template<class T>
       concept DefaultableNoexcept = Defaultable<T> and noexcept(T {});
       
-      template<class T>
-      concept DescriptorMakable = not Abstract<T>
-          and ::std::constructible_from<T, const Anyness::Neat&>;
-
-      template<class T>
-      concept DescriptorMakableNoexcept = DescriptorMakable<T>
-          and noexcept(T {Fake<const Anyness::Neat&>()});
-
       template<class T>
       concept DispatcherMutable  = requires (      T a, Flow::Verb b) { {a.Do(b)}; };
 
@@ -329,15 +320,6 @@ namespace Langulus::CT
    concept DefaultableNoexcept = Complete<Decay<T>...>
       and (Inner::DefaultableNoexcept<Decay<T>> and ...);
 
-   /// Check if the origin T is descriptor-constructible                      
-   template<class... T>
-   concept DescriptorMakable = Complete<Decay<T>...>
-      and (Inner::DescriptorMakable<Decay<T>> and ...);
-
-   template<class... T>
-   concept DescriptorMakableNoexcept = Complete<Decay<T>...>
-      and (Inner::DescriptorMakableNoexcept<Decay<T>> and ...);
-
    /// Check if the origin T requires its destructor being called             
    template<class... T>
    concept Destroyable = Complete<Decay<T>...>
@@ -357,17 +339,17 @@ namespace Langulus::CT
    concept Uninsertable = (Inner::Uninsertable<Decay<T>> and ...);
 
    template<class... T>
-   concept Insertable = (not Inner::Uninsertable<Decay<T>> and ...);
+   concept Insertable = not Uninsertable<T...>;
 
    /// You can make types unallocatable by the memory manager. This serves    
    /// not only as forcing the type to be either allocated by conventional    
    /// C++ means, or on the stack, but also optimizes away any memory manager 
    /// searches, when inserting pointers, if managed memory is enabled        
    template<class... T>
-   concept Unallocatable = ((Inner::Unallocatable<Decay<T>> and Dense<T>) and ...);
+   concept Unallocatable = ((Inner::Unallocatable<Decay<T>>) and ...);
 
    template<class... T>
-   concept Allocatable = ((not Inner::Unallocatable<Decay<T>> and Dense<T>) and ...);
+   concept Allocatable = not Unallocatable<T...>;
 
    /// A POD (Plain Old Data) type is any type with a static member           
    /// T::CTTI_POD set to true. If no such member exists, the type is         

@@ -40,7 +40,7 @@ public:
 
 class DescriptorConstructible {
 public:
-   DescriptorConstructible(const Anyness::Neat&) {}
+   DescriptorConstructible(Describe&&) {}
 };
 
 
@@ -88,11 +88,11 @@ SCENARIO("Testing semantics", "[semantics]") {
             REQUIRE      (meta->mAbandonConstructor);
             REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopier);
-            REQUIRE      (meta->mMover);
-            REQUIRE      (meta->mCloneCopier);
-            REQUIRE_FALSE(meta->mDisownCopier);
-            REQUIRE      (meta->mAbandonMover);
+            REQUIRE      (meta->mCopyAssigner);
+            REQUIRE      (meta->mMoveAssigner);
+            REQUIRE      (meta->mCloneAssigner);
+            REQUIRE_FALSE(meta->mDisownAssigner);
+            REQUIRE      (meta->mAbandonAssigner);
          }
       }
    }
@@ -140,11 +140,11 @@ SCENARIO("Testing semantics", "[semantics]") {
             REQUIRE      (meta->mAbandonConstructor);
             REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopier);
-            REQUIRE      (meta->mMover);
-            REQUIRE      (meta->mCloneCopier);
-            REQUIRE_FALSE(meta->mDisownCopier);
-            REQUIRE      (meta->mAbandonMover);
+            REQUIRE      (meta->mCopyAssigner);
+            REQUIRE      (meta->mMoveAssigner);
+            REQUIRE      (meta->mCloneAssigner);
+            REQUIRE_FALSE(meta->mDisownAssigner);
+            REQUIRE      (meta->mAbandonAssigner);
          }
       }
    }
@@ -192,11 +192,11 @@ SCENARIO("Testing semantics", "[semantics]") {
             REQUIRE_FALSE(meta->mAbandonConstructor);
             REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopier);
-            REQUIRE      (meta->mMover);
-            REQUIRE_FALSE(meta->mCloneCopier);
-            REQUIRE_FALSE(meta->mDisownCopier);
-            REQUIRE_FALSE(meta->mAbandonMover);
+            REQUIRE      (meta->mCopyAssigner);
+            REQUIRE      (meta->mMoveAssigner);
+            REQUIRE_FALSE(meta->mCloneAssigner);
+            REQUIRE_FALSE(meta->mDisownAssigner);
+            REQUIRE_FALSE(meta->mAbandonAssigner);
          }
       }
    }
@@ -244,11 +244,11 @@ SCENARIO("Testing semantics", "[semantics]") {
             REQUIRE      (meta->mAbandonConstructor);
             REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopier);
-            REQUIRE      (meta->mMover);
-            REQUIRE      (meta->mCloneCopier);
-            REQUIRE_FALSE(meta->mDisownCopier);
-            REQUIRE      (meta->mAbandonMover);
+            REQUIRE      (meta->mCopyAssigner);
+            REQUIRE      (meta->mMoveAssigner);
+            REQUIRE      (meta->mCloneAssigner);
+            REQUIRE_FALSE(meta->mDisownAssigner);
+            REQUIRE      (meta->mAbandonAssigner);
          }
       }
    }
@@ -266,7 +266,7 @@ SCENARIO("Testing semantics", "[semantics]") {
          static_assert(    CT::CloneMakable<NonSemanticConstructible>);
          static_assert(not CT::DisownMakable<NonSemanticConstructible>);
          static_assert(    CT::AbandonMakable<NonSemanticConstructible>);
-         static_assert(    CT::DescriptorMakable<NonSemanticConstructible>);
+         static_assert(not CT::DescriptorMakable<NonSemanticConstructible>);
 
          static_assert(    CT::SemanticMakable<Copied, NonSemanticConstructible>);
          static_assert(    CT::SemanticMakable<Moved, NonSemanticConstructible>);
@@ -294,13 +294,13 @@ SCENARIO("Testing semantics", "[semantics]") {
             REQUIRE      (meta->mCloneConstructor);
             REQUIRE_FALSE(meta->mDisownConstructor);
             REQUIRE      (meta->mAbandonConstructor);
-            REQUIRE      (meta->mDescriptorConstructor);
+            REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopier);
-            REQUIRE      (meta->mMover);
-            REQUIRE      (meta->mCloneCopier);
-            REQUIRE_FALSE(meta->mDisownCopier);
-            REQUIRE      (meta->mAbandonMover);
+            REQUIRE      (meta->mCopyAssigner);
+            REQUIRE      (meta->mMoveAssigner);
+            REQUIRE      (meta->mCloneAssigner);
+            REQUIRE_FALSE(meta->mDisownAssigner);
+            REQUIRE      (meta->mAbandonAssigner);
          }
       }
    }
@@ -348,11 +348,11 @@ SCENARIO("Testing semantics", "[semantics]") {
             REQUIRE      (meta->mAbandonConstructor);
             REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopier);
-            REQUIRE      (meta->mMover);
-            REQUIRE      (meta->mCloneCopier);
-            REQUIRE      (meta->mDisownCopier);
-            REQUIRE      (meta->mAbandonMover);
+            REQUIRE      (meta->mCopyAssigner);
+            REQUIRE      (meta->mMoveAssigner);
+            REQUIRE      (meta->mCloneAssigner);
+            REQUIRE      (meta->mDisownAssigner);
+            REQUIRE      (meta->mAbandonAssigner);
          }
       }
    }
@@ -400,11 +400,11 @@ SCENARIO("Testing semantics", "[semantics]") {
             REQUIRE      (meta->mAbandonConstructor);
             REQUIRE      (meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopier);
-            REQUIRE      (meta->mMover);
-            REQUIRE      (meta->mCloneCopier);
-            REQUIRE_FALSE(meta->mDisownCopier);
-            REQUIRE      (meta->mAbandonMover);
+            REQUIRE      (meta->mCopyAssigner);
+            REQUIRE      (meta->mMoveAssigner);
+            REQUIRE      (meta->mCloneAssigner);
+            REQUIRE_FALSE(meta->mDisownAssigner);
+            REQUIRE      (meta->mAbandonAssigner);
          }
       }
    }
@@ -452,11 +452,11 @@ SCENARIO("Testing semantics", "[semantics]") {
             REQUIRE_FALSE(meta->mAbandonConstructor);
             REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopier);
-            REQUIRE      (meta->mMover);
-            REQUIRE_FALSE(meta->mCloneCopier);
-            REQUIRE_FALSE(meta->mDisownCopier);
-            REQUIRE_FALSE(meta->mAbandonMover);
+            REQUIRE      (meta->mCopyAssigner);
+            REQUIRE      (meta->mMoveAssigner);
+            REQUIRE_FALSE(meta->mCloneAssigner);
+            REQUIRE_FALSE(meta->mDisownAssigner);
+            REQUIRE_FALSE(meta->mAbandonAssigner);
          }
       }
    }
@@ -504,11 +504,11 @@ SCENARIO("Testing semantics", "[semantics]") {
             REQUIRE_FALSE(meta->mAbandonConstructor);
             REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopier);
-            REQUIRE      (meta->mMover);
-            REQUIRE_FALSE(meta->mCloneCopier);
-            REQUIRE_FALSE(meta->mDisownCopier);
-            REQUIRE_FALSE(meta->mAbandonMover);
+            REQUIRE      (meta->mCopyAssigner);
+            REQUIRE      (meta->mMoveAssigner);
+            REQUIRE_FALSE(meta->mCloneAssigner);
+            REQUIRE_FALSE(meta->mDisownAssigner);
+            REQUIRE_FALSE(meta->mAbandonAssigner);
          }
       }
    }
@@ -555,8 +555,10 @@ SCENARIO("Testing semantics", "[semantics]") {
 
 TEMPLATE_TEST_CASE("Testing semantics of fundamentals", "[semantics]",
    uint8_t, uint16_t, uint32_t, uint64_t,
-    int8_t,  int16_t,  int32_t,  int64_t,
-   double, float, char, wchar_t, char8_t, char16_t, char32_t, Langulus::Byte
+   int8_t,  int16_t,  int32_t,  int64_t,
+   double, float, 
+   char, wchar_t, char8_t, char16_t, char32_t, 
+   Langulus::Byte
 ) {
    GIVEN("A fundamental type") {
       auto meta = MetaData::Of<TestType>();
@@ -601,11 +603,105 @@ TEMPLATE_TEST_CASE("Testing semantics of fundamentals", "[semantics]",
             REQUIRE      (meta->mAbandonConstructor);
             REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopier);
-            REQUIRE      (meta->mMover);
-            REQUIRE      (meta->mCloneCopier);
-            REQUIRE_FALSE(meta->mDisownCopier);
-            REQUIRE      (meta->mAbandonMover);
+            REQUIRE      (meta->mCopyAssigner);
+            REQUIRE      (meta->mMoveAssigner);
+            REQUIRE      (meta->mCloneAssigner);
+            REQUIRE_FALSE(meta->mDisownAssigner);
+            REQUIRE      (meta->mAbandonAssigner);
+         }
+      }
+   }
+}
+
+TEMPLATE_TEST_CASE("Testing semantics of pointers", "[semantics]",
+   uint8_t*, uint16_t*, uint32_t*, uint64_t*,
+   int8_t*,  int16_t*,  int32_t*,  int64_t*,
+   double*, float*, 
+   char*, wchar_t*, char8_t*, char16_t*, char32_t*, 
+   Langulus::Byte*,
+   const uint8_t*, const uint16_t*, const uint32_t*, const uint64_t*,
+   const int8_t*,  const int16_t*,  const int32_t*,  const int64_t*,
+   const double*, const float*,
+   const char*, const wchar_t*, const char8_t*, const char16_t*, const char32_t*,
+   const Langulus::Byte*,
+   Complex*, ContainsComplex*,
+   const Complex*, const ContainsComplex*
+) {
+   GIVEN("A fundamental type") {
+      auto meta = MetaData::Of<TestType>();
+      REQUIRE(meta);
+
+      WHEN("Checked for reflected properties") {
+         static_assert(    CT::Inner::Defaultable<TestType>);
+         static_assert(not CT::Inner::Destroyable<TestType>);
+
+         static_assert(    CT::Inner::CopyMakable<TestType>);
+         static_assert(    CT::Inner::MoveMakable<TestType>);
+         static_assert(    CT::Inner::CloneMakable<TestType>);
+         static_assert(not CT::Inner::DisownMakable<TestType>);
+         static_assert(    CT::Inner::AbandonMakable<TestType>);
+         static_assert(not CT::Inner::DescriptorMakable<TestType>);
+
+         static_assert(    CT::Inner::SemanticMakable<Copied, TestType>);
+         static_assert(    CT::Inner::SemanticMakable<Moved, TestType>);
+         static_assert(    CT::Inner::SemanticMakable<Cloned, TestType>);
+         static_assert(not CT::Inner::SemanticMakable<Disowned, TestType>);
+         static_assert(    CT::Inner::SemanticMakable<Abandoned, TestType>);
+
+         static_assert(    CT::Inner::CopyAssignable<TestType>);
+         static_assert(    CT::Inner::MoveAssignable<TestType>);
+         static_assert(    CT::Inner::CloneAssignable<TestType>);
+         static_assert(not CT::Inner::DisownAssignable<TestType>);
+         static_assert(    CT::Inner::AbandonAssignable<TestType>);
+
+         static_assert(    CT::Inner::SemanticAssignable<Copied, TestType>);
+         static_assert(    CT::Inner::SemanticAssignable<Moved, TestType>);
+         static_assert(    CT::Inner::SemanticAssignable<Cloned, TestType>);
+         static_assert(not CT::Inner::SemanticAssignable<Disowned, TestType>);
+         static_assert(    CT::Inner::SemanticAssignable<Abandoned, TestType>);
+
+         THEN("Requirements should be met") {
+            if constexpr (CT::Destroyable<TestType>)
+               REQUIRE      (meta->mDestructor);
+            else
+               REQUIRE_FALSE(meta->mDestructor);
+
+            if constexpr (CT::Defaultable<TestType>)
+               REQUIRE      (meta->mDefaultConstructor);
+            else
+               REQUIRE_FALSE(meta->mDefaultConstructor);
+
+            REQUIRE      (meta->mCopyConstructor);
+            REQUIRE      (meta->mMoveConstructor);
+
+            if constexpr (CT::CloneMakable<TestType>)
+               REQUIRE      (meta->mCloneConstructor);
+            else
+               REQUIRE_FALSE(meta->mCloneConstructor);
+
+            REQUIRE_FALSE(meta->mDisownConstructor);
+
+            if constexpr (CT::AbandonMakable<TestType>)
+               REQUIRE      (meta->mAbandonConstructor);
+            else
+               REQUIRE_FALSE(meta->mAbandonConstructor);
+
+            REQUIRE_FALSE(meta->mDescriptorConstructor);
+
+            REQUIRE      (meta->mCopyAssigner);
+            REQUIRE      (meta->mMoveAssigner);
+
+            if constexpr (CT::CloneAssignable<TestType>)
+               REQUIRE      (meta->mCloneAssigner);
+            else
+               REQUIRE_FALSE(meta->mCloneAssigner);
+
+            REQUIRE_FALSE(meta->mDisownAssigner);
+
+            if constexpr (CT::AbandonAssignable<TestType>)
+               REQUIRE      (meta->mAbandonAssigner);
+            else
+               REQUIRE_FALSE(meta->mAbandonAssigner);
          }
       }
    }
