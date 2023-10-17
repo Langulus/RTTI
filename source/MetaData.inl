@@ -422,6 +422,7 @@ namespace Langulus::RTTI
          auto denser = MetaData::Of<Deptr<T>>();
          generated = *denser;
          generated.mDeptr = denser;
+         generated.mPool = nullptr;
 
          #if LANGULUS_FEATURE(MANAGED_REFLECTION)
             // Set library boundary                                     
@@ -448,13 +449,9 @@ namespace Langulus::RTTI
          // Set library boundary                                        
          IF_LANGULUS_MANAGED_REFLECTION(generated.mLibraryName = RTTI::Boundary);
       }
-
-      if constexpr (CT::Convoluted<T>)
-         generated.mDecvq = MetaData::Of<Decvq<T>>();
-      else
-         generated.mDecvq = nullptr;
       
       // Overwrite pointer-specific stuff                               
+      generated.mDecvq = MetaData::Of<Decvq<T>>();
       generated.mToken = NameOf<T>();
       generated.mCppName = CppNameOf<T>();
       generated.mHash = Meta::GenerateHash<T>(NameOf<T>());
@@ -530,6 +527,7 @@ namespace Langulus::RTTI
       generated = *denser;
       generated.mOrigin = denser;
       generated.mDecvq = MetaData::Of<Decvq<T>>();
+      generated.mPool = nullptr;
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Set library boundary                                        
@@ -553,7 +551,7 @@ namespace Langulus::RTTI
       generated.mToken = NameOf<T>();
       generated.mCppName = CppNameOf<T>();
       generated.mHash = Meta::GenerateHash<T>(NameOf<T>());
-      generated.mIsConstant = true;
+      generated.mIsConstant = CT::Constant<T>;
       
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          return meta;
@@ -630,6 +628,7 @@ namespace Langulus::RTTI
 
          // This is the origin type, so self-refer                      
          generated.mOrigin = &generated;
+         generated.mDecvq = &generated;
 
          // Calculate the allocation page and table                     
          // It is the same, regardless if T is const or not             
@@ -777,7 +776,7 @@ namespace Langulus::RTTI
          generated.mDescriptorConstructor = 
             [](void* at, const Anyness::Neat& neat) noexcept(NoExcept) {
                auto atT = static_cast<T*>(at);
-               new (atT) T {neat};
+               new (atT) T {Describe(neat)};
             };
       }
 
@@ -852,7 +851,7 @@ namespace Langulus::RTTI
 
       // Wrap the copy-assignment of the type inside a lambda           
       if constexpr (CT::CopyAssignable<T>) {
-         generated.mCopier = 
+         generated.mCopyAssigner = 
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
                auto toT = static_cast<T*>(to);
@@ -862,7 +861,7 @@ namespace Langulus::RTTI
 
       // Wrap the disown-assignment of the type inside a lambda         
       if constexpr (CT::DisownAssignable<T>) {
-         generated.mDisownCopier = 
+         generated.mDisownAssigner = 
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
                auto toT = static_cast<T*>(to);
@@ -872,7 +871,7 @@ namespace Langulus::RTTI
             
       // Wrap the cloners of the type inside a lambda                   
       if constexpr (CT::CloneAssignable<T>) {
-         generated.mCloneCopier = 
+         generated.mCloneAssigner = 
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
                auto toT = static_cast<T*>(to);
@@ -882,7 +881,7 @@ namespace Langulus::RTTI
 
       // Wrap the move-assignment of the type inside a lambda           
       if constexpr (CT::MoveAssignable<T>) {
-         generated.mMover = 
+         generated.mMoveAssigner = 
             [](void* from, void* to) {
                auto fromT = static_cast<T*>(from);
                auto toT = static_cast<T*>(to);
@@ -892,7 +891,7 @@ namespace Langulus::RTTI
 
       // Wrap the move-assignment of the type inside a lambda           
       if constexpr (CT::AbandonAssignable<T>) {
-         generated.mAbandonMover = 
+         generated.mAbandonAssigner = 
             [](void* from, void* to) {
                auto fromT = static_cast<T*>(from);
                auto toT = static_cast<T*>(to);
@@ -1166,6 +1165,16 @@ namespace Langulus::RTTI
       while (concrete->mConcrete)
          concrete = concrete->mConcrete;
       return concrete;
+   }
+
+   /// Get the relevant pool                                                  
+   ///   @tparam T - a type to reinterpret the pool as                        
+   ///   @return the the pool                                                 
+   template<class T>
+   LANGULUS(INLINED)
+   T*& MetaData::GetPool() const noexcept {
+      const auto actualType = mIsSparse or not mOrigin ? mDecvq : mOrigin;
+      return *reinterpret_cast<T**>(&actualType->mPool);
    }
 
    /// Get a reflected base linked to this meta data definition               
@@ -1555,8 +1564,8 @@ namespace Langulus::RTTI
    constexpr bool MetaData::IsSimilar() const {
       return IsExact<T1, TN...>()
           or IsExact<Decvq<T1>, Decvq<TN>...>()
-          or (mDecvq and (mDecvq->template IsExact<T1, TN...>()
-                      or  mDecvq->template IsExact<Decvq<T1>, Decvq<TN>...>()))
+          or (mDecvq->template IsExact<T1, TN...>()
+              or  mDecvq->template IsExact<Decvq<T1>, Decvq<TN>...>())
           or (mDeptr and  mDeptr->template IsSimilar<Deptr<T1>, Deptr<TN>...>());
    }
 
@@ -1568,8 +1577,7 @@ namespace Langulus::RTTI
    inline constexpr bool MetaData::IsSimilar(DMeta other) const noexcept {
       return other and (IsExact(other)
           or IsExact(other->mDecvq)
-          or (mDecvq and (mDecvq->IsExact(other)
-                      or  mDecvq->IsExact(other->mDecvq)))
+          or (mDecvq->IsExact(other) or mDecvq->IsExact(other->mDecvq))
           or (mDeptr and  mDeptr->IsSimilar(other->mDeptr))
          );
    }

@@ -287,17 +287,17 @@ namespace Langulus::RTTI
 
       MetaType GetMetaType() const noexcept final { return Meta::Data; }
 
-      // List of reflected members                                      
+      // List of reflected members of the origin type                   
       MemberList mMembers {};
-      // List of reflected abilities                                    
+      // List of reflected abilities of the origin type                 
       AbilityList mAbilities {};
-      // List of reflected bases                                        
+      // List of reflected bases of the origin type                     
       BaseList mBases {};
-      // List of reflected converters                                   
+      // List of reflected converters of the origin type                
       ConverterList mConverters {};
-      // List of named values                                           
+      // List of named values of the origin type                        
       NamedValueList mNamedValues {};
-      // The origin type, with all qualifiers removed                   
+      // The origin type, with all qualifiers and sparseness removed    
       // Will be nullptr for incomplete types                           
       DMeta mOrigin {};
       // The type, when a single pointer is removed                     
@@ -307,28 +307,29 @@ namespace Langulus::RTTI
       // It is nullptr, if the type doesn't have any qualifiers         
       DMeta mDecvq {};
       // Default concretization                                         
+      // Used as redirection, when requesting the creation of asbtracts 
       DMeta mConcrete {};
-      // Dynamic producer of the type                                   
-      // Types with producers can be created only via a verb            
+      // Types with producers can be instantiated only by the invokation
+      // of Verbs::Create in the context of the producer                
       DMeta mProducer {};
       // True if reflected data is sparse (a pointer)                   
       bool mIsSparse = false;
       // True if reflected data is constant                             
+      // This comes only from the immediate type                        
       bool mIsConstant = false;
-      // True if reflected data is POD (optimization)                   
-      // POD data can be directly memcpy-ed, or binary-serialized       
+      // True if origin type is POD                                     
+      // POD data can be batch-memcpy-ed, or binary-serialized          
       bool mIsPOD = false;
-      // True if reflected data is nullifiable (optimization)           
-      // Nullifiable data can be constructed AND destructed via         
-      // memset(0) without hitting undefined behavior                   
+      // True if origin type is nullifiable                             
+      // Nullifiable data can be batch-constructed via memset(0)        
       bool mIsNullifiable = false;
-      // If reflected type is abstract                                  
+      // If origin type is abstract                                     
       bool mIsAbstract = false;
-      // Type will be interpreted as a memory block and iterated        
+      // True if origin type satisifes the CT::Deep concept             
       bool mIsDeep = false;
-      // Type is insertable into containers                             
+      // True if origin type is not insertable into containers          
       bool mIsUninsertable = false;
-      // Type is allocatable (and thus clonable)                        
+      // True if origin type is allocatable (and thus clonable)         
       bool mIsUnallocatable = false;
       // Size of the reflected type (in bytes)                          
       Size mSize {};
@@ -338,53 +339,81 @@ namespace Langulus::RTTI
       Size mAllocationPage {};
       // Precomputed counts indexed by MSB (avoids division by stride)  
       Size mAllocationTable[sizeof(Size) * 8] {};
-      // File extensions used, separated by commas                      
+      // File extensions used by the origin type, separated by commas   
       Token mFileExtensions {};
-      // Suffix                                                         
+      // Suffix for the origin type                                     
       Token mSuffix {};
 
-#if LANGULUS_FEATURE(MANAGED_MEMORY)
-      // The pooling tactic used for the type                           
-      PoolTactic mPoolTactic = PoolTactic::Default;
-      // The pool chain for the type                                    
-      void* mPool {};
-#endif
+      #if LANGULUS_FEATURE(MANAGED_MEMORY)
+         // The pooling tactic used for the type                        
+         PoolTactic mPoolTactic = PoolTactic::Default;
+         private:
+            // The pool chain for the type                              
+            // Access it through GetPool() method, because it might not 
+            // be exactly relevan to a convoluted/sparse type           
+            mutable void* mPool {};
+         public:
+      #endif
 
       // Default constructor wrapped in a lambda upon reflection        
+      // @attention this always works with the origin type              
       FDefaultConstruct mDefaultConstructor {};
       // Descriptor constructor wrapped in a lambda upon reflection     
+      // @attention this always works with the origin type              
       FDescriptorConstruct mDescriptorConstructor {};
       // Copy constructor wrapped in a lambda upon reflection           
+      // @attention this always works with the origin type              
       FCopyConstruct mCopyConstructor {};
       // Disowned constructor wrapped in a lambda upon reflection       
+      // @attention this always works with the origin type              
       FCopyConstruct mDisownConstructor {};
       // Cloned constructor wrapped in a lambda upon reflection         
+      // @attention this always works with the origin type              
       FCopyConstruct mCloneConstructor {};
       // Move constructor wrapped in a lambda upon reflection           
+      // @attention this always works with the origin type              
       FMoveConstruct mMoveConstructor {};
       // Abandon constructor wrapped in a lambda upon reflection        
+      // @attention this always works with the origin type              
       FMoveConstruct mAbandonConstructor {};
+
       // Destructor wrapped in a lambda upon reflection                 
+      // @attention this always works with the origin type              
       FDestroy mDestructor {};
-      // The == operator, wrapped in a lambda upon reflection           
-      FCompare mComparer {};
+
       // Copy-assignment operator, wrapped in a lambda upon reflection  
-      FCopy mCopier {};
+      // @attention this always works with the origin type              
+      FCopy mCopyAssigner {};
       // Disown-assignment operator, wrapped in a lambda upon reflection
-      FCopy mDisownCopier {};
+      // @attention this always works with the origin type              
+      FCopy mDisownAssigner {};
       // Clone-assignment operator, wrapped in a lambda upon reflection 
-      FCopy mCloneCopier {};
+      // @attention this always works with the origin type              
+      FCopy mCloneAssigner {};
       // Move-assignment, wrapped in a lambda upon reflection           
-      FMove mMover {};
+      // @attention this always works with the origin type              
+      FMove mMoveAssigner {};
       // Abandon-assignment, wrapped in a lambda upon reflection        
-      FMove mAbandonMover {};
+      // @attention this always works with the origin type              
+      FMove mAbandonAssigner {};
+
+      // The == operator, wrapped in a lambda upon reflection           
+      // @attention this always works with the origin type              
+      FCompare mComparer {};
+
       // The ClassBlock method, wrapped in a lambda upon reflection     
+      // @attention this always works with the origin type              
       FResolve mResolver {};
+
       // The GetHash() method, wrapped in a lambda                      
+      // @attention this always works with the origin type              
       FHash mHasher {};
+
       // The Do verb, wrapped in a lambda (mutable context)             
+      // @attention this always works with the origin type              
       FDispatchMutable mDispatcherMutable {};
       // The Do verb, wrapped in a lambda	(immutable context)           
+      // @attention this always works with the origin type              
       FDispatchConstant mDispatcherConstant {};
 
    protected:
@@ -421,6 +450,8 @@ namespace Langulus::RTTI
       NOD() static DMeta Of() requires (CT::Decayed<T>);
 
       NOD() DMeta GetMostConcrete() const noexcept;
+      template<class T>
+      NOD() T*& GetPool() const noexcept;
       NOD() AllocationRequest RequestSize(const Count&) const noexcept;
 
       //                                                                

@@ -59,17 +59,21 @@ namespace Langulus
          static constexpr bool Move = false;
          static constexpr bool Shallow = false;
       };
-   }
+
+   } // namespace Langulus::A
+
+   struct Describe;
 
    namespace CT
    {
+
       /// Checks if a type has special semantics                              
       template<class... T>
       concept Semantic = ((Decayed<T> and DerivedFrom<T, A::Semantic>) and ...);
 
       /// Checks if a type has no special semantics                           
       template<class... T>
-      concept NotSemantic = ((not Semantic<T>) and ...);
+      concept NotSemantic = ((not Semantic<T> and not CT::Same<T, Describe>) and ...);
 
       /// Check if a type is copied                                           
       template<class... T>
@@ -90,8 +94,9 @@ namespace Langulus
       /// Check if a type is cloned                                           
       template<class... T>
       concept Cloned = ((Decayed<T> and DerivedFrom<T, A::Cloned>) and ...);
-   }
-   
+
+   } // namespace Langulus::CT
+
    
    ///                                                                        
    /// Copied value intermediate type, use in constructors and assignments    
@@ -457,6 +462,30 @@ namespace Langulus
    constexpr auto Clone(const CT::NotSemantic auto& value) noexcept {
       return Cloned<Decvq<Deref<decltype(value)>>> {value};
    }
+      
+
+   ///                                                                        
+   /// Descriptor intermediate type, use in constructors to enable descriptor 
+   /// construction. The inner type is always Neat                            
+   struct Describe {
+   protected:
+      const Anyness::Neat& mValue;
+
+   public:
+      Describe() = delete;
+      Describe(const Describe&) = delete;
+      explicit constexpr Describe(Describe&&) noexcept = default;
+
+      LANGULUS(INLINED)
+      explicit constexpr Describe(const Anyness::Neat& value) noexcept
+         : mValue {value} {}
+      
+      LANGULUS(INLINED)
+      const Anyness::Neat& operator *  () const noexcept { return mValue; }
+
+      LANGULUS(INLINED)
+      const Anyness::Neat* operator -> () const noexcept { return &mValue; }
+   };
 
 
    /// Create an element on the heap, using the provided semantic, by using   
@@ -470,7 +499,7 @@ namespace Langulus
    auto SemanticNew(void* placement, S<T>&& value) {
       LANGULUS_ASSUME(DevAssumes, placement, "Invalid placement pointer");
 
-      if constexpr (CT::Abstract<T>) {
+      if constexpr (CT::Inner::Abstract<T>) {
          // Can't create abstract stuff                                 
          return Inner::Unsupported {};
       }
@@ -479,7 +508,7 @@ namespace Langulus
             // Abandon                                                  
             if constexpr (requires { new T (Abandon(*value)); })
                return new (placement) T (Abandon(*value));
-            else if constexpr (not CT::Destroyable<T>) {
+            else if constexpr (not CT::Inner::Destroyable<T>) {
                // If type is not destroyable (like fundamentals), then  
                // it is always acceptable to abandon them - just use    
                // the standard move-semantics                           
@@ -504,7 +533,7 @@ namespace Langulus
          // Clone                                                       
          if constexpr (requires { new T (Clone(*value)); })
             return new (placement) T (Clone(*value));
-         else if constexpr (CT::POD<T>) {
+         else if constexpr (CT::Inner::POD<T>) {
             // If type is POD (like fundamentals, or trivials), then    
             // it is always acceptable to clone by memcpy               
             ::std::memcpy(placement, &(*value), sizeof(T));
@@ -529,61 +558,6 @@ namespace Langulus
             return Inner::Unsupported {};
       }
    }
-   
-   /// Create an element on the heap, using the provided semantic, by using   
-   /// a placement new variant, relying on the reflected constructors         
-   ///   @attention assumes type is valid, complete, and not abstract         
-   ///   @attention assumes bit placement and TypeOf<S> are valid pointers    
-   ///              that point to an instance of the provided type            
-   ///   @param type - the reflected type to instantiate                      
-   ///   @param placement - where to place the new instance                   
-   ///   @param value - the constructor arguments and the semantic            
-   LANGULUS(INLINED)
-   void SemanticNewUnknown(RTTI::DMeta type, Byte* placement, CT::Semantic auto&& value) {
-      LANGULUS_ASSUME(DevAssumes, type,      "Invalid type");
-      LANGULUS_ASSUME(DevAssumes, placement, "Invalid placement pointer");
-      LANGULUS_ASSUME(DevAssumes, *value,    "Invalid argument pointer");
-      LANGULUS_ASSUME(DevAssumes, not type->mIsAbstract, "Type can't be abstract");
-
-      using S = Decay<decltype(value)>;
-      if constexpr (S::Move) {
-         if (not S::Keep) {
-            // Abandon                                                  
-            if (type->mAbandonConstructor)
-               type->mAbandonConstructor(*value, placement);
-            else
-               LANGULUS_THROW(Construct, "Can't abandon-construct T from S");
-         }
-         else {
-            // Move                                                     
-            if (type->mMoveConstructor)
-               type->mMoveConstructor(*value, placement);
-            else
-               LANGULUS_THROW(Construct, "Can't move-construct T from S");
-         }
-      }
-      else if constexpr (not S::Shallow) {
-         // Clone                                                       
-         if (type->mCloneConstructor)
-            type->mCloneConstructor(*value, placement);
-         else
-            LANGULUS_THROW(Construct, "Can't clone-construct T from S");
-      }
-      else if constexpr (not S::Keep) {
-         // Disown                                                      
-         if (type->mDisownConstructor)
-            type->mDisownConstructor(*value, placement);
-         else
-            LANGULUS_THROW(Construct, "Can't disown-construct T from S");
-      }
-      else {
-         // Copy                                                        
-         if (type->mCopyConstructor)
-            type->mCopyConstructor(*value, placement);
-         else
-            LANGULUS_THROW(Construct, "Can't copy-construct T from S");
-      }
-   }
 
    /// Assign new value to an instance of T, using the provided semantic      
    ///   @param lhs - left hand side (what are we assigning to)               
@@ -597,7 +571,7 @@ namespace Langulus
             // Abandon                                                  
             if constexpr (requires(T& a) { a = Abandon(*rhs); })
                return (lhs = Abandon(*rhs));
-            else if constexpr (not CT::Destroyable<T>) {
+            else if constexpr (not CT::Inner::Destroyable<T>) {
                // If type is not destroyable (like fundamentals), then  
                // it is always acceptable to abandon them - just use    
                // the standard move-semantics                           
@@ -623,7 +597,7 @@ namespace Langulus
             // Clone                                                    
             if constexpr (requires(T& a) { a = Clone(*rhs); })
                return (lhs = Clone(*rhs));
-            else if constexpr (CT::POD<T>) {
+            else if constexpr (CT::Inner::POD<T>) {
                // If type is POD (like fundamentals, or trivials), then 
                // it is always acceptable to clone by memcpy            
                ::std::memcpy(&lhs, &(*rhs), sizeof(T));
@@ -682,11 +656,11 @@ namespace Langulus::CT
       template<class T>
       concept AbandonMakable = SemanticMakable<Langulus::Abandoned, T>;
 
-      /// Check if the decayed T is copy-constructible                        
+      /// Check if T is copy-constructible                                    
       template<class T>
       concept CopyMakable = SemanticMakable<Langulus::Copied, T>;
 
-      /// Check if the decayed T is move-constructible                        
+      /// Check if T is move-constructible                                    
       template<class T>
       concept MoveMakable = SemanticMakable<Langulus::Moved, T>;
 
@@ -703,13 +677,24 @@ namespace Langulus::CT
       template<class T>
       concept AbandonAssignable = SemanticAssignable<Langulus::Abandoned, T>;
 
-      /// Check if the decayed T is copy-assignable                           
+      /// Check if the T is copy-assignable                                   
       template<class T>
       concept CopyAssignable = SemanticAssignable<Langulus::Copied, T>;
 
-      /// Check if the decayed T is move-assignable                           
+      /// Check if the T is move-assignable                                   
       template<class T>
       concept MoveAssignable = SemanticAssignable<Langulus::Moved, T>;
+
+
+      /// Check if the T is descriptor-assignable                             
+      template<class T>
+      concept DescriptorMakable = not Abstract<T>
+         and requires { T {Describe {Fake<const Anyness::Neat&>()}}; };
+
+      /// Check if the T is noexcept-descriptor-assignable                    
+      template<class T>
+      concept DescriptorMakableNoexcept = DescriptorMakable<T>
+         and noexcept ( T {Describe {Fake<const Anyness::Neat&>()}}  );
 
    } // namespace Langulus::CT::Inner
 
@@ -765,5 +750,16 @@ namespace Langulus::CT
    /// Check if origin T is move-assignable                                   
    template<class... T>
    concept MoveAssignable = (SemanticAssignable<Langulus::Moved, T> and ...);
+
+
+   /// Check if the origin T is descriptor-constructible                   
+   template<class... T>
+   concept DescriptorMakable = Complete<Decay<T>...>
+      and (Inner::DescriptorMakable<Decay<T>> and ...);
+
+   /// Check if the origin T is noexcept-descriptor-constructible          
+   template<class... T>
+   concept DescriptorMakableNoexcept = Complete<Decay<T>...>
+      and (Inner::DescriptorMakableNoexcept<Decay<T>> and ...);
 
 } // namespace Langulus::CT
