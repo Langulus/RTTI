@@ -505,7 +505,7 @@ namespace Langulus
 
       /// Check if T can be hashed with HashOf                                
       template<class T>
-      concept HasGetHashMethod = requires (T a) {
+      concept HasGetHashMethod = Complete<T> and requires (T& a) {
          {a.GetHash()} -> Exact<Hash>;
       };
 
@@ -523,7 +523,8 @@ namespace Langulus
          // Combine all data into a single array of hashes, and then    
          // hash that array as a whole                                  
          alignas(Bitness/8) const Hash coalesced[1 + sizeof...(MORE)] {
-            HashOf<FAKE, SEED>(head), HashOf<FAKE, SEED>(rest)...
+            HashOf<FAKE, SEED>(head),
+            HashOf<FAKE, SEED>(rest)...
          };
          return HashBytes<SEED, false>(coalesced, sizeof(coalesced));
       }
@@ -539,7 +540,7 @@ namespace Langulus
          else
             return HashBytes<SEED, false>(&head, sizeof(T));
       }
-      else if constexpr (CT::Similar<T, Hash>) {
+      else if constexpr (CT::Exact<T, Hash>) {
          // Provided type is already a hash, just propagate it          
          return head;
       }
@@ -639,12 +640,11 @@ namespace Langulus::CT
    {
       /// Check if T can be hashed with HashOf                                
       template<class T>
-      concept Hashable = requires (T a) { {HashOf<true>(a)} -> Supported; };
+      concept Hashable = requires (T& a) { {HashOf<true>(a)} -> Supported; };
    }
 
    /// Check if the origin T can be hashed using HashOf                       
    template<class... T>
-   concept Hashable = Complete<Decay<T>...>
-      and (Inner::Hashable<Decay<T>> and ...);
+   concept Hashable = (Inner::Hashable<T> and ...);
 
 } // namespace Langulus::CT
