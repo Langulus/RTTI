@@ -9,6 +9,7 @@
 #pragma once
 #include "MetaData.hpp"
 
+
 namespace Langulus::RTTI
 {
 

@@ -10,6 +10,7 @@
 #include "Config.hpp"
 #include <Logger/Logger.hpp>
 
+
 namespace Langulus
 {
 
