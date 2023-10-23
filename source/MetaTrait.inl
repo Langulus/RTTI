@@ -9,6 +9,7 @@
 #pragma once
 #include "MetaTrait.hpp"
 
+
 namespace Langulus::RTTI
 {
    

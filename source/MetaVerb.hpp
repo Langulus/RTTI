@@ -10,6 +10,7 @@
 #include "MetaData.hpp"
 #include <unordered_set>
 
+
 namespace Langulus::RTTI
 {
 

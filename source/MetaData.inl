@@ -16,6 +16,7 @@
 #endif
 #include <Core/Utilities.hpp>
 
+
 namespace Langulus::RTTI
 {
    
@@ -60,7 +61,7 @@ namespace Langulus::RTTI
       LANGULUS_ASSERT(offset >= 0, Meta,
          "Member is laid (memorywise) before owner");
 
-      //TODO of offset is outside instance limits, then mark as static, instead of throw?
+      //TODO if offset is outside instance limits, then mark as static, instead of throw?
       Member m;
       m.mTypeRetriever = MetaData::Of<Deext<DATA>>;
       m.mOffset = static_cast<Offset>(offset);
@@ -565,6 +566,9 @@ namespace Langulus::RTTI
    template<CT::DenseData T>
    LANGULUS(NOINLINE)
    DMeta MetaData::Of() requires (CT::Decayed<T>) {
+      static_assert(not ::std::is_function_v<T>, 
+         "Can't reflect this function signature origin - "
+         "make sure you're using a pointer signature");
       static_assert(CT::Complete<T>, 
          "Can't reflect incomplete type - "
          "make sure you have included the corresponding headers "
@@ -913,7 +917,7 @@ namespace Langulus::RTTI
          generated.mHasher = 
             [](const void* at) {
                auto atT = static_cast<const T*>(at);
-               return atT->GetHash();
+               return HashOf(*atT);
             };
       }
 
@@ -1565,8 +1569,8 @@ namespace Langulus::RTTI
       return IsExact<T1, TN...>()
           or IsExact<Decvq<T1>, Decvq<TN>...>()
           or (mDecvq->template IsExact<T1, TN...>()
-              or  mDecvq->template IsExact<Decvq<T1>, Decvq<TN>...>())
-          or (mDeptr and  mDeptr->template IsSimilar<Deptr<T1>, Deptr<TN>...>());
+              or mDecvq->template IsExact<Decvq<T1>, Decvq<TN>...>())
+          or (mDeptr and mDeptr->template IsSimilar<Deptr<T1>, Deptr<TN>...>());
    }
 
    /// Check if two meta definitions match origin and sparseness, but ignores 
@@ -1578,8 +1582,7 @@ namespace Langulus::RTTI
       return other and (IsExact(other)
           or IsExact(other->mDecvq)
           or (mDecvq->IsExact(other) or mDecvq->IsExact(other->mDecvq))
-          or (mDeptr and  mDeptr->IsSimilar(other->mDeptr))
-         );
+          or (mDeptr and mDeptr->IsSimilar(other->mDeptr)));
    }
    
    /// Check if this type matches one of the provided types exactly           
@@ -1588,7 +1591,10 @@ namespace Langulus::RTTI
    template<CT::Data T1, CT::Data... TN>
    LANGULUS(INLINED)
    constexpr bool MetaData::IsExact() const {
-      return IsExact(MetaData::Of<T1>()) or (IsExact(MetaData::Of<TN>()) or ...);
+      if constexpr (CT::Complete<T1, TN...>)
+         return IsExact(MetaData::Of<T1>()) or (IsExact(MetaData::Of<TN>()) or ...);
+      else
+         return false;
    }
 
    /// Check if two meta definitions match exactly, including any qualifiers  

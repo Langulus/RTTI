@@ -7,7 +7,8 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #pragma once
-#include "Reflection.hpp"
+#include "Numbers.hpp"
+
 
 namespace Langulus
 {

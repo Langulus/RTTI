@@ -9,6 +9,7 @@
 #pragma once
 #include "MetaVerb.hpp"
 
+
 namespace Langulus::RTTI
 {
 

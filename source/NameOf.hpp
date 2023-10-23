@@ -12,6 +12,7 @@
 #include <string>
 #include <array>
 
+
 namespace Langulus::RTTI
 {
    namespace Inner

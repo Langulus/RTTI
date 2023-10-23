@@ -17,6 +17,7 @@
    #define BIG_CONSTANT(x) (x##LLU)
 #endif
 
+
 namespace Langulus
 {
 
@@ -499,19 +500,30 @@ namespace Langulus
       return result;
    }
 
+   namespace CT::Inner
+   {
+
+      /// Check if T can be hashed with HashOf                                
+      template<class T>
+      concept HasGetHashMethod = requires (T a) {
+         {a.GetHash()} -> Exact<Hash>;
+      };
+
+   } // namespace Langulus::CT
+
    /// Hash any hashable data, including fundamental types                    
    ///   @tparam SEED - the seed for the hash algorithm                       
    ///   @tparam T - first type to hash (deducible)                           
    ///   @tparam MORE... - the rest of the hashed types (deducible)           
    ///   @param head, rest... - the data to hash                              
    ///   @return the hash                                                     
-   template<uint32_t SEED = DefaultHashSeed, class T, class... MORE>
-   constexpr Hash HashOf(const T& head, const MORE&... rest) {
+   template<bool FAKE = false, uint32_t SEED = DefaultHashSeed, class T, class... MORE>
+   constexpr auto HashOf(const T& head, const MORE&... rest) {
       if constexpr (sizeof...(MORE)) {
          // Combine all data into a single array of hashes, and then    
          // hash that array as a whole                                  
          alignas(Bitness/8) const Hash coalesced[1 + sizeof...(MORE)] {
-            HashOf<SEED>(head), HashOf<SEED>(rest)...
+            HashOf<FAKE, SEED>(head), HashOf<FAKE, SEED>(rest)...
          };
          return HashBytes<SEED, false>(coalesced, sizeof(coalesced));
       }
@@ -519,7 +531,7 @@ namespace Langulus
          // Hash pointers, never dereference them, unless they're       
          // meta types                                                  
          if (head == nullptr)
-            return {};
+            return Hash {};
 
          // Always dereference meta and get its hash                    
          if constexpr (CT::Meta<T>)
@@ -527,21 +539,21 @@ namespace Langulus
          else
             return HashBytes<SEED, false>(&head, sizeof(T));
       }
-      else if constexpr (CT::Same<T, Hash>) {
+      else if constexpr (CT::Similar<T, Hash>) {
          // Provided type is already a hash, just propagate it          
          return head;
       }
-      else if constexpr (CT::Hashable<T>) {
+      else if constexpr (CT::Inner::HasGetHashMethod<T>) {
          // Hashable via a member GetHash() function                    
          return head.GetHash();
       }
       else if constexpr (CT::POD<T>) {
-         // Explicitly marked POD type is always hashable, but be       
+         // Explicitly marked POD types are always hashable, but be     
          // careful for POD types with padding - the junk inbetween     
          // members can interfere with the hash, giving unique          
          // hashes where the same hashes should be produced. In such    
-         // cases it is recommended you add a custom GetHash() to       
-         // avoid the problem                                           
+         // cases it is recommended you add a custom GetHash() method   
+         // to your type, in order to circumvent the issue              
          return HashBytes<SEED, alignof(T) < Bitness / 8>(&head, sizeof(T));
       }
       else if constexpr (requires (::std::hash<T> h, const T& i) { h(i); }) {
@@ -551,9 +563,12 @@ namespace Langulus
          // will likely result in different ordering inside unordered   
          // containers. Nothing serious, unless you're pedantic like me 
          ::std::hash<T> hasher;
-         return {hasher(head)};
+         return Hash {hasher(head)};
       }
-      else LANGULUS_ERROR("Can't hash data");
+      else if constexpr (FAKE)
+         return Inner::Unsupported {};
+      else
+         LANGULUS_ERROR("Can't hash data");
    }
 
 } // namespace Langulus
@@ -616,3 +631,20 @@ namespace Langulus::RTTI
    }
    
 } // namespace Langulus::RTTI
+
+namespace Langulus::CT
+{
+   
+   namespace Inner
+   {
+      /// Check if T can be hashed with HashOf                                
+      template<class T>
+      concept Hashable = requires (T a) { {HashOf<true>(a)} -> Supported; };
+   }
+
+   /// Check if the origin T can be hashed using HashOf                       
+   template<class... T>
+   concept Hashable = Complete<Decay<T>...>
+      and (Inner::Hashable<Decay<T>> and ...);
+
+} // namespace Langulus::CT

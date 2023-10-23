@@ -342,3 +342,52 @@ SCENARIO("A reflected verb with CTTI traits", "[metaverb]") {
       }
    }
 }
+
+void FunctionForTesting(void*) {
+   Logger::Verbose("Executed FunctionForTesting");
+}
+
+SCENARIO("A reflected function signature", "[function]") {
+   GIVEN("A reflected function pointer") {
+      using Signature = void(*)(void*);
+
+      WHEN("Reflected") {
+         static_assert(    ::std::is_function_v<Deptr<Signature>>);
+         static_assert(    CT::Sparse<Signature>);
+         static_assert(not CT::Decayed<Signature>);
+         static_assert(    CT::Complete<Signature>);
+
+         auto meta = MetaData::Of<Signature>();
+         REQUIRE(meta != nullptr);
+
+         THEN("Requirements should be met") {
+            REQUIRE(meta->mToken == "void(*)(void*)");
+            REQUIRE(meta->mIsSparse);
+            REQUIRE(meta->mVersionMajor == 1);
+            REQUIRE(meta->mVersionMinor == 0);
+         }
+      }
+   }
+
+   /*GIVEN("A reflected function reference (shouldn't compile)") {
+      auto FuncRef = FunctionForTesting;
+      using Signature = decltype(*FuncRef);
+
+      WHEN("Reflected") {
+         static_assert(    ::std::is_function_v<Deref<Signature>>);
+         static_assert(    CT::Dense<Signature>);
+         static_assert(not CT::Decayed<Signature>);
+         static_assert(not CT::Complete<Signature>);
+
+         auto meta = MetaData::Of<Signature>();
+         REQUIRE(meta != nullptr);
+
+         THEN("Requirements should be met") {
+            REQUIRE(meta->mToken == "void(*)(void*)");
+            REQUIRE(meta->mIsSparse);
+            REQUIRE(meta->mVersionMajor == 1);
+            REQUIRE(meta->mVersionMinor == 0);
+         }
+      }
+   }*/
+}

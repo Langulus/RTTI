@@ -11,6 +11,7 @@
 #include <Core/Utilities.hpp>
 #include <vector>
 
+
 namespace Langulus::RTTI
 {
 
