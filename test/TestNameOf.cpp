@@ -60,7 +60,7 @@ SCENARIO("NameOf", "[nameof]") {
          auto name = NameOf<const uint16_t* const *>();
 
          THEN("Name should be correct") {
-            REQUIRE(name == "const uint16*const *");
+            REQUIRE(name == "const uint16* const*");
          }
       }
       
@@ -68,7 +68,7 @@ SCENARIO("NameOf", "[nameof]") {
          auto name = NameOf<const uint16_t* const * const>();
 
          THEN("Name should be correct") {
-            REQUIRE(name == "const uint16*const *const");
+            REQUIRE(name == "const uint16* const* const");
          }
       }
 
@@ -269,6 +269,18 @@ SCENARIO("NameOf", "[nameof]") {
 
          THEN("Name should be correct") {
             REQUIRE(name == "Flow::constconst");
+         }
+      }
+   }
+
+   GIVEN("Function signature") {
+      using Signature = void(*)(void*);
+
+      WHEN("Taken the name of a function signature") {
+         auto name = NameOf<Signature>();
+
+         THEN("Name should be correct") {
+            REQUIRE(name == "Function<void(void*)>*");
          }
       }
    }

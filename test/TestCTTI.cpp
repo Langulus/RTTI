@@ -115,7 +115,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
          REQUIRE(meta != nullptr);
 
          THEN("Requirements should be met") {
-            REQUIRE(meta->mToken == "const IncompleteType*const *");
+            REQUIRE(meta->mToken == "const IncompleteType* const*");
             REQUIRE(meta->mVersionMajor == 1);
             REQUIRE(meta->mVersionMinor == 0);
             REQUIRE(meta->mIsDeep == false);
@@ -149,7 +149,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
          REQUIRE(meta != nullptr);
 
          THEN("Requirements should be met") {
-            REQUIRE(meta->mToken == "const IncompleteType*const *const");
+            REQUIRE(meta->mToken == "const IncompleteType* const* const");
             REQUIRE(meta->mVersionMajor == 1);
             REQUIRE(meta->mVersionMinor == 0);
             REQUIRE(meta->mIsDeep == false);
@@ -182,7 +182,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
          REQUIRE(meta != nullptr);
 
          THEN("Requirements should be met") {
-            REQUIRE(meta->mToken == "const IncompleteType*const *const");
+            REQUIRE(meta->mToken == "const IncompleteType* const* const");
             REQUIRE(meta->mVersionMajor == 1);
             REQUIRE(meta->mVersionMinor == 0);
             REQUIRE(meta->mIsDeep == false);
@@ -361,7 +361,7 @@ SCENARIO("A reflected function signature", "[function]") {
          REQUIRE(meta != nullptr);
 
          THEN("Requirements should be met") {
-            REQUIRE(meta->mToken == "void(*)(void*)");
+            REQUIRE(meta->mToken == "Function<void(void*)>*");
             REQUIRE(meta->mIsSparse);
             REQUIRE(meta->mVersionMajor == 1);
             REQUIRE(meta->mVersionMinor == 0);
