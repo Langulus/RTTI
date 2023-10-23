@@ -1173,6 +1173,7 @@ namespace Langulus::RTTI
       return concrete;
    }
 
+#if LANGULUS_FEATURE(MANAGED_MEMORY)
    /// Get the relevant pool                                                  
    ///   @tparam T - a type to reinterpret the pool as                        
    ///   @return the the pool                                                 
@@ -1182,6 +1183,7 @@ namespace Langulus::RTTI
       const auto actualType = mIsSparse or not mOrigin ? mDecvq : mOrigin;
       return *reinterpret_cast<T**>(&actualType->mPool);
    }
+#endif
 
    /// Get a reflected base linked to this meta data definition               
    /// Traverses the whole inheritance tree, so can return distant bases      
