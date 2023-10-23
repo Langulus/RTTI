@@ -353,7 +353,10 @@ namespace Langulus::RTTI
             // Access it through GetPool() method, because it might not 
             // be exactly relevan to a convoluted/sparse type           
             mutable void* mPool {};
+
          public:
+            template<class T>
+            NOD() T*& GetPool() const noexcept;
       #endif
 
       // Default constructor wrapped in a lambda upon reflection        
@@ -451,8 +454,6 @@ namespace Langulus::RTTI
       NOD() static DMeta Of() requires (CT::Decayed<T>);
 
       NOD() DMeta GetMostConcrete() const noexcept;
-      template<class T>
-      NOD() T*& GetPool() const noexcept;
       NOD() AllocationRequest RequestSize(const Count&) const noexcept;
 
       //                                                                
