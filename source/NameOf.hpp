@@ -39,11 +39,6 @@ namespace Langulus::RTTI
             (see above)"
       #endif
 
-      /// Skip these patterns when demangling names                           
-      constexpr Token SkipPatterns[] {
-         "class", "struct", "enum", "Langulus::"
-      };
-
       /// Filter a literal matching at the front                              
       ///   @param str - the string view to modify as constexpr               
       ///   @param prefix - the prefix to skip                                
@@ -83,8 +78,17 @@ namespace Langulus::RTTI
       }
 
       /// Replace these patterns when demangling names                        
+      ///   @attention replacing will cease after the first match, so when    
+      ///              having similar tokens to replace, order them correctly 
+      ///              so that the most complex ones come first               
+      ///   @attention replacement will not commence, if IsTransition doesn't 
+      ///              pass                                                   
       constexpr ::std::pair<Token, Token> ReplacePatterns[] {
-         {"const",  "const "},
+         {"*const ",  "* const"},
+         {" *const",  "* const"},
+         {" *",  "*"},
+         {" &",  "&"},
+         {" >",  ">"},
 
          {IsolateTypename<::std::int8_t>(),  "int8"},
          {IsolateTypename<::std::int16_t>(), "int16"},
@@ -95,6 +99,14 @@ namespace Langulus::RTTI
          {IsolateTypename<::std::uint16_t>(), "uint16"},
          {IsolateTypename<::std::uint32_t>(), "uint32"},
          {IsolateTypename<::std::uint64_t>(), "uint64"},
+
+         {"class ", ""},
+         {"struct ", ""},
+         {"enum ", ""},
+         {"Langulus::", ""},
+
+         {"(__cdecl *)", ""},
+         {" (*)", ""}
       };
 
       /// Check if a token transition happens at the given offsets            
@@ -105,53 +117,27 @@ namespace Langulus::RTTI
       NOD() constexpr bool IsTransition(const Token& source, const Token& remaining, Count s) {
          return (
                remaining.data() == source.data()
-               or IsAlpha(*(remaining.data()))
-               != IsAlpha(*(remaining.data() - 1))
+               or     IsAlpha(*(remaining.data()))
+                  !=  IsAlpha(*(remaining.data() - 1))
+               or not IsAlpha(*(remaining.data()))
             ) and (
                remaining.data() + s == source.data() + source.size()
-               or IsAlpha(*(remaining.data() + s))
-               != IsAlpha(*(remaining.data() + s - 1))
+               or     IsAlpha(*(remaining.data() + s))
+                  !=  IsAlpha(*(remaining.data() + s - 1))
+               or not IsAlpha(*(remaining.data() + s - 1))
             );
-      }
-
-      /// Perform a potential skip                                            
-      ///   @param remaining - [in/out] the remaining token                   
-      ///   @param recycle - [out]                                            
-      constexpr void Skip(const Token& source, Token& remaining, bool& recycle) {
-         while (remaining.size() > 0 and IsSpace(remaining[0])) {
-            remaining.remove_prefix(1);
-            recycle = true;
-         }
-
-         for (auto skip : SkipPatterns) {
-            if (not remaining.starts_with(skip))
-               continue;
-
-            // Skip the symbol only if it is at the border of an        
-            // alphabetical sequence, or at the edge of Original        
-            if (IsTransition(source, remaining, skip.size())) {
-               remaining.remove_prefix(skip.size());
-               recycle = true;
-               break;
-            }
-         }
       }
 
       /// Do the skip/replace scan without writing to any buffer, in order    
       /// to anticipate the required buffer size                              
-      ///   @attention this function should be in sync with Normalize()       
+      ///   @attention this function should be in sync with                   
+      ///              StatefulNameOfFunc::Normalize()                        
       ///   @return the required buffer size in bytes                         
-      NOD() constexpr ::std::size_t AnticipateSizeOfType(const Token& source) {
-         ::std::size_t it = 0;
-
+      NOD() constexpr ::std::size_t AnticipateSizeOfFunc(const Token& source) {
+         ::std::size_t it = 9; // size of "Function<" prefix            
          Token remaining = source;
          while (remaining.size() > 0) {
             bool recycle = false;
-
-            // Do skips                                                 
-            Skip(source, remaining, recycle);
-            if (recycle or remaining.size() == 0)
-               continue;
 
             // Do replacements                                          
             for (auto replace : ReplacePatterns) {
@@ -174,13 +160,49 @@ namespace Langulus::RTTI
             remaining.remove_prefix(1);
          }
 
-         ++it;
-         return it;
+         return it + 3; // append ">*"                                  
+      }
+      
+      /// Do the skip/replace scan without writing to any buffer, in order    
+      /// to anticipate the required buffer size                              
+      ///   @attention this function should be in sync with                   
+      ///              StatefulNameOfType::Normalize()                        
+      ///   @return the required buffer size in bytes                         
+      NOD() constexpr ::std::size_t AnticipateSizeOfType(const Token& source) {
+         ::std::size_t it = 0;
+
+         Token remaining = source;
+         while (remaining.size() > 0) {
+            bool recycle = false;
+
+            // Do replacements                                          
+            for (auto replace : ReplacePatterns) {
+               if (not remaining.starts_with(replace.first))
+                  continue;
+
+               if (IsTransition(source, remaining, replace.first.size())) {
+                  it += replace.second.size();
+                  remaining.remove_prefix(replace.first.size());
+                  recycle = true;
+                  break;
+               }
+            }
+
+            if (recycle or remaining.size() == 0)
+               continue;
+
+            // Push anything else                                       
+            ++it;
+            remaining.remove_prefix(1);
+         }
+
+         return it + 1;
       }
 
       /// Do the skip/replace scan without writing to any buffer, in order    
       /// to anticipate the required buffer size                              
-      ///   @attention this function should be in sync with Normalize()       
+      ///   @attention this function should be in sync with                   
+      ///              StatefulNameOfEnum::Normalize()                        
       ///   @return the required buffer size in bytes                         
       NOD() constexpr ::std::size_t AnticipateSizeOfEnum(const Token& source, const Token& enumName) {
          ::std::size_t it = 0;
@@ -194,9 +216,64 @@ namespace Langulus::RTTI
          const auto nameStart = source.find_last_of(':');
          auto name = source;
          name.remove_prefix(nameStart + 1);
-         it += name.size();
-         return ++it;
+         return it + name.size() + 1;
       }
+
+
+      /// Inner structure, used to retain state computed at compile time      
+      /// It's a workaround for the lack of static variables in constexpr     
+      /// functions in c++20                                                  
+      template<class T>
+      struct StatefulNameOfFunc {
+         /// Do the skip/replace scan and return the demangled name           
+         ///   @attention this function should be in sync with                
+         ///              AnticipateSizeOfFunc()                              
+         ///   @return the normalized compile-time token for T                
+         NOD() static constexpr auto Normalize() {
+            constexpr Token Original = IsolateTypename<T>();
+            ::std::size_t it = 0;
+            ::std::array<char, AnticipateSizeOfFunc(Original)> output {};
+
+            for (auto c : "Function<")
+               output[it++] = c;
+            --it;
+
+            Token remaining = Original;
+            while (remaining.size() > 0) {
+               bool recycle = false;
+               
+               // Do replacements                                       
+               for (auto replace : ReplacePatterns) {
+                  if (not remaining.starts_with(replace.first))
+                     continue;
+
+                  if (IsTransition(Original, remaining, replace.first.size())) {
+                     for (auto c : replace.second)
+                        output[it++] = c;
+
+                     remaining.remove_prefix(replace.first.size());
+                     recycle = true;
+                     break;
+                  }
+               }
+
+               if (recycle or remaining.size() == 0)
+                  continue;
+
+               // Push anything else                                    
+               output[it++] = remaining[0];
+               remaining.remove_prefix(1);
+            }
+
+            output[it++] = '>';
+            output[it++] = '*';
+            output[it] = '\0';
+            return output;
+         }
+
+         static constexpr auto Name = Normalize();
+      };
+      
 
       /// Inner structure, used to retain state computed at compile time      
       /// It's a workaround for the lack of static variables in constexpr     
@@ -204,7 +281,8 @@ namespace Langulus::RTTI
       template<class T>
       struct StatefulNameOfType {
          /// Do the skip/replace scan and return the demangled name           
-         ///   @attention this function should be in sync with Anticipate()   
+         ///   @attention this function should be in sync with                
+         ///              AnticipateSizeOfType()                              
          ///   @return the normalized compile-time token for T                
          NOD() static constexpr auto Normalize() {
             constexpr Token Original = IsolateTypename<T>();
@@ -214,11 +292,6 @@ namespace Langulus::RTTI
             Token remaining = Original;
             while (remaining.size() > 0) {
                bool recycle = false;
-
-               // Do skips                                              
-               Skip(Original, remaining, recycle);
-               if (recycle or remaining.size() == 0)
-                  continue;
                
                // Do replacements                                       
                for (auto replace : ReplacePatterns) {
@@ -255,13 +328,15 @@ namespace Langulus::RTTI
          static constexpr auto Name = Normalize();
       };
 
+
       /// Inner structure, used to retain state computed at compile time      
       /// It's a workaround for the lack of static variables in constexpr     
       /// functions in c++20                                                  
       template<auto E>
       struct StatefulNameOfEnum {
          /// Do the skip/replace scan and return the demangled name           
-         ///   @attention this function should be in sync with Anticipate()   
+         ///   @attention this function should be in sync with                
+         ///              AnticipateSizeOfEnum()                              
          ///   @return the normalized compile-time token for E                
          NOD() static constexpr auto Normalize() {
             constexpr Token Original = IsolateConstant<E>();
@@ -296,13 +371,17 @@ namespace Langulus::RTTI
 
    } // namespace Inner
 
+
    /// Get the name of a type, templated or not, with consistently named      
    /// template arguments, even if nested, if such are required               
    ///   @tparam T - the type to get the name of                              
    ///   @return the type name                                                
    template<class T>
    NOD() constexpr Token CppNameOf() noexcept {
-      return Inner::StatefulNameOfType<T>::Name.data();
+      if constexpr (::std::is_function_v<Decay<T>>)
+         return Inner::StatefulNameOfFunc<T>::Name.data();
+      else
+         return Inner::StatefulNameOfType<T>::Name.data();
    }
    
    /// Same as NameOf, but removes all namespaces                             
@@ -310,30 +389,34 @@ namespace Langulus::RTTI
    ///   @return the type name                                                
    template<class T>
    NOD() constexpr Token LastCppNameOf() noexcept {
-      // Find the last ':' symbol, that is not inside <...> scope       
-      Token name = Inner::StatefulNameOfType<T>::Name.data();
-      size_t depth = 0;
-      for (auto i = name.size(); i > 0; --i) {
-         switch (name[i - 1]) {
-         case ':':
-            if (depth == 0) {
-               name.remove_prefix(i);
-               return name;
+      if constexpr (::std::is_function_v<Decay<T>>)
+         return Inner::StatefulNameOfFunc<T>::Name.data();
+      else {
+         // Find the last ':' symbol, that is not inside <...> scope    
+         Token name = Inner::StatefulNameOfType<T>::Name.data();
+         size_t depth = 0;
+         for (auto i = name.size(); i > 0; --i) {
+            switch (name[i - 1]) {
+            case ':':
+               if (depth == 0) {
+                  name.remove_prefix(i);
+                  return name;
+               }
+               break;
+            case '>':
+               ++depth;
+               break;
+            case '<':
+               --depth;
+               break;
+            default:
+               break;
             }
-            break;
-         case '>':
-            ++depth;
-            break;
-         case '<':
-            --depth;
-            break;
-         default:
-            break;
          }
-      }
 
-      // Something's not right if this was reached                      
-      return "";
+         // Something's not right if this was reached                   
+         return "";
+      }
    }
 
    /// Get the name of a named constant                                       
