@@ -423,7 +423,6 @@ namespace Langulus::RTTI
          auto denser = MetaData::Of<Deptr<T>>();
          generated = *denser;
          generated.mDeptr = denser;
-         generated.mPool = nullptr;
 
          #if LANGULUS_FEATURE(MANAGED_REFLECTION)
             // Set library boundary                                     
@@ -431,6 +430,8 @@ namespace Langulus::RTTI
          #endif
 
          #if LANGULUS_FEATURE(MANAGED_MEMORY)
+            generated.mPool = nullptr;
+
             // Pool tactic is always default for pointers, unless these 
             // pointers have been registered outside MAIN boundary      
             #if LANGULUS_FEATURE(MANAGED_REFLECTION)
@@ -528,7 +529,6 @@ namespace Langulus::RTTI
       generated = *denser;
       generated.mOrigin = denser;
       generated.mDecvq = MetaData::Of<Decvq<T>>();
-      generated.mPool = nullptr;
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Set library boundary                                        
@@ -536,6 +536,8 @@ namespace Langulus::RTTI
       #endif
 
       #if LANGULUS_FEATURE(MANAGED_MEMORY)
+         generated.mPool = nullptr;
+
          // If pool tactic is default, turn it Typed if outside MAIN    
          if (generated.mPoolTactic == PoolTactic::Default) {
             #if LANGULUS_FEATURE(MANAGED_REFLECTION)
