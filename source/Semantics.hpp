@@ -514,7 +514,7 @@ namespace Langulus
       LANGULUS_ASSUME(DevAssumes, placement, "Invalid placement pointer");
 
       if constexpr (CT::Inner::Abstract<T>) {
-         // Can't create abstract stuff                                 
+         // Can't instantiate abstract type                             
          if constexpr (FAKE)
             return Inner::Unsupported {};
          else
@@ -694,7 +694,9 @@ namespace Langulus::CT
 {
    namespace Inner
    {
-
+      //TODO make non shallow semantics always check Decay<T>, even if inner?
+      // could help generalizing and eliminating the need for separate
+      // ShallowSemantic and DeepSemantic signatures in constructors/assignments
       /// Check if T is semantic-constructible by S                           
       template<template<class> class S, class T>
       concept SemanticMakable = Semantic<S<T>> and requires (T&& a) {

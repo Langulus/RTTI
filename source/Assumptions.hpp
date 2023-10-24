@@ -148,4 +148,4 @@ namespace Langulus
 #endif
 
 /// Convenience macro for specifying temporary lazyness                       
-#define TODO() LANGULUS_THROW(ToDo, "Unfinished code")
+#define TODO() LANGULUS_OOPS(ToDo, "Unfinished code")

@@ -848,7 +848,7 @@ namespace Langulus::RTTI
       // Wrap the == operator of the origin type inside a lambda        
       if constexpr (CT::Comparable<T, T>) {
          generated.mComparer = 
-            [](const void* t1, const void* t2) {
+            [](const void* t1, const void* t2) -> bool {
                auto t1T = static_cast<const T*>(t1);
                auto t2T = static_cast<const T*>(t2);
                return *t1T == *t2T;
@@ -1198,7 +1198,7 @@ namespace Langulus::RTTI
       Count scanned {};
       for (auto& b : mOrigin->mBases) {
          // Check base                                                  
-         if (type->Is(b.mType)) {
+         if (type->IsExact(b.mType)) {
             if (scanned == offset) {
                base = b;
                return true;
@@ -1237,7 +1237,7 @@ namespace Langulus::RTTI
    template<CT::Data T>
    LANGULUS(INLINED)
    bool MetaData::GetBase(Offset offset, Base& base) const {
-      return GetBase(MetaData::Of<T>(), offset, base);
+      return GetBase(MetaData::Of<Decay<T>>(), offset, base);
    }
 
    /// A simple check if a reflected base is linked to this meta data         
