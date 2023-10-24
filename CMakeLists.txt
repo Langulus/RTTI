@@ -10,8 +10,8 @@ if(PROJECT_IS_TOP_LEVEL OR NOT LANGULUS)
     include(LangulusUtilities.cmake)
 
     # Add Langulus::Core & Logger libraries                                 
-    fetch_langulus_module(Core   GIT_TAG 21cf8d630324518797087a811860b102daf27d08)
-    fetch_langulus_module(Logger GIT_TAG 3314fbe)
+    fetch_langulus_module(Core   GIT_TAG d52feac3e995e3eeac44fadd7812361919b73a11)
+    fetch_langulus_module(Logger GIT_TAG 3314fbe3bf5611a5bd9ee649f2a6ba5c43f6b4c4)
 endif()
 
 # Build and install library                                                 
