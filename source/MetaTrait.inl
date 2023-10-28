@@ -9,6 +9,8 @@
 #pragma once
 #include "MetaTrait.hpp"
 
+#define VERBOSE(...) //Logger::Verbose("RTTI: ", __VA_ARGS__)
+
 
 namespace Langulus::RTTI
 {
@@ -65,28 +67,20 @@ namespace Langulus::RTTI
       // reflection function might end up forever looping otherwise     
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          meta = Instance.RegisterTrait(GetReflectedToken<T>());
+         MetaTrait& generated = *const_cast<MetaTrait*>(meta);
       #else
          meta = ::std::make_unique<MetaTrait>();
+         MetaTrait& generated = *const_cast<MetaTrait*>(meta.get());
       #endif
 
       // We'll try to explicitly or implicitly reflect it               
       if constexpr (CT::Reflectable<T>) {
          // The trait is explicitly reflected with a custom function    
          // Let's call it...                                            
-         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            *const_cast<MetaTrait*>(meta) = T::Reflect();
-         #else
-            *const_cast<MetaTrait*>(meta.get()) = T::Reflect();
-         #endif
+         generated = T::Reflect();
       }
       else {
          // Type is implicitly reflected, so let's do our best          
-         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            MetaTrait& generated = *const_cast<MetaTrait*>(meta);
-         #else
-            MetaTrait& generated = *const_cast<MetaTrait*>(meta.get());
-         #endif
-
          generated.mToken = GetReflectedToken<T>();
          if constexpr (requires { T::CTTI_Info; })
             generated.mInfo = T::CTTI_Info;
@@ -98,12 +92,11 @@ namespace Langulus::RTTI
             generated.mVersionMinor = T::CTTI_VersionMinor;
       }
 
-      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         const_cast<MetaTrait*>(meta)->mLibraryName = RTTI::Boundary;
-         return meta;
-      #else
-         return meta.get();
-      #endif
+      IF_LANGULUS_MANAGED_REFLECTION(generated.mLibraryName = RTTI::Boundary);
+
+      VERBOSE("Trait ", Logger::Push, Logger::Purple, generated.mToken,
+         Logger::Pop, Logger::Green, " registered (", generated.mLibraryName, ")");
+      return &generated;
    }
 
    /// Check if two meta definitions match exactly                            
@@ -140,3 +133,7 @@ namespace Langulus::RTTI
    }
 
 } // namespace Langulus::RTTI
+
+#ifdef VERBOSE
+   #undef VERBOSE
+#endif

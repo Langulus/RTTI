@@ -9,9 +9,29 @@
 #pragma once
 #include "MetaVerb.hpp"
 
+#define VERBOSE(...) //Logger::Verbose("RTTI: ", __VA_ARGS__)
+
 
 namespace Langulus::RTTI
 {
+
+   /// Isolate and lowercase an operator token                                
+   ///   @param token - the operator                                          
+   ///   @return the lowercased and isolated operator token                   
+   LANGULUS(INLINED)
+   Lowercase IsolateOperator(const Token& token) noexcept {
+      // Skip skippable at the front and the back of token              
+      auto l = token.data();
+      auto r = token.data() + token.size();
+      while (l < r and *l <= 32)
+         ++l;
+
+      while (r > l and *(r-1) <= 32)
+         --r;
+
+      // Lowercase the isolated token                                   
+      return ToLowercase(token.substr(l - token.data(), r - l));
+   }
 
    /// Get the reflected positive token for a verb                            
    ///   @return the token                                                    
@@ -147,28 +167,20 @@ namespace Langulus::RTTI
             MetaVerb::GetReflectedPositiveVerbOperator<T>(),
             MetaVerb::GetReflectedNegativeVerbOperator<T>()
          );
+         MetaVerb& generated = *const_cast<MetaVerb*>(meta);
       #else
          meta = ::std::make_unique<MetaVerb>();
+         MetaVerb& generated = *const_cast<MetaVerb*>(meta.get());
       #endif
 
       // We'll try to explicitly or implicitly reflect it               
       if constexpr (CT::Reflectable<T>) {
          // The verb is explicitly reflected with a custom function     
          // Let's call it...                                            
-         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            *const_cast<MetaVerb*>(meta) = T::Reflect();
-         #else
-            *const_cast<MetaVerb*>(meta.get()) = T::Reflect();
-         #endif
+         generated = T::Reflect();
       }
       else {
          // Verb is implicitly reflected, so let's do our best          
-         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            MetaVerb& generated = *const_cast<MetaVerb*>(meta);
-         #else
-            MetaVerb& generated = *const_cast<MetaVerb*>(meta.get());
-         #endif
-
          generated.mToken = 
             MetaVerb::GetReflectedPositiveVerbToken<T>();
          generated.mTokenReverse = 
@@ -207,12 +219,25 @@ namespace Langulus::RTTI
             generated.mStatelessInvocation = FStatelessVerb {T::ExecuteStateless};
       }
 
-      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         const_cast<MetaVerb*>(meta)->mLibraryName = RTTI::Boundary;
-         return meta;
-      #else
-         return meta.get();
-      #endif
+      IF_LANGULUS_MANAGED_REFLECTION(generated.mLibraryName = RTTI::Boundary);
+
+      if (generated.mOperator.size()) {
+         const auto op1 = IsolateOperator(generated.mOperator);
+         VERBOSE("Operator ", Logger::Push, Logger::DarkGreen, op1,
+            Logger::Pop, Logger::Green, " registered (", generated.mLibraryName, ")");
+      }
+
+      if (generated.mOperatorReverse.size() and generated.mOperatorReverse != generated.mOperator) {
+         const auto op2 = IsolateOperator(generated.mOperatorReverse);
+         VERBOSE("Operator ", Logger::Push, Logger::DarkGreen, op2,
+            Logger::Pop, Logger::Green, " registered (", generated.mLibraryName, ")");
+      }
+
+      VERBOSE("Verb ", Logger::Push, Logger::DarkGreen,
+         generated.mToken, "/", generated.mTokenReverse,
+         Logger::Pop, Logger::Green, " registered (", generated.mLibraryName, ")");
+
+      return &generated;
    }
 
    /// Check if two meta definitions match exactly                            
@@ -249,3 +274,7 @@ namespace Langulus::RTTI
    }
 
 } // namespace Langulus::RTTI
+
+#ifdef VERBOSE
+   #undef VERBOSE
+#endif

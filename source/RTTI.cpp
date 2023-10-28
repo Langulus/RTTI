@@ -7,13 +7,14 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #include "RTTI.hpp"
-#include "MetaData.hpp"
-#include "MetaVerb.hpp"
-#include "MetaTrait.hpp"
+#include "MetaData.inl"
+#include "MetaVerb.inl"
+#include "MetaTrait.inl"
 #include "Assumptions.hpp"
 #include <cctype>
 
 #define VERBOSE(...) //Logger::Verbose("RTTI: ", __VA_ARGS__)
+
 
 namespace Langulus::RTTI
 {
@@ -61,23 +62,6 @@ namespace Langulus::RTTI
       }
 
       return token;
-   }
-
-   /// Isolate and lowercase an operator token                                
-   ///   @param token - the operator                                          
-   ///   @return the lowercased and isolated operator token                   
-   Lowercase IsolateOperator(const Token& token) noexcept {
-      // Skip skippable at the front and the back of token              
-      auto l = token.data();
-      auto r = token.data() + token.size();
-      while (l < r and *l <= 32)
-         ++l;
-
-      while (r > l and *(r-1) <= 32)
-         --r;
-
-      // Lowercase the isolated token                                   
-      return ToLowercase(token.substr(l - token.data(), r - l));
    }
 
    /// Get an existing meta data definition by its token                      
@@ -273,7 +257,6 @@ namespace Langulus::RTTI
       // If reached, then not found, so insert a new definition         
       const auto newDefinition = new MetaData {};
       mMetaData.insert({::std::move(lc), newDefinition});
-      VERBOSE("Data ", token, " registered");
 
       // Insert the last token to the ambiguity map                     
       RegisterAmbiguous(token, newDefinition);
@@ -293,7 +276,6 @@ namespace Langulus::RTTI
       // If reached, then not found, so insert a new definition         
       const auto newDefinition = new MetaConst {};
       mMetaConstants.insert({::std::move(lc), newDefinition});
-      VERBOSE("Constant ", token, " registered");
 
       // Insert the last token to the ambiguity map                     
       RegisterAmbiguous(token, newDefinition);
@@ -312,7 +294,6 @@ namespace Langulus::RTTI
       // If reached, then not found, so emplace a new definition			
       const auto newDefinition = new MetaTrait {};
       mMetaTraits.insert({::std::move(lc), newDefinition});
-      VERBOSE("Trait ", token, " registered");
 
       // Insert the last token to the ambiguity map							
       RegisterAmbiguous(token, newDefinition);
@@ -494,21 +475,28 @@ namespace Langulus::RTTI
 
          if (definition->mOperator.size()) {
             const auto op1 = IsolateOperator(definition->mOperator);
-            VERBOSE("Operator ", Logger::Push, Logger::Green, op1, 
+            VERBOSE("Operator ", Logger::Push, Logger::DarkGreen, op1,
                Logger::Pop, Logger::Red, " unregistered (", library, ")");
             mOperators.erase(op1);
          }
 
-         if (definition->mOperatorReverse.size()) {
+         if (definition->mOperatorReverse.size() and definition->mOperatorReverse != definition->mOperator) {
             const auto op2 = IsolateOperator(definition->mOperatorReverse);
-            VERBOSE("Operator ", Logger::Push, Logger::Green, op2,
+            VERBOSE("Operator ", Logger::Push, Logger::DarkGreen, op2,
                Logger::Pop, Logger::Red, " unregistered (", library, ")");
             mOperators.erase(op2);
          }
 
-         VERBOSE("Verb ", Logger::Push, Logger::Green, 
-            definition->mToken, "/", definition->mTokenReverse, 
-            Logger::Pop, Logger::Red, " unregistered (", library, ")");
+         if (definition->mToken != definition->mTokenReverse) {
+            VERBOSE("Verb ", Logger::Push, Logger::DarkGreen,
+               definition->mToken, "/", definition->mTokenReverse,
+               Logger::Pop, Logger::Red, " unregistered (", library, ")");
+         }
+         else {
+            VERBOSE("Verb ", Logger::Push, Logger::DarkGreen,
+               definition->mToken, Logger::Pop, Logger::Red,
+               " unregistered (", library, ")");
+         }
 
          UnregisterAmbiguous(definition->mToken, meta->second);
          UnregisterAmbiguous(definition->mTokenReverse, meta->second);
