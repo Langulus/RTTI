@@ -16,6 +16,8 @@
 #endif
 #include <Core/Utilities.hpp>
 
+#define VERBOSE(...) //Logger::Verbose("RTTI: ", __VA_ARGS__)
+
 
 namespace Langulus::RTTI
 {
@@ -264,11 +266,9 @@ namespace Langulus::RTTI
    ///   @return the converter                                                
    template<class T, class TO>
    Converter Converter::From() noexcept {
-      if constexpr (CT::Void<TO>)
+      if constexpr (CT::Void<TO> or CT::Same<T, TO>)
          return {};
       else {
-         static_assert(not CT::Same<T, TO>,
-            "Conversion types can't be similar");
          static_assert(CT::Convertible<T, TO>,
             "Converter reflected, but conversion is not possible - "
             "implement a public cast operator in T, or a public constructor in TO,"
@@ -424,11 +424,6 @@ namespace Langulus::RTTI
          generated = *denser;
          generated.mDeptr = denser;
 
-         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            // Set library boundary                                     
-            generated.mLibraryName = RTTI::Boundary;
-         #endif
-
          #if LANGULUS_FEATURE(MANAGED_MEMORY)
             generated.mPool = nullptr;
 
@@ -447,11 +442,17 @@ namespace Langulus::RTTI
          // The denser type is incomplete, so nothing really is known   
          // about it                                                    
          generated.mInfo = "<incomplete type pointer>";
-
-         // Set library boundary                                        
-         IF_LANGULUS_MANAGED_REFLECTION(generated.mLibraryName = RTTI::Boundary);
       }
-      
+
+      // Set library boundary - non-origin types are always associated  
+      // with their origin type, if reflected by MAIN                   
+      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         if (RTTI::Boundary == "MAIN" and generated.mOrigin)
+            generated.mLibraryName = generated.mOrigin->mLibraryName;
+         else
+            generated.mLibraryName = RTTI::Boundary;
+      #endif
+
       // Overwrite pointer-specific stuff                               
       generated.mDecvq = MetaData::Of<Decvq<T>>();
       generated.mToken = NameOf<T>();
@@ -471,12 +472,10 @@ namespace Langulus::RTTI
          const Size elements = threshold / sizeof(void*);
          generated.mAllocationTable[bit] = ::std::max(minElements, elements);
       }
-      
-      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         return meta;
-      #else
-         return meta.get();
-      #endif
+
+      VERBOSE("Data ", Logger::Push, Logger::Cyan, generated.mToken,
+         Logger::Pop, Logger::Green, " registered (", generated.mLibraryName, ")");
+      return &generated;
    }
 
    /// Reflect a constant dense type, optimized to reuse origin type          
@@ -530,9 +529,13 @@ namespace Langulus::RTTI
       generated.mOrigin = denser;
       generated.mDecvq = MetaData::Of<Decvq<T>>();
 
+      // Set library boundary - non-origin types are always associated  
+      // with their origin type, if reflected by MAIN                   
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         // Set library boundary                                        
-         generated.mLibraryName = RTTI::Boundary;
+         if (RTTI::Boundary == "MAIN" and generated.mOrigin)
+            generated.mLibraryName = generated.mOrigin->mLibraryName;
+         else
+            generated.mLibraryName = RTTI::Boundary;
       #endif
 
       #if LANGULUS_FEATURE(MANAGED_MEMORY)
@@ -555,12 +558,10 @@ namespace Langulus::RTTI
       generated.mCppName = CppNameOf<T>();
       generated.mHash = Meta::GenerateHash<T>(NameOf<T>());
       generated.mIsConstant = CT::Constant<T>;
-      
-      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         return meta;
-      #else
-         return meta.get();
-      #endif
+
+      VERBOSE("Data ", Logger::Push, Logger::Cyan, generated.mToken,
+         Logger::Pop, Logger::Green, " registered (", generated.mLibraryName, ")");
+      return &generated;
    }
 
    /// Reflect a fully decayed (origin) type                                  
@@ -646,10 +647,8 @@ namespace Langulus::RTTI
             generated.mAllocationTable[bit] = ::std::max(minElements, elements);
          }
 
-         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            // Consider the boundary and pool tactics                   
-            generated.mLibraryName = RTTI::Boundary;
-         #endif
+         // Consider the boundary and pool tactics                      
+         IF_LANGULUS_MANAGED_REFLECTION(generated.mLibraryName = RTTI::Boundary);
 
          #if LANGULUS_FEATURE(MANAGED_MEMORY)
             if constexpr (requires { T::CTTI_Pool; })
@@ -696,45 +695,50 @@ namespace Langulus::RTTI
 
          ReflectOriginType<T>(generated);
       }
-      
-      // Make sure we register the pointered/immutable alternatives     
-      // It's paramount we do this after this meta has been generated   
-      //(void)MetaData::Of<T*>();
-      //(void)MetaData::Of<const T*>();
-      //(void)MetaData::Of<const T>();
 
-      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         return meta;
-      #else
-         return meta.get();
-      #endif
+      VERBOSE("Data ", Logger::Push, Logger::Cyan, generated.mToken,
+         Logger::Pop, Logger::Green, " registered (", generated.mLibraryName, ")");
+      return &generated;
    }
 
    /// Integrate fundamental types with the reflection system                 
-   /// Like, for example, implicitly adding a A::Number bases to number types 
+   /// Like, for example, implicitly adding A::Number bases to number types,  
+   /// and adding converters between fundamentals                             
    template<CT::Fundamental T>
    void MetaData::ReflectFundamentalType(MetaData& generated) noexcept {
       static_assert(CT::Complete<T>, "T must be a complete type");
+      using Converters = TTypeList<
+         bool,
+         wchar_t, char8_t, char16_t, char32_t,
+         ::std::int8_t,  ::std::int16_t,  ::std::int32_t,  ::std::int64_t,
+         ::std::uint8_t, ::std::uint16_t, ::std::uint32_t, ::std::uint64_t,
+         float, double
+      >;
 
       if constexpr (CT::Bool<T>) {
          using Bases = TTypeList<A::Bool>;
          generated.SetBases<T>(Bases {});
+         generated.SetConverters<T>(Converters {});
       }
       else if constexpr (CT::Character<T>) {
          using Bases = TTypeList<A::Text>;
          generated.SetBases<T>(Bases {});
+         generated.SetConverters<T>(Converters {});
       }
       else if constexpr (CT::SignedInteger<T>) {
          using Bases = TTypeList<A::SignedInteger>;
          generated.SetBases<T>(Bases {});
+         generated.SetConverters<T>(Converters {});
       }
       else if constexpr (CT::UnsignedInteger<T>) {
          using Bases = TTypeList<A::UnsignedInteger>;
          generated.SetBases<T>(Bases {});
+         generated.SetConverters<T>(Converters {});
       }
       else if constexpr (CT::Real<T>) {
          using Bases = TTypeList<A::Real>;
          generated.SetBases<T>(Bases {});
+         generated.SetConverters<T>(Converters {});
       }
       else LANGULUS_ERROR("Unimplemented fundamental type reflector");
    }
@@ -994,6 +998,9 @@ namespace Langulus::RTTI
             cmeta->mValueType = &generated;
             new (staticInstances + i) T {{T::CTTI_NamedValues[i].mValue}};
             cmeta->mPtrToValue = staticInstances + i;
+
+            VERBOSE("Constant ", Logger::Push, Logger::Yellow, cmeta->mToken,
+               Logger::Pop, Logger::Green, " registered (", cmeta->mLibraryName, ")");
 
             generated.mNamedValues.emplace_back(cmeta);
          }
@@ -1662,3 +1669,7 @@ namespace Langulus::RTTI
    }
 
 } // namespace Langulus::RTTI
+
+#ifdef VERBOSE
+   #undef VERBOSE
+#endif

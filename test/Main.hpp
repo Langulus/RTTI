@@ -151,7 +151,7 @@ struct ImplicitlyReflectedData {
 
 class alignas(128) ImplicitlyReflectedDataWithTraits : public ImplicitlyReflectedData {
 public:
-   int member {};
+   int member {664};
    bool anotherMember {};
    int anotherMemberArray [12] {};
    int* sparseMember {};

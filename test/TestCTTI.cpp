@@ -281,6 +281,17 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
             REQUIRE(meta->mMembers[3].mOffset > meta->mMembers[2].mOffset);
             REQUIRE(meta->mMembers[3].GetTrait() == nullptr);
             REQUIRE(meta->mMembers[3].Is<int>());
+
+            const auto intmeta = MetaData::Of<int>();
+            REQUIRE(meta->mConverters.size() == 1);
+            REQUIRE(meta->mConverters.at(intmeta).mDestrinationType->Is<int>());
+            REQUIRE(meta->mConverters.at(intmeta).mFunction);
+            REQUIRE(meta->GetConverter<int>() == meta->mConverters.at(intmeta).mFunction);
+            REQUIRE(meta->GetConverter(intmeta) == meta->mConverters.at(intmeta).mFunction);
+
+            int converted = 1;
+            meta->GetConverter(intmeta)(&instance, &converted);
+            REQUIRE(converted == 664);
          }
       }
    }
