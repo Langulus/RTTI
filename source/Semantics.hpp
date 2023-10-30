@@ -139,7 +139,10 @@ namespace Langulus
       template<class ALT_T = T>
       LANGULUS(INLINED)
       constexpr decltype(auto) Forward() const noexcept {
-         static_assert(CT::NotSemantic<ALT_T>, "Can't nest semantics");
+         static_assert(CT::NotSemantic<ALT_T>,
+            "Can't nest semantics");
+         static_assert(CT::Similar<T, ALT_T> or CT::DerivedFrom<T, ALT_T>,
+            "Can't forward as this type");
          return Copied<ALT_T> {mValue};
       }
 
@@ -210,7 +213,10 @@ namespace Langulus
       template<class ALT_T = T>
       LANGULUS(INLINED)
       constexpr decltype(auto) Forward() const noexcept {
-         static_assert(CT::NotSemantic<ALT_T>, "Can't nest semantics");
+         static_assert(CT::NotSemantic<ALT_T>,
+            "Can't nest semantics");
+         static_assert(CT::Similar<T, ALT_T> or CT::DerivedFrom<T, ALT_T>,
+            "Can't forward as this type");
          return Moved<ALT_T> {::std::forward<ALT_T>(mValue)};
       }
 
@@ -300,7 +306,10 @@ namespace Langulus
       template<class ALT_T = T>
       LANGULUS(INLINED)
       constexpr decltype(auto) Forward() const noexcept {
-         static_assert(CT::NotSemantic<ALT_T>, "Can't nest semantics");
+         static_assert(CT::NotSemantic<ALT_T>,
+            "Can't nest semantics");
+         static_assert(CT::Similar<T, ALT_T> or CT::DerivedFrom<T, ALT_T>,
+            "Can't forward as this type");
          return Abandoned<ALT_T> {::std::forward<ALT_T>(mValue)};
       }
 
@@ -381,7 +390,10 @@ namespace Langulus
       template<class ALT_T = T>
       LANGULUS(INLINED)
       constexpr decltype(auto) Forward() const noexcept {
-         static_assert(CT::NotSemantic<ALT_T>, "Can't nest semantics");
+         static_assert(CT::NotSemantic<ALT_T>,
+            "Can't nest semantics");
+         static_assert(CT::Similar<T, ALT_T> or CT::DerivedFrom<T, ALT_T>,
+            "Can't forward as this type");
          return Disowned<ALT_T> {mValue};
       }
 
@@ -442,7 +454,10 @@ namespace Langulus
       template<class ALT_T = T>
       LANGULUS(INLINED)
       constexpr decltype(auto) Forward() const noexcept {
-         static_assert(CT::NotSemantic<ALT_T>, "Can't nest semantics");
+         static_assert(CT::NotSemantic<ALT_T>,
+            "Can't nest semantics");
+         static_assert(CT::Similar<T, ALT_T> or CT::DerivedFrom<T, ALT_T>,
+            "Can't forward as this type");
          return Cloned<ALT_T> {mValue};
       }
 
@@ -834,12 +849,12 @@ namespace Langulus::CT
    concept MoveAssignable = (SemanticAssignable<Langulus::Moved, T> and ...);
 
 
-   /// Check if the origin T is descriptor-constructible                   
+   /// Check if the origin T is descriptor-constructible                      
    template<class... T>
    concept DescriptorMakable = Complete<Decay<T>...>
       and (Inner::DescriptorMakable<Decay<T>> and ...);
 
-   /// Check if the origin T is noexcept-descriptor-constructible          
+   /// Check if the origin T is noexcept-descriptor-constructible             
    template<class... T>
    concept DescriptorMakableNoexcept = Complete<Decay<T>...>
       and (Inner::DescriptorMakableNoexcept<Decay<T>> and ...);
