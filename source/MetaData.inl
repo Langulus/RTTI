@@ -715,7 +715,8 @@ namespace Langulus::RTTI
          float, double
       >;
 
-      if constexpr (CT::Bool<T>) {
+      if constexpr (CT::Nullptr<T>) { }
+      else if constexpr (CT::Bool<T>) {
          using Bases = TTypeList<A::Bool>;
          generated.SetBases<T>(Bases {});
          generated.SetConverters<T>(Converters {});
