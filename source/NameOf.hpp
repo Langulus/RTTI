@@ -429,27 +429,7 @@ namespace Langulus::RTTI
 
 namespace Langulus
 {
-
-   ///                                                                        
-   ///   NameOf that also considers LANGULUS(NAME) reflection, if any         
-   ///                                                                        
-   template<CT::Data T>
-   constexpr Token NameOf() noexcept {
-      using DT = Decay<T>;
-      if constexpr (CT::Decayed<T> and requires { DT::CTTI_Name; })
-         return DT::CTTI_Name;
-      else
-         return RTTI::CppNameOf<T>();
-   }
    
-   ///                                                                        
-   ///   NameOf for enum types                                                
-   ///                                                                        
-   template<auto E>
-   constexpr Token NameOf() noexcept {
-      return RTTI::CppNameOf<E>();
-   }
-
    template<class CLASS>
    struct Of {};
 
@@ -473,5 +453,67 @@ namespace Langulus
          return Token {GeneratedClassName.data()};
       }
    };
+
+   /// Custom name generator at compile-time for sparse stuff                 
+   template<CT::NotDecayed T>
+   constexpr auto CustomName(Of<T>&&) noexcept {
+      if constexpr (CT::Sparse<T>) {
+         // Get the depointered name, and append a pointer to it        
+         constexpr auto token = NameOf<Deptr<T>>();
+         ::std::array<char, token.size() + 2> tokenPtr;
+         ::std::size_t idx {};
+
+         for (auto i : token)
+            tokenPtr[idx++] = i;
+         tokenPtr[idx++] = '*';
+         tokenPtr[idx] = '\0';
+         return tokenPtr;
+      }
+      else {
+         // Get the unqualified name, and append const to it            
+         constexpr auto token = NameOf<Decvq<T>>();
+         ::std::array<char, token.size() + 7> constToken;
+         ::std::size_t idx {};
+
+         if constexpr (CT::Constant<T>) {
+            for (auto i : "const ")
+               constToken[idx++] = i;
+            --idx;
+         }
+
+         for (auto i : token)
+            constToken[idx++] = i;
+         constToken[idx] = '\0';
+         return constToken;
+      }
+   }
+
+
+   ///                                                                        
+   ///   NameOf that also considers LANGULUS(NAME) reflection, if any         
+   ///                                                                        
+   template<CT::Data T>
+   constexpr Token NameOf() noexcept {
+      using DT = Decay<T>;
+      if constexpr (requires { DT::CTTI_Name; }) {
+         if constexpr (CT::Decayed<Deref<T>>) {
+            // Just return the custom name                              
+            return DT::CTTI_Name;
+         }
+         else {
+            // Reconstruct the type name around reflected LANGULUS(NAME)
+            return CustomNameOf<Deref<T>>::Generate();
+         }
+      }
+      else return RTTI::CppNameOf<Deref<T>>(); // Fallback to C++ name  
+   }
+   
+   ///                                                                        
+   ///   NameOf for enum types                                                
+   ///                                                                        
+   template<auto E>
+   constexpr Token NameOf() noexcept {
+      return RTTI::CppNameOf<E>();
+   }
 
 } // namespace Langulus
