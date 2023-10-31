@@ -492,6 +492,8 @@ namespace Langulus::RTTI
       static_assert(not CT::Array<T>, 
          "Can't reflect a bounded array type - "
          "either wrap your array in a type, or represent it as a raw pointer");
+      static_assert(not CT::DataReference<T>, 
+         "Can't reflect a reference");
       static_assert(not NameOf<T>().empty(), 
          "Invalid data token is not allowed - "
          "you have probably equipped your type with an empty LANGULUS(NAME)");
@@ -1578,11 +1580,12 @@ namespace Langulus::RTTI
    ///   @return true if at least one of the types matches                    
    template<CT::Data T1, CT::Data... TN>
    constexpr bool MetaData::IsSimilar() const {
-      return IsExact<T1, TN...>()
-          or IsExact<Decvq<T1>, Decvq<TN>...>()
-          or (mDecvq->template IsExact<T1, TN...>()
-              or mDecvq->template IsExact<Decvq<T1>, Decvq<TN>...>())
-          or (mDeptr and mDeptr->template IsSimilar<Deptr<T1>, Deptr<TN>...>());
+      return IsExact<Deref<T1>, Deref<TN>...>()
+          or IsExact<Decvq<Deref<T1>>, Decvq<Deref<TN>>...>()
+          or (mDecvq->template IsExact<Deref<T1>, Deref<TN>...>()
+              or mDecvq->template IsExact<Decvq<Deref<T1>>, Decvq<Deref<TN>>...>())
+          or (mDeptr
+             and mDeptr->template IsSimilar<Deptr<Deref<T1>>, Deptr<Deref<TN>>...>());
    }
 
    /// Check if two meta definitions match origin and sparseness, but ignores 
@@ -1603,10 +1606,14 @@ namespace Langulus::RTTI
    template<CT::Data T1, CT::Data... TN>
    LANGULUS(INLINED)
    constexpr bool MetaData::IsExact() const {
-      if constexpr (CT::Complete<T1, TN...>)
-         return IsExact(MetaData::Of<T1>()) or (IsExact(MetaData::Of<TN>()) or ...);
-      else
+      if constexpr (::std::is_function_v<Deref<T1>>
+                or (::std::is_function_v<Deref<TN>> or ...)) {
          return false;
+      }
+      else {
+         return IsExact(MetaData::Of<Deref<T1>>())
+            or (IsExact(MetaData::Of<Deref<TN>>()) or ...);
+      }
    }
 
    /// Check if two meta definitions match exactly, including any qualifiers  

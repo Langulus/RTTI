@@ -28,7 +28,7 @@ SCENARIO("NameOf", "[nameof]") {
          auto name = NameOf<uint16_t&>();
 
          THEN("Name should be correct") {
-            REQUIRE(name == "uint16&");
+            REQUIRE(name == "uint16");
          }
       }
 
