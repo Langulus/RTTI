@@ -454,6 +454,11 @@ namespace Langulus
       }
    };
 
+   template<CT::Data T>
+   constexpr Token NameOf() noexcept;
+   template<auto E>
+   constexpr Token NameOf() noexcept;
+
    /// Custom name generator at compile-time for sparse stuff                 
    template<CT::NotDecayed T>
    constexpr auto CustomName(Of<T>&&) noexcept {
