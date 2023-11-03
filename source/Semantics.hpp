@@ -775,12 +775,12 @@ namespace Langulus::CT
       concept MoveAssignable = SemanticAssignable<Langulus::Moved, T>;
 
 
-      /// Check if the T is descriptor-assignable                             
+      /// Check if the T is descriptor-constructible                          
       template<class T>
-      concept DescriptorMakable = not Abstract<T>
+      concept DescriptorMakable = not Abstract<T> and not Enum<T>
          and requires { T {Describe {Fake<const Anyness::Neat&>()}}; };
 
-      /// Check if the T is noexcept-descriptor-assignable                    
+      /// Check if the T is noexcept-descriptor-constructible                 
       template<class T>
       concept DescriptorMakableNoexcept = DescriptorMakable<T>
          and noexcept ( T {Describe {Fake<const Anyness::Neat&>()}}  );
