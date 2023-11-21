@@ -152,7 +152,7 @@ namespace Langulus::RTTI
          ::std::unordered_set<const Meta*> origins;
          for (auto& meta : symbols) {
             const auto meta_lc_token = ToLowercase(meta->mToken);
-            if (not meta_lc_token.find(lowercased))
+            if (meta_lc_token.find(lowercased) == std::string::npos)
                continue;
 
             const auto dmeta = dynamic_cast<DMeta>(meta);
