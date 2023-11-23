@@ -225,6 +225,8 @@ class ContainsComplex {
    Complex mData;
 };
 
+struct Type {};
+
 namespace N1 {
    struct Type {};
    struct Create {};
