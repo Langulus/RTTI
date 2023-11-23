@@ -16,5 +16,3 @@ add_test(
 	NAME		LangulusRTTITest
 	COMMAND		LangulusRTTITest
 )
-
-langulus_copy_dlls(LangulusRTTITest ON LangulusRTTITest)
