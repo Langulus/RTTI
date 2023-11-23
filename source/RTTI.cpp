@@ -162,7 +162,7 @@ namespace Langulus::RTTI
                else
                   origins.insert(dmeta);
             }
-            else origins.insert(dmeta);
+            else origins.insert(meta);
          }
 
          LANGULUS_ASSERT(not origins.empty(), Meta,
@@ -172,8 +172,14 @@ namespace Langulus::RTTI
             // Candidate types reduced to a single relevant origin      
             return *origins.begin();
          }
+         else for (auto& candidate : origins) {
+            // There's a chance, that one of the symbols matches the    
+            // lowercased keyword exactly                               
+            if (ToLowercase(candidate->mToken) == lowercased)
+               return candidate;
+         }
 
-         // Ambiguity, report error                                     
+         // Ambiguity if reached, report error and throw                
          {
             auto tab = Logger::Error(
                "Ambiguous symbol: `", keyword,
@@ -203,7 +209,7 @@ namespace Langulus::RTTI
          LANGULUS_THROW(Meta, "Ambiguous symbol");
       }
 
-      // No ambiguity, just return                                      
+      // No ambiguity, just return the single result                    
       return *symbols.begin();
    }
 

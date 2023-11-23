@@ -12,6 +12,7 @@
 
 SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
    GIVEN("Three reflected types with similar names in different namespaces") {
+      const auto n0t = MetaData::Of<Type>();
       const auto n1t = MetaData::Of<N1::Type>();
       const auto n1c = MetaData::Of<N1::Create>();
       const auto n2t = MetaData::Of<N2::Type>();
@@ -22,16 +23,20 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
       //const auto nnn = MetaData::Of<ImplicitlyReflectedData>();
 
       WHEN("Meta is retrieved by exact token, that is not case-sensitive") {
+         REQUIRE(n0t == RTTI::GetMetaData("Type"));
          REQUIRE(n1t == RTTI::GetMetaData("N1::Type"));
          REQUIRE(n1c == RTTI::GetMetaData("N1::Create"));
          REQUIRE(n2t == RTTI::GetMetaData("N2::Type"));
          REQUIRE(n3t == RTTI::GetMetaData("N3::Type"));
+
+         REQUIRE(n0t == RTTI::GetMetaData("type"));
          REQUIRE(n1t == RTTI::GetMetaData("N1::type"));
          REQUIRE(n2t == RTTI::GetMetaData("N2::type"));
          REQUIRE(n3t == RTTI::GetMetaData("N3::type"));
          REQUIRE(n1t == RTTI::GetMetaData("n1::type"));
          REQUIRE(n2t == RTTI::GetMetaData("n2::type"));
          REQUIRE(n3t == RTTI::GetMetaData("n3::type"));
+
          REQUIRE(complexMeta == RTTI::GetMetaData("MyType"));
          REQUIRE(nullptr == RTTI::GetMetaData("Create"));
          REQUIRE(vvv == RTTI::GetMetaVerb("Create"));
@@ -39,16 +44,23 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
       }
 
       WHEN("Meta is retrieved by ambiguous token, that is not case-sensitive") {
-         auto found = RTTI::GetAmbiguousMeta("type");
+         auto found0 = RTTI::GetAmbiguousMeta("type");
+         auto found1 = RTTI::GetAmbiguousMeta("::type");
          auto found2 = RTTI::GetAmbiguousMeta("create");
          auto found3 = RTTI::GetAmbiguousMeta("one");
          auto found4 = RTTI::GetAmbiguousMeta("two");
          auto found5 = RTTI::GetAmbiguousMeta("three");
          auto found6 = RTTI::GetAmbiguousMeta("MyType");
-         REQUIRE(found.size() == 9);
-         REQUIRE(found.find(n1t) != found.end());
-         REQUIRE(found.find(n2t) != found.end());
-         REQUIRE(found.find(n3t) != found.end());
+         REQUIRE(found0.size() == 10);
+         REQUIRE(found0.find(n0t) != found0.end());
+         REQUIRE(found0.find(n1t) != found0.end());
+         REQUIRE(found0.find(n2t) != found0.end());
+         REQUIRE(found0.find(n3t) != found0.end());
+         REQUIRE(found1.size() == 10);
+         REQUIRE(found1.find(n0t) != found1.end());
+         REQUIRE(found1.find(n1t) != found1.end());
+         REQUIRE(found1.find(n2t) != found1.end());
+         REQUIRE(found1.find(n3t) != found1.end());
          REQUIRE(found2.size() == 4);
          REQUIRE(found2.find(vvv) != found2.end());
          REQUIRE(found2.find(n1c) != found2.end());
@@ -56,6 +68,17 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
          REQUIRE(found4.size() == 2);
          REQUIRE(found5.size() == 2);
          REQUIRE(found6.size() == 1);
+      }
+      
+      WHEN("Attempting to disambiguate token") {
+         REQUIRE(RTTI::DisambiguateMeta("type"));
+         REQUIRE_THROWS(RTTI::DisambiguateMeta("::type"));
+         REQUIRE(RTTI::DisambiguateMeta("create"));
+         REQUIRE_THROWS(RTTI::DisambiguateMeta("one"));
+         REQUIRE(RTTI::DisambiguateMeta("MyType::one"));
+         REQUIRE_THROWS(RTTI::DisambiguateMeta("two"));
+         REQUIRE_THROWS(RTTI::DisambiguateMeta("three"));
+         REQUIRE(RTTI::DisambiguateMeta("MyType"));
       }
 
       WHEN("Meta is retrieved by reflected file extension") {
