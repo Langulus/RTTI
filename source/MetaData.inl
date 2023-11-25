@@ -311,9 +311,11 @@ namespace Langulus::RTTI
    ///                                                                        
 
    /// Compare bases for equality                                             
+   ///   @param other - the base to compare against                           
    LANGULUS(INLINED)
    constexpr bool Base::operator == (const Base& other) const noexcept {
-      return mType == other.mType and mCount == other.mCount;
+      return GetType()->IsExact(other.GetType())
+         and mCount == other.mCount;
    }
 
    /// Create a base descriptor for the derived type T                        
@@ -327,7 +329,7 @@ namespace Langulus::RTTI
          "inheritance. Specify a different LANGULUS(NAME) for each!");
 
       Base result;
-      result.mType = MetaData::Of<BASE>();
+      result.mTypeRetriever = MetaData::Of<BASE>;
 
       if constexpr (CT::DerivedFrom<T, BASE>) {
          // This will fail if base is private                           
@@ -367,6 +369,12 @@ namespace Langulus::RTTI
       if constexpr (sizeof(BASE) == sizeof(T))
          result.mBinaryCompatible = (0 == result.mOffset);
       return result;
+   }
+
+   /// Get the type of the base                                               
+   ///   @return the type of the base                                         
+   inline DMeta Base::GetType() const {
+      return mTypeRetriever();
    }
 
    /// Reflecting a void type always returns nullptr                          
@@ -618,9 +626,11 @@ namespace Langulus::RTTI
          // The type is explicitly reflected with a custom function     
          // Let's call it...                                            
          generated = T::Reflect();
+         generated.mGenerator = T::Reflect;
       }
       else {
          // Type is implicitly reflected, so let's do our best          
+         generated.mGenerator = MetaData::Of<T>;
          generated.mToken = NameOf<T>();
          if constexpr (requires { T::CTTI_Info; })
             generated.mInfo = T::CTTI_Info;
@@ -759,11 +769,11 @@ namespace Langulus::RTTI
 
       // Reflect the concrete type                                      
       if constexpr (CT::Concretizable<T>)
-         generated.mConcrete = MetaData::Of<CT::ConcreteOf<T>>();
+         generated.mConcreteRetriever = MetaData::Of<CT::ConcreteOf<T>>;
 
       // Reflect the producer type                                      
       if constexpr (CT::Producible<T>)
-         generated.mProducer = MetaData::Of<CT::ProducerOf<T>>();
+         generated.mProducerRetriever = MetaData::Of<CT::ProducerOf<T>>;
 
       // Wrap the default constructor of the type inside lambda         
       if constexpr (CT::Defaultable<T>) {
@@ -1086,7 +1096,7 @@ namespace Langulus::RTTI
 
       // Search in all bases first                                      
       for (auto& base : mOrigin->mBases) {
-         const auto found = base.mType->GetMemberInner(trait, type, offset);
+         const auto found = base.GetType()->GetMemberInner(trait, type, offset);
          if (found)
             return found;
       }
@@ -1120,7 +1130,7 @@ namespace Langulus::RTTI
       // Search in all bases first                                      
       Count result {};
       for (auto& base : mOrigin->mBases)
-         result += base.mType->GetMemberCountInner(trait, type, offset);
+         result += base.GetType()->GetMemberCountInner(trait, type, offset);
 
       // Then locally                                                   
       for (auto& member : mOrigin->mMembers) {
@@ -1169,7 +1179,7 @@ namespace Langulus::RTTI
 
       Count result = mOrigin->mMembers.size();
       for (auto& base : mOrigin->mBases)
-         result += base.mType->GetMemberCount();
+         result += base.GetType()->GetMemberCount();
       return result;
    }
 
@@ -1178,8 +1188,8 @@ namespace Langulus::RTTI
    LANGULUS(INLINED)
    DMeta MetaData::GetMostConcrete() const noexcept {
       auto concrete = this;
-      while (concrete->mConcrete)
-         concrete = concrete->mConcrete;
+      while (concrete->mConcreteRetriever)
+         concrete = concrete->mConcreteRetriever();
       return concrete;
    }
 
@@ -1208,7 +1218,7 @@ namespace Langulus::RTTI
       Count scanned {};
       for (auto& b : mOrigin->mBases) {
          // Check base                                                  
-         if (type->IsExact(b.mType)) {
+         if (type->IsExact(b.GetType())) {
             if (scanned == offset) {
                base = b;
                return true;
@@ -1219,7 +1229,7 @@ namespace Langulus::RTTI
          // Dig deeper                                                  
          Base local {};
          Offset index {};
-         while (b.mType->GetBase(type, index, local)) {
+         while (b.GetType()->GetBase(type, index, local)) {
             if (scanned == offset) {
                local.mOffset += b.mOffset;
                local.mCount *= b.mCount;
@@ -1259,7 +1269,7 @@ namespace Langulus::RTTI
          return false;
 
       for (auto& b : mOrigin->mBases) {
-         if (type->Is(b.mType) or b.mType->HasBase(type))
+         if (type->Is(b.GetType()) or b.GetType()->HasBase(type))
             return true;
       }
 
@@ -1538,7 +1548,7 @@ namespace Langulus::RTTI
          if (b.mImposed)
             continue;
 
-         auto d = b.mType->GetDistanceTo(other);
+         auto d = b.GetType()->GetDistanceTo(other);
          if (d != Distance::Infinite and d + 1 < jumps)
             jumps = Distance{d + 1};
       }
