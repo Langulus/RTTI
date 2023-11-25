@@ -239,7 +239,9 @@ namespace Langulus::RTTI
       LANGULUS(UNINSERTABLE) true;
 
       // Type of the base                                               
-      DMeta mType {};
+      // We shouldn't keep a pointer here, because it might be unloaded 
+      // by a module, so instead retrieve the base type on demand       
+      FTypeRetriever mTypeRetriever {};
       // CT::Number of bases that fit in the type                       
       Count mCount {1};
       // Offset of the base, relative to the derived type               
@@ -258,6 +260,7 @@ namespace Langulus::RTTI
 
       template<CT::Dense T, CT::Dense BASE>
       NOD() static Base From() IF_UNSAFE(noexcept);
+      NOD() DMeta GetType() const;
    };
 
    using BaseList = ::std::span<const Base>;
@@ -288,16 +291,6 @@ namespace Langulus::RTTI
 
       MetaType GetMetaType() const noexcept final { return Meta::Data; }
 
-      // List of reflected members of the origin type                   
-      MemberList mMembers {};
-      // List of reflected abilities of the origin type                 
-      AbilityList mAbilities {};
-      // List of reflected bases of the origin type                     
-      BaseList mBases {};
-      // List of reflected converters of the origin type                
-      ConverterList mConverters {};
-      // List of named values of the origin type                        
-      NamedValueList mNamedValues {};
       // The origin type, with all qualifiers and sparseness removed    
       // Will be nullptr for incomplete types                           
       DMeta mOrigin {};
@@ -309,10 +302,10 @@ namespace Langulus::RTTI
       DMeta mDecvq {};
       // Default concretization                                         
       // Used as redirection, when requesting the creation of asbtracts 
-      DMeta mConcrete {};
+      FTypeRetriever mConcreteRetriever {};
       // Types with producers can be instantiated only by the invokation
       // of Verbs::Create in the context of the producer                
-      DMeta mProducer {};
+      FTypeRetriever mProducerRetriever {};
       // True if reflected data is sparse (a pointer)                   
       bool mIsSparse = false;
       // True if reflected data is constant                             
@@ -419,6 +412,20 @@ namespace Langulus::RTTI
       // The Do verb, wrapped in a lambda	(immutable context)           
       // @attention this always works with the origin type              
       FDispatchConstant mDispatcherConstant {};
+      
+      // List of reflected members of the origin type                   
+      MemberList mMembers {};
+      // List of reflected abilities of the origin type                 
+      AbilityList mAbilities {};
+      // List of reflected bases of the origin type                     
+      BaseList mBases {};
+      // List of reflected converters of the origin type                
+      ConverterList mConverters {};
+      // List of named values of the origin type                        
+      NamedValueList mNamedValues {};
+
+      // The MetaData::Of function pointer, that generated this meta    
+      FTypeRetriever mGenerator {};
 
    protected:
       friend struct Base;

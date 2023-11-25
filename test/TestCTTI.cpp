@@ -25,7 +25,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mIsPOD == false);
             REQUIRE(meta->mIsNullifiable == false);
             IF_LANGULUS_MANAGED_MEMORY(REQUIRE(meta->mPoolTactic == PoolTactic::Default));
-            REQUIRE(meta->mConcrete == nullptr);
+            REQUIRE(meta->mConcreteRetriever == nullptr);
             REQUIRE(meta->mIsUninsertable == false);
             REQUIRE(meta->mAllocationPage == ::std::max(Alignment, Roof2(sizeof(IncompleteType*))));
             REQUIRE(meta->mIsAbstract == false);
@@ -56,7 +56,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mIsPOD == false);
             REQUIRE(meta->mIsNullifiable == false);
             IF_LANGULUS_MANAGED_MEMORY(REQUIRE(meta->mPoolTactic == PoolTactic::Default));
-            REQUIRE(meta->mConcrete == nullptr);
+            REQUIRE(meta->mConcreteRetriever == nullptr);
             REQUIRE(meta->mIsUninsertable == false);
             REQUIRE(meta->mAllocationPage == ::std::max(Alignment, Roof2(sizeof(IncompleteType*))));
             REQUIRE(meta->mIsAbstract == false);
@@ -89,7 +89,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mIsPOD == false);
             REQUIRE(meta->mIsNullifiable == false);
             IF_LANGULUS_MANAGED_MEMORY(REQUIRE(meta->mPoolTactic == PoolTactic::Default));
-            REQUIRE(meta->mConcrete == nullptr);
+            REQUIRE(meta->mConcreteRetriever == nullptr);
             REQUIRE(meta->mIsUninsertable == false);
             REQUIRE(meta->mAllocationPage == ::std::max(Alignment, Roof2(sizeof(IncompleteType*))));
             REQUIRE(meta->mIsAbstract == false);
@@ -122,7 +122,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mIsPOD == false);
             REQUIRE(meta->mIsNullifiable == false);
             IF_LANGULUS_MANAGED_MEMORY(REQUIRE(meta->mPoolTactic == PoolTactic::Default));
-            REQUIRE(meta->mConcrete == nullptr);
+            REQUIRE(meta->mConcreteRetriever == nullptr);
             REQUIRE(meta->mIsUninsertable == false);
             REQUIRE(meta->mAllocationPage == ::std::max(Alignment, Roof2(sizeof(IncompleteType*))));
             REQUIRE(meta->mIsAbstract == false);
@@ -156,7 +156,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mIsPOD == false);
             REQUIRE(meta->mIsNullifiable == false);
             IF_LANGULUS_MANAGED_MEMORY(REQUIRE(meta->mPoolTactic == PoolTactic::Default));
-            REQUIRE(meta->mConcrete == nullptr);
+            REQUIRE(meta->mConcreteRetriever == nullptr);
             REQUIRE(meta->mIsUninsertable == false);
             REQUIRE(meta->mAllocationPage == ::std::max(Alignment, Roof2(sizeof(IncompleteType*))));
             REQUIRE(meta->mIsAbstract == false);
@@ -189,7 +189,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mIsPOD == false);
             REQUIRE(meta->mIsNullifiable == false);
             IF_LANGULUS_MANAGED_MEMORY(REQUIRE(meta->mPoolTactic == PoolTactic::Default));
-            REQUIRE(meta->mConcrete == nullptr);
+            REQUIRE(meta->mConcreteRetriever == nullptr);
             REQUIRE(meta->mIsUninsertable == false);
             REQUIRE(meta->mAllocationPage == ::std::max(Alignment, Roof2(sizeof(IncompleteType*))));
             REQUIRE(meta->mIsAbstract == false);
@@ -230,7 +230,7 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
             REQUIRE(meta->mIsPOD == false); // not POD due to being abstract
             REQUIRE(meta->mIsNullifiable == false); // not nullifiable due to being abstract
             IF_LANGULUS_MANAGED_MEMORY(REQUIRE(meta->mPoolTactic == PoolTactic::Size));
-            REQUIRE(meta->mConcrete->Is<ImplicitlyReflectedData>());
+            REQUIRE(meta->mConcreteRetriever()->Is<ImplicitlyReflectedData>());
             REQUIRE(meta->mIsUninsertable == true);
             REQUIRE(meta->mAllocationPage == Roof2(250 * sizeof(ImplicitlyReflectedDataWithTraits)));
             REQUIRE(meta->mIsAbstract == true);
@@ -242,7 +242,7 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
             REQUIRE(meta->mDecvq == MetaData::Of<ImplicitlyReflectedDataWithTraits>());
 
             REQUIRE(meta->mBases.size() == 1);
-            REQUIRE(meta->mBases[0].mType->Is<ImplicitlyReflectedData>());
+            REQUIRE(meta->mBases[0].GetType()->Is<ImplicitlyReflectedData>());
             REQUIRE(meta->mBases[0].mImposed == false);
             REQUIRE(meta->mBases[0].mBinaryCompatible == false);
             REQUIRE(meta->mBases[0].mCount == 1);
@@ -314,7 +314,7 @@ SCENARIO("A simple type reflected with CTTI traits", "[metadata]") {
             REQUIRE(meta->mIsPOD == true);
             REQUIRE(meta->mIsNullifiable == false);
             IF_LANGULUS_MANAGED_MEMORY(REQUIRE(meta->mPoolTactic == PoolTactic::Default));
-            REQUIRE(meta->mConcrete == nullptr);
+            REQUIRE(meta->mConcreteRetriever == nullptr);
             REQUIRE(meta->mIsUninsertable == false);
             REQUIRE(meta->mAllocationPage >= Alignment);
             REQUIRE(meta->mIsAbstract == false);
