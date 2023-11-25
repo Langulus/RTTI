@@ -313,7 +313,7 @@ namespace Langulus::RTTI
    /// Compare bases for equality                                             
    ///   @param other - the base to compare against                           
    LANGULUS(INLINED)
-   constexpr bool Base::operator == (const Base& other) const noexcept {
+   bool Base::operator == (const Base& other) const noexcept {
       return GetType()->IsExact(other.GetType())
          and mCount == other.mCount;
    }
