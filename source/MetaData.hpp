@@ -256,7 +256,7 @@ namespace Langulus::RTTI
       bool mImposed {false};
 
    public:
-      NOD() constexpr bool operator == (const Base&) const noexcept;
+      NOD() bool operator == (const Base&) const noexcept;
 
       template<CT::Dense T, CT::Dense BASE>
       NOD() static Base From() IF_UNSAFE(noexcept);
