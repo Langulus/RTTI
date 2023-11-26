@@ -263,7 +263,7 @@ namespace Langulus::RTTI
       NOD() DMeta GetType() const;
    };
 
-   using BaseList = ::std::span<const Base>;
+   using BaseList = ::std::vector<Base>;
 
 
    ///                                                                        
