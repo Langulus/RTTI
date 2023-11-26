@@ -26,6 +26,10 @@ jobs:
             cxx: clang++-16
 
         include:
+          - cxx: g++
+            c: gcc
+          - cxx: clang++-16
+            c: clang-16
           - os: ubuntu-22.04
             arch: x86
             cmake_args: "-DCMAKE_CXX_FLAGS=-m32"
@@ -46,11 +50,6 @@ jobs:
     name: "${{matrix.os}}-${{matrix.cxx}}-${{matrix.build}}-${{matrix.arch}}${{matrix.suffix}}"
     runs-on: ${{matrix.os}}
     steps:
-      - name: Dispatch Trigger
-        if: ${{ startsWith(github.event.action, 'Dependency') }}
-        run: >
-          echo "Triggered by dependency: ${{github.event.client_payload.cause}}"
-
       - name: Clone
         uses: actions/checkout@v3
 
@@ -71,10 +70,9 @@ jobs:
       - if: matrix.os == 'ubuntu-22.04'
         name: Configure (Linux)
         run: >
-          cmake
+          mkdir build && cd build && cmake ..
+          -DCMAKE_C_COMPILER=${{matrix.c}}
           -DCMAKE_CXX_COMPILER=${{matrix.cxx}}
-          -S .
-          -B out
           ${{matrix.cmake_args}}
           -DCMAKE_BUILD_TYPE=${{matrix.build}}
           -DLANGULUS_FEATURE_MANAGED_REFLECTION=${{matrix.managed}}
@@ -82,15 +80,13 @@ jobs:
       - if: matrix.os == 'windows-latest'
         name: Configure (Windows)
         run: >
-          cmake
-          -S .
-          -B out
+          mkdir build && cd build && cmake ..
           ${{matrix.cmake_args}} -T "${{matrix.cxx}}"
           -DCMAKE_BUILD_TYPE=${{matrix.build}}
           -DLANGULUS_FEATURE_MANAGED_REFLECTION=${{matrix.managed}}
 
       - name: Build
-        run: cmake --build out -j4 --config ${{matrix.build}}
+        run: cmake --build build -j4 --config ${{matrix.build}}
 
       - name: Test
-        run: cd out && ctest -V -C ${{matrix.build}}
+        run: cd build && ctest -V -C ${{matrix.build}}
