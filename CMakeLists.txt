@@ -7,11 +7,14 @@ project(LangulusRTTI
 
 # Check if this project is built as standalone, or a part of something else 
 if(PROJECT_IS_TOP_LEVEL OR NOT LANGULUS)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+
     include(LangulusUtilities.cmake)
 
     # Add Langulus::Core & Logger libraries                                 
-    fetch_langulus_module(Core   GIT_TAG 11f1ae8b23562ea759f0a0388d505b9a8ce39253)
-    fetch_langulus_module(Logger GIT_TAG 21c138042da9fbe03abbdc303934183d08e03655)
+    fetch_langulus_module(Core   GIT_TAG c11832957380709e316ffaf737d47c4578ed8caf)
+    fetch_langulus_module(Logger GIT_TAG e137aac46f3d682a06e8d0b1a160748fcbca21a4)
 endif()
 
 # Build and install library                                                 

@@ -263,7 +263,7 @@ namespace Langulus::RTTI
       NOD() DMeta GetType() const;
    };
 
-   using BaseList = ::std::vector<Base>;
+   using BaseList = ::std::span<const Base>;
 
 
    ///                                                                        
@@ -440,13 +440,13 @@ namespace Langulus::RTTI
       NOD() Count GetMemberCountInner(TMeta, DMeta, Offset&) const noexcept;
 
       template<class T, CT::Dense... Args>
-      void SetBases(TTypeList<Args...>) noexcept;
+      void SetBases(Types<Args...>) noexcept;
 
       template<CT::Dense T, CT::Dense... Args>
-      void SetAbilities(TTypeList<Args...>) noexcept;
+      void SetAbilities(Types<Args...>) noexcept;
 
       template<class T, class... Args>
-      void SetConverters(TTypeList<Args...>) noexcept;
+      void SetConverters(Types<Args...>) noexcept;
 
    public:
       template<CT::Void T>

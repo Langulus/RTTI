@@ -212,7 +212,7 @@ namespace Langulus::RTTI
    ///   @return the ability                                                  
    template<CT::Dense T, CT::Data VERB, CT::Data... A>
    Ability Ability::From() noexcept {
-      static_assert(CT::DerivedFrom<VERB, ::Langulus::Flow::Verb>,
+      static_assert(CT::DerivedFrom<VERB, Flow::Verb>,
          "VERB must inherit Flow::Verb");
 
       Ability result;
@@ -266,43 +266,41 @@ namespace Langulus::RTTI
    ///   @return the converter                                                
    template<class T, class TO>
    Converter Converter::From() noexcept {
-      if constexpr (CT::Void<TO> or CT::Same<T, TO>)
-         return {};
-      else {
-         static_assert(CT::Convertible<T, TO>,
-            "Converter reflected, but conversion is not possible - "
-            "implement a public cast operator in T, or a public constructor in TO,"
-            " these can be either explicit or not");
+      static_assert(not CT::Void<TO>,
+         "Can't have converter to void");
+      static_assert(CT::Convertible<T, TO>,
+         "Converter reflected, but conversion is not possible - "
+         "implement a public cast operator in T, or a public constructor in TO"
+         " - these can be either explicit or not");
 
-         using DT = Decay<T>;
-         using DTO = Decay<TO>;
+      using DT = Decay<T>;
+      using DTO = Decay<TO>;
 
-         return {
-            MetaData::Of<DTO>(),
-            [](const void* from, void* to) {
-               auto fromT = reinterpret_cast<const T*>(from);
-               auto toT = reinterpret_cast<TO*>(to);
+      return {
+         MetaData::Of<DTO>(),
+         [](const void* from, void* to) {
+            auto fromT = reinterpret_cast<const T*>(from);
+            auto toT = reinterpret_cast<TO*>(to);
 
-               // These should be in sync with CT::Inner::Convertible   
-               if constexpr (requires (DT & from) { DTO {from}; }) {
-                  new (&DenseCastMutable(toT)) DTO {
-                     DenseCastMutable(fromT)
-                  };
-               }
-               else if constexpr (requires (DT & from) { DTO {from.operator DTO()}; }) {
-                  new (&DenseCastMutable(toT)) DTO {
-                     DenseCastMutable(fromT).operator DTO()
-                  };
-               }
-               else if constexpr (requires (DT & from) { static_cast<DTO>(from); }) {
-                  new (&DenseCastMutable(toT)) DTO {
-                     static_cast<DTO>(DenseCastMutable(fromT))
-                  };
-               }
-               else LANGULUS_ERROR("Unhandled conversion route");
+            // These should be in sync with CT::Inner::Convertible      
+            if constexpr (requires (DT & from) { DTO {from}; }) {
+               new (&DenseCastMutable(toT)) DTO {
+                  DenseCastMutable(fromT)
+               };
             }
-         };
-      }
+            else if constexpr (requires (DT & from) { DTO {from.operator DTO()}; }) {
+               new (&DenseCastMutable(toT)) DTO {
+                  DenseCastMutable(fromT).operator DTO()
+               };
+            }
+            else if constexpr (requires (DT & from) { static_cast<DTO>(from); }) {
+               new (&DenseCastMutable(toT)) DTO {
+                  static_cast<DTO>(DenseCastMutable(fromT))
+               };
+            }
+            else LANGULUS_ERROR("Unhandled conversion route");
+         }
+      };
    }
 
 
@@ -322,55 +320,55 @@ namespace Langulus::RTTI
    ///   @return the generated base descriptor                                
    template<CT::Dense T, CT::Dense BASE>
    Base Base::From() IF_UNSAFE(noexcept) {
-      if constexpr (CT::Void<BASE> or CT::Same<T, BASE>)
-         return {};
-      else {
-         static_assert(NameOf<T>() != NameOf<BASE>(),
-            "T and BASE have the same LANGULUS(NAME) token, possibly due to "
-            "inheritance. Specify a different LANGULUS(NAME) for each!");
+      static_assert(not CT::Void<BASE>,
+         "Can't have void as base");
+      static_assert(not CT::Same<T, BASE>,
+         "Can't have base of the same type as the derived");
+      static_assert(NameOf<T>() != NameOf<BASE>(),
+         "T and BASE have the same LANGULUS(NAME) token, possibly due to "
+         "inheritance. Specify a different LANGULUS(NAME) for each!");
 
-         Base result;
-         result.mTypeRetriever = MetaData::Of<BASE>;
+      Base result;
+      result.mTypeRetriever = MetaData::Of<BASE>;
 
-         if constexpr (CT::DerivedFrom<T, BASE>) {
-            // This will fail if base is private                        
-            // This is detectable by is_convertible_v                   
-            if constexpr (::std::is_convertible_v<T*, BASE*>) {
-               // The devil's work, right here                          
-               alignas(T) static const Byte storage[sizeof(T)];
-               // First reinterpret the storage as T                    
-               const auto derived = reinterpret_cast<const T*>(storage);
-               // Then cast it down to base                             
-               const auto base = static_cast<const BASE*>(derived);
-               // Then reinterpret back to byte array and get difference
-               const auto offset =
-                  reinterpret_cast<const Byte*>(base) -
-                  reinterpret_cast<const Byte*>(derived);
+      if constexpr (CT::DerivedFrom<T, BASE>) {
+         // This will fail if base is private                           
+         // This is detectable by is_convertible_v                      
+         if constexpr (::std::is_convertible_v<T*, BASE*>) {
+            // The devil's work, right here                             
+            alignas(T) static const Byte storage[sizeof(T)];
+            // First reinterpret the storage as T                       
+            const auto derived = reinterpret_cast<const T*>(storage);
+            // Then cast it down to base                                
+            const auto base = static_cast<const BASE*>(derived);
+            // Then reinterpret back to byte array and get difference   
+            const auto offset =
+               reinterpret_cast<const Byte*>(base) -
+               reinterpret_cast<const Byte*>(derived);
 
-               LANGULUS_ASSERT(offset >= 0, Meta,
-                  "BASE is laid (memorywise) before T");
-               result.mOffset = static_cast<Offset>(offset);
-            }
+            LANGULUS_ASSERT(offset >= 0, Meta,
+               "BASE is laid (memorywise) before T");
+            result.mOffset = static_cast<Offset>(offset);
          }
-         else {
-            // If not inherited in C++, then always imposed             
-            // Imposed bases are excluded from serialization            
-            result.mImposed = true;
-
-            if constexpr (not CT::Abstract<BASE> and sizeof(BASE) < sizeof(T)) {
-               // The imposed type has a chance of being binary         
-               // compatible when having a specific count               
-               result.mBinaryCompatible = 0 == sizeof(T) % sizeof(BASE);
-               result.mCount = sizeof(T) / sizeof(BASE);
-            }
-         }
-
-         // If sizes match and there's no byte offset, then the base    
-         // and the derived type are binary compatible                  
-         if constexpr (sizeof(BASE) == sizeof(T))
-            result.mBinaryCompatible = (0 == result.mOffset);
-         return result;
       }
+      else {
+         // If not inherited in C++, then always imposed                
+         // Imposed bases are excluded from serialization               
+         result.mImposed = true;
+
+         if constexpr (not CT::Abstract<BASE> and sizeof(BASE) < sizeof(T)) {
+            // The imposed type has a chance of being binary            
+            // compatible when having a specific count                  
+            result.mBinaryCompatible = 0 == sizeof(T) % sizeof(BASE);
+            result.mCount = sizeof(T) / sizeof(BASE);
+         }
+      }
+
+      // If sizes match and there's no byte offset, then the base       
+      // and the derived type are binary compatible                     
+      if constexpr (sizeof(BASE) == sizeof(T))
+         result.mBinaryCompatible = (0 == result.mOffset);
+      return result;
    }
 
    /// Get the type of the base                                               
@@ -721,7 +719,7 @@ namespace Langulus::RTTI
    template<CT::Fundamental T>
    void MetaData::ReflectFundamentalType(MetaData& generated) noexcept {
       static_assert(CT::Complete<T>, "T must be a complete type");
-      using Converters = TTypeList<
+      using Converters = Types<
          bool,
          wchar_t, char8_t, char16_t, char32_t,
          ::std::int8_t,  ::std::int16_t,  ::std::int32_t,  ::std::int64_t,
@@ -731,27 +729,27 @@ namespace Langulus::RTTI
 
       if constexpr (CT::Nullptr<T>) { }
       else if constexpr (CT::Bool<T>) {
-         using Bases = TTypeList<A::Bool>;
+         using Bases = Types<A::Bool>;
          generated.SetBases<T>(Bases {});
          generated.SetConverters<T>(Converters {});
       }
       else if constexpr (CT::Character<T>) {
-         using Bases = TTypeList<A::Text>;
+         using Bases = Types<A::Text>;
          generated.SetBases<T>(Bases {});
          generated.SetConverters<T>(Converters {});
       }
       else if constexpr (CT::SignedInteger<T>) {
-         using Bases = TTypeList<A::SignedInteger>;
+         using Bases = Types<A::SignedInteger>;
          generated.SetBases<T>(Bases {});
          generated.SetConverters<T>(Converters {});
       }
       else if constexpr (CT::UnsignedInteger<T>) {
-         using Bases = TTypeList<A::UnsignedInteger>;
+         using Bases = Types<A::UnsignedInteger>;
          generated.SetBases<T>(Bases {});
          generated.SetConverters<T>(Converters {});
       }
       else if constexpr (CT::Real<T>) {
-         using Bases = TTypeList<A::Real>;
+         using Bases = Types<A::Real>;
          generated.SetBases<T>(Bases {});
          generated.SetConverters<T>(Converters {});
       }
@@ -1029,42 +1027,52 @@ namespace Langulus::RTTI
    /// Set the list of bases for a given meta definition                      
    ///   @tparam Args... - all the bases                                      
    template<class T, CT::Dense... BASE>
-   void MetaData::SetBases(TTypeList<BASE...>) noexcept {
-      static const Base list[] {Base::From<Decay<T>, BASE>()...};
-
-      for (const auto& i : list) {
-         if (i.mTypeRetriever)
-            mBases.push_back(i);
+   void MetaData::SetBases(Types<BASE...>) noexcept {
+      if constexpr (Types<BASE...>::Empty)
+         return;
+      else {
+         static const Base list[] {
+            Base::From<Decay<T>, BASE>()...
+         };
+         mBases = list;
       }
    }
 
    /// Set the list of abilities for a given meta definition                  
    ///   @tparam Args... - all the abilities                                  
    template<CT::Dense T, CT::Dense... VERB>
-   void MetaData::SetAbilities(TTypeList<VERB...>) noexcept {
-      static const ::std::pair<VMeta, Ability> list[] {
-         ::std::pair<VMeta, Ability>(
-            MetaVerb::Of<VERB>(), Ability::From<T, VERB>()
-         )...
-      };
+   void MetaData::SetAbilities(Types<VERB...>) noexcept {
+      if constexpr (Types<VERB...>::Empty)
+         return;
+      else {
+         static const ::std::pair<VMeta, Ability> list[] {
+            ::std::pair<VMeta, Ability>(
+               MetaVerb::Of<VERB>(), Ability::From<T, VERB>()
+            )...
+         };
 
-      for (const auto& i : list)
-         mAbilities.insert(i);
+         for (const auto& i : list)
+            mAbilities.insert(i);
+      }
    }
 
    /// Set the list of converters for a given meta definition                 
    ///   @tparam Args... - all the abilities                                  
    template<class FROM, class... TO>
-   void MetaData::SetConverters(TTypeList<TO...>) noexcept {
-      static const ::std::pair<DMeta, Converter> list[] {
-         ::std::pair<DMeta, Converter>(
-            MetaData::Of<Decay<TO>>(), Converter::From<FROM, TO>()
-         )...
-      };
+   void MetaData::SetConverters(Types<TO...>) noexcept {
+      if constexpr (Types<TO...>::Empty)
+         return;
+      else {
+         static const ::std::pair<DMeta, Converter> list[] {
+            ::std::pair<DMeta, Converter>(
+               MetaData::Of<Decay<TO>>(), Converter::From<FROM, TO>()
+            )...
+         };
 
-      for (const auto& i : list) {
-         if (i.first)
-            mConverters.insert(i);
+         for (const auto& i : list) {
+            if (i.first)
+               mConverters.insert(i);
+         }
       }
    }
 
