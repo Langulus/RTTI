@@ -8,7 +8,7 @@
 ///                                                                           
 #pragma once
 #include "Config.hpp"
-#include <Core/TypeList.hpp>
+#include <Core/Types.hpp>
 #include <Core/Utilities.hpp>
 #include <vector>
 
@@ -221,29 +221,19 @@
 
 /// Reflect a list of bases                                                   
 ///   @attention the list of bases will be propagated to any derived class    
-#if LANGULUS_COMPILER(CLANG) or LANGULUS_COMPILER(GCC)
-   #define LANGULUS_BASES(...) \
-      public: using CTTI_Bases = ::Langulus::TTypeList<void __VA_OPT__(,) __VA_ARGS__>
-#else
-   #define LANGULUS_BASES(...) \
-      public: using CTTI_Bases = ::Langulus::TTypeList<void, __VA_ARGS__>
-#endif
+#define LANGULUS_BASES(...) \
+   public: using CTTI_Bases = decltype(::Langulus::CreateTypeList<__VA_ARGS__>())
 
 /// Reflect a list of verbs                                                   
 ///   @attention the list of verbs will be propagated to any derived class    
 #define LANGULUS_VERBS(...) \
-   public: using CTTI_Verbs = ::Langulus::TTypeList<__VA_ARGS__>
+   public: using CTTI_Verbs = decltype(::Langulus::CreateTypeList<__VA_ARGS__>())
 
 /// Reflect a list of possible conversions                                    
 /// These will be automatically used by Verbs::Interpret if available         
 ///   @attention the list of conversions will be propagated to derived classes
-#if LANGULUS_COMPILER(CLANG) or LANGULUS_COMPILER(GCC)
-   #define LANGULUS_CONVERSIONS(...) \
-      public: using CTTI_Conversions = ::Langulus::TTypeList<void __VA_OPT__(,) __VA_ARGS__>
-#else
-   #define LANGULUS_CONVERSIONS(...) \
-      public: using CTTI_Conversions = ::Langulus::TTypeList<void, __VA_ARGS__>
-#endif
+#define LANGULUS_CONVERSIONS(...) \
+   public: using CTTI_Conversions = decltype(::Langulus::CreateTypeList<__VA_ARGS__>())
 
 /// You can make types CT::Typed and retrieve their inner type using TypeOf   
 /// by adding LANGULUS(TYPED) <inner type>; as a member. You disable it by    
