@@ -426,7 +426,7 @@ namespace Langulus
       template<class T1, class... TAIL>
       constexpr auto LosslessNested() noexcept {
          if constexpr (sizeof...(TAIL) == 0)
-            return ::std::array<Decay<TypeOf<T1>>, CountOf<T1>>;
+            return ::std::array<Decay<TypeOf<T1>>, CountOf<T1>> {};
          else
             return LosslessNestedInner<T1, TAIL...>();
       }
