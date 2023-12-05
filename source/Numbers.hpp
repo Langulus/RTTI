@@ -174,8 +174,12 @@ namespace Langulus::CT
 
    namespace Inner
    {
+
+      /// Analyze a single type for compile-time count trait                  
+      /// The resulting count will be (bounded array extent) * any MemberCount
+      /// constexpr static member, or constexpr size() method                 
       template<class T>
-      constexpr Count CountOf() noexcept {
+      constexpr Count CountOfInner() noexcept {
          using DT = Decay<T>;
          if constexpr (requires {{DT::MemberCount} -> UnsignedInteger; })
             return DT::MemberCount * ExtentOf<T>;
@@ -188,6 +192,15 @@ namespace Langulus::CT
          else return ExtentOf<T>;
       }
 
+      template<class T1, class...TN>
+      constexpr Count CountOf() noexcept {
+         if constexpr (sizeof...(TN))
+            return CountOfInner<T1>() + (CountOfInner<TN>() + ...);
+         else
+            return CountOfInner<T1>();
+      }
+
+      /// Array/vector concept for a single type                              
       template<class T>
       concept Vector = (
               not Semantic<T> 
@@ -196,9 +209,11 @@ namespace Langulus::CT
               and sizeof(T) == sizeof(TypeOf<T>) * CountOf<T>())
            or (ExtentOf<T>) > 1;
 
+      /// Scalar concept for a single type                                    
       template<class T>
       concept Scalar = not Semantic<T> and not Vector<T>;
-   }
+
+   } // namespace Langulus::CT::Inner
          
    /// Vector concept                                                         
    /// Any type that is Typed and has CountOf that is at least 2, and         
@@ -225,10 +240,12 @@ namespace Langulus::CT
 namespace Langulus
 {
 
-   /// Get the count of a counted type, or 0 if T is not counted              
-   /// Any type with a static constexpr unsigned MemberCount is counted       
-   template<class T>
-   constexpr Count CountOf = CT::Inner::CountOf<T>();
+   /// Get the count of a counted type                                        
+   /// Any type with a static constexpr unsigned MemberCount, or a bounded    
+   /// array, are multiplied and counted. Scalars always will give count of 1 
+   /// If multiple types provided, their counts will be summed                
+   template<class T1, class...TN>
+   constexpr Count CountOf = CT::Inner::CountOf<T1, TN...>();
 
    /// Casts a scalar to its underlying fundamental type (const)              
    /// If T::CTTI_InnerType exists, or if T is an enum, the inner type returns
@@ -393,17 +410,38 @@ namespace Langulus
             return ::std::array<LHS, size> {};
          }
       }
-   }
 
-   /// When given two types, choose the one that is most lossless             
-   /// after an arithmetic operation is performed between them. If T1 or T2   
+      /// Nest the above function for all types in a variadic template        
+      template<class T1, class T2, class... TAIL>
+      constexpr auto LosslessNestedInner() noexcept {
+         using T1T2 = decltype(Lossless<T1, T2>());
+
+         if constexpr (sizeof...(TAIL))
+            return LosslessNestedInner<T1T2, TAIL...>();
+         else
+            return T1T2 {};
+      }
+
+      /// Nest the above function for all types in a variadic template        
+      template<class T1, class... TAIL>
+      constexpr auto LosslessNested() noexcept {
+         if constexpr (sizeof...(TAIL) == 0)
+            return ::std::array<Decay<TypeOf<T1>>, CountOf<T1>>;
+         else
+            return LosslessNestedInner<T1, TAIL...>();
+      }
+
+   } // namespace Langulus::Inner
+
+   /// Given any number of types, choose the one that is most lossless        
+   /// after an arithmetic operation is performed between them. If any type   
    /// is an array, an array of OverlapCount size will be given back.         
    ///   @attention this will discard any sparseness or other modifiers       
-   template<class T1, class T2,
-      class INNER = decltype(Inner::Lossless<T1, T2>()),
-      Count SIZE = INNER {}.size()>
-   using Lossless = Conditional<
-      SIZE == 1, typename INNER::value_type, typename INNER::value_type [SIZE]
-   >;
+   template<class T1, class... TAIL>
+   using Lossless = Conditional<CountOf<decltype(Inner::LosslessNested<T1, TAIL...>())> == 1,
+         TypeOf<decltype(Inner::LosslessNested<T1, TAIL...>())>,
+         TypeOf<decltype(Inner::LosslessNested<T1, TAIL...>())>
+            [CountOf<decltype(Inner::LosslessNested<T1, TAIL...>())>]
+      >;
 
 } // namespace Langulus
