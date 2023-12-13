@@ -530,8 +530,8 @@ namespace Langulus
          // Data instances will be pooled based on their type           
          // Each meta definition will have its own pool chain           
          // This is the default pooling tactic for any meta data that   
-         // is not reflected inside the "MAIN" boundary. See            
-         // LANGULUS_RTTI_BOUNDARY for more information on that.        
+         // is not reflected inside the RTTI::MainBoundary boundary.    
+         // See LANGULUS_RTTI_BOUNDARY for more information on that.    
          Type
       };
    #endif
@@ -547,9 +547,9 @@ namespace Langulus
    /// reflection, so that RTTI can track from which library a type was       
    /// reflected, and thus unregister it when shared object is unloaded.      
    /// The boundary also affects pooling tactics, because if boundary is not  
-   /// equal exactly to "MAIN", pooling will be PoolTactic::Type by default,  
-   /// so that allocation that happen from external libraries can be easily   
-   /// tracked.                                                               
+   /// equal exactly to RTTI::MainBoundary, pooling will be PoolTactic::Type  
+   /// by default, so that allocation that happen from external libraries can 
+   /// be easily tracked                                                      
    #define LANGULUS_RTTI_BOUNDARY(a) \
       namespace Langulus::RTTI { \
          Token Boundary = a; \

@@ -548,15 +548,6 @@ namespace Langulus
          // Hashable via a member GetHash() function                    
          return head.GetHash();
       }
-      else if constexpr (CT::POD<T>) {
-         // Explicitly marked POD types are always hashable, but be     
-         // careful for POD types with padding - the junk inbetween     
-         // members can interfere with the hash, giving unique          
-         // hashes where the same hashes should be produced. In such    
-         // cases it is recommended you add a custom GetHash() method   
-         // to your type, in order to circumvent the issue              
-         return HashBytes<SEED, alignof(T) < Bitness / 8>(&head, sizeof(T));
-      }
       else if constexpr (requires (::std::hash<T> h, const T& i) { h(i); }) {
          // Hashable via std::hash (fallback for std containers)        
          // Beware, hashing functions coming from std::hash may have    
@@ -565,6 +556,18 @@ namespace Langulus
          // containers. Nothing serious, unless you're pedantic like me 
          ::std::hash<T> hasher;
          return Hash {hasher(head)};
+      }
+      else if constexpr (CT::POD<T>) {
+         // Explicitly marked POD types are always hashable, but be     
+         // careful for POD types with padding - the junk inbetween     
+         // members can interfere with the hash, giving unique          
+         // hashes where the same hashes should be produced. In such    
+         // cases it is recommended you add a custom GetHash() method   
+         // to your type, in order to circumvent the issue              
+         // Also, this is intentionally after the std::hash check,      
+         // because some types like std::string_view are actually       
+         // qualified as POD by Langulus standards                      
+         return HashBytes < SEED, alignof(T) < Bitness / 8 > (&head, sizeof(T));
       }
       else if constexpr (FAKE)
          return Inner::Unsupported {};
