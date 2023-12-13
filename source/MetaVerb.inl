@@ -145,7 +145,8 @@ namespace Langulus::RTTI
          // a static pointer to the meta, because forementioned library 
          // might be reloaded, and thus produce new pointer.            
          VMeta meta = Instance.GetMetaVerb(
-            MetaVerb::GetReflectedPositiveVerbToken<T>()
+            MetaVerb::GetReflectedPositiveVerbToken<T>(),
+            RTTI::Boundary
          );
          if (meta)
             return meta;
@@ -165,7 +166,8 @@ namespace Langulus::RTTI
             MetaVerb::GetReflectedPositiveVerbToken<T>(),
             MetaVerb::GetReflectedNegativeVerbToken<T>(),
             MetaVerb::GetReflectedPositiveVerbOperator<T>(),
-            MetaVerb::GetReflectedNegativeVerbOperator<T>()
+            MetaVerb::GetReflectedNegativeVerbOperator<T>(),
+            RTTI::Boundary
          );
          MetaVerb& generated = *const_cast<MetaVerb*>(meta);
       #else

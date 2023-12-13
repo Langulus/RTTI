@@ -36,7 +36,7 @@ namespace Langulus::RTTI
       ::std::unordered_map<Lowercase, BoundedMeta<VMeta>> mMetaVerbs;
 
       // Verbs, mapped to their original C++ class name                 
-      ::std::unordered_map<::std::string, BoundedMeta<VMeta>> mUniqueVerbs;
+      ::std::unordered_map<Lowercase, BoundedMeta<VMeta>> mUniqueVerbs;
       // Database for verb definitions indexed by operator token        
       ::std::unordered_map<Lowercase, BoundedMeta<VMeta>> mOperators;
       // Database for ambiguous tokens                                  
@@ -44,50 +44,55 @@ namespace Langulus::RTTI
       // Meta data definitions, indexed by file extensions              
       ::std::unordered_map<Lowercase, BoundedMeta<MetaList>> mFileDatabase;
 
-      void RegisterAmbiguous(const Token&, const Meta*) noexcept;
-      void UnregisterAmbiguous(const Token&, const Token&, const Meta*) noexcept;
+      void RegisterAmbiguous(const Token&, const Lowercase&, const Meta*) noexcept;
+      void UnregisterAmbiguous(const Token&, const Lowercase&, const Meta*) noexcept;
+      NOD() auto GetMeta(const auto&, const Token&, const Token&) const noexcept;
+      NOD() const MetaList& GetMetaList(const auto&, const Token&, const Token&) const noexcept;
+      template<bool REGISTER_AMBIGUOUS = true>
+      auto Register(auto, auto&, const Lowercase&, const Token&) IF_UNSAFE(noexcept);
+
+   public:
+      NOD() LANGULUS_API(RTTI)
+      DMeta RegisterData(const Token&, const Token&) IF_UNSAFE(noexcept);
+
+      NOD() LANGULUS_API(RTTI)
+      CMeta RegisterConstant(const Token&, const Token&) IF_UNSAFE(noexcept);
+
+      NOD() LANGULUS_API(RTTI)
+      TMeta RegisterTrait(const Token&, const Token&) IF_UNSAFE(noexcept);
+
+      NOD() LANGULUS_API(RTTI)
+      VMeta RegisterVerb(const Token&, const Token&, const Token&, const Token&, const Token&, const Token&) IF_UNSAFE(noexcept);
+      
+      LANGULUS_API(RTTI)
+      void RegisterFileExtension(const Token&, DMeta, const Token&) IF_UNSAFE(noexcept);
 
    public:
       ~Registry();
 
       NOD() LANGULUS_API(RTTI)
-      DMeta GetMetaData(const Token&) const noexcept;
+      DMeta GetMetaData(const Token&, const Token& = "") const noexcept;
 
       NOD() LANGULUS_API(RTTI)
-      TMeta GetMetaTrait(const Token&) const noexcept;
+      TMeta GetMetaTrait(const Token&, const Token& = "") const noexcept;
 
       NOD() LANGULUS_API(RTTI)
-      VMeta GetMetaVerb(const Token&) const noexcept;
+      VMeta GetMetaVerb(const Token&, const Token& = "") const noexcept;
 
       NOD() LANGULUS_API(RTTI)
-      CMeta GetMetaConstant(const Token&) const noexcept;
+      CMeta GetMetaConstant(const Token&, const Token& = "") const noexcept;
 
       NOD() LANGULUS_API(RTTI)
-      VMeta GetOperator(const Token&) const noexcept;
+      VMeta GetOperator(const Token&, const Token& = "") const noexcept;
 
       NOD() LANGULUS_API(RTTI)
-      const MetaList& GetAmbiguousMeta(const Token&) const noexcept;
+      const MetaList& GetAmbiguousMeta(const Token&, const Token& = "") const noexcept;
 
       NOD() LANGULUS_API(RTTI)
-      const Meta* DisambiguateMeta(const Token&) const;
+      const Meta* DisambiguateMeta(const Token&, const Token& = "") const;
 
       NOD() LANGULUS_API(RTTI)
-      const MetaList& ResolveFileExtension(const Token&) const;
-
-      NOD() LANGULUS_API(RTTI)
-      DMeta RegisterData(const Token&) IF_UNSAFE(noexcept);
-
-      NOD() LANGULUS_API(RTTI)
-      CMeta RegisterConstant(const Token&) IF_UNSAFE(noexcept);
-
-      NOD() LANGULUS_API(RTTI)
-      TMeta RegisterTrait(const Token&) IF_UNSAFE(noexcept);
-
-      NOD() LANGULUS_API(RTTI)
-      VMeta RegisterVerb(const Token&, const Token&, const Token&, const Token& = {}, const Token& = {}) IF_UNSAFE(noexcept);
-      
-      LANGULUS_API(RTTI)
-      void RegisterFileExtension(const Token&, DMeta) IF_UNSAFE(noexcept);
+      const MetaList& ResolveFileExtension(const Token&, const Token& = "") const;
 
       LANGULUS_API(RTTI)
       void UnloadBoundary(const Token&);
@@ -98,82 +103,92 @@ namespace Langulus::RTTI
    ///                                                                        
    LANGULUS_API(RTTI) extern Registry Instance;
 
+   /// The main boundary indentifier token                                    
+   constexpr Token MainBoundary = "MAIN";
+
    ///                                                                        
    ///   Boundary identifier, local to every shared library/executable        
    ///   It's a simple compile-time string, that is attached upon data        
    /// reflection, so that RTTI can track from which library a type was       
    /// reflected, and thus unregister it when shared object is unloaded.      
    /// The boundary also affects pooling tactics, because if boundary is not  
-   /// equal exactly to "MAIN", pooling will be PoolTactic::Type by default,  
-   /// so that allocation that happens from external libraries can be easily  
-   /// tracked and not pollute other pools.                                   
+   /// equal exactly to RTTI::MainBoundary, pooling will be PoolTactic::Type  
+   /// by default, so that allocation that happens from external libraries    
+   /// can be easily tracked and not pollute other pools                      
    ///                                                                        
    extern Token Boundary;
 
    
    NOD() LANGULUS(INLINED)
-   DMeta GetMetaData(const Token& token) noexcept {
-      return Instance.GetMetaData(token);
+   DMeta GetMetaData(const Token& token, const Token& boundary = "") noexcept {
+      return Instance.GetMetaData(token, boundary);
    }
 
    NOD() LANGULUS(INLINED)
-   TMeta GetMetaTrait(const Token& token) noexcept {
-      return Instance.GetMetaTrait(token);
+   TMeta GetMetaTrait(const Token& token, const Token& boundary = "") noexcept {
+      return Instance.GetMetaTrait(token, boundary);
    }
 
    NOD() LANGULUS(INLINED)
-   VMeta GetMetaVerb(const Token& token) noexcept {
-      return Instance.GetMetaVerb(token);
+   VMeta GetMetaVerb(const Token& token, const Token& boundary = "") noexcept {
+      return Instance.GetMetaVerb(token, boundary);
    }
 
    NOD() LANGULUS(INLINED)
-   CMeta GetMetaConstant(const Token& token) noexcept {
-      return Instance.GetMetaConstant(token);
+   CMeta GetMetaConstant(const Token& token, const Token& boundary = "") noexcept {
+      return Instance.GetMetaConstant(token, boundary);
    }
 
    NOD() LANGULUS(INLINED)
-   VMeta GetOperator(const Token& token) noexcept {
-      return Instance.GetOperator(token);
+   VMeta GetOperator(const Token& token, const Token& boundary = "") noexcept {
+      return Instance.GetOperator(token, boundary);
    }
 
    NOD() LANGULUS(INLINED)
-   const MetaList& GetAmbiguousMeta(const Token& token) noexcept {
-      return Instance.GetAmbiguousMeta(token);
+   const MetaList& GetAmbiguousMeta(const Token& token, const Token& boundary = "") noexcept {
+      return Instance.GetAmbiguousMeta(token, boundary);
    }
 
    NOD() LANGULUS(INLINED)
-   const Meta* DisambiguateMeta(const Token& token) {
-      return Instance.DisambiguateMeta(token);
+   const Meta* DisambiguateMeta(const Token& token, const Token& boundary = "") {
+      return Instance.DisambiguateMeta(token, boundary);
    }
 
    NOD() LANGULUS(INLINED)
-   const MetaList& ResolveFileExtension(const Token& token) {
-      return Instance.ResolveFileExtension(token);
+   const MetaList& ResolveFileExtension(const Token& token, const Token& boundary = "") {
+      return Instance.ResolveFileExtension(token, boundary);
    }
 
    NOD() LANGULUS(INLINED)
-   DMeta RegisterData(const Token& token) IF_UNSAFE(noexcept) {
-      return Instance.RegisterData(token);
+   DMeta RegisterData(const Token& token, const Token& boundary) IF_UNSAFE(noexcept) {
+      return Instance.RegisterData(token, boundary);
    }
 
    NOD() LANGULUS(INLINED)
-   CMeta RegisterConstant(const Token& token) IF_UNSAFE(noexcept) {
-      return Instance.RegisterConstant(token);
+   CMeta RegisterConstant(const Token& token, const Token& boundary) IF_UNSAFE(noexcept) {
+      return Instance.RegisterConstant(token, boundary);
    }
 
    NOD() LANGULUS(INLINED)
-   TMeta RegisterTrait(const Token& token) IF_UNSAFE(noexcept) {
-      return Instance.RegisterTrait(token);
+   TMeta RegisterTrait(const Token& token, const Token& boundary) IF_UNSAFE(noexcept) {
+      return Instance.RegisterTrait(token, boundary);
    }
 
    NOD() LANGULUS(INLINED)
-   VMeta RegisterVerb(const Token& a, const Token& b, const Token& c, const Token& d, const Token& e) IF_UNSAFE(noexcept) {
-      return Instance.RegisterVerb(a,b,c,d,e);
+   VMeta RegisterVerb(
+      const Token& cppname,
+      const Token& token,
+      const Token& tokenReverse,
+      const Token& op,
+      const Token& opReverse,
+      const Token& boundary
+   ) IF_UNSAFE(noexcept) {
+      return Instance.RegisterVerb(cppname, token, tokenReverse, op, opReverse, boundary);
    }
       
    LANGULUS(INLINED)
-   void RegisterFileExtension(const Token& a, DMeta b) IF_UNSAFE(noexcept) {
-      Instance.RegisterFileExtension(a, b);
+   void RegisterFileExtension(const Token& token, DMeta type, const Token& boundary) IF_UNSAFE(noexcept) {
+      Instance.RegisterFileExtension(token, type, boundary);
    }
 
    LANGULUS(INLINED)

@@ -52,7 +52,7 @@ namespace Langulus::RTTI
          // previously in another library. Unfortunately we can't keep  
          // a static pointer to the meta, because forementioned library 
          // might be reloaded, and thus produce new pointer.            
-         TMeta meta = Instance.GetMetaTrait(GetReflectedToken<T>());
+         TMeta meta = Instance.GetMetaTrait(GetReflectedToken<T>(), RTTI::Boundary);
          if (meta)
             return meta;
       #else
@@ -66,7 +66,7 @@ namespace Langulus::RTTI
       // We immediately place it in the static here, because the        
       // reflection function might end up forever looping otherwise     
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         meta = Instance.RegisterTrait(GetReflectedToken<T>());
+         meta = Instance.RegisterTrait(GetReflectedToken<T>(), RTTI::Boundary);
          MetaTrait& generated = *const_cast<MetaTrait*>(meta);
       #else
          meta = ::std::make_unique<MetaTrait>();
