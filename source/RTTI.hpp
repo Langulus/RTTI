@@ -14,6 +14,8 @@
 namespace Langulus::RTTI
 {
 
+   template<class T>
+   using BoundedMeta = ::std::unordered_map<Token, T>;
    using MetaList = ::std::unordered_set<const Meta*>;
 
 
@@ -25,24 +27,25 @@ namespace Langulus::RTTI
    class Registry {
    private:
       // Database for meta data definitions                             
-      ::std::unordered_map<Lowercase, DMeta> mMetaData;
+      ::std::unordered_map<Lowercase, BoundedMeta<DMeta>> mMetaData;
       // Database for named values                                      
-      ::std::unordered_map<Lowercase, CMeta> mMetaConstants;
+      ::std::unordered_map<Lowercase, BoundedMeta<CMeta>> mMetaConstants;
       // Database for meta trait definitions                            
-      ::std::unordered_map<Lowercase, TMeta> mMetaTraits;
+      ::std::unordered_map<Lowercase, BoundedMeta<TMeta>> mMetaTraits;
       // Database for meta verb definitions                             
-      ::std::unordered_map<Lowercase, VMeta> mMetaVerbs;
+      ::std::unordered_map<Lowercase, BoundedMeta<VMeta>> mMetaVerbs;
+
       // Verbs, mapped to their original C++ class name                 
-      ::std::unordered_map<::std::string, VMeta> mUniqueVerbs;
+      ::std::unordered_map<::std::string, BoundedMeta<VMeta>> mUniqueVerbs;
       // Database for verb definitions indexed by operator token        
-      ::std::unordered_map<Lowercase, VMeta> mOperators;
+      ::std::unordered_map<Lowercase, BoundedMeta<VMeta>> mOperators;
       // Database for ambiguous tokens                                  
-      ::std::unordered_map<Lowercase, MetaList> mMetaAmbiguous;
+      ::std::unordered_map<Lowercase, BoundedMeta<MetaList>> mMetaAmbiguous;
       // Meta data definitions, indexed by file extensions              
-      ::std::unordered_map<Lowercase, MetaList> mFileDatabase;
+      ::std::unordered_map<Lowercase, BoundedMeta<MetaList>> mFileDatabase;
 
       void RegisterAmbiguous(const Token&, const Meta*) noexcept;
-      void UnregisterAmbiguous(const Token&, const Meta*) noexcept;
+      void UnregisterAmbiguous(const Token&, const Token&, const Meta*) noexcept;
 
    public:
       ~Registry();
@@ -87,7 +90,7 @@ namespace Langulus::RTTI
       void RegisterFileExtension(const Token&, DMeta) IF_UNSAFE(noexcept);
 
       LANGULUS_API(RTTI)
-      void UnloadLibrary(const Token&);
+      void UnloadBoundary(const Token&);
    };
 
    ///                                                                        
@@ -174,8 +177,8 @@ namespace Langulus::RTTI
    }
 
    LANGULUS(INLINED)
-   void UnloadLibrary(const Token& t) {
-      Instance.UnloadLibrary(t);
+   void UnloadBoundary(const Token& boundary) {
+      Instance.UnloadBoundary(boundary);
    }
 
 } // namespace Langulus::RTTI

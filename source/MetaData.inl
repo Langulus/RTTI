@@ -1034,7 +1034,9 @@ namespace Langulus::RTTI
          static const Base list[] {
             Base::From<Decay<T>, BASE>()...
          };
-         mBases = list;
+
+         for (const auto& i : list)
+            mBases.push_back(i);
       }
    }
 
