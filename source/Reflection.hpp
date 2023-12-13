@@ -502,6 +502,9 @@ namespace Langulus
    namespace RTTI
    {
 
+      /// The main boundary indentifier token                                 
+      constexpr Token MainBoundary = "MAIN";
+
       /// Triplet used for named constants reflections inside data types      
       ///   @tparam T - type of the constant                                  
       template<class T>

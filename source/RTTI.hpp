@@ -103,9 +103,6 @@ namespace Langulus::RTTI
    ///                                                                        
    LANGULUS_API(RTTI) extern Registry Instance;
 
-   /// The main boundary indentifier token                                    
-   constexpr Token MainBoundary = "MAIN";
-
    ///                                                                        
    ///   Boundary identifier, local to every shared library/executable        
    ///   It's a simple compile-time string, that is attached upon data        
