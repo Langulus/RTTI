@@ -713,3 +713,17 @@ TEMPLATE_TEST_CASE("Testing semantics of pointers", "[semantics]",
       }
    }
 }
+
+TEMPLATE_TEST_CASE("Testing DecayCast", "[semantics]", int, Copied<int>) {
+   const int* value = new int {656};
+   const TestType i {*value};
+   static_assert(CT::Exact<decltype(DecayCast(i)), const int&>);
+   delete value;
+}
+
+TEMPLATE_TEST_CASE("Testing DesemCast", "[semantics]", int, Copied<int>) {
+   const int* value = new int {656};
+   const TestType i {*value};
+   static_assert(CT::Exact<decltype(DesemCast(i)), const int&>);
+   delete value;
+}

@@ -334,12 +334,12 @@ namespace Langulus::CT
             using DT = Decay<T>;
             if constexpr (Typed<DT>) {
                if constexpr (requires {typename DT::CTTI_InnerType; })
-                  return (typename DT::CTTI_InnerType*) nullptr;
+                  return (Deref<typename DT::CTTI_InnerType>*) nullptr;
                else
-                  return (typename DT::value_type*) nullptr;
+                  return (Deref<typename DT::value_type>*) nullptr;
             }
             else if constexpr (CT::Enum<DT>)
-               return (::std::underlying_type_t<DT>*) nullptr;
+               return (Deref<::std::underlying_type_t<DT>>*) nullptr;
             else
                return (Deref<T>*) nullptr;
          }
@@ -481,7 +481,7 @@ namespace Langulus
    {
       /// Check if a type has an underlying type defined                      
       template<class... T>
-      concept Typed = ((Inner::Typed<Decay<T>> and Data<TypeOf<T>>) and ...);
+      concept Typed = ((Inner::Typed<Decay<T>> and Data<TypeOf<Decay<T>>>) and ...);
    }
 
    /// A type naming convention for standard number types, as well as         

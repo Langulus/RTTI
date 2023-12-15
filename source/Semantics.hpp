@@ -75,15 +75,15 @@ namespace Langulus
 
       /// Checks if a type is a semantic                                      
       template<class... T>
-      concept Semantic = ((Decayed<T> and DerivedFrom<T, A::Semantic>) and ...);
+      concept Semantic = (DerivedFrom<T, A::Semantic> and ...);
 
       /// Checks if a type is a shallow semantic                              
       template<class... T>
-      concept ShallowSemantic = ((Decayed<T> and DerivedFrom<T, A::ShallowSemantic>) and ...);
+      concept ShallowSemantic = (DerivedFrom<T, A::ShallowSemantic> and ...);
 
       /// Checks if a type is a deep semantic                                 
       template<class... T>
-      concept DeepSemantic = ((Decayed<T> and DerivedFrom<T, A::DeepSemantic>) and ...);
+      concept DeepSemantic = (DerivedFrom<T, A::DeepSemantic> and ...);
 
       /// Checks if a type is not a semantic                                  
       template<class... T>
@@ -91,23 +91,23 @@ namespace Langulus
 
       /// Check if a type is a shallow-copy semantic                          
       template<class... T>
-      concept Copied = ((Decayed<T> and DerivedFrom<T, A::Copied>) and ...);
+      concept Copied = (DerivedFrom<T, A::Copied> and ...);
 
       /// Check if a type is a shallow-move semantic                          
       template<class... T>
-      concept Moved = ((Decayed<T> and DerivedFrom<T, A::Moved>) and ...);
+      concept Moved = (DerivedFrom<T, A::Moved> and ...);
 
       /// Check if a type is a shallow-abandon-move semantic                  
       template<class... T>
-      concept Abandoned = ((Decayed<T> and DerivedFrom<T, A::Abandoned>) and ...);
+      concept Abandoned = (DerivedFrom<T, A::Abandoned> and ...);
 
       /// Check if a type is shallow-disowned-copy                            
       template<class... T>
-      concept Disowned = ((Decayed<T> and DerivedFrom<T, A::Disowned>) and ...);
+      concept Disowned = (DerivedFrom<T, A::Disowned> and ...);
 
       /// Check if a type is clone (deep-copy) semantic                       
       template<class... T>
-      concept Cloned = ((Decayed<T> and DerivedFrom<T, A::Cloned>) and ...);
+      concept Cloned = (DerivedFrom<T, A::Cloned> and ...);
 
    } // namespace Langulus::CT
 
@@ -159,7 +159,12 @@ namespace Langulus
       const T& operator *  () const noexcept { return mValue; }
 
       LANGULUS(INLINED)
-      const T* operator -> () const noexcept { return &mValue; }
+      auto operator -> () const noexcept {
+         if constexpr (CT::Sparse<T>)
+            return mValue;
+         else
+            return &mValue;
+      }
 
       /// Implicitly collapse the semantic, when applying it to fundamentals  
       /// This way this wrapper is seamlessly integrated with the standard    
@@ -240,7 +245,12 @@ namespace Langulus
       T& operator *  () const noexcept { return mValue; }
 
       LANGULUS(INLINED)
-      T* operator -> () const noexcept { return &mValue; }
+      auto operator -> () const noexcept {
+         if constexpr (CT::Sparse<T>)
+            return mValue;
+         else
+            return &mValue;
+      }
 
       /// Implicitly collapse the semantic, when applying it to fundamentals  
       /// This way this wrapper is seamlessly integrated with the standard    
@@ -334,7 +344,12 @@ namespace Langulus
       T& operator *  () const noexcept { return mValue; }
 
       LANGULUS(INLINED)
-      T* operator -> () const noexcept { return &mValue; }
+      auto operator -> () const noexcept {
+         if constexpr (CT::Sparse<T>)
+            return mValue;
+         else
+            return &mValue;
+      }
 
       /// Implicitly collapse the semantic, when applying it to trivially     
       /// destructible types, since abandoning them is same as moving         
@@ -410,7 +425,12 @@ namespace Langulus
       const T& operator *  () const noexcept { return mValue; }
 
       LANGULUS(INLINED)
-      const T* operator -> () const noexcept { return &mValue; }
+      auto operator -> () const noexcept {
+         if constexpr (CT::Sparse<T>)
+            return mValue;
+         else
+            return &mValue;
+      }
 
       /// Implicitly collapse the semantic, when applying it to PODs,         
       /// since they never have ownership                                     
@@ -474,7 +494,12 @@ namespace Langulus
       const T& operator *  () const noexcept { return mValue; }
 
       LANGULUS(INLINED)
-      const T* operator -> () const noexcept { return &mValue; }
+      auto operator -> () const noexcept {
+         if constexpr (CT::Sparse<T>)
+            return mValue;
+         else
+            return &mValue;
+      }
 
       /// Implicitly collapse the semantic, when applying it to PODs,         
       /// since they are always cloned upon copy                              
@@ -724,6 +749,16 @@ namespace Langulus::CT
    namespace Inner
    {
 
+      /// Check if T is constructible with each of the provided arguments     
+      /// Notice, that this differs from std::constructible_from, by          
+      /// attempting each argument separately                                 
+      template<class T, class...A>
+      concept MakableFrom = (::std::constructible_from<T, A> and ...);
+
+      /// Check if T is assignable with each of the provided arguments        
+      template<class T, class...A>
+      concept AssignableFrom = (::std::assignable_from<T, A> and ...);
+
       /// Check if T is semantic-constructible by S                           
       template<template<class> class S, class T>
       concept SemanticMakable = Semantic<S<T>> and requires (T&& a) {
@@ -872,3 +907,53 @@ namespace Langulus::CT
       and (Inner::DescriptorMakableNoexcept<Decay<T>> and ...);
 
 } // namespace Langulus::CT
+
+namespace Langulus
+{
+
+   /// Deduce the proper semantic type, based on whether T already has a      
+   /// specified semantic, or is an rvalue (&&) or not                        
+   template<class T>
+   using SemanticOf = Conditional<CT::Semantic<T>, T, 
+      Conditional<std::is_rvalue_reference_v<T&&>, Moved<T>, Copied<T>>
+   >;
+
+   /// Remove the semantic from a type, or just return the type, if not       
+   /// wrapped inside a semantic                                              
+   template<class T>
+   using Desem = TypeOf<SemanticOf<T>>;
+
+   /// Downcasts a typed wrapper to the contained element, if cast operator   
+   /// to TypeOf<T> is available                                              
+   ///   @param what - the instance to decay                                  
+   ///   @return a reference (preferably) or a copy of the inner data         
+   NOD() LANGULUS(INLINED)
+   constexpr decltype(auto) DecayCast(auto&& what) noexcept {
+      using T = decltype(what);
+      if constexpr (CT::Typed<T>) {
+         using TT = TypeOf<T>;
+         if constexpr (std::convertible_to<T, TT&>)
+            return static_cast<TT&>(what);
+         else if constexpr (std::convertible_to<T, const TT&>)
+            return static_cast<const TT&>(what);
+         else if constexpr (std::convertible_to<T, TT>)
+            return static_cast<TT>(what);
+         else
+            LANGULUS_ERROR("No cast operator available for decaying to inner type");
+      }
+      else return what;
+   }
+   
+   /// Decay a semantic to the contained instance                             
+   ///   @param what - the instance to decay                                  
+   ///   @return a reference (preferably) or a copy of the inner data         
+   NOD() LANGULUS(INLINED)
+   constexpr decltype(auto) DesemCast(auto&& what) noexcept {
+      using T = decltype(what);
+      if constexpr (CT::Semantic<T>)
+         return DecayCast(Forward<T>(what));
+      else
+         return what;
+   }
+
+} // namespace Langulus
