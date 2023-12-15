@@ -16,7 +16,7 @@
 
 namespace Langulus::RTTI
 {
-
+   
    /// A simple request for allocating memory                                 
    /// It is used as optimization to avoid divisions by stride                
    struct AllocationRequest {
@@ -183,24 +183,20 @@ namespace Langulus::RTTI
    ///                                                                        
    ///   Meta constant, used to reflect named values for enums                
    ///                                                                        
-   struct MetaConst final : public Meta {
+   struct MetaConst : Meta {
       LANGULUS(NAME) "CMeta";
       LANGULUS_BASES(Meta);
 
       static constexpr Token DefaultToken = "NoConst";
 
-      MetaType GetMetaType() const noexcept final { return Meta::Constant; }
-
       DMeta mValueType {};
       const void* mPtrToValue {};
+
+      NOD() constexpr bool Is(CMeta) const noexcept;
 
    protected:
       template<CT::Data T>
       static constexpr Token GetReflectedToken() noexcept;
-
-      NOD() constexpr bool Is(CMeta) const noexcept;
-
-      constexpr bool operator == (const MetaConst&) const noexcept;
    };
 
    using NamedValueList = ::std::vector<CMeta>;
@@ -239,9 +235,7 @@ namespace Langulus::RTTI
       LANGULUS(UNINSERTABLE) true;
 
       // Type of the base                                               
-      // We shouldn't keep a pointer here, because it might be unloaded 
-      // by a module, so instead retrieve the base type on demand       
-      FTypeRetriever mTypeRetriever {};
+      DMeta mType;
       // CT::Number of bases that fit in the type                       
       Count mCount {1};
       // Offset of the base, relative to the derived type               
@@ -260,7 +254,6 @@ namespace Langulus::RTTI
 
       template<CT::Dense T, CT::Dense BASE>
       NOD() static Base From() IF_UNSAFE(noexcept);
-      NOD() DMeta GetType() const;
    };
 
    using BaseList = ::std::vector<Base>;
@@ -269,7 +262,7 @@ namespace Langulus::RTTI
    ///                                                                        
    ///   Meta data                                                            
    ///                                                                        
-   struct MetaData final : public Meta {
+   struct MetaData : Meta {
    private:
       struct PurposefullyIncompleteType;
 
@@ -288,8 +281,6 @@ namespace Langulus::RTTI
       };
       
       static constexpr Token DefaultToken = "NoData";
-
-      MetaType GetMetaType() const noexcept final { return Meta::Data; }
 
       // The origin type, with all qualifiers and sparseness removed    
       // Will be nullptr for incomplete types                           
@@ -481,8 +472,8 @@ namespace Langulus::RTTI
       //                                                                
       // Member management                                              
       //                                                                
-      NOD() const Member* GetMember(TMeta, DMeta = nullptr, Offset = 0) const noexcept;
-      NOD() Count GetMemberCount(TMeta, DMeta = nullptr, Offset = 0) const noexcept;
+      NOD() const Member* GetMember(TMeta, DMeta = {}, Offset = 0) const noexcept;
+      NOD() Count GetMemberCount(TMeta, DMeta = {}, Offset = 0) const noexcept;
       NOD() Count GetMemberCount() const noexcept;
 
       //                                                                
@@ -541,8 +532,6 @@ namespace Langulus::RTTI
       template<CT::Data, CT::Data...>
       NOD() constexpr bool IsExact() const;
       NOD() constexpr bool IsExact(DMeta) const noexcept;
-
-      constexpr bool operator == (const MetaData&) const noexcept;
    };
 
 } // namespace Langulus::RTTI

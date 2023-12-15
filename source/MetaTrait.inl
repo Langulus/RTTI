@@ -14,7 +14,27 @@
 
 namespace Langulus::RTTI
 {
-   
+
+   constexpr Token TMeta::GetToken() const noexcept {
+   #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+      return mMeta ? mMeta->GetShortestUnambiguousToken() : MetaTrait::DefaultToken;
+   #else
+      return mMeta ? mMeta->mToken : MetaTrait::DefaultToken;
+   #endif
+   }
+
+   constexpr Hash TMeta::GetHash() const noexcept {
+      return mMeta ? mMeta->mHash : Hash {};
+   }
+
+   constexpr TMeta::operator AMeta() const noexcept {
+      return mMeta;
+   }
+
+   constexpr bool TMeta::operator == (const TMeta& rhs) const noexcept {
+      return mMeta == rhs.mMeta or (mMeta and mMeta->Is(rhs));
+   }
+
    /// Get the reflected token for a type                                     
    /// If type wasn't reflected with LANGULUS(NAME), then the original C++    
    /// name will be used                                                      
@@ -67,7 +87,7 @@ namespace Langulus::RTTI
       // reflection function might end up forever looping otherwise     
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          meta = Instance.RegisterTrait(GetReflectedToken<T>(), RTTI::Boundary);
-         MetaTrait& generated = *const_cast<MetaTrait*>(meta);
+         MetaTrait& generated = *const_cast<MetaTrait*>(meta.mMeta);
       #else
          meta = ::std::make_unique<MetaTrait>();
          MetaTrait& generated = *const_cast<MetaTrait*>(meta.get());
@@ -104,15 +124,7 @@ namespace Langulus::RTTI
    ///   @return true if traits match                                         
    LANGULUS(INLINED)
    bool MetaTrait::Is(TMeta other) const noexcept {
-      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         // This function is reduced to a pointer match, if the meta    
-         // database is centralized, because it guarantees that         
-         // definitions in separate translation units are always the    
-         // same instance                                               
-         return this == other;
-      #else
-         return other and mHash == other->mHash and mToken == other->mToken;
-      #endif
+      return other and mHash == other->mHash and mToken == other->mToken;
    }	
    
    /// Check if two meta definitions match exactly                            
@@ -122,14 +134,6 @@ namespace Langulus::RTTI
    LANGULUS(INLINED)
    bool MetaTrait::Is() const {
       return Is(MetaTrait::Of<T>());
-   }
-   
-   /// Compare two meta definitions                                           
-   ///   @param rhs - the right hand trait                                    
-   ///   @return true if both definitions are the exact same                  
-   LANGULUS(INLINED)
-   bool MetaTrait::operator == (const MetaTrait& rhs) const noexcept {
-      return Is(&rhs);
    }
 
 } // namespace Langulus::RTTI

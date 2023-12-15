@@ -21,7 +21,218 @@
 
 namespace Langulus::RTTI
 {
+
+   constexpr Token DMeta::GetToken() const noexcept {
+   #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+      return mMeta ? mMeta->GetShortestUnambiguousToken() : MetaData::DefaultToken;
+   #else
+      return mMeta ? mMeta->mToken : MetaData::DefaultToken;
+   #endif
+   }
+
+   constexpr Hash DMeta::GetHash() const noexcept {
+      return mMeta ? mMeta->mHash : Hash {};
+   }
+
+   constexpr DMeta::operator AMeta() const noexcept {
+      return mMeta;
+   }
+
+   constexpr bool DMeta::operator == (const DMeta& rhs) const noexcept {
+      return mMeta == rhs.mMeta or (mMeta and mMeta->IsExact(rhs));
+   }
+
+   constexpr bool DMeta::operator |= (const DMeta& rhs) const noexcept {
+      return mMeta == rhs.mMeta or (mMeta and mMeta->IsSimilar(rhs));
+   }
+
+   constexpr bool DMeta::operator &= (const DMeta& rhs) const noexcept {
+      return mMeta == rhs.mMeta or (mMeta and mMeta->Is(rhs));
+   }
+
+   constexpr Token CMeta::GetToken() const noexcept {
+   #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+      return mMeta ? mMeta->GetShortestUnambiguousToken() : MetaConst::DefaultToken;
+   #else
+      return mMeta ? mMeta->mToken : MetaConst::DefaultToken;
+   #endif
+   }
+
+   constexpr Hash CMeta::GetHash() const noexcept {
+      return mMeta ? mMeta->mHash : Hash {};
+   }
+
+   constexpr CMeta::operator AMeta() const noexcept {
+      return mMeta;
+   }
+
+   constexpr bool CMeta::operator == (const CMeta& rhs) const noexcept {
+      return mMeta == rhs.mMeta or (mMeta and mMeta->Is(rhs));
+   }
+
+   constexpr Token AMeta::GetToken() const noexcept {
+   #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+      return mMeta ? mMeta->GetShortestUnambiguousToken() : "null";
+   #else
+      return mMeta ? mMeta->mToken : "null";
+   #endif
+   }
+   constexpr Hash AMeta::GetHash() const noexcept {
+      return mMeta ? mMeta->mHash : Hash {};
+   }
+
+   constexpr bool AMeta::operator == (const AMeta& rhs) const noexcept {
+      if (mMeta == rhs.mMeta)
+         return true;
+
+      const DMeta lhs_dmeta = dynamic_cast<const MetaData*>(mMeta);
+      const DMeta rhs_dmeta = dynamic_cast<const MetaData*>(rhs.mMeta);
+      if (lhs_dmeta and rhs_dmeta)
+         return lhs_dmeta == rhs_dmeta;
+
+      const TMeta lhs_tmeta = dynamic_cast<const MetaTrait*>(mMeta);
+      const TMeta rhs_tmeta = dynamic_cast<const MetaTrait*>(rhs.mMeta);
+      if (lhs_tmeta and rhs_tmeta)
+         return lhs_tmeta == rhs_tmeta;
+
+      const VMeta lhs_vmeta = dynamic_cast<const MetaVerb*>(mMeta);
+      const VMeta rhs_vmeta = dynamic_cast<const MetaVerb*>(rhs.mMeta);
+      if (lhs_vmeta and rhs_vmeta)
+         return lhs_vmeta == rhs_vmeta;
+
+      const CMeta lhs_cmeta = dynamic_cast<const MetaConst*>(mMeta);
+      const CMeta rhs_cmeta = dynamic_cast<const MetaConst*>(rhs.mMeta);
+      if (lhs_cmeta and rhs_cmeta)
+         return lhs_cmeta == rhs_cmeta;
+
+      return false;
+   }
    
+   constexpr bool AMeta::operator &= (const AMeta& rhs) const noexcept {
+      if (mMeta == rhs.mMeta)
+         return true;
+
+      const DMeta lhs_dmeta = dynamic_cast<const MetaData*>(mMeta);
+      const DMeta rhs_dmeta = dynamic_cast<const MetaData*>(rhs.mMeta);
+      if (lhs_dmeta and rhs_dmeta)
+         return lhs_dmeta &= rhs_dmeta;
+
+      return false;
+   }
+
+   constexpr bool AMeta::operator |= (const AMeta& rhs) const noexcept {
+      if (mMeta == rhs.mMeta)
+         return true;
+
+      const DMeta lhs_dmeta = dynamic_cast<const MetaData*>(mMeta);
+      const DMeta rhs_dmeta = dynamic_cast<const MetaData*>(rhs.mMeta);
+      if (lhs_dmeta and rhs_dmeta)
+         return lhs_dmeta |= rhs_dmeta;
+
+      return false;
+   }
+
+   constexpr bool AMeta::operator == (const VMeta& rhs) const noexcept {
+      if (mMeta == static_cast<const Meta*>(rhs.mMeta))
+         return true;
+
+      const VMeta lhs_vmeta = dynamic_cast<const MetaVerb*>(mMeta);
+      const VMeta rhs_vmeta = dynamic_cast<const MetaVerb*>(rhs.mMeta);
+      if (lhs_vmeta and rhs_vmeta)
+         return lhs_vmeta == rhs_vmeta;
+
+      return false;
+   }
+
+   constexpr bool AMeta::operator == (const TMeta& rhs) const noexcept {
+      if (mMeta == static_cast<const Meta*>(rhs.mMeta))
+         return true;
+
+      const TMeta lhs_tmeta = dynamic_cast<const MetaTrait*>(mMeta);
+      const TMeta rhs_tmeta = dynamic_cast<const MetaTrait*>(rhs.mMeta);
+      if (lhs_tmeta and rhs_tmeta)
+         return lhs_tmeta == rhs_tmeta;
+
+      return false;
+   }
+
+   constexpr bool AMeta::operator == (const CMeta& rhs) const noexcept {
+      if (mMeta == static_cast<const Meta*>(rhs.mMeta))
+         return true;
+
+      const CMeta lhs_cmeta = dynamic_cast<const MetaConst*>(mMeta);
+      const CMeta rhs_cmeta = dynamic_cast<const MetaConst*>(rhs.mMeta);
+      if (lhs_cmeta and rhs_cmeta)
+         return lhs_cmeta == rhs_cmeta;
+
+      return false;
+   }
+
+   constexpr bool AMeta::operator == (const DMeta& rhs) const noexcept {
+      const DMeta lhs_dmeta = dynamic_cast<const MetaData*>(mMeta);
+      return lhs_dmeta ? lhs_dmeta == rhs : false;
+   }
+
+   constexpr bool AMeta::operator &= (const DMeta& rhs) const noexcept {
+      const DMeta lhs_dmeta = dynamic_cast<const MetaData*>(mMeta);
+      return lhs_dmeta ? lhs_dmeta &= rhs : false;
+   }
+
+   constexpr bool AMeta::operator |= (const DMeta& rhs) const noexcept {
+      const DMeta lhs_dmeta = dynamic_cast<const MetaData*>(mMeta);
+      return lhs_dmeta ? lhs_dmeta |= rhs : false;
+   }
+
+   template<class T>
+   constexpr T AMeta::As() const noexcept {
+      if (not mMeta)
+         return {};
+
+      if constexpr (CT::Exact<T, DMeta>)
+         return dynamic_cast<const MetaData*>(mMeta);
+      else if constexpr (CT::Exact<T, TMeta>)
+         return dynamic_cast<const MetaTrait*>(mMeta);
+      else if constexpr (CT::Exact<T, VMeta>)
+         return dynamic_cast<const MetaVerb*>(mMeta);
+      else if constexpr (CT::Exact<T, CMeta>)
+         return dynamic_cast<const MetaConst*>(mMeta);
+      else if constexpr (CT::Exact<T, AMeta>)
+         return *this;
+      else LANGULUS_ERROR(
+         "T is not a definition interchange type, "
+         "has to be one of the following: DMeta, TMeta, CMeta, VMeta, AMeta"
+      );
+   }
+
+   constexpr AMeta::operator DMeta() const noexcept {
+      return As<DMeta>();
+   }
+   constexpr AMeta::operator TMeta() const noexcept {
+      return As<TMeta>();
+   }
+   constexpr AMeta::operator CMeta() const noexcept {
+      return As<CMeta>();
+   }
+   constexpr AMeta::operator VMeta() const noexcept {
+      return As<VMeta>();
+   }
+
+   constexpr Token AMeta::Kind() const noexcept {
+      if (not mMeta)
+         return "unknown";
+
+      if (dynamic_cast<const MetaData*>(mMeta))
+         return "meta data";
+      else if (dynamic_cast<const MetaTrait*>(mMeta))
+         return "meta trait";
+      else if (dynamic_cast<const MetaVerb*>(mMeta))
+         return "meta verb";
+      else if (dynamic_cast<const MetaConst*>(mMeta))
+         return "meta const";
+      else 
+         return "unknown";
+   }
+
    /// Get the minimum allocation page size of the type (in bytes)            
    /// This guarantees two things:                                            
    ///   1. The byte size is always a power-of-two                            
@@ -101,7 +312,7 @@ namespace Langulus::RTTI
    TMeta Member::GetTrait() const {
       if (mTraitRetriever)
          return mTraitRetriever();
-      return nullptr;
+      return {};
    }
 
    /// Check if member is a specific type                                     
@@ -312,7 +523,7 @@ namespace Langulus::RTTI
    ///   @param other - the base to compare against                           
    LANGULUS(INLINED)
    bool Base::operator == (const Base& other) const noexcept {
-      return GetType()->IsExact(other.GetType())
+      return mType->IsExact(other.mType)
          and mCount == other.mCount;
    }
 
@@ -329,7 +540,7 @@ namespace Langulus::RTTI
          "inheritance. Specify a different LANGULUS(NAME) for each!");
 
       Base result;
-      result.mTypeRetriever = MetaData::Of<BASE>;
+      result.mType = MetaData::Of<BASE>();
 
       if constexpr (CT::DerivedFrom<T, BASE>) {
          // This will fail if base is private                           
@@ -371,12 +582,6 @@ namespace Langulus::RTTI
       return result;
    }
 
-   /// Get the type of the base                                               
-   ///   @return the type of the base                                         
-   inline DMeta Base::GetType() const {
-      return mTypeRetriever();
-   }
-
    /// Reflecting a void type always returns nullptr                          
    ///   @return nullptr                                                      
    template<CT::Void T>
@@ -412,7 +617,7 @@ namespace Langulus::RTTI
          // We immediately request its spot in the database, or the     
          // reflection function might end up forever looping otherwise  
          meta = Instance.RegisterData(NameOf<T>(), RTTI::Boundary);
-         auto& generated = *const_cast<MetaData*>(meta);
+         auto& generated = *const_cast<MetaData*>(meta.mMeta);
       #else
          // Keep a static meta pointer for each translation unit        
          static constinit ::std::unique_ptr<MetaData> meta;
@@ -429,7 +634,7 @@ namespace Langulus::RTTI
       if constexpr (CT::Complete<Deptr<T>>) {
          // Reflect the denser type and propagate its origin properties 
          auto denser = MetaData::Of<Deptr<T>>();
-         generated = *denser;
+         generated = *denser.mMeta;
          generated.mDeptr = denser;
 
          #if LANGULUS_FEATURE(MANAGED_MEMORY)
@@ -519,7 +724,7 @@ namespace Langulus::RTTI
          // We immediately request its spot in the database, or the     
          // reflection function might end up forever looping otherwise  
          meta = Instance.RegisterData(NameOf<T>(), RTTI::Boundary);
-         auto& generated = *const_cast<MetaData*>(meta);
+         auto& generated = *const_cast<MetaData*>(meta.mMeta);
       #else
          // Keep a static meta pointer for each translation unit        
          static constinit ::std::unique_ptr<MetaData> meta;
@@ -535,7 +740,7 @@ namespace Langulus::RTTI
 
       // Reflect the origin type and propagate its properties           
       auto denser = MetaData::Of<Decay<T>>();
-      generated = *denser;
+      generated = *denser.mMeta;
       generated.mOrigin = denser;
       generated.mDecvq = MetaData::Of<Decvq<T>>();
 
@@ -576,6 +781,7 @@ namespace Langulus::RTTI
 
    /// Reflect a fully decayed (origin) type                                  
    ///   @tparam T - the type to reflect                                      
+   ///   @return the generated (or retrieved) type definition                 
    template<CT::DenseData T>
    LANGULUS(NOINLINE)
    DMeta MetaData::Of() requires (CT::Decayed<T>) {
@@ -607,7 +813,7 @@ namespace Langulus::RTTI
          // We immediately request its spot in the database, or the     
          // reflection function might end up forever looping otherwise  
          meta = Instance.RegisterData(NameOf<T>(), RTTI::Boundary);
-         MetaData& generated = *const_cast<MetaData*>(meta);
+         MetaData& generated = *const_cast<MetaData*>(meta.mMeta);
       #else
          // Keep a static meta pointer for each translation unit        
          static constinit ::std::unique_ptr<MetaData> meta;
@@ -932,7 +1138,7 @@ namespace Langulus::RTTI
       }
 
       // Wrap the GetHash() method inside a lambda                      
-      if constexpr (CT::Hashable<T>) {
+      if constexpr (CT::Hashable<T> and not CT::POD<T>) {
          generated.mHasher = 
             [](const void* at) {
                auto atT = static_cast<const T*>(at);
@@ -992,7 +1198,7 @@ namespace Langulus::RTTI
 
             #if LANGULUS_FEATURE(MANAGED_REFLECTION)
                const auto cmeta = const_cast<MetaConst*>(
-                  Instance.RegisterConstant(staticNames[i], RTTI::Boundary));
+                  Instance.RegisterConstant(staticNames[i], RTTI::Boundary).mMeta);
                LANGULUS_ASSERT(cmeta, Meta,
                   "Meta constant conflict on registration");
                cmeta->mLibraryName = RTTI::Boundary;
@@ -1112,7 +1318,7 @@ namespace Langulus::RTTI
 
       // Search in all bases first                                      
       for (auto& base : mOrigin->mBases) {
-         const auto found = base.GetType()->GetMemberInner(trait, type, offset);
+         const auto found = base.mType->GetMemberInner(trait, type, offset);
          if (found)
             return found;
       }
@@ -1146,7 +1352,7 @@ namespace Langulus::RTTI
       // Search in all bases first                                      
       Count result {};
       for (auto& base : mOrigin->mBases)
-         result += base.GetType()->GetMemberCountInner(trait, type, offset);
+         result += base.mType->GetMemberCountInner(trait, type, offset);
 
       // Then locally                                                   
       for (auto& member : mOrigin->mMembers) {
@@ -1195,7 +1401,7 @@ namespace Langulus::RTTI
 
       Count result = mOrigin->mMembers.size();
       for (auto& base : mOrigin->mBases)
-         result += base.GetType()->GetMemberCount();
+         result += base.mType->GetMemberCount();
       return result;
    }
 
@@ -1203,7 +1409,7 @@ namespace Langulus::RTTI
    ///   @return the most concrete type                                       
    LANGULUS(INLINED)
    DMeta MetaData::GetMostConcrete() const noexcept {
-      auto concrete = this;
+      DMeta concrete = this;
       while (concrete->mConcreteRetriever)
          concrete = concrete->mConcreteRetriever();
       return concrete;
@@ -1234,7 +1440,7 @@ namespace Langulus::RTTI
       Count scanned {};
       for (auto& b : mOrigin->mBases) {
          // Check base                                                  
-         if (type->IsExact(b.GetType())) {
+         if (type->IsExact(b.mType)) {
             if (scanned == offset) {
                base = b;
                return true;
@@ -1245,7 +1451,7 @@ namespace Langulus::RTTI
          // Dig deeper                                                  
          Base local {};
          Offset index {};
-         while (b.GetType()->GetBase(type, index, local)) {
+         while (b.mType->GetBase(type, index, local)) {
             if (scanned == offset) {
                local.mOffset += b.mOffset;
                local.mCount *= b.mCount;
@@ -1285,7 +1491,7 @@ namespace Langulus::RTTI
          return false;
 
       for (auto& b : mOrigin->mBases) {
-         if (type->Is(b.GetType()) or b.GetType()->HasBase(type))
+         if (type->Is(b.mType) or b.mType->HasBase(type))
             return true;
       }
 
@@ -1564,7 +1770,7 @@ namespace Langulus::RTTI
          if (b.mImposed)
             continue;
 
-         auto d = b.GetType()->GetDistanceTo(other);
+         auto d = b.mType->GetDistanceTo(other);
          if (d != Distance::Infinite and d + 1 < jumps)
             jumps = Distance{d + 1};
       }
@@ -1647,23 +1853,7 @@ namespace Langulus::RTTI
    ///   @return true if types match                                          
    LANGULUS(INLINED)
    constexpr bool MetaData::IsExact(DMeta other) const noexcept {
-      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         // This function is reduced to a pointer match, if the meta    
-         // database is centralized, because it guarantees that         
-         // definitions in separate translation units are always the    
-         // same instance                                               
-         return this == other;
-      #else
-         return other
-            and mHash == other->mHash
-            and mToken == other->mToken;
-      #endif
-   }
-
-   /// Compares two definitions exactly                                       
-   LANGULUS(INLINED)
-   constexpr bool MetaData::operator == (const MetaData& rhs) const noexcept {
-      return IsExact(&rhs);
+      return other and mHash == other->mHash and mToken == other->mToken;
    }
 
    /// Get a size based on reflected allocation page and count (unsafe)       
@@ -1684,22 +1874,7 @@ namespace Langulus::RTTI
    ///   @return true if types match                                          
    LANGULUS(INLINED)
    constexpr bool MetaConst::Is(CMeta other) const noexcept {
-      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         // This function is reduced to a pointer match, if the meta    
-         // database is centralized, because it guarantees that         
-         // definitions in separate translation units are always the    
-         // same instance                                               
-         return this == other;
-      #else
-         return other
-            and mHash == other->mHash
-            and mToken == other->mToken;
-      #endif
-   }
-   
-   LANGULUS(INLINED)
-   constexpr bool MetaConst::operator == (const MetaConst& rhs) const noexcept {
-      return Is(&rhs);
+      return other and mHash == other->mHash and mToken == other->mToken;
    }
 
 } // namespace Langulus::RTTI

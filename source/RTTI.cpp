@@ -27,15 +27,15 @@ namespace Langulus::RTTI
       // wasn't unregistered upon mod unload. Thank me later            
       for (auto& pair : mMetaData)
          for(auto& meta : pair.second)
-            delete meta.second;
+            delete meta.second.mMeta;
 
       for (auto& pair : mMetaTraits)
          for (auto& meta : pair.second)
-            delete meta.second;
+            delete meta.second.mMeta;
 
       for (auto& pair : mUniqueVerbs)
          for (auto& meta : pair.second)
-            delete meta.second;
+            delete meta.second.mMeta;
    }
 
    /// Get the last, most relevant part of a token that may or may not have   
@@ -186,7 +186,7 @@ namespace Langulus::RTTI
    ///   @param keyword - the file extension to search for                    
    ///   @param boundary - the boundary to search in (optional)               
    ///   @return the disambiguated token; throws if not found/ambiguous       
-   const Meta* Registry::DisambiguateMeta(const Token& keyword, const Token& boundary) const {
+   AMeta Registry::DisambiguateMeta(const Token& keyword, const Token& boundary) const {
       auto& symbols = GetAmbiguousMeta(keyword, boundary);
       LANGULUS_ASSERT(not symbols.empty(), Meta,
          "Keyword not found", ": `", keyword, '`');
@@ -201,14 +201,14 @@ namespace Langulus::RTTI
       // ambiguous meta to pick. Discard symbols that do not            
       // contain the provided keyword (not case sensitive)              
       const auto lowercased = ToLowercase(keyword);
-      ::std::unordered_set<const Meta*> origins;
+      MetaList origins;
       for (auto& meta : symbols) {
          LANGULUS_ASSUME(DevAssumes, meta, "Bad meta");
          const auto meta_lc_token = ToLowercase(meta->mToken);
          if (meta_lc_token.find(lowercased) == std::string::npos)
             continue;
 
-         const auto dmeta = dynamic_cast<DMeta>(meta);
+         const auto dmeta = meta.As<DMeta>();
          if (dmeta) {
             if (dmeta->mOrigin)
                origins.insert(dmeta->mOrigin);
@@ -238,24 +238,9 @@ namespace Langulus::RTTI
             "Ambiguous symbol: `", keyword,
             "`; Could be one of: ", Logger::Tabs {}
          );
-
          for (auto& meta : origins) {
-            switch (meta->GetMetaType()) {
-            case Meta::Data:
-               Logger::Verbose(Logger::Red, '`', meta->mCppName,
-                  "` (meta data)");
-               break;
-            case Meta::Trait:
-               Logger::Verbose(Logger::Red, '`', meta->mCppName,
-                  "` (meta trait)");
-               break;
-            case Meta::Constant:
-               Logger::Verbose(Logger::Red, '`', meta->mCppName,
-                  "` (meta constant)");
-               break;
-            default:
-               LANGULUS_THROW(Meta, "Unhandled meta type");
-            }
+            Logger::Verbose(Logger::Red, 
+               '`', meta->mCppName, "` (", meta.Kind(), ')');
          }
       }
       LANGULUS_THROW(Meta, "Ambiguous symbol");
@@ -273,7 +258,7 @@ namespace Langulus::RTTI
    ///   @param boundary - the boundary to register in                        
    ///   @param token - the token to register                                 
    ///   @param meta - the definition to add                                  
-   void Registry::RegisterAmbiguous(const Token& boundary, const Lowercase& token, const Meta* meta) noexcept {
+   void Registry::RegisterAmbiguous(const Token& boundary, const Lowercase& token, AMeta meta) noexcept {
       Lowercase ambiguous {ToLastToken(token)};
       const auto foundAmbiguous = mMetaAmbiguous.find(ambiguous);
       if (foundAmbiguous == mMetaAmbiguous.end()) {
@@ -293,7 +278,7 @@ namespace Langulus::RTTI
    ///   @param boundary - the boundary to unregister from                    
    ///   @param token - the token to unregister                               
    ///   @param meta - the definition to remove                               
-   void Registry::UnregisterAmbiguous(const Token& boundary, const Lowercase& token, const Meta* meta) noexcept {
+   void Registry::UnregisterAmbiguous(const Token& boundary, const Lowercase& token, AMeta meta) noexcept {
       Lowercase ambiguous {ToLastToken(token)};
       const auto foundAmbiguous = mMetaAmbiguous.find(ambiguous);
       if (foundAmbiguous == mMetaAmbiguous.end())
@@ -319,7 +304,6 @@ namespace Langulus::RTTI
    ///   @return the newly defined meta for that token                        
    template<bool REGISTER_AMBIGUOUS>
    auto Registry::Register(auto meta, auto& where, const Lowercase& lc, const Token& boundary) IF_UNSAFE(noexcept) {
-      static_assert(CT::Meta<decltype(meta)>, "Must be a meta type");
       LANGULUS_ASSUME(DevAssumes, not boundary.empty(), "Bad boundary");
 
       // If reached, then not found, so insert a new definition         
@@ -451,15 +435,15 @@ namespace Langulus::RTTI
       const auto lc = ToLowercase(token);
       const auto foundToken = mFileDatabase.find(lc);
       if (foundToken == mFileDatabase.end()) {
-         mFileDatabase[lc].insert({boundary, {type}});
+         mFileDatabase[lc].insert({boundary, {type.mMeta}});
          return;
       }
 
       const auto foundBoundary = foundToken->second.find(boundary);
       if (foundBoundary == foundToken->second.end())
-         foundToken->second.insert({boundary, {type}});
+         foundToken->second.insert({boundary, {type.mMeta}});
       else
-         foundBoundary->second.insert(type);
+         foundBoundary->second.insert(type.mMeta);
    }
 
    /// Runs through all definitions, and destroys all of those, that were     
@@ -470,26 +454,31 @@ namespace Langulus::RTTI
          "Unloading library ", boundary, Logger::Pop);
 
       // Unload constants                                               
-      for (auto pair = mMetaConstants.begin(); pair != mMetaConstants.end(); ++pair) {
+      for (auto pair = mMetaConstants.begin(); pair != mMetaConstants.end();) {
          auto found = pair->second.find(boundary);
-         if (found == pair->second.end())
+         if (found == pair->second.end()) {
+            ++pair;
             continue;
+         }
 
          VERBOSE("Constant ", Logger::Push, Logger::Yellow, found->second->mToken,
             Logger::Pop, Logger::Red, " unregistered (", boundary, ")");
 
-         UnregisterAmbiguous(boundary, pair->first, found->second);
-         delete found->second;
+         UnregisterAmbiguous(boundary, pair->first, found->second.mMeta);
+         delete found->second.mMeta;
          pair->second.erase(found);
          if (pair->second.empty())
             pair = mMetaConstants.erase(pair);
+         else ++pair;
       }
 
       // Unload file types                                              
-      for (auto pair = mFileDatabase.begin(); pair != mFileDatabase.end(); ++pair) {
+      for (auto pair = mFileDatabase.begin(); pair != mFileDatabase.end();) {
          auto found = pair->second.find(boundary);
-         if (found == pair->second.end())
+         if (found == pair->second.end()) {
+            ++pair;
             continue;
+         }
 
          VERBOSE("File ", Logger::Push, Logger::Cyan, found->second->mToken,
             Logger::Pop, Logger::Red, " unregistered (", boundary, ")");
@@ -497,45 +486,54 @@ namespace Langulus::RTTI
          pair->second.erase(found);
          if (pair->second.empty())
             pair = mFileDatabase.erase(pair);
+         else ++pair;
       }
 
       // Unload data types                                              
-      for (auto pair = mMetaData.begin(); pair != mMetaData.end(); ++pair) {
+      for (auto pair = mMetaData.begin(); pair != mMetaData.end();) {
          auto found = pair->second.find(boundary);
-         if (found == pair->second.end())
+         if (found == pair->second.end()) {
+            ++pair;
             continue;
+         }
 
          VERBOSE("Data ", Logger::Push, Logger::Cyan, found->second->mToken,
             Logger::Pop, Logger::Red, " unregistered (", boundary, ")");
 
-         UnregisterAmbiguous(boundary, pair->first, found->second);
-         delete found->second;
+         UnregisterAmbiguous(boundary, pair->first, found->second.mMeta);
+         delete found->second.mMeta;
          pair->second.erase(found);
          if (pair->second.empty())
             pair = mMetaData.erase(pair);
+         else ++pair;
       }
 
       // Unload traits                                                  
-      for (auto pair = mMetaTraits.begin(); pair != mMetaTraits.end(); ++pair) {
+      for (auto pair = mMetaTraits.begin(); pair != mMetaTraits.end();) {
          auto found = pair->second.find(boundary);
-         if (found == pair->second.end())
+         if (found == pair->second.end()) {
+            ++pair;
             continue;
+         }
 
          VERBOSE("Trait ", Logger::Push, Logger::Purple, found->second->mToken,
             Logger::Pop, Logger::Red, " unregistered (", boundary, ")");
 
-         UnregisterAmbiguous(boundary, pair->first, found->second);
-         delete found->second;
+         UnregisterAmbiguous(boundary, pair->first, found->second.mMeta);
+         delete found->second.mMeta;
          pair->second.erase(found);
          if (pair->second.empty())
             pair = mMetaTraits.erase(pair);
+         else ++pair;
       }
 
       // Unload verbs                                                   
-      for (auto pair = mUniqueVerbs.begin(); pair != mUniqueVerbs.end(); ++pair) {
+      for (auto pair = mUniqueVerbs.begin(); pair != mUniqueVerbs.end();) {
          auto found = pair->second.find(boundary);
-         if (found == pair->second.end())
+         if (found == pair->second.end()) {
+            ++pair;
             continue;
+         }
 
          VMeta definition = found->second;
          const auto lc1 = ToLowercase(definition->mToken);
@@ -583,13 +581,14 @@ namespace Langulus::RTTI
                " unregistered (", boundary, ")");
          }
 
-         UnregisterAmbiguous(boundary, lc1, definition);
-         UnregisterAmbiguous(boundary, lc2, definition);
+         UnregisterAmbiguous(boundary, lc1, definition.mMeta);
+         UnregisterAmbiguous(boundary, lc2, definition.mMeta);
          pair->second.erase(found);
          if (pair->second.empty())
             pair = mUniqueVerbs.erase(pair);
+         else ++pair;
 
-         delete definition;
+         delete definition.mMeta;
       }
    }
 
@@ -603,7 +602,7 @@ namespace Langulus::RTTI
       // Collect all origin types, and work with those                  
       MetaList origins;
       for (auto& meta : ambiguous) {
-         const auto dmeta = dynamic_cast<DMeta>(meta);
+         const auto dmeta = meta.As<DMeta>();
          if (dmeta) {
             if (dmeta->mOrigin)
                origins.insert(dmeta->mOrigin);

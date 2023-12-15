@@ -10,6 +10,7 @@
 #include "MetaData.hpp"
 #include "MetaVerb.hpp"
 #include "MetaTrait.hpp"
+#include <iterator>
 
 #if defined(_MSC_VER)
    #define BIG_CONSTANT(x) (x)
@@ -511,7 +512,11 @@ namespace Langulus
 
    } // namespace Langulus::CT
 
+
    /// Hash any hashable data, including fundamental types                    
+   ///   @tparam FAKE - for internal use - if FAKE and evaluated to fail, it  
+   ///                  will return CT::Unsupported; otherwise it will screm  
+   ///                  a compile-time error at you                           
    ///   @tparam SEED - the seed for the hash algorithm                       
    ///   @tparam T - first type to hash (deducible)                           
    ///   @tparam MORE... - the rest of the hashed types (deducible)           
@@ -526,19 +531,18 @@ namespace Langulus
             HashOf<FAKE, SEED>(head),
             HashOf<FAKE, SEED>(rest)...
          };
-         return HashBytes<SEED, false>(coalesced, sizeof(coalesced));
+         return HashBytes<SEED, false>(
+            coalesced, static_cast<int>(sizeof(coalesced))
+         );
       }
       else if constexpr (CT::Sparse<T>) {
-         // Hash pointers, never dereference them, unless they're       
-         // meta types                                                  
+         // Hash pointer, never dereference it                          
          if (head == nullptr)
             return Hash {};
 
-         // Always dereference meta and get its hash                    
-         if constexpr (CT::Meta<T>)
-            return head->GetHash();
-         else
-            return HashBytes<SEED, false>(&head, sizeof(T));
+         return HashBytes<SEED, false>(
+            &head, static_cast<int>(sizeof(T))
+         );
       }
       else if constexpr (CT::Exact<T, Hash>) {
          // Provided type is already a hash, just propagate it          
@@ -547,6 +551,47 @@ namespace Langulus
       else if constexpr (CT::Inner::HasGetHashMethod<T>) {
          // Hashable via a member GetHash() function                    
          return head.GetHash();
+      }
+      else if constexpr (::std::ranges::range<T>
+              and requires (TypeOf<T>& a) {{HashOf<true>(a)} -> CT::Supported; }) {
+         // Anything that contiguously iteratable is carried through    
+         // HashOf for consistency, because different std library       
+         // implementations might have different hashing algorithms.    
+         // This should include string_view, string, vector, span, etc. 
+         using TT = TypeOf<T>;
+         if constexpr (::std::ranges::contiguous_range<T>
+            and (sizeof(TT) == 1 or ::std::is_fundamental_v<TT>) //TODO if i use POD instead of fundamental here, std::string_view will be taken as byte array
+            and requires { {head.data()} -> CT::Sparse; }        // which uninadvertedly will fuck shit up, and it hints, that CT::POD should be
+            and requires { {head.size()} -> CT::Integer; }) {    // completely rethought to avoid any standard definition of POD (huh, probably that's why the
+            return HashBytes<SEED> (                             // std::pod concept was deprecated in the first place, so there really ISN'T a definition at all)
+               head.data(),
+               static_cast<int>(head.size() * sizeof(TT))
+            );
+         }
+         else {
+            // Hash each individual element, then combine all hashes    
+            ::std::vector<Hash> coalesced;
+            for (auto& i : head)
+               coalesced.emplace_back(HashOf(i));
+
+            return HashBytes<SEED>(
+               coalesced.data(),
+               static_cast<int>(coalesced.size() * sizeof(Hash))
+            );
+         }
+      }
+      else if constexpr (CT::POD<T>) {
+         // Explicitly marked POD types are always hashable, but be     
+         // careful for POD types with padding - the junk inbetween     
+         // members can interfere with the hash, giving unique          
+         // hashes where the same hashes should be produced. In such    
+         // cases it is recommended you add a custom GetHash() method   
+         // to your type, or #pragma pack, in order to circumvent issue 
+         // Warning: some types like std::string_view are actually      
+         // qualified as POD by Langulus standards, and that's why POD  
+         // is after the ::std::ranges::range<T> case                   
+         return HashBytes<SEED, alignof(T) < Bitness / 8> (
+            &head, static_cast<int>(sizeof(T)));
       }
       else if constexpr (requires (::std::hash<T> h, const T& i) { h(i); }) {
          // Hashable via std::hash (fallback for std containers)        
@@ -557,22 +602,10 @@ namespace Langulus
          ::std::hash<T> hasher;
          return Hash {hasher(head)};
       }
-      else if constexpr (CT::POD<T>) {
-         // Explicitly marked POD types are always hashable, but be     
-         // careful for POD types with padding - the junk inbetween     
-         // members can interfere with the hash, giving unique          
-         // hashes where the same hashes should be produced. In such    
-         // cases it is recommended you add a custom GetHash() method   
-         // to your type, in order to circumvent the issue              
-         // Also, this is intentionally after the std::hash check,      
-         // because some types like std::string_view are actually       
-         // qualified as POD by Langulus standards                      
-         return HashBytes < SEED, alignof(T) < Bitness / 8 > (&head, sizeof(T));
+      else {
+         if constexpr (FAKE) return Inner::Unsupported {};
+         else                LANGULUS_ERROR("Can't hash data");
       }
-      else if constexpr (FAKE)
-         return Inner::Unsupported {};
-      else
-         LANGULUS_ERROR("Can't hash data");
    }
 
 } // namespace Langulus
@@ -582,36 +615,30 @@ namespace Langulus
 
 namespace std
 {
-   using ::Langulus::RTTI::DMeta;
-   using ::Langulus::RTTI::TMeta;
-   using ::Langulus::RTTI::VMeta;
+
+   LANGULUS(INLINED)
+   size_t hash<AMeta>::operator()(AMeta k) const noexcept {
+      return Langulus::HashOf(k).mHash;
+   }
 
    LANGULUS(INLINED)
    size_t hash<DMeta>::operator()(DMeta k) const noexcept {
-      return k->mHash.mHash;
+      return Langulus::HashOf(k).mHash;
    }
 
    LANGULUS(INLINED)
    size_t hash<vector<DMeta>>::operator()(const vector<DMeta>& k) const noexcept {
-      using ::Langulus::Hash;
-      vector<Hash> coalesced;
-      for (auto& i : k)
-         coalesced.emplace_back(i->mHash);
-
-      return ::Langulus::HashBytes<::Langulus::DefaultHashSeed, false>(
-         coalesced.data(),
-         static_cast<int>(coalesced.size() * sizeof(Hash))
-      ).mHash;
+      return Langulus::HashOf(k).mHash;
    }
 
    LANGULUS(INLINED)
    size_t hash<TMeta>::operator()(TMeta k) const noexcept {
-      return k->mHash.mHash;
+      return Langulus::HashOf(k).mHash;
    }
 
    LANGULUS(INLINED)
    size_t hash<VMeta>::operator()(VMeta k) const noexcept {
-      return k->mHash.mHash;
+      return Langulus::HashOf(k).mHash;
    }
 
 } // namespace std
