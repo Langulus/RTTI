@@ -14,8 +14,8 @@
 namespace Langulus::RTTI
 {
 
-   /// The default verb execution functor													
-   using FDefaultVerbMutable = bool (*)(Anyness::Block&, Flow::Verb&);
+   /// The default verb execution functor                                     
+   using FDefaultVerbMutable  = bool (*)(Anyness::Block&, Flow::Verb&);
    using FDefaultVerbConstant = bool (*)(const Anyness::Block&, Flow::Verb&);
    using FStatelessVerb = bool (*)(Flow::Verb&);
    using AbleList = ::std::unordered_set<DMeta>;
@@ -24,13 +24,11 @@ namespace Langulus::RTTI
    ///                                                                        
    ///   Meta verb                                                            
    ///                                                                        
-   struct MetaVerb final : public Meta {
+   struct MetaVerb : Meta {
       LANGULUS(NAME) "VMeta";
       LANGULUS_BASES(Meta);
 
       static constexpr Token DefaultToken = "NoVerb";
-
-      MetaType GetMetaType() const noexcept final { return Meta::Verb; }
 
       // Verbs have antonyms, denoted via this 'negative' token         
       // For example, 'Destroy' is the reverse of 'Create'              
@@ -64,8 +62,6 @@ namespace Langulus::RTTI
       NOD() bool Is(VMeta) const noexcept;
       template<CT::Data T>
       NOD() bool Is() const;
-
-      bool operator == (const MetaVerb&) const noexcept;
 
    protected:
       template<CT::Data T>

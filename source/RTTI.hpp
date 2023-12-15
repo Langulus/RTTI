@@ -16,7 +16,7 @@ namespace Langulus::RTTI
 
    template<class T>
    using BoundedMeta = ::std::unordered_map<Token, T>;
-   using MetaList = ::std::unordered_set<const Meta*>;
+   using MetaList = ::std::unordered_set<AMeta>;
 
 
    ///                                                                        
@@ -44,8 +44,8 @@ namespace Langulus::RTTI
       // Meta data definitions, indexed by file extensions              
       ::std::unordered_map<Lowercase, BoundedMeta<MetaList>> mFileDatabase;
 
-      void RegisterAmbiguous(const Token&, const Lowercase&, const Meta*) noexcept;
-      void UnregisterAmbiguous(const Token&, const Lowercase&, const Meta*) noexcept;
+      void RegisterAmbiguous(const Token&, const Lowercase&, AMeta) noexcept;
+      void UnregisterAmbiguous(const Token&, const Lowercase&, AMeta) noexcept;
       NOD() auto GetMeta(const auto&, const Token&, const Token&) const noexcept;
       NOD() const MetaList& GetMetaList(const auto&, const Token&, const Token&) const noexcept;
       template<bool REGISTER_AMBIGUOUS = true>
@@ -89,7 +89,7 @@ namespace Langulus::RTTI
       const MetaList& GetAmbiguousMeta(const Token&, const Token& = "") const noexcept;
 
       NOD() LANGULUS_API(RTTI)
-      const Meta* DisambiguateMeta(const Token&, const Token& = "") const;
+      AMeta DisambiguateMeta(const Token&, const Token& = "") const;
 
       NOD() LANGULUS_API(RTTI)
       const MetaList& ResolveFileExtension(const Token&, const Token& = "") const;
@@ -147,7 +147,7 @@ namespace Langulus::RTTI
    }
 
    NOD() LANGULUS(INLINED)
-   const Meta* DisambiguateMeta(const Token& token, const Token& boundary = "") {
+   AMeta DisambiguateMeta(const Token& token, const Token& boundary = "") {
       return Instance.DisambiguateMeta(token, boundary);
    }
 

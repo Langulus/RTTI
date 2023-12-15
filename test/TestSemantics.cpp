@@ -628,37 +628,38 @@ TEMPLATE_TEST_CASE("Testing semantics of pointers", "[semantics]",
    const Complex*, const ContainsComplex*
 ) {
    GIVEN("A fundamental type") {
-      auto meta = MetaData::Of<TestType>();
+      using T = TestType;
+      auto meta = MetaData::Of<T>();
       REQUIRE(meta);
 
       WHEN("Checked for reflected properties") {
-         static_assert(    CT::Inner::Defaultable<TestType>);
-         static_assert(not CT::Inner::Destroyable<TestType>);
+         static_assert(    CT::Inner::Defaultable<T>);
+         static_assert(not CT::Inner::Destroyable<T>);
 
-         static_assert(    CT::Inner::CopyMakable<TestType>);
-         static_assert(    CT::Inner::MoveMakable<TestType>);
-         static_assert(    CT::Inner::CloneMakable<TestType>);
-         static_assert(    CT::Inner::DisownMakable<TestType>);
-         static_assert(    CT::Inner::AbandonMakable<TestType>);
-         static_assert(not CT::Inner::DescriptorMakable<TestType>);
+         static_assert(    CT::Inner::CopyMakable<T>);
+         static_assert(    CT::Inner::MoveMakable<T>);
+         static_assert(    CT::Inner::CloneMakable<T> == CT::POD<T>);
+         static_assert(    CT::Inner::DisownMakable<T>);
+         static_assert(    CT::Inner::AbandonMakable<T>);
+         static_assert(not CT::Inner::DescriptorMakable<T>);
 
-         static_assert(    CT::Inner::SemanticMakable<Copied, TestType>);
-         static_assert(    CT::Inner::SemanticMakable<Moved, TestType>);
-         static_assert(    CT::Inner::SemanticMakable<Cloned, TestType>);
-         static_assert(    CT::Inner::SemanticMakable<Disowned, TestType>);
-         static_assert(    CT::Inner::SemanticMakable<Abandoned, TestType>);
+         static_assert(    CT::Inner::SemanticMakable<Copied, T>);
+         static_assert(    CT::Inner::SemanticMakable<Moved, T>);
+         static_assert(    CT::Inner::SemanticMakable<Cloned, T> == CT::POD<T>);
+         static_assert(    CT::Inner::SemanticMakable<Disowned, T>);
+         static_assert(    CT::Inner::SemanticMakable<Abandoned, T>);
 
-         static_assert(    CT::Inner::CopyAssignable<TestType>);
-         static_assert(    CT::Inner::MoveAssignable<TestType>);
-         static_assert(    CT::Inner::CloneAssignable<TestType>);
-         static_assert(    CT::Inner::DisownAssignable<TestType>);
-         static_assert(    CT::Inner::AbandonAssignable<TestType>);
-
-         static_assert(    CT::Inner::SemanticAssignable<Copied, TestType>);
-         static_assert(    CT::Inner::SemanticAssignable<Moved, TestType>);
-         static_assert(    CT::Inner::SemanticAssignable<Cloned, TestType>);
-         static_assert(    CT::Inner::SemanticAssignable<Disowned, TestType>);
-         static_assert(    CT::Inner::SemanticAssignable<Abandoned, TestType>);
+         static_assert(    CT::Inner::CopyAssignable<T>    == CT::Mutable<T>);
+         static_assert(    CT::Inner::MoveAssignable<T>    == CT::Mutable<T>);
+         static_assert(    CT::Inner::CloneAssignable<T>   == (CT::Mutable<Deptr<T>> and CT::POD<T>));
+         static_assert(    CT::Inner::DisownAssignable<T>  == CT::Mutable<T>);
+         static_assert(    CT::Inner::AbandonAssignable<T> == CT::Mutable<T>);
+                           
+         static_assert(    CT::Inner::SemanticAssignable<Copied, T>    == CT::Mutable<T>);
+         static_assert(    CT::Inner::SemanticAssignable<Moved, T>     == CT::Mutable<T>);
+         static_assert(    CT::Inner::SemanticAssignable<Cloned, T>    == (CT::Mutable<Deptr<T>> and CT::POD<T>));
+         static_assert(    CT::Inner::SemanticAssignable<Disowned, T>  == CT::Mutable<T>);
+         static_assert(    CT::Inner::SemanticAssignable<Abandoned, T> == CT::Mutable<T>);
 
          THEN("Requirements should be met") {
             if constexpr (CT::Destroyable<TestType>)

@@ -15,6 +15,26 @@
 namespace Langulus::RTTI
 {
 
+   constexpr Token VMeta::GetToken() const noexcept {
+   #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+      return mMeta ? mMeta->GetShortestUnambiguousToken() : MetaVerb::DefaultToken;
+   #else
+      return mMeta ? mMeta->mToken : MetaVerb::DefaultToken;
+   #endif
+   }
+
+   constexpr Hash VMeta::GetHash() const noexcept {
+      return mMeta ? mMeta->mHash : Hash {};
+   }
+
+   constexpr VMeta::operator AMeta() const noexcept {
+      return mMeta;
+   }
+
+   constexpr bool VMeta::operator == (const VMeta& rhs) const noexcept {
+      return mMeta == rhs.mMeta or (mMeta and mMeta->Is(rhs));
+   }
+
    /// Isolate and lowercase an operator token                                
    ///   @param token - the operator                                          
    ///   @return the lowercased and isolated operator token                   
@@ -169,7 +189,7 @@ namespace Langulus::RTTI
             MetaVerb::GetReflectedNegativeVerbOperator<T>(),
             RTTI::Boundary
          );
-         MetaVerb& generated = *const_cast<MetaVerb*>(meta);
+         MetaVerb& generated = *const_cast<MetaVerb*>(meta.mMeta);
       #else
          meta = ::std::make_unique<MetaVerb>();
          MetaVerb& generated = *const_cast<MetaVerb*>(meta.get());
@@ -247,15 +267,7 @@ namespace Langulus::RTTI
    ///   @return true if verbs match                                          
    LANGULUS(INLINED)
    bool MetaVerb::Is(VMeta other) const noexcept {
-      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         // This function is reduced to a pointer match, if the meta    
-         // database is centralized, because it guarantees that         
-         // definitions in separate translation units are always the    
-         // same instance                                               
-         return this == other;
-      #else
-         return other and mHash == other->mHash and mToken == other->mToken;
-      #endif
+      return other and mHash == other->mHash and mToken == other->mToken;
    }	
    
    /// Check if two meta definitions match exactly                            
@@ -265,14 +277,6 @@ namespace Langulus::RTTI
    LANGULUS(INLINED)
    bool MetaVerb::Is() const {
       return Is(MetaVerb::Of<T>());
-   }
-   
-   /// Compare verb definitions                                               
-   ///   @param rhs - the verb definition to compare with                     
-   ///   @return true if definitions match                                    
-   LANGULUS(INLINED)
-   bool MetaVerb::operator == (const MetaVerb& rhs) const noexcept {
-      return Is(&rhs);
    }
 
 } // namespace Langulus::RTTI

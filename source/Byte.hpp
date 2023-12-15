@@ -169,16 +169,12 @@ namespace Langulus
    template<class TO, class FROM>
    LANGULUS(INLINED)
    void CopyMemory(TO* to, const FROM* from) noexcept {
-      static_assert(CT::Void<TO>
-                 or CT::Sparse<TO>
-                 or CT::POD<TO>
-                 or ::std::is_trivial_v<TO>, 
-         "TO must be either pointer, reflected as POD, or trivial. "
+      static_assert(CT::Void<TO> or CT::Sparse<TO> or CT::Inner::POD<TO>, 
+         "TO must be either pointer, reflected as POD, or trivial "
          "(you can suppress this error by casting pointer to void*)");
 
-      static_assert(CT::Void<TO> 
-                 or(CT::Same<TO, FROM> and CT::Sparse<TO> == CT::Sparse<FROM>),
-         "TO and FROM must be the exact same types"
+      static_assert(CT::Void<TO> or CT::Similar<TO, FROM>,
+         "TO and FROM must be similar types "
          "(you can suppress this error by casting pointer to void*)");
 
       if constexpr (CT::Void<TO>)
@@ -201,16 +197,12 @@ namespace Langulus
    template<class TO, class FROM>
    LANGULUS(INLINED)
    void CopyMemory(TO* to, const FROM* from, const Count& count) noexcept {
-      static_assert(CT::Void<TO>
-                 or CT::Sparse<TO>
-                 or CT::POD<TO>
-                 or ::std::is_trivial_v<TO>, 
-         "TO must be either pointer, reflected as POD, or trivial. "
+      static_assert(CT::Void<TO> or CT::Sparse<TO> or CT::Inner::POD<TO>,
+         "TO must be either pointer, reflected as POD, or trivial "
          "(you can suppress this error by casting pointer to void*)");
 
-      static_assert(CT::Void<TO>
-                 or(CT::Same<TO, FROM> and CT::Sparse<TO> == CT::Sparse<FROM>),
-         "TO and FROM must be the exact same types"
+      static_assert(CT::Void<TO> or CT::Similar<TO, FROM>,
+         "TO and FROM must be similar types "
          "(you can suppress this error by casting pointer to void*)");
 
       if constexpr (CT::Void<TO>) {
@@ -230,24 +222,13 @@ namespace Langulus
    }
    
    /// Wrapper for memset                                                     
-   ///   @tparam TO - destination memory type (deducible)                     
    ///   @tparam FILLER - value to fill in with                               
+   ///   @tparam TO - destination memory type (deducible)                     
    ///   @param to - [out] destination memory                                 
    template<int FILLER, class TO>
    LANGULUS(INLINED)
    void FillMemory(TO* to) noexcept {
-      static_assert(CT::Void<TO>
-                 or CT::Sparse<TO>
-                 or CT::POD<TO>
-                 or ::std::is_trivial_v<TO>,
-         "TO must be either pointer, reflected as POD, or trivial. "
-         "(you can suppress this error by casting to void*)");
-
-      static_assert(FILLER
-                 or CT::Nullifiable<TO>
-                 or CT::Void<TO>
-                 or CT::Sparse<TO>
-                 or CT::Fundamental<TO>,
+      static_assert(FILLER or CT::Nullifiable<TO> or CT::Void<TO>,
          "Filling with zeroes requires the type to be reflected as nullifiable, "
          "or be a pointer/fundamental (you can suppress this error by casting to void*)");
 
@@ -258,26 +239,15 @@ namespace Langulus
    }
    
    /// Wrapper for memset                                                     
-   ///   @tparam TO - destination memory type (deducible)                     
    ///   @tparam FILLER - value to fill in with                               
+   ///   @tparam TO - destination memory type (deducible)                     
    ///   @param to - [out] destination memory                                 
    ///   @param count - number of elements to fill                            
    ///   @attention count becomes bytecount, when TO is void                  
    template<int FILLER, class TO>
    LANGULUS(INLINED)
    void FillMemory(TO* to, const Count& count) noexcept {
-      static_assert(CT::Void<TO>
-                 or CT::Sparse<TO>
-                 or CT::POD<TO>
-                 or ::std::is_trivial_v<TO>,
-         "TO must be either pointer, reflected as POD, or trivial. "
-         "(you can suppress this error by casting to void*)");
-
-      static_assert(FILLER
-                 or CT::Nullifiable<TO>
-                 or CT::Void<TO>
-                 or CT::Sparse<TO>
-                 or CT::Fundamental<TO>,
+      static_assert(FILLER or CT::Nullifiable<TO> or CT::Void<TO>,
          "Filling with zeroes requires the type to be reflected as nullifiable, "
          "or be a pointer/fundamental (you can suppress this error by casting to void*)");
 
@@ -315,16 +285,12 @@ namespace Langulus
    template<class TO, class FROM>
    LANGULUS(INLINED)
    void MoveMemory(TO* to, const FROM* from) noexcept {
-      static_assert(CT::Void<TO>
-                 or CT::Sparse<TO>
-                 or CT::POD<TO>
-                 or ::std::is_trivial_v<TO>,
-         "TO must be either pointer, reflected as POD, or trivial. "
+      static_assert(CT::Void<TO> or CT::Sparse<TO> or CT::Inner::POD<TO>,
+         "TO must be either pointer, reflected as POD, or trivial "
          "(You can suppress this error by casting pointer to void*)");
 
-      static_assert(CT::Void<TO>
-                 or(CT::Same<TO, FROM> and CT::Sparse<TO> == CT::Sparse<FROM>),
-         "TO and FROM must be the exact same types"
+      static_assert(CT::Void<TO> or CT::Similar<TO, FROM>,
+         "TO and FROM must be similar types "
          "(you can suppress this error by casting pointer to void*)");
 
       if constexpr (CT::Void<TO>)
@@ -351,16 +317,12 @@ namespace Langulus
    template<class TO, class FROM>
    LANGULUS(INLINED)
    void MoveMemory(TO* to, const FROM* from, const Count& count) noexcept {
-      static_assert(CT::Void<TO>
-                 or CT::Sparse<TO>
-                 or CT::POD<TO>
-                 or ::std::is_trivial_v<TO>,
-         "TO must be either pointer, reflected as POD, or trivial. "
+      static_assert(CT::Void<TO> or CT::Sparse<TO> or CT::Inner::POD<TO>,
+         "TO must be either pointer, reflected as POD, or trivial "
          "(You can suppress this error by casting pointer to void*)");
 
-      static_assert(CT::Void<TO>
-                 or(CT::Same<TO, FROM> and CT::Sparse<TO> == CT::Sparse<FROM>),
-         "TO and FROM must be the exact same types"
+      static_assert(CT::Void<TO> or CT::Similar<TO, FROM>,
+         "TO and FROM must be similar types "
          "(you can suppress this error by casting pointer to void*)");
 
       if constexpr (CT::Void<TO>) {

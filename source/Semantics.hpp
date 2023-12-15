@@ -519,6 +519,9 @@ namespace Langulus
    /// Create an element on the heap, using the provided semantic, by using   
    /// a placement new variant                                                
    ///   @attention assumes placement pointer is valid                        
+   ///   @attention when S is a deep semantic, like Cloned, this function     
+   ///              assumes that the 'placement' pointer always points to a   
+   ///              dense place, where the dacayed T is cloned in             
    ///   @param placement - where to place the new instance                   
    ///   @param value - the constructor arguments and the semantic            
    ///   @return the instance on the heap                                     
@@ -572,13 +575,14 @@ namespace Langulus
       }
       else if constexpr (not S<T>::Shallow) {
          // Clone                                                       
-         if constexpr (requires { new T (Clone(*value)); })
-            return new (placement) T (Clone(*value));
-         else if constexpr (CT::Inner::POD<T>) {
+         using DT = Decay<T>;
+         if constexpr (requires { new DT (Clone(DenseCast(*value))); })
+            return new (placement) DT (Clone(DenseCast(*value)));
+         else if constexpr (CT::Inner::POD<DT>) {
             // If type is POD (like fundamentals, or trivials), then    
             // it is always acceptable to clone by memcpy               
-            ::std::memcpy(placement, &(*value), sizeof(T));
-            return reinterpret_cast<T*>(placement);
+            ::std::memcpy(placement, &DenseCast(*value), sizeof(DT));
+            return reinterpret_cast<DT*>(placement);
          }
          else if constexpr (FAKE)
             return Inner::Unsupported {};
@@ -615,6 +619,8 @@ namespace Langulus
    }
 
    /// Assign new value to an instance of T, using the provided semantic      
+   ///   @attention when S is a deep semantic, like Cloned, this function     
+   ///              will DenseCast 'lhs' and 'rhs', and copy only dense data  
    ///   @param lhs - left hand side (what are we assigning to)               
    ///   @param rhs - right hand side (what are we assigning)                 
    ///   @return whatever the assignment operator returns                     
@@ -660,18 +666,26 @@ namespace Langulus
       else {
          if constexpr (not S<T>::Shallow) {
             // Clone                                                    
-            if constexpr (requires(T& a) { a = Clone(*rhs); })
-               return (lhs = Clone(*rhs));
-            else if constexpr (CT::Inner::POD<T>) {
-               // If type is POD (like fundamentals, or trivials), then 
-               // it is always acceptable to clone by memcpy            
-               ::std::memcpy(&lhs, &(*rhs), sizeof(T));
-               return (lhs);
+            using DT = Decay<T>;
+
+            if constexpr (CT::Mutable<decltype(DenseCast(lhs))>) {
+               if constexpr (requires(DT& a) { a = Clone(DenseCast(*rhs)); })
+                  return (DenseCast(lhs) = Clone(DenseCast(*rhs)));
+               else if constexpr (CT::Inner::POD<DT>) {
+                  // If type is POD (like fundamentals, or trivials),   
+                  // then it is always acceptable to clone by memcpy    
+                  ::std::memcpy(&DenseCast(lhs), &DenseCast(*rhs), sizeof(DT));
+                  return (lhs);
+               }
+               else if constexpr (FAKE)
+                  return Inner::Unsupported {};
+               else
+                  LANGULUS_ERROR("Can't clone-assign type");
             }
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
-               LANGULUS_ERROR("Can't clone-assign type");
+               LANGULUS_ERROR("Can't clone-assign type - lhs is not mutable");
          }
          else if constexpr (not S<T>::Keep) {
             // Disown                                                   
@@ -709,9 +723,7 @@ namespace Langulus::CT
 {
    namespace Inner
    {
-      //TODO make non shallow semantics always check Decay<T>, even if inner?
-      // could help generalizing and eliminating the need for separate
-      // ShallowSemantic and DeepSemantic signatures in constructors/assignments
+
       /// Check if T is semantic-constructible by S                           
       template<template<class> class S, class T>
       concept SemanticMakable = Semantic<S<T>> and requires (T&& a) {

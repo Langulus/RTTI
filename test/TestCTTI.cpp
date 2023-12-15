@@ -242,7 +242,7 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
             REQUIRE(meta->mDecvq == MetaData::Of<ImplicitlyReflectedDataWithTraits>());
 
             REQUIRE(meta->mBases.size() == 1);
-            REQUIRE(meta->mBases[0].GetType()->Is<ImplicitlyReflectedData>());
+            REQUIRE(meta->mBases[0].mType->Is<ImplicitlyReflectedData>());
             REQUIRE(meta->mBases[0].mImposed == false);
             REQUIRE(meta->mBases[0].mBinaryCompatible == false);
             REQUIRE(meta->mBases[0].mCount == 1);
