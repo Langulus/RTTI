@@ -12,20 +12,23 @@
 #include <cstddef>
 #include <vector>
 
-namespace Langulus::Flow {
-   class Verb {};
+namespace Langulus::Flow
+{
+   struct Verb {};
    class Construct {};
    class Constructconst {};
    class constConstructconst {};
    class constconst {};
 }
 
-namespace Langulus::Anyness {
+namespace Langulus::Anyness
+{
    class Block {};
    class Trait : public Block {};
 }
 
-namespace Langulus::Traits {
+namespace Langulus::Traits
+{
    class Tag : Anyness::Trait {};
 }
 
