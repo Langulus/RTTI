@@ -571,7 +571,7 @@ namespace Langulus
    ///   @return the instance on the heap                                     
    template<bool FAKE = false, template<class> class S, CT::NotSemantic T>
    requires CT::Semantic<S<T>> LANGULUS(INLINED)
-   auto SemanticNew(void* placement, S<T>&& value) {
+   constexpr auto SemanticNew(void* placement, S<T>&& value) {
       LANGULUS_ASSUME(DevAssumes, placement, "Invalid placement pointer");
 
       if constexpr (CT::Inner::Abstract<T>) {
@@ -669,7 +669,7 @@ namespace Langulus
    ///   @return whatever the assignment operator returns                     
    template<bool FAKE = false, template<class> class S, CT::NotSemantic T, class MT = Decvq<T>>
    requires CT::Semantic<S<T>> LANGULUS(INLINED)
-   decltype(auto) SemanticAssign(MT& lhs, S<T>&& rhs) {
+   constexpr decltype(auto) SemanticAssign(MT& lhs, S<T>&& rhs) {
       if constexpr (S<T>::Move) {
          if constexpr (not S<T>::Keep) {
             // Abandon                                                  
@@ -779,21 +779,21 @@ namespace Langulus::CT
       /// Check if T is semantic-constructible by S                           
       template<template<class> class S, class T>
       concept SemanticMakable = Semantic<S<T>> and requires (T&& a) {
-         {SemanticNew<true>(nullptr, S<T> {Forward<T>(a)})} -> Supported;
+         {SemanticNew<true>(nullptr, S<T> {a})} -> Supported;
       };
       template<class S>
       concept SemanticMakableAlt = Semantic<S> and requires (TypeOf<S>&& a) {
-         {SemanticNew<true>(nullptr, S {Forward<TypeOf<S>>(a)})} -> Supported;
+         {SemanticNew<true>(nullptr, S {a})} -> Supported;
       };
 
       /// Check if T is semantic-assignable                                   
       template<template<class> class S, class T>
       concept SemanticAssignable = Semantic<S<T>> and requires (T&& a) {
-         {SemanticAssign<true>(a, S<T> {Forward<T>(a)})} -> Supported;
+         {SemanticAssign<true>(a, S<T> {a})} -> Supported;
       };
       template<class S>
       concept SemanticAssignableAlt = Semantic<S> and requires (TypeOf<S>&& a) {
-         {SemanticAssign<true>(a, S {Forward<TypeOf<S>>(a)})} -> Supported;
+         {SemanticAssign<true>(a, S {a})} -> Supported;
       };
 
 
@@ -842,7 +842,7 @@ namespace Langulus::CT
       /// Check if the T is descriptor-constructible                          
       template<class T>
       concept DescriptorMakable = not Abstract<T> and not Enum<T>
-          and requires { T {Describe {Fake<const Anyness::Neat&>()}}; };
+          and requires (const Anyness::Neat& a) { T {Describe {a}}; };
 
       /// Check if the T is noexcept-descriptor-constructible                 
       template<class T>
