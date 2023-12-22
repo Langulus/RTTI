@@ -524,7 +524,9 @@ namespace Langulus
    ///   @return the hash                                                     
    template<bool FAKE = false, uint32_t SEED = DefaultHashSeed, class T, class... MORE>
    constexpr auto HashOf(const T& head, const MORE&... rest) {
-      if constexpr (sizeof...(MORE)) {
+      if constexpr (CT::Unsupported<T, MORE...>)
+         return Inner::Unsupported {};
+      else if constexpr (sizeof...(MORE)) {
          // Combine all data into a single array of hashes, and then    
          // hash that array as a whole                                  
          alignas(Bitness/8) const Hash coalesced[1 + sizeof...(MORE)] {
@@ -536,13 +538,35 @@ namespace Langulus
          );
       }
       else if constexpr (CT::Sparse<T>) {
-         // Hash pointer, never dereference it                          
-         if (head == nullptr)
-            return Hash {};
+         if constexpr (CT::Array<T>) {
+            if constexpr (ExtentOf<T> == 1) {
+               // Only one element in array, just use the first hash    
+               return HashOf<FAKE, SEED>(head[0]);
+            }
+            else if constexpr (sizeof(Deext<T>) == 1 or ::std::is_fundamental_v<Deext<T>>) {
+               // Array is made of POD-like elements, batch-hash them   
+               return HashBytes<SEED>(head, static_cast<int>(sizeof(T)));
+            }
+            else {
+               // Hash each element of the array individually, and then 
+               // hash that array of hashes as a whole                  
+               alignas(Bitness / 8) Hash coalesced[ExtentOf<T>];
+               for (Count i = 0; i < ExtentOf<T>; ++i)
+                  coalesced[i] = HashOf<FAKE, SEED>(head[i]);
+               return HashBytes<SEED, false>(
+                  coalesced, static_cast<int>(sizeof(coalesced))
+               );
+            }
+         }
+         else {
+            // Hash pointer, never dereference it                       
+            if (head == nullptr)
+               return Hash {};
 
-         return HashBytes<SEED, false>(
-            &head, static_cast<int>(sizeof(T))
-         );
+            return HashBytes<SEED, false>(
+               &head, static_cast<int>(sizeof(T))
+            );
+         }
       }
       else if constexpr (CT::Exact<T, Hash>) {
          // Provided type is already a hash, just propagate it          
@@ -552,27 +576,25 @@ namespace Langulus
          // Hashable via a member GetHash() function                    
          return head.GetHash();
       }
-      else if constexpr (::std::ranges::range<T>
-              and requires (TypeOf<T>& a) {{HashOf<true>(a)} -> CT::Supported; }) {
+      else if constexpr (CT::StandardContainer<T>
+              and requires (TypeOf<T>& a) {{HashOf<true, SEED>(a)} -> CT::Supported; }) {
          // Anything that contiguously iteratable is carried through    
          // HashOf for consistency, because different std library       
          // implementations might have different hashing algorithms.    
          // This should include string_view, string, vector, span, etc. 
          using TT = TypeOf<T>;
-         if constexpr (::std::ranges::contiguous_range<T>
-            and (sizeof(TT) == 1 or ::std::is_fundamental_v<TT>) //TODO if i use POD instead of fundamental here, std::string_view will be taken as byte array
-            and requires { {head.data()} -> CT::Sparse; }        // which uninadvertedly will fuck shit up, and it hints, that CT::POD should be
-            and requires { {head.size()} -> CT::Integer; }) {    // completely rethought to avoid any standard definition of POD (huh, probably that's why the
-            return HashBytes<SEED> (                             // std::pod concept was deprecated in the first place, so there really ISN'T a definition at all)
-               head.data(),
-               static_cast<int>(head.size() * sizeof(TT))
+         if constexpr (CT::StandardContiguousContainer<T>
+            and (sizeof(TT) == 1 or ::std::is_fundamental_v<TT>)) {   //TODO if i use POD instead of fundamental here, std::string_view will be taken as byte array
+            return HashBytes<SEED>(                                   // which uninadvertedly will fuck shit up, and it hints, that CT::POD should be
+               head.data(),                                           // completely rethought to avoid any standard definition of POD (huh, probably that's why the
+               static_cast<int>(head.size() * sizeof(TT))             // std::pod concept was deprecated in the first place, so there really ISN'T a definition at all)
             );
          }
          else {
             // Hash each individual element, then combine all hashes    
             ::std::vector<Hash> coalesced;
             for (auto& i : head)
-               coalesced.emplace_back(HashOf(i));
+               coalesced.emplace_back(HashOf<FAKE, SEED>(i));
 
             return HashBytes<SEED>(
                coalesced.data(),
