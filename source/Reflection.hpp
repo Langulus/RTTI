@@ -269,10 +269,16 @@ namespace Langulus::CT
                          or T::CTTI_Abstract;
 
       template<class T>
-      concept Uninsertable = T::CTTI_Uninsertable;
+      concept Uninsertable = CT::Dense<T> and T::CTTI_Uninsertable;
+
+      template<class T>
+      concept Insertable = not Uninsertable<T>;
 
       template<class T>
       concept Unallocatable = not Complete<T> or T::CTTI_Unallocatable;
+
+      template<class T>
+      concept Allocatable = not Unallocatable<T>;
 
       template<class T>
       concept Destroyable = not ::std::is_trivially_destructible_v<T>

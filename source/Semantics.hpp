@@ -77,6 +77,10 @@ namespace Langulus
       template<class... T>
       concept Semantic = (DerivedFrom<T, A::Semantic> and ...);
 
+      /// Checks if a type is not a semantic                                  
+      template<class... T>
+      concept NotSemantic = not Semantic<T...>;
+
       /// Checks if a type is a shallow semantic                              
       template<class... T>
       concept ShallowSemantic = (DerivedFrom<T, A::ShallowSemantic> and ...);
@@ -84,10 +88,6 @@ namespace Langulus
       /// Checks if a type is a deep semantic                                 
       template<class... T>
       concept DeepSemantic = (DerivedFrom<T, A::DeepSemantic> and ...);
-
-      /// Checks if a type is not a semantic                                  
-      template<class... T>
-      concept NotSemantic = ((not Semantic<T> and not CT::Same<T, Describe>) and ...);
 
       /// Check if a type is a shallow-copy semantic                          
       template<class... T>
@@ -148,15 +148,16 @@ namespace Langulus
 
       /// Copy something else                                                 
       LANGULUS(INLINED)
-      static constexpr decltype(auto) Nest(const auto& value) noexcept {
-         return Copied<Decvq<Deref<decltype(value)>>> {value};
+      static constexpr decltype(auto) Nest(auto&& value) noexcept {
+         using ALT = Decvq<Deref<decltype(value)>>;
+         if constexpr (CT::Semantic<ALT>)
+            return Copied<TypeOf<ALT>> {*value};
+         else
+            return Copied<ALT> {value};
       }
 
-      template<class ALT_T>
-      using Nested = Copied<ALT_T>;
-
       LANGULUS(INLINED)
-      const T& operator *  () const noexcept { return mValue; }
+      const T& operator * () const noexcept { return mValue; }
 
       LANGULUS(INLINED)
       auto operator -> () const noexcept {
@@ -177,8 +178,12 @@ namespace Langulus
    
    /// Copy a value                                                           
    NOD() LANGULUS(INLINED) 
-   constexpr auto Copy(const CT::NotSemantic auto& value) noexcept {
-      return Copied<Decvq<Deref<decltype(value)>>> {value};
+   constexpr auto Copy(auto&& value) noexcept {
+      using ALT = Decvq<Deref<decltype(value)>>;
+      if constexpr (CT::Semantic<ALT>)
+         return Copied<TypeOf<ALT>> {*value};
+      else
+         return Copied<ALT> {value};
    }
    
 
@@ -227,22 +232,16 @@ namespace Langulus
 
       /// Move something else                                                 
       LANGULUS(INLINED)
-      static constexpr decltype(auto) Nest(auto& value) noexcept {
-         return Moved<Decvq<Deref<decltype(value)>>> {::std::move(value)};
-      }
-
-      /// Move something else                                                 
-      LANGULUS(INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
-         using ALT_T = Decvq<Deref<decltype(value)>>;
-         return Moved<ALT_T> {::std::forward<ALT_T>(value)};
+         using ALT = Decvq<Deref<decltype(value)>>;
+         if constexpr (CT::Semantic<ALT>)
+            return Moved<TypeOf<ALT>> {::std::forward<TypeOf<ALT>>(*value)};
+         else
+            return Moved<ALT> {::std::forward<ALT>(value)};
       }
 
-      template<class ALT_T>
-      using Nested = decltype(Nest(Fake<ALT_T>()));
-
       LANGULUS(INLINED)
-      T& operator *  () const noexcept { return mValue; }
+      T& operator * () const noexcept { return mValue; }
 
       LANGULUS(INLINED)
       auto operator -> () const noexcept {
@@ -256,23 +255,23 @@ namespace Langulus
       /// This way this wrapper is seamlessly integrated with the standard    
       /// C++20 semantics                                                     
       LANGULUS(INLINED)
-      constexpr operator T&& () const noexcept {
+      constexpr operator T&& () && noexcept {
          return ::std::forward<T>(mValue);
+      }
+      LANGULUS(INLINED)
+      constexpr operator T&& () & noexcept {
+         return ::std::move(mValue);
       }
    };
    
    /// Move a value                                                           
    NOD() LANGULUS(INLINED)
-   constexpr auto Move(CT::NotSemantic auto&& value) noexcept {
-      using T = Decvq<Deref<decltype(value)>>;
-      return Moved<T> {::std::forward<T>(value)};
-   }
-
-   /// Move a value                                                           
-   NOD() LANGULUS(INLINED)
-   constexpr auto Move(CT::NotSemantic auto& value) noexcept {
-      using T = Decvq<Deref<decltype(value)>>;
-      return Moved<T> {::std::move(value)};
+   constexpr auto Move(auto&& value) noexcept {
+      using ALT = Decvq<Deref<decltype(value)>>;
+      if constexpr (CT::Semantic<ALT>)
+         return Moved<TypeOf<ALT>> {::std::forward<TypeOf<ALT>>(*value)};
+      else
+         return Moved<ALT> {::std::forward<ALT>(value)};
    }
 
 
@@ -298,7 +297,7 @@ namespace Langulus
       Abandoned() = delete;
       Abandoned(const Abandoned&) = delete;
       explicit constexpr Abandoned(Abandoned&&) noexcept = default;
-
+      
       LANGULUS(INLINED)
       explicit constexpr Abandoned(T& value) noexcept
          : mValue {::std::move(value)} {
@@ -325,23 +324,16 @@ namespace Langulus
 
       /// Abandon something else                                              
       LANGULUS(INLINED)
-      static constexpr decltype(auto) Nest(auto& value) noexcept {
-         using ALT_T = Decvq<Deref<decltype(value)>>;
-         return Abandoned<ALT_T> {::std::move(value)};
-      }
-
-      /// Abandon something else                                              
-      LANGULUS(INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
-         using ALT_T = Decvq<Deref<decltype(value)>>;
-         return Abandoned<ALT_T> {::std::forward<ALT_T>(value)};
+         using ALT = Decvq<Deref<decltype(value)>>;
+         if constexpr (CT::Semantic<ALT>)
+            return Abandoned<TypeOf<ALT>> {::std::forward<TypeOf<ALT>>(*value)};
+         else
+            return Abandoned<ALT> {::std::forward<ALT>(value)};
       }
 
-      template<class ALT_T>
-      using Nested = decltype(Nest(Fake<ALT_T>()));
-
       LANGULUS(INLINED)
-      T& operator *  () const noexcept { return mValue; }
+      T& operator * () const noexcept { return mValue; }
 
       LANGULUS(INLINED)
       auto operator -> () const noexcept {
@@ -351,11 +343,22 @@ namespace Langulus
             return &mValue;
       }
 
-      /// Implicitly collapse the semantic, when applying it to trivially     
-      /// destructible types, since abandoning them is same as moving         
+      /// Implicitly collapse the semantic, when applying it to fundamentals  
+      /// This way this wrapper is seamlessly integrated with the standard    
+      /// C++20 semantics                                                     
       LANGULUS(INLINED)
-      constexpr operator const T& () const noexcept requires (not CT::Inner::Destroyable<T>) {
-         return mValue;
+      constexpr operator T&& () && noexcept requires (not CT::Inner::Destroyable<T>) {
+         return ::std::forward<T>(mValue);
+      }
+      LANGULUS(INLINED)
+      constexpr operator T&& () & noexcept requires (not CT::Inner::Destroyable<T>) {
+         return ::std::move(mValue);
+      }
+
+      /// Used by DecayCast                                                   
+      LANGULUS(INLINED)
+      constexpr T&& DecayCast() const noexcept {
+         return ::std::forward<T>(mValue);
       }
    };
    
@@ -363,18 +366,12 @@ namespace Langulus
    /// Same as Move, but resets only mandatory data inside source after move  
    /// essentially saving up on a couple of instructions                      
    NOD() LANGULUS(INLINED)
-   constexpr auto Abandon(CT::NotSemantic auto&& value) noexcept {
-      using T = Decvq<Deref<decltype(value)>>;
-      return Abandoned<T> {::std::forward<T>(value)};
-   }
-
-   /// Abandon a value                                                        
-   /// Same as Move, but resets only mandatory data inside source after move  
-   /// essentially saving up on a couple of instructions                      
-   NOD() LANGULUS(INLINED)
-   constexpr auto Abandon(CT::NotSemantic auto& value) noexcept {
-      using T = Decvq<Deref<decltype(value)>>;
-      return Abandoned<T> {::std::move(value)};
+   constexpr auto Abandon(auto&& value) noexcept {
+      using ALT = Decvq<Deref<decltype(value)>>;
+      if constexpr (CT::Semantic<ALT>)
+         return Abandoned<TypeOf<ALT>> {::std::forward<TypeOf<ALT>>(*value)};
+      else
+         return Abandoned<ALT> {::std::forward<ALT>(value)};
    }
 
 
@@ -414,15 +411,16 @@ namespace Langulus
 
       /// Disown something else                                               
       LANGULUS(INLINED)
-      static constexpr decltype(auto) Nest(const auto& value) noexcept {
-         return Disowned<Decvq<Deref<decltype(value)>>> {value};
+      static constexpr decltype(auto) Nest(auto&& value) noexcept {
+         using ALT = Decvq<Deref<decltype(value)>>;
+         if constexpr (CT::Semantic<ALT>)
+            return Disowned<TypeOf<ALT>> {*value};
+         else
+            return Disowned<ALT> {value};
       }
 
-      template<class ALT_T>
-      using Nested = Disowned<ALT_T>;
-
       LANGULUS(INLINED)
-      const T& operator *  () const noexcept { return mValue; }
+      const T& operator * () const noexcept { return mValue; }
 
       LANGULUS(INLINED)
       auto operator -> () const noexcept {
@@ -438,13 +436,23 @@ namespace Langulus
       constexpr operator const T& () const noexcept requires CT::Inner::POD<T> {
          return mValue;
       }
+
+      /// Used by DecayCast                                                   
+      LANGULUS(INLINED)
+      constexpr const T& DecayCast() const noexcept {
+         return mValue;
+      }
    };
    
    /// Disown a value                                                         
    /// Same as a shallow-copy, but never references, saving some instructions 
    NOD() LANGULUS(INLINED)
-   constexpr auto Disown(const CT::NotSemantic auto& value) noexcept {
-      return Disowned<Decvq<Deref<decltype(value)>>> {value};
+   constexpr auto Disown(auto&& value) noexcept {
+      using ALT = Decvq<Deref<decltype(value)>>;
+      if constexpr (CT::Semantic<ALT>)
+         return Disowned<TypeOf<ALT>> {*value};
+      else
+         return Disowned<ALT> {value};
    }
    
 
@@ -483,15 +491,16 @@ namespace Langulus
 
       /// Clone something else                                                
       LANGULUS(INLINED)
-      static constexpr decltype(auto) Nest(const auto& value) noexcept {
-         return Cloned<Decvq<Deref<decltype(value)>>> {value};
+      static constexpr decltype(auto) Nest(auto&& value) noexcept {
+         using ALT = Decvq<Deref<decltype(value)>>;
+         if constexpr (CT::Semantic<ALT>)
+            return Cloned<TypeOf<ALT>> {*value};
+         else
+            return Cloned<ALT> {value};
       }
-
-      template<class ALT_T>
-      using Nested = Cloned<ALT_T>;
       
       LANGULUS(INLINED)
-      const T& operator *  () const noexcept { return mValue; }
+      const T& operator * () const noexcept { return mValue; }
 
       LANGULUS(INLINED)
       auto operator -> () const noexcept {
@@ -507,20 +516,30 @@ namespace Langulus
       constexpr operator const T& () const noexcept requires CT::Inner::POD<T> {
          return mValue;
       }
+
+      /// Used by DecayCast                                                   
+      LANGULUS(INLINED)
+      constexpr const T& DecayCast() const noexcept {
+         return mValue;
+      }
    };
    
    /// Clone a value                                                          
    /// Does a deep-copy                                                       
    NOD() LANGULUS(INLINED)
-   constexpr auto Clone(const CT::NotSemantic auto& value) noexcept {
-      return Cloned<Decvq<Deref<decltype(value)>>> {value};
+   constexpr auto Clone(auto&& value) noexcept {
+      using ALT = Decvq<Deref<decltype(value)>>;
+      if constexpr (CT::Semantic<ALT>)
+         return Cloned<TypeOf<ALT>> {*value};
+      else
+         return Cloned<ALT> {value};
    }
-      
+
 
    ///                                                                        
    /// Descriptor intermediate type, use in constructors to enable descriptor 
-   /// construction. The inner type is always Neat                            
-   struct Describe {
+   /// construction. The inner type is always Anyness::Neat                   
+   struct Describe : A::Semantic {
    protected:
       const Anyness::Neat& mValue;
 
@@ -532,9 +551,9 @@ namespace Langulus
       LANGULUS(INLINED)
       explicit constexpr Describe(const Anyness::Neat& value) noexcept
          : mValue {value} {}
-      
+
       LANGULUS(INLINED)
-      const Anyness::Neat& operator *  () const noexcept { return mValue; }
+      const Anyness::Neat& operator *  () const noexcept { return  mValue; }
 
       LANGULUS(INLINED)
       const Anyness::Neat* operator -> () const noexcept { return &mValue; }
@@ -551,8 +570,7 @@ namespace Langulus
    ///   @param value - the constructor arguments and the semantic            
    ///   @return the instance on the heap                                     
    template<bool FAKE = false, template<class> class S, CT::NotSemantic T>
-   requires CT::Semantic<S<T>>
-   LANGULUS(INLINED)
+   requires CT::Semantic<S<T>> LANGULUS(INLINED)
    auto SemanticNew(void* placement, S<T>&& value) {
       LANGULUS_ASSUME(DevAssumes, placement, "Invalid placement pointer");
 
@@ -649,20 +667,19 @@ namespace Langulus
    ///   @param lhs - left hand side (what are we assigning to)               
    ///   @param rhs - right hand side (what are we assigning)                 
    ///   @return whatever the assignment operator returns                     
-   template<bool FAKE = false, template<class> class S, CT::NotSemantic T>
-   requires CT::Semantic<S<T>>
-   LANGULUS(INLINED)
-   decltype(auto) SemanticAssign(T& lhs, S<T>&& rhs) {
+   template<bool FAKE = false, template<class> class S, CT::NotSemantic T, class MT = Decvq<T>>
+   requires CT::Semantic<S<T>> LANGULUS(INLINED)
+   decltype(auto) SemanticAssign(MT& lhs, S<T>&& rhs) {
       if constexpr (S<T>::Move) {
          if constexpr (not S<T>::Keep) {
             // Abandon                                                  
-            if constexpr (requires(T& a) { a = Abandon(*rhs); })
+            if constexpr (requires(MT a) { a = Abandon(*rhs); })
                return (lhs = Abandon(*rhs));
             else if constexpr (not CT::Inner::Destroyable<T>) {
                // If type is not destroyable (like fundamentals), then  
                // it is always acceptable to abandon them - just use    
                // the standard move-semantics                           
-               if constexpr (requires(T& a) { a = ::std::move(*rhs); })
+               if constexpr (requires(MT& a) { a = ::std::move(*rhs); })
                   return (lhs = ::std::move(*rhs));
                else if constexpr (FAKE)
                   return Inner::Unsupported {};
@@ -678,9 +695,9 @@ namespace Langulus
          }
          else {
             // Move                                                     
-            if constexpr (requires(T& a) { a = Move(*rhs); })
+            if constexpr (requires(MT& a) { a = Move(*rhs); })
                return (lhs = Move(*rhs));
-            else if constexpr (requires(T& a) { a = ::std::move(*rhs); })
+            else if constexpr (requires(MT& a) { a = ::std::move(*rhs); })
                return (lhs = ::std::move(*rhs));
             else if constexpr (FAKE)
                return Inner::Unsupported {};
@@ -714,7 +731,7 @@ namespace Langulus
          }
          else if constexpr (not S<T>::Keep) {
             // Disown                                                   
-            if constexpr (requires(T& a) { a = Disown(*rhs); })
+            if constexpr (requires(MT& a) { a = Disown(*rhs); })
                return (lhs = Disown(*rhs));
             else if constexpr (CT::Inner::POD<T>) {
                // If type is POD (like fundamentals, or trivials), then 
@@ -730,9 +747,9 @@ namespace Langulus
          }
          else {
             // Copy                                                     
-            if constexpr (requires(T& a) { a = Copy(*rhs); })
+            if constexpr (requires(MT& a) { a = Copy(*rhs); })
                return (lhs = Copy(*rhs));
-            else if constexpr (requires(T& a) { a = *rhs; })
+            else if constexpr (requires(MT& a) { a = *rhs; })
                return (lhs = *rhs);
             else if constexpr (FAKE)
                return Inner::Unsupported {};
@@ -825,12 +842,12 @@ namespace Langulus::CT
       /// Check if the T is descriptor-constructible                          
       template<class T>
       concept DescriptorMakable = not Abstract<T> and not Enum<T>
-         and requires { T {Describe {Fake<const Anyness::Neat&>()}}; };
+          and requires { T {Describe {Fake<const Anyness::Neat&>()}}; };
 
       /// Check if the T is noexcept-descriptor-constructible                 
       template<class T>
       concept DescriptorMakableNoexcept = DescriptorMakable<T>
-         and noexcept ( T {Describe {Fake<const Anyness::Neat&>()}}  );
+          and noexcept ( T {Describe {Fake<const Anyness::Neat&>()}}  );
 
    } // namespace Langulus::CT::Inner
 
@@ -906,6 +923,30 @@ namespace Langulus::CT
    concept DescriptorMakableNoexcept = Complete<Decay<T>...>
       and (Inner::DescriptorMakableNoexcept<Decay<T>> and ...);
 
+   namespace Inner
+   {
+
+      /// Unfolds T, if it is a bounded array, or std::range, and returns     
+      /// a nullptr pointer of the type, contained inside. Nested for ranges  
+      /// containing other ranges, or arrays containing ranges                
+      ///   @tparam T - type to unfold                                        
+      ///   @return a pointer of the most inner type                          
+      template<class T>
+      constexpr auto Unfold() noexcept {
+         if constexpr (CT::Sparse<T>) {
+            if constexpr (CT::Array<T>)
+               return Unfold<Deext<T>>();
+            else
+               return (Deref<T>*) nullptr;
+         }
+         else if constexpr (::std::ranges::range<T>)
+            return Unfold<TypeOf<T>>();
+         else 
+            return (Deref<T>*) nullptr;
+      }
+
+   } // namespace Langulus::CT::Inner
+
 } // namespace Langulus::CT
 
 namespace Langulus
@@ -914,9 +955,9 @@ namespace Langulus
    /// Deduce the proper semantic type, based on whether T already has a      
    /// specified semantic, or is an rvalue (&&) or not                        
    template<class T>
-   using SemanticOf = Conditional<CT::Semantic<T>, T, 
-      Conditional<std::is_rvalue_reference_v<T&&>, Moved<T>, Copied<T>>
-   >;
+   using SemanticOf = Conditional<CT::Semantic<T>, Decay<T>, 
+      Conditional<::std::is_rvalue_reference_v<T> and CT::Mutable<Deref<T>>,
+         Moved<Deref<T>>, Copied<Deref<T>>>>;
 
    /// Remove the semantic from a type, or just return the type, if not       
    /// wrapped inside a semantic                                              
@@ -929,15 +970,19 @@ namespace Langulus
    ///   @return a reference (preferably) or a copy of the inner data         
    NOD() LANGULUS(INLINED)
    constexpr decltype(auto) DecayCast(auto&& what) noexcept {
-      using T = decltype(what);
+      using T = Deref<decltype(what)>;
       if constexpr (CT::Typed<T>) {
          using TT = TypeOf<T>;
-         if constexpr (std::convertible_to<T, TT&>)
-            return static_cast<TT&>(what);
-         else if constexpr (std::convertible_to<T, const TT&>)
-            return static_cast<const TT&>(what);
-         else if constexpr (std::convertible_to<T, TT>)
-            return static_cast<TT>(what);
+         if constexpr (requires { what.DecayCast(); })
+            return what.DecayCast();
+         else if constexpr (requires { what.operator TT&& (); })
+            return what.operator TT && ();
+         else if constexpr (requires { what.operator TT& (); })
+            return what.operator TT & ();
+         else if constexpr (requires { what.operator const TT& (); })
+            return what.operator const TT & ();
+         else if constexpr (requires { what.operator TT (); })
+            return what.operator TT ();
          else
             LANGULUS_ERROR("No cast operator available for decaying to inner type");
       }
@@ -949,11 +994,35 @@ namespace Langulus
    ///   @return a reference (preferably) or a copy of the inner data         
    NOD() LANGULUS(INLINED)
    constexpr decltype(auto) DesemCast(auto&& what) noexcept {
-      using T = decltype(what);
+      using T = Deref<decltype(what)>;
       if constexpr (CT::Semantic<T>)
          return DecayCast(Forward<T>(what));
-      else
-         return what;
+      else return what;
    }
+
+   /// Nest-unfold any bounded array or std::range, and get most inner type   
+   template<class T>
+   using Unfold = Deptr<decltype(CT::Inner::Unfold<T>())>;
+
+   namespace CT::Inner
+   {
+
+      /// Check if T is constructible with each of the provided arguments,    
+      /// either directly, or by unfolding that argument                      
+      template<class T, class...A>
+      concept UnfoldMakableFrom = ((
+               ::std::constructible_from<T, A>
+            or ::std::constructible_from<T, Langulus::Unfold<A>>
+         ) and ...);
+
+      /// Check if T is insertable to containers, either directly, or while   
+      /// wrapped in a semantic                                               
+      template<class T1, class...TAIL>
+      concept UnfoldInsertable = (NotSemantic<T1> and Insertable<T1>
+            and ((NotSemantic<TAIL> and Insertable<TAIL>) and ...))
+         or (Semantic<T1> and Insertable<TypeOf<T1>>
+            and ((Semantic<TAIL> and Insertable<TypeOf<TAIL>>) and ...));
+
+   } // namespace Langulus::CT::Inner
 
 } // namespace Langulus

@@ -78,22 +78,20 @@ SCENARIO("Testing semantics", "[semantics]") {
          static_assert(    CT::SemanticAssignable<Disowned, ImplicitlyConstructible>);
          static_assert(    CT::SemanticAssignable<Abandoned, ImplicitlyConstructible>);
 
-         THEN("Requirements should be met") {
-            REQUIRE_FALSE(meta->mDestructor);
-            REQUIRE      (meta->mDefaultConstructor);
-            REQUIRE      (meta->mCopyConstructor);
-            REQUIRE      (meta->mMoveConstructor);
-            REQUIRE      (meta->mCloneConstructor);
-            REQUIRE      (meta->mDisownConstructor);
-            REQUIRE      (meta->mAbandonConstructor);
-            REQUIRE_FALSE(meta->mDescriptorConstructor);
+         REQUIRE_FALSE(meta->mDestructor);
+         REQUIRE      (meta->mDefaultConstructor);
+         REQUIRE      (meta->mCopyConstructor);
+         REQUIRE      (meta->mMoveConstructor);
+         REQUIRE      (meta->mCloneConstructor);
+         REQUIRE      (meta->mDisownConstructor);
+         REQUIRE      (meta->mAbandonConstructor);
+         REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopyAssigner);
-            REQUIRE      (meta->mMoveAssigner);
-            REQUIRE      (meta->mCloneAssigner);
-            REQUIRE      (meta->mDisownAssigner);
-            REQUIRE      (meta->mAbandonAssigner);
-         }
+         REQUIRE      (meta->mCopyAssigner);
+         REQUIRE      (meta->mMoveAssigner);
+         REQUIRE      (meta->mCloneAssigner);
+         REQUIRE      (meta->mDisownAssigner);
+         REQUIRE      (meta->mAbandonAssigner);
       }
    }
 
@@ -130,22 +128,20 @@ SCENARIO("Testing semantics", "[semantics]") {
          static_assert(    CT::SemanticAssignable<Disowned, NonDestructible>);
          static_assert(    CT::SemanticAssignable<Abandoned, NonDestructible>);
 
-         THEN("Requirements should be met") {
-            REQUIRE_FALSE(meta->mDestructor);
-            REQUIRE_FALSE(meta->mDefaultConstructor);
-            REQUIRE      (meta->mCopyConstructor);
-            REQUIRE      (meta->mMoveConstructor);
-            REQUIRE      (meta->mCloneConstructor);
-            REQUIRE      (meta->mDisownConstructor);
-            REQUIRE      (meta->mAbandonConstructor);
-            REQUIRE_FALSE(meta->mDescriptorConstructor);
+         REQUIRE_FALSE(meta->mDestructor);
+         REQUIRE_FALSE(meta->mDefaultConstructor);
+         REQUIRE      (meta->mCopyConstructor);
+         REQUIRE      (meta->mMoveConstructor);
+         REQUIRE      (meta->mCloneConstructor);
+         REQUIRE      (meta->mDisownConstructor);
+         REQUIRE      (meta->mAbandonConstructor);
+         REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopyAssigner);
-            REQUIRE      (meta->mMoveAssigner);
-            REQUIRE      (meta->mCloneAssigner);
-            REQUIRE      (meta->mDisownAssigner);
-            REQUIRE      (meta->mAbandonAssigner);
-         }
+         REQUIRE      (meta->mCopyAssigner);
+         REQUIRE      (meta->mMoveAssigner);
+         REQUIRE      (meta->mCloneAssigner);
+         REQUIRE      (meta->mDisownAssigner);
+         REQUIRE      (meta->mAbandonAssigner);
       }
    }
 
@@ -182,22 +178,20 @@ SCENARIO("Testing semantics", "[semantics]") {
          static_assert(not CT::SemanticAssignable<Disowned, Destructible>);
          static_assert(not CT::SemanticAssignable<Abandoned, Destructible>);
 
-         THEN("Requirements should be met") {
-            REQUIRE      (meta->mDestructor);
-            REQUIRE      (meta->mDefaultConstructor);
-            REQUIRE      (meta->mCopyConstructor);
-            REQUIRE      (meta->mMoveConstructor);
-            REQUIRE_FALSE(meta->mCloneConstructor);
-            REQUIRE_FALSE(meta->mDisownConstructor);
-            REQUIRE_FALSE(meta->mAbandonConstructor);
-            REQUIRE_FALSE(meta->mDescriptorConstructor);
+         REQUIRE      (meta->mDestructor);
+         REQUIRE      (meta->mDefaultConstructor);
+         REQUIRE      (meta->mCopyConstructor);
+         REQUIRE      (meta->mMoveConstructor);
+         REQUIRE_FALSE(meta->mCloneConstructor);
+         REQUIRE_FALSE(meta->mDisownConstructor);
+         REQUIRE_FALSE(meta->mAbandonConstructor);
+         REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopyAssigner);
-            REQUIRE      (meta->mMoveAssigner);
-            REQUIRE_FALSE(meta->mCloneAssigner);
-            REQUIRE_FALSE(meta->mDisownAssigner);
-            REQUIRE_FALSE(meta->mAbandonAssigner);
-         }
+         REQUIRE      (meta->mCopyAssigner);
+         REQUIRE      (meta->mMoveAssigner);
+         REQUIRE_FALSE(meta->mCloneAssigner);
+         REQUIRE_FALSE(meta->mDisownAssigner);
+         REQUIRE_FALSE(meta->mAbandonAssigner);
       }
    }
 
@@ -234,22 +228,20 @@ SCENARIO("Testing semantics", "[semantics]") {
          static_assert(    CT::SemanticAssignable<Disowned, PrivatelyConstructible>);
          static_assert(    CT::SemanticAssignable<Abandoned, PrivatelyConstructible>);
 
-         THEN("Requirements should be met") {
-            REQUIRE_FALSE(meta->mDestructor);
-            REQUIRE_FALSE(meta->mDefaultConstructor);
-            REQUIRE      (meta->mCopyConstructor);
-            REQUIRE      (meta->mMoveConstructor);
-            REQUIRE      (meta->mCloneConstructor);
-            REQUIRE      (meta->mDisownConstructor);
-            REQUIRE      (meta->mAbandonConstructor);
-            REQUIRE_FALSE(meta->mDescriptorConstructor);
+         REQUIRE_FALSE(meta->mDestructor);
+         REQUIRE_FALSE(meta->mDefaultConstructor);
+         REQUIRE      (meta->mCopyConstructor);
+         REQUIRE      (meta->mMoveConstructor);
+         REQUIRE      (meta->mCloneConstructor);
+         REQUIRE      (meta->mDisownConstructor);
+         REQUIRE      (meta->mAbandonConstructor);
+         REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopyAssigner);
-            REQUIRE      (meta->mMoveAssigner);
-            REQUIRE      (meta->mCloneAssigner);
-            REQUIRE      (meta->mDisownAssigner);
-            REQUIRE      (meta->mAbandonAssigner);
-         }
+         REQUIRE      (meta->mCopyAssigner);
+         REQUIRE      (meta->mMoveAssigner);
+         REQUIRE      (meta->mCloneAssigner);
+         REQUIRE      (meta->mDisownAssigner);
+         REQUIRE      (meta->mAbandonAssigner);
       }
    }
 
@@ -286,22 +278,20 @@ SCENARIO("Testing semantics", "[semantics]") {
          static_assert(    CT::SemanticAssignable<Disowned, NonSemanticConstructible>);
          static_assert(    CT::SemanticAssignable<Abandoned, NonSemanticConstructible>);
 
-        THEN("Requirements should be met") {
-            REQUIRE_FALSE(meta->mDestructor);
-            REQUIRE_FALSE(meta->mDefaultConstructor);
-            REQUIRE      (meta->mCopyConstructor);
-            REQUIRE      (meta->mMoveConstructor);
-            REQUIRE      (meta->mCloneConstructor);
-            REQUIRE      (meta->mDisownConstructor);
-            REQUIRE      (meta->mAbandonConstructor);
-            REQUIRE_FALSE(meta->mDescriptorConstructor);
+         REQUIRE_FALSE(meta->mDestructor);
+         REQUIRE_FALSE(meta->mDefaultConstructor);
+         REQUIRE      (meta->mCopyConstructor);
+         REQUIRE      (meta->mMoveConstructor);
+         REQUIRE      (meta->mCloneConstructor);
+         REQUIRE      (meta->mDisownConstructor);
+         REQUIRE      (meta->mAbandonConstructor);
+         REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopyAssigner);
-            REQUIRE      (meta->mMoveAssigner);
-            REQUIRE      (meta->mCloneAssigner);
-            REQUIRE      (meta->mDisownAssigner);
-            REQUIRE      (meta->mAbandonAssigner);
-         }
+         REQUIRE      (meta->mCopyAssigner);
+         REQUIRE      (meta->mMoveAssigner);
+         REQUIRE      (meta->mCloneAssigner);
+         REQUIRE      (meta->mDisownAssigner);
+         REQUIRE      (meta->mAbandonAssigner);
       }
    }
 
@@ -318,7 +308,7 @@ SCENARIO("Testing semantics", "[semantics]") {
          static_assert(    CT::CloneMakable<SemanticConstructible>);
          static_assert(    CT::DisownMakable<SemanticConstructible>);
          static_assert(    CT::AbandonMakable<SemanticConstructible>);
-         static_assert(not CT::DescriptorMakable<SemanticConstructible>);
+         static_assert(    CT::DescriptorMakable<SemanticConstructible>);
 
          static_assert(    CT::SemanticMakable<Copied, SemanticConstructible>);
          static_assert(    CT::SemanticMakable<Moved, SemanticConstructible>);
@@ -338,22 +328,20 @@ SCENARIO("Testing semantics", "[semantics]") {
          static_assert(    CT::SemanticAssignable<Disowned, SemanticConstructible>);
          static_assert(    CT::SemanticAssignable<Abandoned, SemanticConstructible>);
 
-         THEN("Requirements should be met") {
-            REQUIRE_FALSE(meta->mDestructor);
-            REQUIRE_FALSE(meta->mDefaultConstructor);
-            REQUIRE      (meta->mCopyConstructor);
-            REQUIRE      (meta->mMoveConstructor);
-            REQUIRE      (meta->mCloneConstructor);
-            REQUIRE      (meta->mDisownConstructor);
-            REQUIRE      (meta->mAbandonConstructor);
-            REQUIRE_FALSE(meta->mDescriptorConstructor);
+         REQUIRE_FALSE(meta->mDestructor);
+         REQUIRE_FALSE(meta->mDefaultConstructor);
+         REQUIRE      (meta->mCopyConstructor);
+         REQUIRE      (meta->mMoveConstructor);
+         REQUIRE      (meta->mCloneConstructor);
+         REQUIRE      (meta->mDisownConstructor);
+         REQUIRE      (meta->mAbandonConstructor);
+         REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopyAssigner);
-            REQUIRE      (meta->mMoveAssigner);
-            REQUIRE      (meta->mCloneAssigner);
-            REQUIRE      (meta->mDisownAssigner);
-            REQUIRE      (meta->mAbandonAssigner);
-         }
+         REQUIRE      (meta->mCopyAssigner);
+         REQUIRE      (meta->mMoveAssigner);
+         REQUIRE      (meta->mCloneAssigner);
+         REQUIRE      (meta->mDisownAssigner);
+         REQUIRE      (meta->mAbandonAssigner);
       }
    }
 
@@ -390,22 +378,20 @@ SCENARIO("Testing semantics", "[semantics]") {
          static_assert(    CT::SemanticAssignable<Disowned, DescriptorConstructible>);
          static_assert(    CT::SemanticAssignable<Abandoned, DescriptorConstructible>);
 
-         THEN("Requirements should be met") {
-            REQUIRE_FALSE(meta->mDestructor);
-            REQUIRE_FALSE(meta->mDefaultConstructor);
-            REQUIRE      (meta->mCopyConstructor);
-            REQUIRE      (meta->mMoveConstructor);
-            REQUIRE      (meta->mCloneConstructor);
-            REQUIRE      (meta->mDisownConstructor);
-            REQUIRE      (meta->mAbandonConstructor);
-            REQUIRE      (meta->mDescriptorConstructor);
+         REQUIRE_FALSE(meta->mDestructor);
+         REQUIRE_FALSE(meta->mDefaultConstructor);
+         REQUIRE      (meta->mCopyConstructor);
+         REQUIRE      (meta->mMoveConstructor);
+         REQUIRE      (meta->mCloneConstructor);
+         REQUIRE      (meta->mDisownConstructor);
+         REQUIRE      (meta->mAbandonConstructor);
+         REQUIRE      (meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopyAssigner);
-            REQUIRE      (meta->mMoveAssigner);
-            REQUIRE      (meta->mCloneAssigner);
-            REQUIRE      (meta->mDisownAssigner);
-            REQUIRE      (meta->mAbandonAssigner);
-         }
+         REQUIRE      (meta->mCopyAssigner);
+         REQUIRE      (meta->mMoveAssigner);
+         REQUIRE      (meta->mCloneAssigner);
+         REQUIRE      (meta->mDisownAssigner);
+         REQUIRE      (meta->mAbandonAssigner);
       }
    }
    
@@ -442,22 +428,20 @@ SCENARIO("Testing semantics", "[semantics]") {
          static_assert(not CT::SemanticAssignable<Disowned, Complex>);
          static_assert(not CT::SemanticAssignable<Abandoned, Complex>);
 
-         THEN("Requirements should be met") {
-            REQUIRE      (meta->mDestructor);
-            REQUIRE_FALSE(meta->mDefaultConstructor);
-            REQUIRE      (meta->mCopyConstructor);
-            REQUIRE      (meta->mMoveConstructor);
-            REQUIRE_FALSE(meta->mCloneConstructor);
-            REQUIRE_FALSE(meta->mDisownConstructor);
-            REQUIRE_FALSE(meta->mAbandonConstructor);
-            REQUIRE_FALSE(meta->mDescriptorConstructor);
+         REQUIRE      (meta->mDestructor);
+         REQUIRE_FALSE(meta->mDefaultConstructor);
+         REQUIRE      (meta->mCopyConstructor);
+         REQUIRE      (meta->mMoveConstructor);
+         REQUIRE_FALSE(meta->mCloneConstructor);
+         REQUIRE_FALSE(meta->mDisownConstructor);
+         REQUIRE_FALSE(meta->mAbandonConstructor);
+         REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopyAssigner);
-            REQUIRE      (meta->mMoveAssigner);
-            REQUIRE_FALSE(meta->mCloneAssigner);
-            REQUIRE_FALSE(meta->mDisownAssigner);
-            REQUIRE_FALSE(meta->mAbandonAssigner);
-         }
+         REQUIRE      (meta->mCopyAssigner);
+         REQUIRE      (meta->mMoveAssigner);
+         REQUIRE_FALSE(meta->mCloneAssigner);
+         REQUIRE_FALSE(meta->mDisownAssigner);
+         REQUIRE_FALSE(meta->mAbandonAssigner);
       }
    }
 
@@ -494,22 +478,20 @@ SCENARIO("Testing semantics", "[semantics]") {
          static_assert(not CT::SemanticAssignable<Disowned, ContainsComplex>);
          static_assert(not CT::SemanticAssignable<Abandoned, ContainsComplex>);
 
-         THEN("Requirements should be met") {
-            REQUIRE      (meta->mDestructor);
-            REQUIRE_FALSE(meta->mDefaultConstructor);
-            REQUIRE      (meta->mCopyConstructor);
-            REQUIRE      (meta->mMoveConstructor);
-            REQUIRE_FALSE(meta->mCloneConstructor);
-            REQUIRE_FALSE(meta->mDisownConstructor);
-            REQUIRE_FALSE(meta->mAbandonConstructor);
-            REQUIRE_FALSE(meta->mDescriptorConstructor);
+         REQUIRE      (meta->mDestructor);
+         REQUIRE_FALSE(meta->mDefaultConstructor);
+         REQUIRE      (meta->mCopyConstructor);
+         REQUIRE      (meta->mMoveConstructor);
+         REQUIRE_FALSE(meta->mCloneConstructor);
+         REQUIRE_FALSE(meta->mDisownConstructor);
+         REQUIRE_FALSE(meta->mAbandonConstructor);
+         REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopyAssigner);
-            REQUIRE      (meta->mMoveAssigner);
-            REQUIRE_FALSE(meta->mCloneAssigner);
-            REQUIRE_FALSE(meta->mDisownAssigner);
-            REQUIRE_FALSE(meta->mAbandonAssigner);
-         }
+         REQUIRE      (meta->mCopyAssigner);
+         REQUIRE      (meta->mMoveAssigner);
+         REQUIRE_FALSE(meta->mCloneAssigner);
+         REQUIRE_FALSE(meta->mDisownAssigner);
+         REQUIRE_FALSE(meta->mAbandonAssigner);
       }
    }
 
@@ -593,22 +575,20 @@ TEMPLATE_TEST_CASE("Testing semantics of fundamentals", "[semantics]",
          static_assert(    CT::SemanticAssignable<Disowned, TestType>);
          static_assert(    CT::SemanticAssignable<Abandoned, TestType>);
 
-         THEN("Requirements should be met") {
-            REQUIRE_FALSE(meta->mDestructor);
-            REQUIRE      (meta->mDefaultConstructor);
-            REQUIRE      (meta->mCopyConstructor);
-            REQUIRE      (meta->mMoveConstructor);
-            REQUIRE      (meta->mCloneConstructor);
-            REQUIRE      (meta->mDisownConstructor);
-            REQUIRE      (meta->mAbandonConstructor);
-            REQUIRE_FALSE(meta->mDescriptorConstructor);
+         REQUIRE_FALSE(meta->mDestructor);
+         REQUIRE      (meta->mDefaultConstructor);
+         REQUIRE      (meta->mCopyConstructor);
+         REQUIRE      (meta->mMoveConstructor);
+         REQUIRE      (meta->mCloneConstructor);
+         REQUIRE      (meta->mDisownConstructor);
+         REQUIRE      (meta->mAbandonConstructor);
+         REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopyAssigner);
-            REQUIRE      (meta->mMoveAssigner);
-            REQUIRE      (meta->mCloneAssigner);
-            REQUIRE      (meta->mDisownAssigner);
-            REQUIRE      (meta->mAbandonAssigner);
-         }
+         REQUIRE      (meta->mCopyAssigner);
+         REQUIRE      (meta->mMoveAssigner);
+         REQUIRE      (meta->mCloneAssigner);
+         REQUIRE      (meta->mDisownAssigner);
+         REQUIRE      (meta->mAbandonAssigner);
       }
    }
 }
@@ -661,69 +641,89 @@ TEMPLATE_TEST_CASE("Testing semantics of pointers", "[semantics]",
          static_assert(    CT::Inner::SemanticAssignable<Disowned, T>  == CT::Mutable<T>);
          static_assert(    CT::Inner::SemanticAssignable<Abandoned, T> == CT::Mutable<T>);
 
-         THEN("Requirements should be met") {
-            if constexpr (CT::Destroyable<TestType>)
-               REQUIRE      (meta->mDestructor);
-            else
-               REQUIRE_FALSE(meta->mDestructor);
+         if constexpr (CT::Destroyable<TestType>)
+            REQUIRE      (meta->mDestructor);
+         else
+            REQUIRE_FALSE(meta->mDestructor);
 
-            if constexpr (CT::Defaultable<TestType>)
-               REQUIRE      (meta->mDefaultConstructor);
-            else
-               REQUIRE_FALSE(meta->mDefaultConstructor);
+         if constexpr (CT::Defaultable<TestType>)
+            REQUIRE      (meta->mDefaultConstructor);
+         else
+            REQUIRE_FALSE(meta->mDefaultConstructor);
 
-            REQUIRE      (meta->mCopyConstructor);
-            REQUIRE      (meta->mMoveConstructor);
+         REQUIRE      (meta->mCopyConstructor);
+         REQUIRE      (meta->mMoveConstructor);
 
-            if constexpr (CT::CloneMakable<TestType>)
-               REQUIRE      (meta->mCloneConstructor);
-            else
-               REQUIRE_FALSE(meta->mCloneConstructor);
+         if constexpr (CT::CloneMakable<TestType>)
+            REQUIRE      (meta->mCloneConstructor);
+         else
+            REQUIRE_FALSE(meta->mCloneConstructor);
 
-            if constexpr (CT::DisownMakable<TestType>)
-               REQUIRE      (meta->mDisownConstructor);
-            else
-               REQUIRE_FALSE(meta->mDisownConstructor);
+         if constexpr (CT::DisownMakable<TestType>)
+            REQUIRE      (meta->mDisownConstructor);
+         else
+            REQUIRE_FALSE(meta->mDisownConstructor);
 
-            if constexpr (CT::AbandonMakable<TestType>)
-               REQUIRE      (meta->mAbandonConstructor);
-            else
-               REQUIRE_FALSE(meta->mAbandonConstructor);
+         if constexpr (CT::AbandonMakable<TestType>)
+            REQUIRE      (meta->mAbandonConstructor);
+         else
+            REQUIRE_FALSE(meta->mAbandonConstructor);
 
-            REQUIRE_FALSE(meta->mDescriptorConstructor);
+         REQUIRE_FALSE(meta->mDescriptorConstructor);
 
-            REQUIRE      (meta->mCopyAssigner);
-            REQUIRE      (meta->mMoveAssigner);
+         REQUIRE      (meta->mCopyAssigner);
+         REQUIRE      (meta->mMoveAssigner);
 
-            if constexpr (CT::CloneAssignable<TestType>)
-               REQUIRE      (meta->mCloneAssigner);
-            else
-               REQUIRE_FALSE(meta->mCloneAssigner);
+         if constexpr (CT::CloneAssignable<TestType>)
+            REQUIRE      (meta->mCloneAssigner);
+         else
+            REQUIRE_FALSE(meta->mCloneAssigner);
 
-            if constexpr (CT::DisownAssignable<TestType>)
-               REQUIRE      (meta->mDisownAssigner);
-            else
-               REQUIRE_FALSE(meta->mDisownAssigner);
+         if constexpr (CT::DisownAssignable<TestType>)
+            REQUIRE      (meta->mDisownAssigner);
+         else
+            REQUIRE_FALSE(meta->mDisownAssigner);
 
-            if constexpr (CT::AbandonAssignable<TestType>)
-               REQUIRE      (meta->mAbandonAssigner);
-            else
-               REQUIRE_FALSE(meta->mAbandonAssigner);
-         }
+         if constexpr (CT::AbandonAssignable<TestType>)
+            REQUIRE      (meta->mAbandonAssigner);
+         else
+            REQUIRE_FALSE(meta->mAbandonAssigner);
       }
    }
 }
 
-TEMPLATE_TEST_CASE("Testing DecayCast", "[semantics]", int, Copied<int>) {
+TEMPLATE_TEST_CASE("Testing DecayCast (POD)", "[semantics]",
+   int, Copied<int>, Disowned<int>, Cloned<int>
+) {
    const int* value = new int {656};
    const TestType i {*value};
    static_assert(CT::Exact<decltype(DecayCast(i)), const int&>);
    delete value;
 }
 
-TEMPLATE_TEST_CASE("Testing DesemCast", "[semantics]", int, Copied<int>) {
+TEMPLATE_TEST_CASE("Testing DecayCast (non POD)", "[semantics]",
+   Complex, Copied<Complex>, Disowned<Complex>, Cloned<Complex>
+) {
+   const int* value = new int {656};
+   const TestType i {*value};
+   static_assert(CT::Exact<decltype(DecayCast(i)), const Complex&>);
+   delete value;
+}
+
+TEMPLATE_TEST_CASE("Testing DesemCast (POD)", "[semantics]",
+   int, Copied<int>, Disowned<int>, Cloned<int>
+) {
    const int* value = new int {656};
    const TestType i {*value};
    static_assert(CT::Exact<decltype(DesemCast(i)), const int&>);
+   delete value;
+}
+
+TEMPLATE_TEST_CASE("Testing DesemCast (non POD)", "[semantics]",
+   Complex, Copied<Complex>, Disowned<Complex>, Cloned<Complex>
+) {
+   const int* value = new int {656};
+   const TestType i {*value};
+   static_assert(CT::Exact<decltype(DesemCast(i)), const Complex&>);
    delete value;
 }

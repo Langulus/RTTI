@@ -470,7 +470,7 @@ namespace Langulus::RTTI
    ///   @return true if both converters have the same type                   
    LANGULUS(INLINED)
    constexpr bool Converter::operator == (const Converter& rhs) const noexcept {
-      return mDestrinationType->Is(rhs.mDestrinationType);
+      return mDestrinationType &= rhs.mDestrinationType;
    }
 
    /// Create a converter, utilizing available cast operators/constructors    
