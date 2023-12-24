@@ -485,10 +485,16 @@ namespace Langulus
 
    namespace CT
    {
+
       /// Check if a type has an underlying type defined                      
       template<class... T>
       concept Typed = ((Inner::Typed<Decay<T>> and Data<TypeOf<Decay<T>>>) and ...);
-   }
+
+      /// Check if a type has no underlying type defined                      
+      template<class... T>
+      concept Untyped = not Typed<T...>;
+
+   } // namespace namespace CT
 
    /// A type naming convention for standard number types, as well as         
    /// anything reflected with LANGULUS(SUFFIX)                               

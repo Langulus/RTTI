@@ -234,10 +234,14 @@ namespace Langulus
       LANGULUS(INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
          using ALT = Decvq<Deref<decltype(value)>>;
-         if constexpr (CT::Semantic<ALT>)
-            return Moved<TypeOf<ALT>> {::std::forward<TypeOf<ALT>>(*value)};
-         else
-            return Moved<ALT> {::std::forward<ALT>(value)};
+         if constexpr (CT::Semantic<ALT>) {
+            return Moved<TypeOf<ALT>> {
+               ::std::forward<TypeOf<ALT>>(*value)};
+         }
+         else {
+            return Moved<ALT> {
+               ::std::forward<ALT>(value)};
+         }
       }
 
       LANGULUS(INLINED)
@@ -326,10 +330,14 @@ namespace Langulus
       LANGULUS(INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
          using ALT = Decvq<Deref<decltype(value)>>;
-         if constexpr (CT::Semantic<ALT>)
-            return Abandoned<TypeOf<ALT>> {::std::forward<TypeOf<ALT>>(*value)};
-         else
-            return Abandoned<ALT> {::std::forward<ALT>(value)};
+         if constexpr (CT::Semantic<ALT>) {
+            return Abandoned<TypeOf<ALT>> {
+               ::std::forward<TypeOf<ALT>>(*value)};
+         }
+         else {
+            return Abandoned<ALT> {
+               ::std::forward<ALT>(value)};
+         }
       }
 
       LANGULUS(INLINED)
@@ -368,10 +376,14 @@ namespace Langulus
    NOD() LANGULUS(INLINED)
    constexpr auto Abandon(auto&& value) noexcept {
       using ALT = Decvq<Deref<decltype(value)>>;
-      if constexpr (CT::Semantic<ALT>)
-         return Abandoned<TypeOf<ALT>> {::std::forward<TypeOf<ALT>>(*value)};
-      else
-         return Abandoned<ALT> {::std::forward<ALT>(value)};
+      if constexpr (CT::Semantic<ALT>) {
+         return Abandoned<TypeOf<ALT>> {
+            ::std::forward<TypeOf<ALT>>(*value)};
+      }
+      else {
+         return Abandoned<ALT> {
+            ::std::forward<ALT>(value)};
+      }
    }
 
 
