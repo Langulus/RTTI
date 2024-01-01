@@ -260,7 +260,7 @@ namespace Langulus::CT
 
       template<class T>
       concept Reflectable = requires {
-         {T::Reflect()} -> Same<::Langulus::RTTI::MetaData>;
+         {T::Reflect()} -> Same<RTTI::MetaData>;
       };
 
       template<class T>
@@ -269,13 +269,15 @@ namespace Langulus::CT
                          or T::CTTI_Abstract;
 
       template<class T>
-      concept Uninsertable = CT::Dense<T> and T::CTTI_Uninsertable;
+      concept Uninsertable = not Complete<T>
+           or (CT::Dense<T> and T::CTTI_Uninsertable);
 
       template<class T>
       concept Insertable = not Uninsertable<T>;
 
       template<class T>
-      concept Unallocatable = not Complete<T> or T::CTTI_Unallocatable;
+      concept Unallocatable = not Complete<T>
+           or (CT::Dense<T> and T::CTTI_Unallocatable);
 
       template<class T>
       concept Allocatable = not Unallocatable<T>;
@@ -290,9 +292,8 @@ namespace Langulus::CT
 
 
       template<class T>
-      concept Nullifiable = Complete<T>
-                    and not Abstract<T>
-                    and (T::CTTI_Nullifiable or Fundamental<T>);
+      concept Nullifiable = Complete<T> and not Abstract<T>
+          and (T::CTTI_Nullifiable or Fundamental<T>);
 
       template<class T>
       concept Concretizable = Complete<T> and requires {

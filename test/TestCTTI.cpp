@@ -100,7 +100,7 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mIsConstant == false);
             REQUIRE(meta->mDeptr->mIsConstant == false);
             REQUIRE(meta->mDeptr->mDeptr == nullptr);
-            REQUIRE(meta->mDecvq == MetaData::Of<const IncompleteType**>());
+            REQUIRE(meta->mDecvq == MetaData::Of<IncompleteType**>());
 
             REQUIRE(meta->mBases.size() == 0);
             REQUIRE(meta->mAbilities.size() == 0);
@@ -133,8 +133,8 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mIsConstant == false);
             REQUIRE(meta->mDeptr->mIsConstant == true);
             REQUIRE(meta->mDeptr->mDeptr == nullptr);
-            REQUIRE(meta->mDecvq == MetaData::Of<const IncompleteType* const*>());
-            REQUIRE(meta->mDeptr->mDecvq == MetaData::Of<const IncompleteType*>());
+            REQUIRE(meta->mDecvq == MetaData::Of<IncompleteType**>());
+            REQUIRE(meta->mDeptr->mDecvq == MetaData::Of<IncompleteType*>());
 
             REQUIRE(meta->mBases.size() == 0);
             REQUIRE(meta->mAbilities.size() == 0);
@@ -166,8 +166,8 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mOrigin == nullptr);
             REQUIRE(meta->mIsConstant == true);
             REQUIRE(meta->mDeptr->mIsConstant == true);
-            REQUIRE(meta->mDecvq == MetaData::Of<const IncompleteType* const*>());
-            REQUIRE(meta->mDeptr->mDecvq == MetaData::Of<const IncompleteType*>());
+            REQUIRE(meta->mDecvq == MetaData::Of<IncompleteType**>());
+            REQUIRE(meta->mDeptr->mDecvq == MetaData::Of<IncompleteType*>());
 
             REQUIRE(meta->mBases.size() == 0);
             REQUIRE(meta->mAbilities.size() == 0);
@@ -199,8 +199,8 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             REQUIRE(meta->mOrigin == nullptr);
             REQUIRE(meta->mIsConstant == true);
             REQUIRE(meta->mDeptr->mIsConstant == true);
-            REQUIRE(meta->mDecvq == MetaData::Of<const IncompleteType* const*>());
-            REQUIRE(meta->mDeptr->mDecvq == MetaData::Of<const IncompleteType*>());
+            REQUIRE(meta->mDecvq == MetaData::Of<IncompleteType**>());
+            REQUIRE(meta->mDeptr->mDecvq == MetaData::Of<IncompleteType*>());
 
             REQUIRE(meta->mBases.size() == 0);
             REQUIRE(meta->mAbilities.size() == 0);
@@ -262,25 +262,25 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
             REQUIRE(meta->mMembers[0].mName == "member");
             REQUIRE(meta->mMembers[0].mOffset >= sizeof(ImplicitlyReflectedData));
             REQUIRE(meta->mMembers[0].GetTrait() == nullptr);
-            REQUIRE(meta->mMembers[0].Is<int>());
+            REQUIRE(meta->mMembers[0].GetType()->Is<int>());
 
             REQUIRE(meta->mMembers[1].mCount == 1);
             REQUIRE(meta->mMembers[1].mName == "anotherMember");
             REQUIRE(meta->mMembers[1].mOffset > meta->mMembers[0].mOffset);
-            REQUIRE(meta->mMembers[1].TraitIs<Traits::Tag>());
-            REQUIRE(meta->mMembers[1].Is<bool>());
+            REQUIRE(meta->mMembers[1].GetTrait()->Is<Traits::Tag>());
+            REQUIRE(meta->mMembers[1].GetType()->Is<bool>());
 
             REQUIRE(meta->mMembers[2].mCount == 12);
             REQUIRE(meta->mMembers[2].mName == "anotherMemberArray");
             REQUIRE(meta->mMembers[2].mOffset > meta->mMembers[1].mOffset);
             REQUIRE(meta->mMembers[2].GetTrait() == nullptr);
-            REQUIRE(meta->mMembers[2].Is<int>());
+            REQUIRE(meta->mMembers[2].GetType()->Is<int>());
 
             REQUIRE(meta->mMembers[3].mCount == 1);
             REQUIRE(meta->mMembers[3].mName == "sparseMember");
             REQUIRE(meta->mMembers[3].mOffset > meta->mMembers[2].mOffset);
             REQUIRE(meta->mMembers[3].GetTrait() == nullptr);
-            REQUIRE(meta->mMembers[3].Is<int>());
+            REQUIRE(meta->mMembers[3].GetType()->Is<int>());
 
             const auto intmeta = MetaData::Of<int>();
             REQUIRE(meta->mConverters.size() == 1);

@@ -156,6 +156,9 @@ namespace Langulus
             return Copied<ALT> {value};
       }
 
+      template<class ALT>
+      using As = Conditional<CT::Semantic<ALT>, Copied<TypeOf<ALT>>, Copied<ALT>>;
+
       LANGULUS(INLINED)
       const T& operator * () const noexcept { return mValue; }
 
@@ -244,6 +247,9 @@ namespace Langulus
          }
       }
 
+      template<class ALT>
+      using As = Conditional<CT::Semantic<ALT>, Moved<TypeOf<ALT>>, Moved<ALT>>;
+
       LANGULUS(INLINED)
       T& operator * () const noexcept { return mValue; }
 
@@ -259,12 +265,14 @@ namespace Langulus
       /// This way this wrapper is seamlessly integrated with the standard    
       /// C++20 semantics                                                     
       LANGULUS(INLINED)
-      constexpr operator T&& () && noexcept {
+      constexpr operator T&& () const noexcept {
          return ::std::forward<T>(mValue);
       }
+
+      /// Used by DecayCast                                                   
       LANGULUS(INLINED)
-      constexpr operator T&& () & noexcept {
-         return ::std::move(mValue);
+      constexpr T& DecayCast() const noexcept {
+         return mValue;
       }
    };
    
@@ -340,6 +348,9 @@ namespace Langulus
          }
       }
 
+      template<class ALT>
+      using As = Conditional<CT::Semantic<ALT>, Abandoned<TypeOf<ALT>>, Abandoned<ALT>>;
+
       LANGULUS(INLINED)
       T& operator * () const noexcept { return mValue; }
 
@@ -355,18 +366,14 @@ namespace Langulus
       /// This way this wrapper is seamlessly integrated with the standard    
       /// C++20 semantics                                                     
       LANGULUS(INLINED)
-      constexpr operator T&& () && noexcept requires (not CT::Inner::Destroyable<T>) {
+      constexpr operator T&& () const noexcept requires (not CT::Inner::Destroyable<T>) {
          return ::std::forward<T>(mValue);
-      }
-      LANGULUS(INLINED)
-      constexpr operator T&& () & noexcept requires (not CT::Inner::Destroyable<T>) {
-         return ::std::move(mValue);
       }
 
       /// Used by DecayCast                                                   
       LANGULUS(INLINED)
-      constexpr T&& DecayCast() const noexcept {
-         return ::std::forward<T>(mValue);
+      constexpr T& DecayCast() const noexcept {
+         return mValue;
       }
    };
    
@@ -431,6 +438,9 @@ namespace Langulus
             return Disowned<ALT> {value};
       }
 
+      template<class ALT>
+      using As = Conditional<CT::Semantic<ALT>, Disowned<TypeOf<ALT>>, Disowned<ALT>>;
+      
       LANGULUS(INLINED)
       const T& operator * () const noexcept { return mValue; }
 
@@ -510,6 +520,9 @@ namespace Langulus
          else
             return Cloned<ALT> {value};
       }
+
+      template<class ALT>
+      using As = Conditional<CT::Semantic<ALT>, Cloned<TypeOf<ALT>>, Cloned<ALT>>;
       
       LANGULUS(INLINED)
       const T& operator * () const noexcept { return mValue; }
@@ -564,6 +577,21 @@ namespace Langulus
       explicit constexpr Describe(const Anyness::Neat& value) noexcept
          : mValue {value} {}
 
+      /// The describe semantic completely ignores nesting, only propagates   
+      /// itself                                                              
+      LANGULUS(INLINED)
+      static constexpr decltype(auto) Nest(auto&& value) noexcept {
+         using ALT = Decvq<Deref<decltype(value)>>;
+         if constexpr (CT::Similar<ALT, Describe>)
+            return Forward<ALT>(value);
+         else if constexpr (CT::Semantic<ALT> and CT::Similar<TypeOf<ALT>, Anyness::Neat>)
+            return Describe {*value};
+         else if constexpr (CT::Similar<ALT, Anyness::Neat>)
+            return Describe {value};
+         else
+            LANGULUS_ERROR("Can't nest provided type as a Describe semantic");
+      }
+
       LANGULUS(INLINED)
       const Anyness::Neat& operator *  () const noexcept { return  mValue; }
 
@@ -572,8 +600,7 @@ namespace Langulus
    };
 
 
-   /// Create an element on the heap, using the provided semantic, by using   
-   /// a placement new variant                                                
+   /// Create an instance of T at the provided memory, using placement new    
    ///   @attention assumes placement pointer is valid                        
    ///   @attention when S is a deep semantic, like Cloned, this function     
    ///              assumes that the 'placement' pointer always points to a   
@@ -974,15 +1001,15 @@ namespace Langulus
    /// Remove the semantic from a type, or just return the type, if not       
    /// wrapped inside a semantic                                              
    template<class T>
-   using Desem = TypeOf<SemanticOf<T>>;
+   using Desem = Conditional<CT::Semantic<T>, TypeOf<T>, T>;
 
    /// Downcasts a typed wrapper to the contained element, if cast operator   
-   /// to TypeOf<T> is available                                              
+   /// to TypeOf<T>& is available                                             
    ///   @param what - the instance to decay                                  
-   ///   @return a reference (preferably) or a copy of the inner data         
+   ///   @return a reference to the the inner data                            
    NOD() LANGULUS(INLINED)
-   constexpr decltype(auto) DecayCast(auto&& what) noexcept {
-      using T = Deref<decltype(what)>;
+   constexpr auto& DecayCast(auto&& what) noexcept {
+      using T = decltype(what);
       if constexpr (CT::Typed<T>) {
          using TT = TypeOf<T>;
          if constexpr (requires { what.DecayCast(); })
@@ -993,8 +1020,6 @@ namespace Langulus
             return what.operator TT & ();
          else if constexpr (requires { what.operator const TT& (); })
             return what.operator const TT & ();
-         else if constexpr (requires { what.operator TT (); })
-            return what.operator TT ();
          else
             LANGULUS_ERROR("No cast operator available for decaying to inner type");
       }
@@ -1005,8 +1030,8 @@ namespace Langulus
    ///   @param what - the instance to decay                                  
    ///   @return a reference (preferably) or a copy of the inner data         
    NOD() LANGULUS(INLINED)
-   constexpr decltype(auto) DesemCast(auto&& what) noexcept {
-      using T = Deref<decltype(what)>;
+   constexpr auto& DesemCast(auto&& what) noexcept {
+      using T = decltype(what);
       if constexpr (CT::Semantic<T>)
          return DecayCast(Forward<T>(what));
       else return what;

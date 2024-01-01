@@ -12,13 +12,13 @@
 
 SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
    GIVEN("Three reflected types with similar names in different namespaces") {
-      const auto n0t = MetaData::Of<Type>();
-      const auto n1t = MetaData::Of<N1::Type>();
-      const auto n1c = MetaData::Of<N1::Create>();
-      const auto n2t = MetaData::Of<N2::Type>();
-      const auto n3t = MetaData::Of<N3::type>();
-      const auto vvv = MetaVerb::Of<Verbs::Create>();
-      const auto complexMeta = MetaData::Of<ImplicitlyReflectedDataWithTraits>();
+      const auto n0t = MetaDataOf<Type>();
+      const auto n1t = MetaDataOf<N1::Type>();
+      const auto n1c = MetaDataOf<N1::Create>();
+      const auto n2t = MetaDataOf<N2::Type>();
+      const auto n3t = MetaDataOf<N3::type>();
+      const auto vvv = MetaVerbOf<Verbs::Create>();
+      const auto complexMeta = MetaDataOf<ImplicitlyReflectedDataWithTraits>();
 
       //const auto nnn = MetaData::Of<ImplicitlyReflectedData>();
 

@@ -33,9 +33,15 @@ public:
    NonSemanticConstructible(CT::NotSemantic auto&&) {}
 };
 
-class SemanticConstructible {
+class ParticallySemanticConstructible {
 public:
-   SemanticConstructible(CT::Semantic auto&&) {}
+   template<template<class> class S, class T>
+   ParticallySemanticConstructible(S<T>&&) requires CT::Semantic<S<T>> {}
+};
+
+class AllSemanticConstructible {
+public:
+   AllSemanticConstructible(CT::Semantic auto&&) {}
 };
 
 class DescriptorConstructible {
@@ -45,6 +51,31 @@ public:
 
 
 SCENARIO("Testing semantics", "[semantics]") {
+
+   static_assert(CT::Exact<SemanticOf<int&&>, Moved<int>>);
+   static_assert(CT::Exact<SemanticOf<const int&&>, Copied<const int>>);
+   static_assert(CT::Exact<SemanticOf<int&>, Copied<int>>);
+   static_assert(CT::Exact<SemanticOf<const int&>, Copied<const int>>);
+
+   static_assert(CT::Exact<Desem<int&&>, int&&>);
+   static_assert(CT::Exact<Desem<const int&&>, const int&&>);
+   static_assert(CT::Exact<Desem<int&>, int&>);
+   static_assert(CT::Exact<Desem<const int&>, const int&>);
+
+   static_assert(CT::Exact<SemanticOf<Copied<int>>, Copied<int>>);
+   static_assert(CT::Exact<SemanticOf<Moved<int>>, Moved<int>>);
+   static_assert(CT::Exact<SemanticOf<Abandoned<int>>, Abandoned<int>>);
+   static_assert(CT::Exact<SemanticOf<Disowned<int>>, Disowned<int>>);
+   static_assert(CT::Exact<SemanticOf<Cloned<int>>, Cloned<int>>);
+   static_assert(CT::Exact<SemanticOf<Describe>, Describe>);
+
+   static_assert(CT::Exact<Desem<Copied<int>>, int>);
+   static_assert(CT::Exact<Desem<Moved<int>>, int>);
+   static_assert(CT::Exact<Desem<Abandoned<int>>, int>);
+   static_assert(CT::Exact<Desem<Disowned<int>>, int>);
+   static_assert(CT::Exact<Desem<Cloned<int>>, int>);
+   static_assert(CT::Exact<Desem<Describe>, Describe>);
+
    GIVEN("An implicitly constructible type") {
       auto meta = MetaData::Of<ImplicitlyConstructible>();
       REQUIRE(meta);
@@ -295,38 +326,88 @@ SCENARIO("Testing semantics", "[semantics]") {
       }
    }
 
-   GIVEN("A semantically-constructible type") {
-      auto meta = MetaData::Of<SemanticConstructible>();
+   GIVEN("A fully semantically-constructible type") {
+      auto meta = MetaData::Of<AllSemanticConstructible>();
       REQUIRE(meta);
 
       WHEN("Checked for reflected properties") {
-         static_assert(not CT::Defaultable<SemanticConstructible>);
-         static_assert(not CT::Destroyable<SemanticConstructible>);
+         static_assert(not CT::Defaultable<AllSemanticConstructible>);
+         static_assert(not CT::Destroyable<AllSemanticConstructible>);
 
-         static_assert(    CT::CopyMakable<SemanticConstructible>);
-         static_assert(    CT::MoveMakable<SemanticConstructible>);
-         static_assert(    CT::CloneMakable<SemanticConstructible>);
-         static_assert(    CT::DisownMakable<SemanticConstructible>);
-         static_assert(    CT::AbandonMakable<SemanticConstructible>);
-         static_assert(    CT::DescriptorMakable<SemanticConstructible>);
+         static_assert(    CT::CopyMakable<AllSemanticConstructible>);
+         static_assert(    CT::MoveMakable<AllSemanticConstructible>);
+         static_assert(    CT::CloneMakable<AllSemanticConstructible>);
+         static_assert(    CT::DisownMakable<AllSemanticConstructible>);
+         static_assert(    CT::AbandonMakable<AllSemanticConstructible>);
+         static_assert(    CT::DescriptorMakable<AllSemanticConstructible>);
 
-         static_assert(    CT::SemanticMakable<Copied, SemanticConstructible>);
-         static_assert(    CT::SemanticMakable<Moved, SemanticConstructible>);
-         static_assert(    CT::SemanticMakable<Cloned, SemanticConstructible>);
-         static_assert(    CT::SemanticMakable<Disowned, SemanticConstructible>);
-         static_assert(    CT::SemanticMakable<Abandoned, SemanticConstructible>);
+         static_assert(    CT::SemanticMakable<Copied, AllSemanticConstructible>);
+         static_assert(    CT::SemanticMakable<Moved, AllSemanticConstructible>);
+         static_assert(    CT::SemanticMakable<Cloned, AllSemanticConstructible>);
+         static_assert(    CT::SemanticMakable<Disowned, AllSemanticConstructible>);
+         static_assert(    CT::SemanticMakable<Abandoned, AllSemanticConstructible>);
 
-         static_assert(    CT::CopyAssignable<SemanticConstructible>);
-         static_assert(    CT::MoveAssignable<SemanticConstructible>);
-         static_assert(    CT::CloneAssignable<SemanticConstructible>);
-         static_assert(    CT::DisownAssignable<SemanticConstructible>);
-         static_assert(    CT::AbandonAssignable<SemanticConstructible>);
+         static_assert(    CT::CopyAssignable<AllSemanticConstructible>);
+         static_assert(    CT::MoveAssignable<AllSemanticConstructible>);
+         static_assert(    CT::CloneAssignable<AllSemanticConstructible>);
+         static_assert(    CT::DisownAssignable<AllSemanticConstructible>);
+         static_assert(    CT::AbandonAssignable<AllSemanticConstructible>);
 
-         static_assert(    CT::SemanticAssignable<Copied, SemanticConstructible>);
-         static_assert(    CT::SemanticAssignable<Moved, SemanticConstructible>);
-         static_assert(    CT::SemanticAssignable<Cloned, SemanticConstructible>);
-         static_assert(    CT::SemanticAssignable<Disowned, SemanticConstructible>);
-         static_assert(    CT::SemanticAssignable<Abandoned, SemanticConstructible>);
+         static_assert(    CT::SemanticAssignable<Copied, AllSemanticConstructible>);
+         static_assert(    CT::SemanticAssignable<Moved, AllSemanticConstructible>);
+         static_assert(    CT::SemanticAssignable<Cloned, AllSemanticConstructible>);
+         static_assert(    CT::SemanticAssignable<Disowned, AllSemanticConstructible>);
+         static_assert(    CT::SemanticAssignable<Abandoned, AllSemanticConstructible>);
+
+         REQUIRE_FALSE(meta->mDestructor);
+         REQUIRE_FALSE(meta->mDefaultConstructor);
+         REQUIRE      (meta->mCopyConstructor);
+         REQUIRE      (meta->mMoveConstructor);
+         REQUIRE      (meta->mCloneConstructor);
+         REQUIRE      (meta->mDisownConstructor);
+         REQUIRE      (meta->mAbandonConstructor);
+         REQUIRE      (meta->mDescriptorConstructor);
+
+         REQUIRE      (meta->mCopyAssigner);
+         REQUIRE      (meta->mMoveAssigner);
+         REQUIRE      (meta->mCloneAssigner);
+         REQUIRE      (meta->mDisownAssigner);
+         REQUIRE      (meta->mAbandonAssigner);
+      }
+   }
+   
+   GIVEN("A partially semantically-constructible type") {
+      auto meta = MetaData::Of<ParticallySemanticConstructible>();
+      REQUIRE(meta);
+
+      WHEN("Checked for reflected properties") {
+         static_assert(not CT::Defaultable<ParticallySemanticConstructible>);
+         static_assert(not CT::Destroyable<ParticallySemanticConstructible>);
+
+         static_assert(    CT::CopyMakable<ParticallySemanticConstructible>);
+         static_assert(    CT::MoveMakable<ParticallySemanticConstructible>);
+         static_assert(    CT::CloneMakable<ParticallySemanticConstructible>);
+         static_assert(    CT::DisownMakable<ParticallySemanticConstructible>);
+         static_assert(    CT::AbandonMakable<ParticallySemanticConstructible>);
+         static_assert(not CT::DescriptorMakable<ParticallySemanticConstructible>);
+
+         static_assert(    CT::SemanticMakable<Copied, ParticallySemanticConstructible>);
+         static_assert(    CT::SemanticMakable<Moved, ParticallySemanticConstructible>);
+         static_assert(    CT::SemanticMakable<Cloned, ParticallySemanticConstructible>);
+         static_assert(    CT::SemanticMakable<Disowned, ParticallySemanticConstructible>);
+         static_assert(    CT::SemanticMakable<Abandoned, ParticallySemanticConstructible>);
+
+         static_assert(    CT::CopyAssignable<ParticallySemanticConstructible>);
+         static_assert(    CT::MoveAssignable<ParticallySemanticConstructible>);
+         static_assert(    CT::CloneAssignable<ParticallySemanticConstructible>);
+         static_assert(    CT::DisownAssignable<ParticallySemanticConstructible>);
+         static_assert(    CT::AbandonAssignable<ParticallySemanticConstructible>);
+
+         static_assert(    CT::SemanticAssignable<Copied, ParticallySemanticConstructible>);
+         static_assert(    CT::SemanticAssignable<Moved, ParticallySemanticConstructible>);
+         static_assert(    CT::SemanticAssignable<Cloned, ParticallySemanticConstructible>);
+         static_assert(    CT::SemanticAssignable<Disowned, ParticallySemanticConstructible>);
+         static_assert(    CT::SemanticAssignable<Abandoned, ParticallySemanticConstructible>);
 
          REQUIRE_FALSE(meta->mDestructor);
          REQUIRE_FALSE(meta->mDefaultConstructor);
