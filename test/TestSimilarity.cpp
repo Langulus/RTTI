@@ -34,33 +34,31 @@ TEMPLATE_TEST_CASE("Unsigned integer RTTI interpretation", "[metadata]",
       REQUIRE(meta != nullptr);
 
       WHEN("Interpreted as another type") {
-         THEN("Requirements should be met") {
-            REQUIRE(CastsTo<A::Number>(meta));
-            REQUIRE(CastsTo<A::Integer>(meta));
-            REQUIRE(CastsTo<A::Unsigned>(meta));
-            REQUIRE(CastsTo<A::UnsignedInteger>(meta));
+         REQUIRE(CastsTo<A::Number>(meta));
+         REQUIRE(CastsTo<A::Integer>(meta));
+         REQUIRE(CastsTo<A::Unsigned>(meta));
+         REQUIRE(CastsTo<A::UnsignedInteger>(meta));
 
-            REQUIRE(CastsTo<A::Number>(meta, 1));
-            REQUIRE(CastsTo<A::Integer>(meta, 1));
-            REQUIRE(CastsTo<A::Unsigned>(meta, 1));
-            REQUIRE(CastsTo<A::UnsignedInteger>(meta, 1));
+         REQUIRE(CastsTo<A::Number>(meta, 1));
+         REQUIRE(CastsTo<A::Integer>(meta, 1));
+         REQUIRE(CastsTo<A::Unsigned>(meta, 1));
+         REQUIRE(CastsTo<A::UnsignedInteger>(meta, 1));
 
-            REQUIRE_FALSE(CastsTo<A::Real>(meta));
-            REQUIRE_FALSE(CastsTo<A::Signed>(meta));
-            REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta));
+         REQUIRE_FALSE(CastsTo<A::Real>(meta));
+         REQUIRE_FALSE(CastsTo<A::Signed>(meta));
+         REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta));
 
-            REQUIRE_FALSE(CastsTo<A::Real>(meta, 1));
-            REQUIRE_FALSE(CastsTo<A::Signed>(meta, 1));
-            REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta, 1));
+         REQUIRE_FALSE(CastsTo<A::Real>(meta, 1));
+         REQUIRE_FALSE(CastsTo<A::Signed>(meta, 1));
+         REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta, 1));
 
-            REQUIRE_FALSE(CastsTo<A::Number>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::Integer>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::Real>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::Unsigned>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::Signed>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta, 2));
-         }
+         REQUIRE_FALSE(CastsTo<A::Number>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::Integer>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::Real>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::Unsigned>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::Signed>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta, 2));
       }
    }
 }
@@ -73,33 +71,31 @@ TEMPLATE_TEST_CASE("Signed integer RTTI interpretation", "[metadata]",
       REQUIRE(meta != nullptr);
 
       WHEN("Interpreted as another type") {
-         THEN("Requirements should be met") {
-            REQUIRE(CastsTo<A::Number>(meta));
-            REQUIRE(CastsTo<A::Integer>(meta));
-            REQUIRE(CastsTo<A::Signed>(meta));
-            REQUIRE(CastsTo<A::SignedInteger>(meta));
+         REQUIRE(CastsTo<A::Number>(meta));
+         REQUIRE(CastsTo<A::Integer>(meta));
+         REQUIRE(CastsTo<A::Signed>(meta));
+         REQUIRE(CastsTo<A::SignedInteger>(meta));
 
-            REQUIRE_FALSE(CastsTo<A::Real>(meta));
-            REQUIRE_FALSE(CastsTo<A::Unsigned>(meta));
-            REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta));
+         REQUIRE_FALSE(CastsTo<A::Real>(meta));
+         REQUIRE_FALSE(CastsTo<A::Unsigned>(meta));
+         REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta));
 
-            REQUIRE(CastsTo<A::Number>(meta, 1));
-            REQUIRE(CastsTo<A::Integer>(meta, 1));
-            REQUIRE(CastsTo<A::Signed>(meta, 1));
-            REQUIRE(CastsTo<A::SignedInteger>(meta, 1));
+         REQUIRE(CastsTo<A::Number>(meta, 1));
+         REQUIRE(CastsTo<A::Integer>(meta, 1));
+         REQUIRE(CastsTo<A::Signed>(meta, 1));
+         REQUIRE(CastsTo<A::SignedInteger>(meta, 1));
 
-            REQUIRE_FALSE(CastsTo<A::Real>(meta, 1));
-            REQUIRE_FALSE(CastsTo<A::Unsigned>(meta, 1));
-            REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta, 1));
+         REQUIRE_FALSE(CastsTo<A::Real>(meta, 1));
+         REQUIRE_FALSE(CastsTo<A::Unsigned>(meta, 1));
+         REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta, 1));
 
-            REQUIRE_FALSE(CastsTo<A::Number>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::Integer>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::Real>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::Unsigned>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::Signed>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta, 2));
-         }
+         REQUIRE_FALSE(CastsTo<A::Number>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::Integer>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::Real>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::Unsigned>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::Signed>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta, 2));
       }
    }
 }
@@ -112,33 +108,31 @@ TEMPLATE_TEST_CASE("Real number RTTI interpretation", "[metadata]",
       REQUIRE(meta != nullptr);
 
       WHEN("Interpreted as another type") {
-         THEN("Requirements should be met") {
-            REQUIRE(CastsTo<A::Number>(meta));
-            REQUIRE(CastsTo<A::Real>(meta));
-            REQUIRE(CastsTo<A::Signed>(meta));
+         REQUIRE(CastsTo<A::Number>(meta));
+         REQUIRE(CastsTo<A::Real>(meta));
+         REQUIRE(CastsTo<A::Signed>(meta));
 
-            REQUIRE_FALSE(CastsTo<A::Integer>(meta));
-            REQUIRE_FALSE(CastsTo<A::Unsigned>(meta));
-            REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta));
-            REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta));
+         REQUIRE_FALSE(CastsTo<A::Integer>(meta));
+         REQUIRE_FALSE(CastsTo<A::Unsigned>(meta));
+         REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta));
+         REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta));
 
-            REQUIRE(CastsTo<A::Number>(meta, 1));
-            REQUIRE(CastsTo<A::Real>(meta, 1));
-            REQUIRE(CastsTo<A::Signed>(meta, 1));
+         REQUIRE(CastsTo<A::Number>(meta, 1));
+         REQUIRE(CastsTo<A::Real>(meta, 1));
+         REQUIRE(CastsTo<A::Signed>(meta, 1));
 
-            REQUIRE_FALSE(CastsTo<A::Integer>(meta, 1));
-            REQUIRE_FALSE(CastsTo<A::Unsigned>(meta, 1));
-            REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta, 1));
-            REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta, 1));
+         REQUIRE_FALSE(CastsTo<A::Integer>(meta, 1));
+         REQUIRE_FALSE(CastsTo<A::Unsigned>(meta, 1));
+         REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta, 1));
+         REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta, 1));
 
-            REQUIRE_FALSE(CastsTo<A::Number>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::Integer>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::Real>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::Unsigned>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::Signed>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta, 2));
-            REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta, 2));
-         }
+         REQUIRE_FALSE(CastsTo<A::Number>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::Integer>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::Real>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::Unsigned>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::Signed>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::UnsignedInteger>(meta, 2));
+         REQUIRE_FALSE(CastsTo<A::SignedInteger>(meta, 2));
       }
    }
 }
@@ -146,19 +140,19 @@ TEMPLATE_TEST_CASE("Real number RTTI interpretation", "[metadata]",
 template<class... T>
 struct Sequence {
    static constexpr auto count = sizeof...(T);
-   DMeta meta[count]     {MetaData::Of<T>()...};
-   DMeta metac[count]    {MetaData::Of<const T>()...};
-   DMeta metav[count]    {MetaData::Of<volatile T>()...};
-   DMeta metap[count]    {MetaData::Of<T*>()...};
-   DMeta metacp[count]   {MetaData::Of<const T*>()...};
-   DMeta metacpc[count]  {MetaData::Of<const T* const>()...};
-   DMeta metacpcp[count] {MetaData::Of<const T* const*>()...};
+   DMeta meta[count]     {MetaDataOf<T>()...};
+   DMeta metac[count]    {MetaDataOf<const T>()...};
+   DMeta metav[count]    {MetaDataOf<volatile T>()...};
+   DMeta metap[count]    {MetaDataOf<T*>()...};
+   DMeta metacp[count]   {MetaDataOf<const T*>()...};
+   DMeta metacpc[count]  {MetaDataOf<const T* const>()...};
+   DMeta metacpcp[count] {MetaDataOf<const T* const*>()...};
 };
 
 TEST_CASE("MetaData::Is", "[is]") {
-   Sequence<N1::Type, N1::Create, N2::Type, N3::type> sequence;
+   WHEN("MetaData::Is is used to check similarity of complete types") {
+      Sequence<N1::Type, N1::Create, N2::Type, N3::type> sequence;
 
-   WHEN("MetaData::Is is used to check similarity") {
       for (unsigned i = 0; i < sequence.count; ++i) {
          // Compare horizontally                                        
          REQUIRE(sequence.meta   [i]->Is(sequence.meta[i]));
@@ -284,9 +278,34 @@ TEST_CASE("MetaData::Is", "[is]") {
 }
 
 TEST_CASE("MetaData::IsSimilar", "[is]") {
-   Sequence<N1::Type, N1::Create, N2::Type, N3::type> sequence;
+   static_assert(CT::Similar<void*, const void*>);
+   static_assert(CT::Similar<void* const, const void*>);
+   static_assert(CT::Similar<void* const, void*>);
+   static_assert(CT::Similar<void**, const void**>);
+   static_assert(CT::Similar<void** const, const void* const*>);
+   static_assert(CT::Similar<void const* const* const, void**>);
+   static_assert(CT::Similar<void const* const* const, void**, void** const, const void** const>);
 
-   WHEN("MetaData::IsSimilar is used to check similarity") {
+   static_assert(not CT::Similar<int*, const float*>);
+   static_assert(not CT::Similar<int* const, const float*>);
+   static_assert(not CT::Similar<int* const, float*>);
+   static_assert(not CT::Similar<int**, const float**>);
+   static_assert(not CT::Similar<int** const, const float* const*>);
+   static_assert(not CT::Similar<int const* const* const, float**>);
+   static_assert(not CT::Similar<int const* const* const, float**, const int**>);
+
+   WHEN("MetaData::IsSimilar is used to check similarity of incomplete types") {
+      //DMeta meta1 = MetaDataOf<IncompleteType>(); // shouldn't build
+      DMeta meta = MetaDataOf<IncompleteType*>();
+
+      REQUIRE(meta->IsSimilar<IncompleteType*>());
+      REQUIRE(meta->IsSimilar<const IncompleteType*>());
+      REQUIRE(meta->IsSimilar<const IncompleteType* const>());
+   }
+
+   WHEN("MetaData::IsSimilar is used to check similarity of complete types") {
+      Sequence<N1::Type, N1::Create, N2::Type, N3::type> sequence;
+
       for (unsigned i = 0; i < sequence.count; ++i) {
          // Compare horizontally                                        
          REQUIRE      (sequence.meta   [i]->IsSimilar(sequence.meta[i]));
@@ -296,6 +315,8 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
          REQUIRE_FALSE(sequence.meta   [i]->IsSimilar(sequence.metacp[i]));
          REQUIRE_FALSE(sequence.meta   [i]->IsSimilar(sequence.metacpc[i]));
          REQUIRE_FALSE(sequence.meta   [i]->IsSimilar(sequence.metacpcp[i]));
+         REQUIRE_FALSE(sequence.meta   [i]->IsSimilar<void*>());
+         REQUIRE_FALSE(sequence.meta   [i]->IsSimilar<void*, const void*, const void* const>());
                                        
          REQUIRE      (sequence.metac  [i]->IsSimilar(sequence.meta[i]));
          REQUIRE      (sequence.metac  [i]->IsSimilar(sequence.metac[i]));
@@ -304,7 +325,9 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
          REQUIRE_FALSE(sequence.metac  [i]->IsSimilar(sequence.metacp[i]));
          REQUIRE_FALSE(sequence.metac  [i]->IsSimilar(sequence.metacpc[i]));
          REQUIRE_FALSE(sequence.metac  [i]->IsSimilar(sequence.metacpcp[i]));
-                                       
+         REQUIRE_FALSE(sequence.metac  [i]->IsSimilar<void*>());
+         REQUIRE_FALSE(sequence.metac  [i]->IsSimilar<void*, const void*, const void* const>());
+
          REQUIRE      (sequence.metav  [i]->IsSimilar(sequence.meta[i]));
          REQUIRE      (sequence.metav  [i]->IsSimilar(sequence.metac[i]));
          REQUIRE      (sequence.metav  [i]->IsSimilar(sequence.metav[i]));
@@ -312,7 +335,9 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
          REQUIRE_FALSE(sequence.metav  [i]->IsSimilar(sequence.metacp[i]));
          REQUIRE_FALSE(sequence.metav  [i]->IsSimilar(sequence.metacpc[i]));
          REQUIRE_FALSE(sequence.metav  [i]->IsSimilar(sequence.metacpcp[i]));
-                                       
+         REQUIRE_FALSE(sequence.metav  [i]->IsSimilar<void*>());
+         REQUIRE_FALSE(sequence.metav  [i]->IsSimilar<void*, const void*, const void* const>());
+                                     
          REQUIRE_FALSE(sequence.metap  [i]->IsSimilar(sequence.meta[i]));
          REQUIRE_FALSE(sequence.metap  [i]->IsSimilar(sequence.metac[i]));
          REQUIRE_FALSE(sequence.metap  [i]->IsSimilar(sequence.metav[i]));
@@ -320,6 +345,8 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
          REQUIRE      (sequence.metap  [i]->IsSimilar(sequence.metacp[i]));
          REQUIRE      (sequence.metap  [i]->IsSimilar(sequence.metacpc[i]));
          REQUIRE_FALSE(sequence.metap  [i]->IsSimilar(sequence.metacpcp[i]));
+         REQUIRE_FALSE(sequence.metap  [i]->IsSimilar<void*>());
+         REQUIRE_FALSE(sequence.metap  [i]->IsSimilar<void*, const void*, const void* const>());
                                        
          REQUIRE_FALSE(sequence.metacp [i]->IsSimilar(sequence.meta[i]));
          REQUIRE_FALSE(sequence.metacp [i]->IsSimilar(sequence.metac[i]));
@@ -328,6 +355,8 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
          REQUIRE      (sequence.metacp [i]->IsSimilar(sequence.metacp[i]));
          REQUIRE      (sequence.metacp [i]->IsSimilar(sequence.metacpc[i]));
          REQUIRE_FALSE(sequence.metacp [i]->IsSimilar(sequence.metacpcp[i]));
+         REQUIRE_FALSE(sequence.metacp [i]->IsSimilar<void*>());
+         REQUIRE_FALSE(sequence.metacp [i]->IsSimilar<void*, const void*, const void* const>());
 
          REQUIRE_FALSE(sequence.metacpc[i]->IsSimilar(sequence.meta[i]));
          REQUIRE_FALSE(sequence.metacpc[i]->IsSimilar(sequence.metac[i]));
@@ -336,6 +365,8 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
          REQUIRE      (sequence.metacpc[i]->IsSimilar(sequence.metacp[i]));
          REQUIRE      (sequence.metacpc[i]->IsSimilar(sequence.metacpc[i]));
          REQUIRE_FALSE(sequence.metacpc[i]->IsSimilar(sequence.metacpcp[i]));
+         REQUIRE_FALSE(sequence.metacpc[i]->IsSimilar<void*>());
+         REQUIRE_FALSE(sequence.metacpc[i]->IsSimilar<void*, const void*, const void* const>());
          
          REQUIRE_FALSE(sequence.metacpcp[i]->IsSimilar(sequence.meta[i]));
          REQUIRE_FALSE(sequence.metacpcp[i]->IsSimilar(sequence.metac[i]));
@@ -344,6 +375,8 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
          REQUIRE_FALSE(sequence.metacpcp[i]->IsSimilar(sequence.metacp[i]));
          REQUIRE_FALSE(sequence.metacpcp[i]->IsSimilar(sequence.metacpc[i]));
          REQUIRE      (sequence.metacpcp[i]->IsSimilar(sequence.metacpcp[i]));
+         REQUIRE_FALSE(sequence.metacpcp[i]->IsSimilar<void*>());
+         REQUIRE_FALSE(sequence.metacpcp[i]->IsSimilar<void*, const void*, const void* const>());
          
          for (unsigned j = 0; j < sequence.count; ++j) {
             if (i == j)
@@ -411,9 +444,9 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
 }
 
 TEST_CASE("MetaData::IsExact", "[is]") {
-   Sequence<N1::Type, N1::Create, N2::Type, N3::type> sequence;
+   WHEN("MetaData::IsExact is used to check similarity of complete types") {
+      Sequence<N1::Type, N1::Create, N2::Type, N3::type> sequence;
 
-   WHEN("MetaData::IsExact is used to check similarity") {
       for (unsigned i = 0; i < sequence.count; ++i) {
          // Compare horizontally                                        
          REQUIRE      (sequence.meta   [i]->IsExact(sequence.meta[i]));

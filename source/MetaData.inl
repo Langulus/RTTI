@@ -314,46 +314,6 @@ namespace Langulus::RTTI
          return mTraitRetriever();
       return {};
    }
-
-   /// Check if member is a specific type                                     
-   ///   @return true if member exactly matches the provided type             
-   template<CT::Data T>
-   LANGULUS(INLINED)
-   bool Member::Is() const {
-      LANGULUS_ASSUME(DevAssumes, GetType(), "Invalid member type");
-      return GetType()->template Is<T>();
-   }
-   
-   /// Check if member is a specific type                                     
-   ///   @param meta - the meta definition to compare against                 
-   ///   @return true if member exactly matches the provided type             
-   LANGULUS(INLINED)
-   bool Member::Is(DMeta meta) const {
-      LANGULUS_ASSUME(DevAssumes, GetType(), "Invalid member type");
-      return GetType()->Is(meta);
-   }
-   
-   /// Check if member is tagged with a specific trait                        
-   ///   @return true if member exactly matches the provided trait            
-   template<CT::Decayed T>
-   LANGULUS(INLINED)
-   bool Member::TraitIs() const {
-      const auto trait = GetTrait();
-      if (not trait)
-         return false;
-      return trait->template Is<T>();
-   }
-   
-   /// Check if member is tagged with a specific trait                        
-   ///   @param meta - the meta definition to compare against                 
-   ///   @return true if member exactly matches the provided trait            
-   LANGULUS(INLINED)
-   bool Member::TraitIs(TMeta meta) const {
-      const auto trait = GetTrait();
-      if (not trait)
-         return false;
-      return trait->Is(meta);
-   }
    
    /// Compare members                                                        
    ///   @param rhs - the member to compare against                           
@@ -375,8 +335,7 @@ namespace Langulus::RTTI
    /// Reinterpret the member as a given type and access it (const, unsafe)   
    ///   @param instance - pointer to the beginning of the owning type        
    ///   @return a reinterpreted constant reference to member                 
-   template<CT::Data T>
-   LANGULUS(INLINED)
+   template<CT::Data T> LANGULUS(INLINED)
    const T& Member::As(const Byte* instance) const noexcept {
       return *reinterpret_cast<const T*>(Get(instance));
    }
@@ -384,8 +343,7 @@ namespace Langulus::RTTI
    /// Reinterpret the member as a given type and access it (unsafe)          
    ///   @param instance - pointer to the beginning of the owning type        
    ///   @return a reinterpreted reference to member                          
-   template<CT::Data T>
-   LANGULUS(INLINED)
+   template<CT::Data T> LANGULUS(INLINED)
    T& Member::As(Byte* instance) const noexcept {
       return *reinterpret_cast<T*>(Get(instance));
    }
@@ -523,8 +481,7 @@ namespace Langulus::RTTI
    ///   @param other - the base to compare against                           
    LANGULUS(INLINED)
    bool Base::operator == (const Base& other) const noexcept {
-      return mType->IsExact(other.mType)
-         and mCount == other.mCount;
+      return mType == other.mType and mCount == other.mCount;
    }
 
    /// Create a base descriptor for the derived type T                        
@@ -584,16 +541,14 @@ namespace Langulus::RTTI
 
    /// Reflecting a void type always returns nullptr                          
    ///   @return nullptr                                                      
-   template<CT::Void T>
-   LANGULUS(INLINED)
+   template<CT::Void> LANGULUS(INLINED)
    constexpr DMeta MetaData::Of() {
       return nullptr;
    }
    
    /// Always strip references from T                                         
    ///   @return the meta data of the stripped of references T                
-   template<CT::DataReference T>
-   LANGULUS(INLINED)
+   template<CT::DataReference T> LANGULUS(INLINED)
    DMeta MetaData::Of() {
       return MetaData::Of<Deref<T>>();
    }
@@ -601,8 +556,7 @@ namespace Langulus::RTTI
    /// Reflect a pointer, optimized to reuse origin type properties           
    /// (a generalized reflection routine increases build time significantly)  
    ///   @tparam T - the type to reflect                                      
-   template<CT::SparseData T>
-   LANGULUS(NOINLINE)
+   template<CT::SparseData T> LANGULUS(NOINLINE)
    DMeta MetaData::Of() {
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
@@ -667,7 +621,7 @@ namespace Langulus::RTTI
       #endif
 
       // Overwrite pointer-specific stuff                               
-      generated.mDecvq = MetaData::Of<Decvq<T>>();
+      generated.mDecvq = MetaData::Of<DecvqAll<T>>();
       generated.mToken = NameOf<T>();
       generated.mCppName = CppNameOf<T>();
       generated.mHash = Meta::GenerateHash<T>(NameOf<T>());
@@ -694,9 +648,8 @@ namespace Langulus::RTTI
    /// Reflect a constant dense type, optimized to reuse origin type          
    /// (a generalized reflection routine increases build time significantly)  
    ///   @tparam T - the type to reflect                                      
-   template<CT::DenseData T>
-   LANGULUS(NOINLINE)
-   DMeta MetaData::Of() requires (CT::Convoluted<T>) {
+   template<CT::DenseData T> LANGULUS(NOINLINE)
+   DMeta MetaData::Of() requires CT::Convoluted<T> {
       static_assert(CT::Complete<T>, 
          "Can't reflect incomplete type - "
          "make sure you have included the corresponding headers "
@@ -742,7 +695,7 @@ namespace Langulus::RTTI
       auto denser = MetaData::Of<Decay<T>>();
       generated = *denser.mMeta;
       generated.mOrigin = denser;
-      generated.mDecvq = MetaData::Of<Decvq<T>>();
+      generated.mDecvq = MetaData::Of<DecvqAll<T>>();
 
       // Set library boundary - non-origin types are always associated  
       // with their origin type, if reflected by MAIN                   
@@ -782,9 +735,8 @@ namespace Langulus::RTTI
    /// Reflect a fully decayed (origin) type                                  
    ///   @tparam T - the type to reflect                                      
    ///   @return the generated (or retrieved) type definition                 
-   template<CT::DenseData T>
-   LANGULUS(NOINLINE)
-   DMeta MetaData::Of() requires (CT::Decayed<T>) {
+   template<CT::DenseData T> LANGULUS(NOINLINE)
+   DMeta MetaData::Of() requires CT::Decayed<T> {
       static_assert(not ::std::is_function_v<T>, 
          "Can't reflect this function signature origin - "
          "make sure you're using a pointer signature");
@@ -832,11 +784,9 @@ namespace Langulus::RTTI
          // The type is explicitly reflected with a custom function     
          // Let's call it...                                            
          generated = T::Reflect();
-         generated.mGenerator = T::Reflect;
       }
       else {
          // Type is implicitly reflected, so let's do our best          
-         generated.mGenerator = MetaData::Of<T>;
          generated.mToken = NameOf<T>();
          if constexpr (requires { T::CTTI_Info; })
             generated.mInfo = T::CTTI_Info;
@@ -933,7 +883,9 @@ namespace Langulus::RTTI
          float, double
       >;
 
-      if constexpr (CT::Nullptr<T>) { }
+      if constexpr (CT::Nullptr<T>) {
+      
+      }
       else if constexpr (CT::Bool<T>) {
          using Bases = Types<A::Bool>;
          generated.SetBases<T>(Bases {});
@@ -1287,8 +1239,7 @@ namespace Langulus::RTTI
    /// Get a converter to a specific static type                              
    ///   @tparam T - the type to seek a conversion to                         
    ///   @return the conversion function                                      
-   template<class T>
-   LANGULUS(INLINED)
+   template<class T> LANGULUS(INLINED)
    FCopyConstruct MetaData::GetConverter() const noexcept {
       return GetConverter(MetaData::Of<T>());
    }
@@ -1325,7 +1276,7 @@ namespace Langulus::RTTI
 
       // Then locally                                                   
       for (auto& member : mOrigin->mMembers) {
-         if (not member.TraitIs(trait) or not member.Is(type))
+         if (member.GetTrait() != trait or not (member.GetType() &= type))
             continue;
 
          // Match found                                                 
@@ -1356,7 +1307,7 @@ namespace Langulus::RTTI
 
       // Then locally                                                   
       for (auto& member : mOrigin->mMembers) {
-         if (not member.TraitIs(trait) or not member.Is(type))
+         if (member.GetTrait() != trait or not (member.GetType() &= type))
             continue;
 
          // Match found                                                 
@@ -1419,8 +1370,7 @@ namespace Langulus::RTTI
    /// Get the relevant pool                                                  
    ///   @tparam T - a type to reinterpret the pool as                        
    ///   @return the the pool                                                 
-   template<class T>
-   LANGULUS(INLINED)
+   template<class T> LANGULUS(INLINED)
    T*& MetaData::GetPool() const noexcept {
       const auto actualType = mIsSparse or not mOrigin ? mDecvq : mOrigin;
       return *reinterpret_cast<T**>(&actualType->mPool);
@@ -1476,8 +1426,7 @@ namespace Langulus::RTTI
    ///   @param offset - use this to get bases by index                       
    ///   @param base - [in/out] base info ends up here if found               
    ///   @return true if a base is available                                  
-   template<CT::Data T>
-   LANGULUS(INLINED)
+   template<CT::Data T> LANGULUS(INLINED)
    bool MetaData::GetBase(Offset offset, Base& base) const {
       return GetBase(MetaData::Of<Decay<T>>(), offset, base);
    }
@@ -1502,8 +1451,7 @@ namespace Langulus::RTTI
    /// Traverses the whole inheritance tree, so can return distant bases      
    ///   @tparam T - the type of base to search for                           
    ///   @return true if a base is available                                  
-   template<CT::Data T>
-   LANGULUS(INLINED)
+   template<CT::Data T> LANGULUS(INLINED)
    bool MetaData::HasBase() const {
       return HasBase(MetaData::Of<T>());
    }
@@ -1521,8 +1469,7 @@ namespace Langulus::RTTI
    /// Traverses the whole inheritance tree, so can return distant children   
    ///   @tparam T - the type of derivation to search for                     
    ///   @return true if a derivation is available                            
-   template<CT::Data T>
-   LANGULUS(INLINED)
+   template<CT::Data T> LANGULUS(INLINED)
    bool MetaData::HasDerivation() const {
       return MetaData::Of<T>()->HasBase(this);
    }
@@ -1538,8 +1485,7 @@ namespace Langulus::RTTI
    /// Check if this data type is able to do something                        
    ///   @tparam T - the verb to check if able                                
    ///   @return true if this data type is able to do verb                    
-   template<CT::Data T>
-   LANGULUS(INLINED)
+   template<CT::Data T> LANGULUS(INLINED)
    bool MetaData::IsAbleTo() const {
       return IsAbleTo(MetaVerb::Of<T>());
    }
@@ -1591,8 +1537,7 @@ namespace Langulus::RTTI
    ///   @tparam V - the type of the verb                                     
    ///   @param dmeta - the type of the verb's argument (optional)            
    ///   @return the functor if found                                         
-   template<bool MUTABLE, CT::Data V>
-   LANGULUS(INLINED)
+   template<bool MUTABLE, CT::Data V> LANGULUS(INLINED)
    auto MetaData::GetAbility(DMeta dmeta) const {
       static_assert(CT::DerivedFrom<V, ::Langulus::Flow::Verb>,
          "V must be derived from Flow::Verb");
@@ -1604,8 +1549,7 @@ namespace Langulus::RTTI
    ///   @tparam V - the type of the verb                                     
    ///   @tparam D - the type of the verb's argument                          
    ///   @return the functor if found                                         
-   template<bool MUTABLE, CT::Data V, CT::Data... A>
-   LANGULUS(INLINED)
+   template<bool MUTABLE, CT::Data V, CT::Data... A> LANGULUS(INLINED)
    auto MetaData::GetAbility() const {
       static_assert(CT::DerivedFrom<V, ::Langulus::Flow::Verb>,
          "V must be derived from Flow::Verb");
@@ -1617,8 +1561,7 @@ namespace Langulus::RTTI
    ///   @tparam T - type of the value to test (deducible)                    
    ///   @param value - the value to check the name of                        
    ///   @return the token for the value, or an empty token if not found      
-   template<class T>
-   LANGULUS(INLINED)
+   template<class T> LANGULUS(INLINED)
    Token MetaData::GetNamedValueOf(const T& value) const {
       if (not mOrigin)
          return "";
@@ -1682,10 +1625,12 @@ namespace Langulus::RTTI
    ///   @tparam BINARY_COMPATIBLE - do we require for the other to be        
    ///                               binary compatible with this              
    ///   @return true if this type interprets as other                        
-   template<CT::Data T, bool ADVANCED, bool BINARY_COMPATIBLE>
-   LANGULUS(INLINED)
+   template<class T, bool ADVANCED, bool BINARY_COMPATIBLE> LANGULUS(INLINED)
    bool MetaData::CastsTo() const {
-      return CastsTo<ADVANCED, BINARY_COMPATIBLE>(MetaData::Of<T>());
+      if constexpr (CT::Void<T>)
+         return false;
+      else
+         return CastsTo<ADVANCED, BINARY_COMPATIBLE>(MetaData::Of<T>());
    }
 
    /// Check if this type interprets as an exact number of another, without   
@@ -1734,10 +1679,12 @@ namespace Langulus::RTTI
    ///                               binary compatible with this              
    ///   @tparam T - the type to try interpreting as                          
    ///   @return true if this type interprets as other                        
-   template<CT::Data T, bool BINARY_COMPATIBLE>
-   LANGULUS(INLINED)
+   template<class T, bool BINARY_COMPATIBLE> LANGULUS(INLINED)
    bool MetaData::CastsTo(Count count) const {
-      return CastsTo<BINARY_COMPATIBLE>(MetaData::Of<T>(), count);
+      if constexpr (CT::Void<T>)
+         return false;
+      else
+         return CastsTo<BINARY_COMPATIBLE>(MetaData::Of<T>(), count);
    }
 
    /// Check if this type is either same, base or a derivation of other       
@@ -1751,10 +1698,12 @@ namespace Langulus::RTTI
    /// Check if this type is either same, base or a derivation of other       
    ///   @tparam T - the type to check                                        
    ///   @return true if this type is related to other                        
-   template<CT::Data T>
-   LANGULUS(INLINED)
+   template<class T> LANGULUS(INLINED)
    bool MetaData::IsRelatedTo() const {
-      return IsRelatedTo(MetaData::Of<T>());
+      if constexpr (CT::Void<T>)
+         return false;
+      else 
+         return IsRelatedTo(MetaData::Of<T>());
    }
 
    /// Get the number of conversions required to map one type to another      
@@ -1781,24 +1730,25 @@ namespace Langulus::RTTI
    /// Get the number of conversions required to map one type to another      
    ///   @tparam T - the type to check distance to                            
    ///   @return the distance                                                 
-   template<CT::Data T>
-   LANGULUS(INLINED)
+   template<class T> LANGULUS(INLINED)
    MetaData::Distance MetaData::GetDistanceTo() const {
-      return GetDistanceTo(MetaData::Of<T>());
+      if constexpr (CT::Void<T>)
+         return Distance::Infinite;
+      else
+         return GetDistanceTo(MetaData::Of<T>());
    }
    
-   /// Check if this type matches the origin of any of the provided types     
-   /// Essentially checks if reflections have the same mOrigin                
+   /// Check if origin matches at least one of the types                      
+   /// Disregards all cv-qualifires, pointers, array extents, etc.            
    ///   @tparam T1, TN... - the types to compare against                     
    ///   @return true if at least one of the types matches                    
-   template<CT::Data T1, CT::Data... TN>
-   LANGULUS(INLINED)
+   template<class T1, class...TN> LANGULUS(INLINED)
    constexpr bool MetaData::Is() const {
       return mOrigin and mOrigin->template IsExact<Decay<T1>, Decay<TN>...>();
    }
 
-   /// Check if two meta definitions match loosely, ignoring all qualifiers   
-   /// Essentially checks if both reflections have the same mOrigin           
+   /// Check if origins match                                                 
+   /// Disregards all cv-qualifires, pointers, array extents, etc.            
    ///   @param other - the type to compare against                           
    ///   @return true if types match                                          
    LANGULUS(INLINED)
@@ -1807,17 +1757,14 @@ namespace Langulus::RTTI
    }
    
    /// Check if this type matches any of the provided types' origins and      
-   /// sparseness, ignoring `const` and `volatile` qualifiers                 
+   /// sparseness, ignoring `const` and `volatile` qualifiers. The qualifiers 
+   /// aren't ignored only on the current level of indirection, but on the    
+   /// entire way to origin                                                   
    ///   @tparam T1, TN... - the types to compare against                     
    ///   @return true if at least one of the types matches                    
-   template<CT::Data T1, CT::Data... TN>
+   template<class T1, class...TN>
    constexpr bool MetaData::IsSimilar() const {
-      return IsExact<Deref<T1>, Deref<TN>...>()
-          or IsExact<Decvq<Deref<T1>>, Decvq<Deref<TN>>...>()
-          or (mDecvq->template IsExact<Deref<T1>, Deref<TN>...>()
-              or mDecvq->template IsExact<Decvq<Deref<T1>>, Decvq<Deref<TN>>...>())
-          or (mDeptr
-             and mDeptr->template IsSimilar<Deptr<Deref<T1>>, Deptr<Deref<TN>>...>());
+      return mDecvq->template IsExact<DecvqAll<T1>, DecvqAll<TN>...>();
    }
 
    /// Check if two meta definitions match origin and sparseness, but ignores 
@@ -1826,17 +1773,13 @@ namespace Langulus::RTTI
    ///   @param other - the type to compare against                           
    ///   @return true if types match                                          
    inline constexpr bool MetaData::IsSimilar(DMeta other) const noexcept {
-      return other and (IsExact(other)
-          or IsExact(other->mDecvq)
-          or (mDecvq->IsExact(other) or mDecvq->IsExact(other->mDecvq))
-          or (mDeptr and mDeptr->IsSimilar(other->mDeptr)));
+      return other and mDecvq->IsExact(other->mDecvq);
    }
    
    /// Check if this type matches one of the provided types exactly           
    ///   @tparam T1, TN... - the types to compare against                     
    ///   @return true if at least one of the types matches                    
-   template<CT::Data T1, CT::Data... TN>
-   LANGULUS(INLINED)
+   template<class T1, class...TN> LANGULUS(INLINED)
    constexpr bool MetaData::IsExact() const {
       if constexpr (::std::is_function_v<Deref<T1>>
                 or (::std::is_function_v<Deref<TN>> or ...)) {
@@ -1861,7 +1804,7 @@ namespace Langulus::RTTI
    ///   @param count - the number of elements to request                     
    ///   @returns both the provided byte size and reserved count              
    LANGULUS(INLINED)
-   AllocationRequest MetaData::RequestSize(const Count& count) const noexcept {
+   AllocationRequest MetaData::RequestSize(Count count) const noexcept {
       AllocationRequest result;
       result.mByteSize = Roof2(::std::max(count * mSize, mAllocationPage));
       const auto msb = CountTrailingZeroes(result.mByteSize);
@@ -1879,6 +1822,4 @@ namespace Langulus::RTTI
 
 } // namespace Langulus::RTTI
 
-#ifdef VERBOSE
-   #undef VERBOSE
-#endif
+#undef VERBOSE
