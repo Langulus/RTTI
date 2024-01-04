@@ -312,14 +312,20 @@ namespace Langulus::CT
       concept DefaultableNoexcept = Defaultable<T> and noexcept(T {});
       
       template<class T>
-      concept DispatcherMutable  = requires (      T a, Flow::Verb b) { {a.Do(b)}; };
+      concept DispatcherMutable  = requires (      T a, Flow::Verb b) {
+         {a.Do(b)};
+      };
 
       template<class T>
-      concept DispatcherConstant = requires (const T a, Flow::Verb b) { {a.Do(b)}; };
+      concept DispatcherConstant = requires (const T a, Flow::Verb b) {
+         {a.Do(b)};
+      };
       
       template<class T>
-      concept Typed = Complete<T> and (requires {typename T::CTTI_InnerType;}
-                                   or  requires {typename T::value_type;});
+      concept Typed = Complete<T> and ( requires {
+            typename T::CTTI_InnerType;
+            not TypeErased<typename T::CTTI_InnerType>;
+         } or requires {typename T::value_type;});
       
       template<class T>
       concept HasNamedValues = Complete<T> and requires {
@@ -327,8 +333,8 @@ namespace Langulus::CT
       };
 
       /// Convenience function that wraps std::underlying_type_t for enums,   
-      /// as well as any array, or anything with CTTI_InnerType or            
-      /// value_type member type defined                                      
+      /// as well as any array, or anything with CTTI_InnerType that isn't    
+      /// void, or has the value_type member type defined                     
       ///   - if T is an array, returns pointer of the array type             
       ///   - if T is Typed, return pointer of the type                       
       ///   - if T is an enum, return pointer of the underlying type          
@@ -489,7 +495,7 @@ namespace Langulus
 
       /// Check if a type has an underlying type defined                      
       template<class... T>
-      concept Typed = ((Inner::Typed<Decay<T>> and Data<TypeOf<Decay<T>>>) and ...);
+      concept Typed = (Inner::Typed<Decay<T>> and ...);
 
       /// Check if a type has no underlying type defined                      
       template<class... T>
