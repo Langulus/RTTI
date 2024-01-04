@@ -248,7 +248,8 @@ namespace Langulus
    constexpr Count CountOf = CT::Inner::CountOf<T1, TN...>();
 
    /// Casts a scalar to its underlying fundamental type (const)              
-   /// If T::CTTI_InnerType exists, or if T is an enum, the inner type returns
+   /// If non-void T::CTTI_InnerType exists, or if T is an enum, the inner    
+   /// type returns                                                           
    ///   @tparam T - type of the scalar/enum to cast                          
    ///   @param a - the scalar to cast                                        
    ///   @return a reference to the underlying type                           
@@ -268,7 +269,8 @@ namespace Langulus
    }
    
    /// Casts a scalar to its underlying fundamental type                      
-   /// If T::CTTI_InnerType exists, or if T is an enum, the inner type returns
+   /// If non-void T::CTTI_InnerType exists, or if T is an enum, the inner    
+   /// type returns                                                           
    ///   @tparam T - type of the scalar/enum to cast                          
    ///   @param a - the scalar to cast                                        
    ///   @return a reference to the underlying type                           
