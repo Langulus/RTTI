@@ -20,6 +20,9 @@ namespace Langulus::RTTI
    /// as well as other handy operations                                      
    ///                                                                        
    struct LANGULUS_API(RTTI) DMeta {
+      LANGULUS(POD) true;
+      LANGULUS(NULLIFIABLE) true;
+
    protected:
       friend struct AMeta;
       friend struct Meta;
@@ -29,7 +32,8 @@ namespace Langulus::RTTI
 
    public:
       constexpr DMeta() noexcept = default;
-      constexpr DMeta(const MetaData* raw) noexcept : mMeta {raw} {}
+      constexpr DMeta(const MetaData* raw) noexcept
+         : mMeta {raw} {}
 
       constexpr Token GetToken() const noexcept;
       constexpr Hash GetHash() const noexcept;
@@ -48,6 +52,9 @@ namespace Langulus::RTTI
    /// Definition interchange format for verbs                                
    ///                                                                        
    struct LANGULUS_API(RTTI) VMeta {
+      LANGULUS(POD) true;
+      LANGULUS(NULLIFIABLE) true;
+
    protected:
       friend struct AMeta;
       friend struct Meta;
@@ -57,7 +64,8 @@ namespace Langulus::RTTI
 
    public:
       constexpr VMeta() noexcept = default;
-      constexpr VMeta(const MetaVerb* raw) noexcept : mMeta {raw} {}
+      constexpr VMeta(const MetaVerb* raw) noexcept
+         : mMeta {raw} {}
 
       constexpr Token GetToken() const noexcept;
       constexpr Hash GetHash() const noexcept;
@@ -74,6 +82,9 @@ namespace Langulus::RTTI
    /// Definition interchange format for traits                               
    ///                                                                        
    struct LANGULUS_API(RTTI) TMeta {
+      LANGULUS(POD) true;
+      LANGULUS(NULLIFIABLE) true;
+
    protected:
       friend struct AMeta;
       friend struct Meta;
@@ -83,7 +94,8 @@ namespace Langulus::RTTI
 
    public:
       constexpr TMeta() noexcept = default;
-      constexpr TMeta(const MetaTrait* raw) noexcept : mMeta {raw} {}
+      constexpr TMeta(const MetaTrait* raw) noexcept
+         : mMeta {raw} {}
 
       constexpr Token GetToken() const noexcept;
       constexpr Hash GetHash() const noexcept;
@@ -100,6 +112,9 @@ namespace Langulus::RTTI
    /// Definition interchange format for constants                            
    ///                                                                        
    struct LANGULUS_API(RTTI) CMeta {
+      LANGULUS(POD) true;
+      LANGULUS(NULLIFIABLE) true;
+
    protected:
       friend struct AMeta;
       friend struct Meta;
@@ -110,7 +125,8 @@ namespace Langulus::RTTI
 
    public:
       constexpr CMeta() noexcept = default;
-      constexpr CMeta(const MetaConst* raw) noexcept : mMeta {raw} {}
+      constexpr CMeta(const MetaConst* raw) noexcept
+         : mMeta {raw} {}
 
       constexpr Token GetToken() const noexcept;
       constexpr Hash GetHash() const noexcept;
@@ -126,6 +142,9 @@ namespace Langulus::RTTI
    /// Definition interchange format for any of the above                     
    ///                                                                        
    struct LANGULUS_API(RTTI) AMeta {
+      LANGULUS(POD) true;
+      LANGULUS(NULLIFIABLE) true;
+
    protected:
       friend struct Meta;
       friend class Registry;
@@ -133,7 +152,8 @@ namespace Langulus::RTTI
 
    public:
       constexpr AMeta() noexcept = default;
-      constexpr AMeta(const Meta* raw) noexcept : mMeta {raw} {}
+      constexpr AMeta(const Meta* raw) noexcept
+         : mMeta {raw} {}
 
       constexpr Token GetToken() const noexcept;
       constexpr Hash GetHash() const noexcept;

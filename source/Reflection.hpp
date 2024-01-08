@@ -258,79 +258,78 @@ namespace Langulus::CT
    namespace Inner
    {
 
-      template<class T>
-      concept Reflectable = requires {
-         {T::Reflect()} -> Same<RTTI::MetaData>;
-      };
+      template<class...T>
+      concept Reflectable = (requires {
+            {T::Reflect()} -> Same<RTTI::MetaData>;
+         } and ...);
 
-      template<class T>
-      concept Abstract = not Complete<T>
-                         or ::std::is_abstract_v<T>
-                         or T::CTTI_Abstract;
+      template<class...T>
+      concept Abstract = ((not Complete<T>
+           or ::std::is_abstract_v<T>) and ...) or (T::CTTI_Abstract and ...);
 
-      template<class T>
-      concept Uninsertable = not Complete<T>
-           or (CT::Dense<T> and T::CTTI_Uninsertable);
+      template<class...T>
+      concept Uninsertable = ((not Complete<T>
+          or (CT::Dense<T> and T::CTTI_Uninsertable)) and ...);
 
-      template<class T>
-      concept Insertable = not Uninsertable<T>;
+      template<class...T>
+      concept Insertable = not Uninsertable<T...>;
 
-      template<class T>
-      concept Unallocatable = not Complete<T>
-           or (CT::Dense<T> and T::CTTI_Unallocatable);
+      template<class...T>
+      concept Unallocatable = ((not Complete<T>
+           or (CT::Dense<T> and T::CTTI_Unallocatable)) and ...);
 
-      template<class T>
-      concept Allocatable = not Unallocatable<T>;
+      template<class...T>
+      concept Allocatable = not Unallocatable<T...>;
 
-      template<class T>
-      concept Destroyable = not ::std::is_trivially_destructible_v<T>
-                            and ::std::is_destructible_v<T>;
+      template<class...T>
+      concept Destroyable = ((not ::std::is_trivially_destructible_v<T>
+                              and ::std::is_destructible_v<T>) and ...);
 
-      template<class T>
-      concept POD = Complete<T> and not Abstract<T> and (
-         T::CTTI_POD or ::std::is_trivial_v<T> or not Destroyable<T>);
+      template<class...T>
+      concept POD = Complete<T...> and not Abstract<T...> and (((
+            ::std::is_trivial_v<T> or not Destroyable<T>
+         ) and ...) or (T::CTTI_POD and ...)); // weird GCC bug fails expanding T::CTTI_POD along other checks
 
+      template<class...T>
+      concept Nullifiable = Complete<T...> and not Abstract<T...> and ((
+            Fundamental<T> and ...) or (T::CTTI_Nullifiable and ...));
 
-      template<class T>
-      concept Nullifiable = Complete<T> and not Abstract<T>
-          and (T::CTTI_Nullifiable or Fundamental<T>);
+      template<class...T>
+      concept Concretizable = Complete<T...> and (requires {
+            typename T::CTTI_Concrete;
+         } and ...);
 
-      template<class T>
-      concept Concretizable = Complete<T> and requires {
-         typename T::CTTI_Concrete;
-      };
+      template<class...T>
+      concept Producible = Complete<T...> and (requires {
+            typename T::CTTI_Producer;
+         } and ...);
 
-      template<class T>
-      concept Producible = Complete<T> and requires {
-         typename T::CTTI_Producer;
-      };
+      template<class...T>
+      concept Defaultable = not Abstract<T...> and requires { (T {}, ...); };
 
-      template<class T>
-      concept Defaultable = not Abstract<T> and requires { T {}; };
-
-      template<class T>
-      concept DefaultableNoexcept = Defaultable<T> and noexcept(T {});
+      template<class...T>
+      concept DefaultableNoexcept = Defaultable<T...> and (noexcept(T {}) and ...);
       
-      template<class T>
-      concept DispatcherMutable  = requires (      T a, Flow::Verb b) {
-         {a.Do(b)};
-      };
+      template<class...T>
+      concept DispatcherMutable = requires (Flow::Verb b, T...a) {
+            {(a.Do(b), ...)};
+         };
 
-      template<class T>
-      concept DispatcherConstant = requires (const T a, Flow::Verb b) {
-         {a.Do(b)};
-      };
+      template<class...T>
+      concept DispatcherConstant = requires (Flow::Verb b, const T...a) {
+            {(a.Do(b), ...)};
+         };
       
-      template<class T>
-      concept Typed = Complete<T> and ( requires {
+      template<class...T>
+      concept Typed = Complete<T...> and ((requires {
             typename T::CTTI_InnerType;
             not TypeErased<typename T::CTTI_InnerType>;
-         } or requires {typename T::value_type;});
+         } or requires {typename T::value_type;}) and ...);
       
-      template<class T>
-      concept HasNamedValues = Complete<T> and requires {
-         T::CTTI_NamedValues;
-      };
+      template<class...T>
+      concept HasNamedValues = Complete<T...> and (requires {
+            T::CTTI_NamedValues;
+         } and ...);
 
       /// Convenience function that wraps std::underlying_type_t for enums,   
       /// as well as any array, or anything with CTTI_InnerType that isn't    
@@ -358,58 +357,58 @@ namespace Langulus::CT
          }
       };
       
-      template<class T>
-      concept Resolvable = requires (T& a) {
-         {a.GetType()}  -> Exact<RTTI::DMeta>;
-         {a.GetBlock()} -> Exact<Anyness::Block>;
-      };
+      template<class...T>
+      concept Resolvable = requires (T&...a) {
+            {(a.GetType(), ...)}  -> Exact<RTTI::DMeta>;
+            {(a.GetBlock(), ...)} -> Exact<Anyness::Block>;
+         };
 
    } // namespace Langulus::CT::Inner
 
    
    /// Check if the origin T is resolvable at runtime                         
-   template<class... T>
+   template<class...T>
    concept Resolvable = Complete<Decay<T>...>
-      and (Inner::Resolvable<Decay<T>> and ...);
+       and Inner::Resolvable<Decay<T>...>;
 
    /// Check if the origin T is default-constructible                         
-   template<class... T>
+   template<class...T>
    concept Defaultable = Complete<Decay<T>...>
-      and (Inner::Defaultable<Decay<T>> and ...);
+       and Inner::Defaultable<Decay<T>...>;
 
-   template<class... T>
+   template<class...T>
    concept DefaultableNoexcept = Complete<Decay<T>...>
-      and (Inner::DefaultableNoexcept<Decay<T>> and ...);
+       and Inner::DefaultableNoexcept<Decay<T>...>;
 
    /// Check if the origin T requires its destructor being called             
    template<class... T>
    concept Destroyable = Complete<Decay<T>...>
-      and (Inner::Destroyable<Decay<T>> and ...);
+       and Inner::Destroyable<Decay<T>...>;
 
    /// A reflected type is a type that has a public Reflection field          
    /// This field is automatically added when using LANGULUS(REFLECT) macro   
    /// inside the type you want to reflect                                    
-   template<class... T>
-   concept Reflectable = (Inner::Reflectable<Decay<T>> and ...);
+   template<class...T>
+   concept Reflectable = Inner::Reflectable<Decay<T>...>;
 
    /// An uninsertable type is any type with a true static member             
    /// T::CTTI_Uninsertable. All types are insertable by default              
    /// Useful to mark some intermediate types, that are not supposed to be    
    /// inserted in containers                                                 
-   template<class... T>
-   concept Uninsertable = (Inner::Uninsertable<Decay<T>> and ...);
+   template<class...T>
+   concept Uninsertable = Inner::Uninsertable<Decay<T>...>;
 
-   template<class... T>
+   template<class...T>
    concept Insertable = not Uninsertable<T...>;
 
    /// You can make types unallocatable by the memory manager. This serves    
    /// not only as forcing the type to be either allocated by conventional    
    /// C++ means, or on the stack, but also optimizes away any memory manager 
    /// searches, when inserting pointers, if managed memory is enabled        
-   template<class... T>
-   concept Unallocatable = ((Inner::Unallocatable<Decay<T>>) and ...);
+   template<class...T>
+   concept Unallocatable = Inner::Unallocatable<Decay<T>...>;
 
-   template<class... T>
+   template<class...T>
    concept Allocatable = not Unallocatable<T...>;
 
    /// A POD (Plain Old Data) type is any type with a static member           
@@ -420,8 +419,8 @@ namespace Langulus::CT
    /// by using some batching runtime optimizations                           
    /// All POD types are also directly serializable to binary                 
    /// Use LANGULUS(POD) macro as member to tag POD types                     
-   template<class... T>
-   concept POD = (Inner::POD<Decay<T>> and ...);
+   template<class...T>
+   concept POD = Inner::POD<Decay<T>...>;
 
    /// A nullifiable type is any type with a static member                    
    /// T::CTTI_Nullifiable set to true. If no such member exists, the type    
@@ -429,7 +428,7 @@ namespace Langulus::CT
    /// Nullifiable types improve default-construction by using some batching  
    /// runtime optimizations                                                  
    /// Use LANGULUS(NULLIFIABLE) macro as member to tag nullifiable types     
-   template<class... T>
+   template<class...T>
    concept Nullifiable = ((Sparse<T> or Inner::Nullifiable<Decay<T>>) and ...);
 
    /// A concretizable type is any type with a member type CTTI_Concrete      
@@ -437,8 +436,8 @@ namespace Langulus::CT
    /// default. Concretizable types provide a default concretization for      
    /// when	allocating abstract types                                         
    /// Use LANGULUS(CONCRETIZABLE) macro as member to tag such types          
-   template<class... T>
-   concept Concretizable = (Inner::Concretizable<Decay<T>> and ...);
+   template<class...T>
+   concept Concretizable = Inner::Concretizable<Decay<T>...>;
 
    /// Get the reflected concrete type                                        
    template<class T>
@@ -449,12 +448,12 @@ namespace Langulus::CT
    /// default. Producible types can not be created at compile-time, and need 
    /// to be produced by executing Verbs::Create in the producer's context    
    /// Use LANGULUS(PRODUCER) macro as member to tag such types               
-   template<class... T>
-   concept Producible = (Inner::Producible<Decay<T>> and ...);
+   template<class...T>
+   concept Producible = Inner::Producible<Decay<T>...>;
    
    /// Check if a type has reflected named values                             
-   template<class... T>
-   concept HasNamedValues = (Inner::HasNamedValues<Decay<T>> and ...);
+   template<class...T>
+   concept HasNamedValues = Inner::HasNamedValues<Decay<T>...>;
 
    /// Get the reflected producer type                                        
    template<class T>
@@ -463,19 +462,19 @@ namespace Langulus::CT
    /// Check if T is abstract (has at least one pure virtual function, or is  
    /// explicitly marked as LANGULUS(ABSTRACT)). Sparse types are never       
    /// abstract                                                               
-   template<class... T>
-   concept Abstract = (Inner::Abstract<Decay<T>> and ...);
+   template<class...T>
+   concept Abstract = Inner::Abstract<Decay<T>...>;
 
    /// Check if all T have a mutable dispatcher (have `Do(Verb&)` method)     
-   template<class... T>
-   concept DispatcherMutable = (Inner::DispatcherMutable<T> and ...);
+   template<class...T>
+   concept DispatcherMutable = Inner::DispatcherMutable<T...>;
 
    /// Check if all T have a constant dispatcher (have `Do(Verb&) const`)     
-   template<class... T>
-   concept DispatcherConstant = (Inner::DispatcherConstant<T> and ...);
+   template<class...T>
+   concept DispatcherConstant = Inner::DispatcherConstant<T...>;
 
    /// Check if all T have a dispatcher, compatible with the cv-quality of T  
-   template<class... T>
+   template<class...T>
    concept Dispatcher = ((DispatcherMutable<T>
         or (Constant<T> and DispatcherConstant<T>)
       ) and ...);
@@ -494,11 +493,11 @@ namespace Langulus
    {
 
       /// Check if a type has an underlying type defined                      
-      template<class... T>
-      concept Typed = (Inner::Typed<Decay<T>> and ...);
+      template<class...T>
+      concept Typed = Inner::Typed<Decay<T>...>;
 
       /// Check if a type has no underlying type defined                      
-      template<class... T>
+      template<class...T>
       concept Untyped = not Typed<T...>;
 
    } // namespace namespace CT

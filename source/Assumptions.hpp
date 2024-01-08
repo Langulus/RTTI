@@ -103,6 +103,7 @@ namespace Langulus
             LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
 
       /// Logs error, and throws an exception of your choice                  
+      /// If you want to throw without logging, use LANGULUS_THROW instead    
       ///   @attention always throws (even in release builds)                 
       ///   @param exception - the exception to throw                         
       ///   @param message - the exception message                            

@@ -74,39 +74,39 @@ namespace Langulus
    {
 
       /// Checks if a type is a semantic                                      
-      template<class... T>
+      template<class...T>
       concept Semantic = (DerivedFrom<T, A::Semantic> and ...);
 
       /// Checks if a type is not a semantic                                  
-      template<class... T>
+      template<class...T>
       concept NotSemantic = not Semantic<T...>;
 
       /// Checks if a type is a shallow semantic                              
-      template<class... T>
+      template<class...T>
       concept ShallowSemantic = (DerivedFrom<T, A::ShallowSemantic> and ...);
 
       /// Checks if a type is a deep semantic                                 
-      template<class... T>
+      template<class...T>
       concept DeepSemantic = (DerivedFrom<T, A::DeepSemantic> and ...);
 
       /// Check if a type is a shallow-copy semantic                          
-      template<class... T>
+      template<class...T>
       concept Copied = (DerivedFrom<T, A::Copied> and ...);
 
       /// Check if a type is a shallow-move semantic                          
-      template<class... T>
+      template<class...T>
       concept Moved = (DerivedFrom<T, A::Moved> and ...);
 
       /// Check if a type is a shallow-abandon-move semantic                  
-      template<class... T>
+      template<class...T>
       concept Abandoned = (DerivedFrom<T, A::Abandoned> and ...);
 
       /// Check if a type is shallow-disowned-copy                            
-      template<class... T>
+      template<class...T>
       concept Disowned = (DerivedFrom<T, A::Disowned> and ...);
 
       /// Check if a type is clone (deep-copy) semantic                       
-      template<class... T>
+      template<class...T>
       concept Cloned = (DerivedFrom<T, A::Cloned> and ...);
 
    } // namespace Langulus::CT
@@ -798,6 +798,18 @@ namespace Langulus
       }
    }
 
+   /// Deduce the proper semantic type, based on whether T already has a      
+   /// specified semantic, or is an rvalue (&&) or not                        
+   template<class T>
+   using SemanticOf = Conditional<CT::Semantic<T>, Decay<T>, 
+      Conditional<::std::is_rvalue_reference_v<T> and CT::Mutable<Deref<T>>,
+         Moved<Deref<T>>, Copied<Deref<T>>>>;
+
+   /// Remove the semantic from a type, or just return the type, if not       
+   /// wrapped inside a semantic                                              
+   template<class T>
+   using Desem = Conditional<CT::Semantic<T>, TypeOf<T>, T>;
+
 } // namespace Langulus
 
 namespace Langulus::CT
@@ -816,151 +828,153 @@ namespace Langulus::CT
       concept AssignableFrom = (::std::assignable_from<T, A> and ...);
 
       /// Check if T is semantic-constructible by S                           
-      template<template<class> class S, class T>
-      concept SemanticMakable = Semantic<S<T>> and requires (T&& a) {
-         {SemanticNew<true>(nullptr, S<T> {a})} -> Supported;
-      };
-      template<class S>
-      concept SemanticMakableAlt = Semantic<S> and requires (TypeOf<S>&& a) {
-         {SemanticNew<true>(nullptr, S {a})} -> Supported;
-      };
+      template<template<class> class S, class...T>
+      concept SemanticMakable = Semantic<S<T>...> and (requires {
+             {SemanticNew<true>(nullptr, Fake<S<T>&&>())} -> Supported;
+          } and ...);
+
+      template<class...S>
+      concept SemanticMakableAlt = Semantic<S...> and (requires {
+             {SemanticNew<true>(nullptr, Fake<S&&>())} -> Supported;
+          } and ...);
 
       /// Check if T is semantic-assignable                                   
-      template<template<class> class S, class T>
-      concept SemanticAssignable = Semantic<S<T>> and requires (T&& a) {
-         {SemanticAssign<true>(a, S<T> {a})} -> Supported;
-      };
-      template<class S>
-      concept SemanticAssignableAlt = Semantic<S> and requires (TypeOf<S>&& a) {
-         {SemanticAssign<true>(a, S {a})} -> Supported;
-      };
+      template<template<class> class S, class...T>
+      concept SemanticAssignable = Semantic<S<T>...> and (requires {
+             {SemanticAssign<true>(Fake<T&>(), Fake<S<T>&&>())} -> Supported;
+          } and ...);
+
+      template<class...S>
+      concept SemanticAssignableAlt = Semantic<S...> and (requires {
+             {SemanticAssign<true>(Fake<TypeOf<S>&>(), Fake<S&&>())} -> Supported;
+          } and ...);
 
 
       /// Check if T is disown-constructible                                  
-      template<class T>
-      concept DisownMakable = SemanticMakable<Langulus::Disowned, T>;
+      template<class...T>
+      concept DisownMakable = (SemanticMakable<Langulus::Disowned, T> and ...);
 
       /// Check if T is clone-constructible                                   
-      template<class T>
-      concept CloneMakable = SemanticMakable<Langulus::Cloned, T>;
+      template<class...T>
+      concept CloneMakable = (SemanticMakable<Langulus::Cloned, T> and ...);
 
       /// Check if T is abandon-constructible                                 
-      template<class T>
-      concept AbandonMakable = SemanticMakable<Langulus::Abandoned, T>;
+      template<class...T>
+      concept AbandonMakable = (SemanticMakable<Langulus::Abandoned, T> and ...);
 
       /// Check if T is copy-constructible                                    
-      template<class T>
-      concept CopyMakable = SemanticMakable<Langulus::Copied, T>;
+      template<class...T>
+      concept CopyMakable = (SemanticMakable<Langulus::Copied, T> and ...);
 
       /// Check if T is move-constructible                                    
-      template<class T>
-      concept MoveMakable = SemanticMakable<Langulus::Moved, T>;
+      template<class...T>
+      concept MoveMakable = (SemanticMakable<Langulus::Moved, T> and ...);
 
 
       /// Check if T is disown-assignable if mutable                          
-      template<class T>
-      concept DisownAssignable = SemanticAssignable<Langulus::Disowned, T>;
+      template<class...T>
+      concept DisownAssignable = (SemanticAssignable<Langulus::Disowned, T> and ...);
 
       /// Check if T is clone-assignable if mutable                           
-      template<class T>
-      concept CloneAssignable = SemanticAssignable<Langulus::Cloned, T>;
+      template<class...T>
+      concept CloneAssignable = (SemanticAssignable<Langulus::Cloned, T> and ...);
 
       /// Check if T is abandon-assignable if mutable                         
-      template<class T>
-      concept AbandonAssignable = SemanticAssignable<Langulus::Abandoned, T>;
+      template<class...T>
+      concept AbandonAssignable = (SemanticAssignable<Langulus::Abandoned, T> and ...);
 
       /// Check if the T is copy-assignable                                   
-      template<class T>
-      concept CopyAssignable = SemanticAssignable<Langulus::Copied, T>;
+      template<class...T>
+      concept CopyAssignable = (SemanticAssignable<Langulus::Copied, T> and ...);
 
       /// Check if the T is move-assignable                                   
-      template<class T>
-      concept MoveAssignable = SemanticAssignable<Langulus::Moved, T>;
+      template<class...T>
+      concept MoveAssignable = (SemanticAssignable<Langulus::Moved, T> and ...);
 
 
       /// Check if the T is descriptor-constructible                          
-      template<class T>
-      concept DescriptorMakable = not Abstract<T> and not Enum<T>
-          and requires (const Anyness::Neat& a) { T {Describe {a}}; };
+      template<class...T>
+      concept DescriptorMakable = not Abstract<T...> and not Enum<T...>
+          and requires (const Anyness::Neat& a) { (T {Describe {a}}, ...); };
 
       /// Check if the T is noexcept-descriptor-constructible                 
-      template<class T>
-      concept DescriptorMakableNoexcept = DescriptorMakable<T>
-          and noexcept ( T {Describe {Fake<const Anyness::Neat&>()}}  );
+      template<class...T>
+      concept DescriptorMakableNoexcept = DescriptorMakable<T...>
+          and (noexcept ( T {Describe {Fake<const Anyness::Neat&>()}}) and ...);
 
    } // namespace Langulus::CT::Inner
 
 
    /// Check if origin T is semantic-constructible by semantic S              
-   template<template<class> class S, class... T>
+   template<template<class> class S, class...T>
    concept SemanticMakable = Complete<Decay<T>...>
-       and (Inner::SemanticMakable<S, Decay<T>> and ...);
+       and Inner::SemanticMakable<S, Decay<T>...>;
 
-   template<class... S>
+   template<class...S>
    concept SemanticMakableAlt = Complete<Decay<TypeOf<S>>...>
-       and (Inner::SemanticMakableAlt<S> and ...);
+       and Inner::SemanticMakableAlt<S...>;
 
    /// Check if origin T is semantic-assignable by semantic S                 
-   template<template<class> class S, class... T>
+   template<template<class> class S, class...T>
    concept SemanticAssignable = Complete<Decay<T>...>
-       and (Inner::SemanticAssignable<S, Decay<T>> and ...);
+       and Inner::SemanticAssignable<S, Decay<T>...>;
 
-   template<class... S>
+   template<class...S>
    concept SemanticAssignableAlt = Complete<Decay<TypeOf<S>>...>
-       and (Inner::SemanticAssignableAlt<S> and ...);
+       and Inner::SemanticAssignableAlt<S...>;
 
 
    /// Check if origin T is disown-constructible                              
-   template<class... T>
-   concept DisownMakable = (SemanticMakable<Langulus::Disowned, T> and ...);
+   template<class...T>
+   concept DisownMakable = SemanticMakable<Langulus::Disowned, T...>;
 
    /// Check if origin T is clone-constructible                               
-   template<class... T>
-   concept CloneMakable = (SemanticMakable<Langulus::Cloned, T> and ...);
+   template<class...T>
+   concept CloneMakable = SemanticMakable<Langulus::Cloned, T...>;
 
    /// Check if origin T is abandon-constructible                             
-   template<class... T>
-   concept AbandonMakable = (SemanticMakable<Langulus::Abandoned, T> and ...);
+   template<class...T>
+   concept AbandonMakable = SemanticMakable<Langulus::Abandoned, T...>;
    
    /// Check if origin T is copy-constructible                                
-   template<class... T>
-   concept CopyMakable = (SemanticMakable<Langulus::Copied, T> and ...);
+   template<class...T>
+   concept CopyMakable = SemanticMakable<Langulus::Copied, T...>;
 
    /// Check if origin T is move-constructible                                
-   template<class... T>
-   concept MoveMakable = (SemanticMakable<Langulus::Moved, T> and ...);
+   template<class...T>
+   concept MoveMakable = SemanticMakable<Langulus::Moved, T...>;
 
 
    /// Check if origin T is disown-assignable if mutable                      
-   template<class... T>
-   concept DisownAssignable = (SemanticAssignable<Langulus::Disowned, T> and ...);
+   template<class...T>
+   concept DisownAssignable = SemanticAssignable<Langulus::Disowned, T...>;
 
    /// Check if origin T is clone-assignable if mutable                       
-   template<class... T>
-   concept CloneAssignable = (SemanticAssignable<Langulus::Cloned, T> and ...);
+   template<class...T>
+   concept CloneAssignable = SemanticAssignable<Langulus::Cloned, T...>;
 
    /// Check if origin T is abandon-assignable if mutable                     
-   template<class... T>
-   concept AbandonAssignable = (SemanticAssignable<Langulus::Abandoned, T> and ...);
+   template<class...T>
+   concept AbandonAssignable = SemanticAssignable<Langulus::Abandoned, T...>;
 
    /// Check if origin T is copy-assignable                                   
-   template<class... T>
-   concept CopyAssignable = (SemanticAssignable<Langulus::Copied, T> and ...);
+   template<class...T>
+   concept CopyAssignable = SemanticAssignable<Langulus::Copied, T...>;
 
    /// Check if origin T is move-assignable                                   
-   template<class... T>
-   concept MoveAssignable = (SemanticAssignable<Langulus::Moved, T> and ...);
+   template<class...T>
+   concept MoveAssignable = SemanticAssignable<Langulus::Moved, T...>;
 
 
    /// Check if the origin T is descriptor-constructible                      
-   template<class... T>
+   template<class...T>
    concept DescriptorMakable = Complete<Decay<T>...>
-      and (Inner::DescriptorMakable<Decay<T>> and ...);
+       and Inner::DescriptorMakable<Decay<T>...>;
 
    /// Check if the origin T is noexcept-descriptor-constructible             
-   template<class... T>
+   template<class...T>
    concept DescriptorMakableNoexcept = Complete<Decay<T>...>
-      and (Inner::DescriptorMakableNoexcept<Decay<T>> and ...);
+       and Inner::DescriptorMakableNoexcept<Decay<T>...>;
 
    namespace Inner
    {
@@ -990,18 +1004,6 @@ namespace Langulus::CT
 
 namespace Langulus
 {
-
-   /// Deduce the proper semantic type, based on whether T already has a      
-   /// specified semantic, or is an rvalue (&&) or not                        
-   template<class T>
-   using SemanticOf = Conditional<CT::Semantic<T>, Decay<T>, 
-      Conditional<::std::is_rvalue_reference_v<T> and CT::Mutable<Deref<T>>,
-         Moved<Deref<T>>, Copied<Deref<T>>>>;
-
-   /// Remove the semantic from a type, or just return the type, if not       
-   /// wrapped inside a semantic                                              
-   template<class T>
-   using Desem = Conditional<CT::Semantic<T>, TypeOf<T>, T>;
 
    /// Downcasts a typed wrapper to the contained element, if cast operator   
    /// to TypeOf<T>& is available                                             
@@ -1055,10 +1057,7 @@ namespace Langulus
       /// Check if T is insertable to containers, either directly, or while   
       /// wrapped in a semantic                                               
       template<class T1, class...TAIL>
-      concept UnfoldInsertable = (NotSemantic<T1> and Insertable<T1>
-            and ((NotSemantic<TAIL> and Insertable<TAIL>) and ...))
-         or (Semantic<T1> and Insertable<TypeOf<T1>>
-            and ((Semantic<TAIL> and Insertable<TypeOf<TAIL>>) and ...));
+      concept UnfoldInsertable = Insertable<Desem<T1>, Desem<TAIL>...>;
 
    } // namespace Langulus::CT::Inner
 
