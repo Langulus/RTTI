@@ -23,7 +23,7 @@ namespace Langulus::Flow
 
 namespace Langulus::Anyness
 {
-   class Block {};
+   struct Block {};
    class Trait : public Block {};
 }
 
