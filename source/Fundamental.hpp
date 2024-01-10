@@ -21,14 +21,14 @@ namespace Langulus::A
    ///                                                                        
 
    /// Check if a type is compatible with CT::Number concept at runtime       
-   class Number {
+   struct Number {
       LANGULUS(ABSTRACT) true;
       LANGULUS(CONCRETE) ::Langulus::Real;
       ~Number() = delete;
    };
 
    /// Check if a type is compatible with CT::Integer concept at runtime      
-   class Integer {
+   struct Integer {
       LANGULUS(ABSTRACT) true;
       LANGULUS(CONCRETE) ::std::intptr_t;
       LANGULUS_BASES(Number);
@@ -36,7 +36,7 @@ namespace Langulus::A
    };
 
    /// Check if a type is compatible with CT::Signed concept at runtime       
-   class Signed {
+   struct Signed {
       LANGULUS(ABSTRACT) true;
       LANGULUS(CONCRETE) ::Langulus::Real;
       LANGULUS_BASES(Number);
@@ -44,7 +44,7 @@ namespace Langulus::A
    };
 
    /// Check if a type is compatible with CT::Unsigned concept at runtime     
-   class Unsigned {
+   struct Unsigned {
       LANGULUS(ABSTRACT) true;
       LANGULUS(CONCRETE) ::std::uintptr_t;
       LANGULUS_BASES(Number);
@@ -52,7 +52,7 @@ namespace Langulus::A
    };
 
    /// Check if a type is compatible with CT::UnsignedInteger concept         
-   class UnsignedInteger {
+   struct UnsignedInteger {
       LANGULUS(ABSTRACT) true;
       LANGULUS(CONCRETE) ::std::uintptr_t;
       LANGULUS_BASES(Unsigned, Integer);
@@ -60,7 +60,7 @@ namespace Langulus::A
    };
 
    /// Check if a type is compatible with CT::Real concept at runtime         
-   class Real {
+   struct Real {
       LANGULUS(ABSTRACT) true;
       LANGULUS(CONCRETE) ::Langulus::Real;
       LANGULUS_BASES(Signed);
@@ -68,7 +68,7 @@ namespace Langulus::A
    };
 
    /// Check if a type is compatible with CT::SignedInteger concept           
-   class SignedInteger {
+   struct SignedInteger {
       LANGULUS(ABSTRACT) true;
       LANGULUS(CONCRETE) ::std::intptr_t;
       LANGULUS_BASES(Signed, Integer);
@@ -76,14 +76,14 @@ namespace Langulus::A
    };
 
    /// Check if a type is compatible with CT::Character concept at runtime    
-   class Text {
+   struct Text {
       LANGULUS(ABSTRACT) true;
       LANGULUS(CONCRETE) char;
       ~Text() = delete;
    };
 
    /// Check if a type is compatible with CT::Bool concept at runtime         
-   class Bool {
+   struct Bool {
       LANGULUS(ABSTRACT) true;
       LANGULUS(CONCRETE) bool;
       ~Bool() = delete;
