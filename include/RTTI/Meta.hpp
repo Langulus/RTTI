@@ -24,8 +24,7 @@ namespace Langulus
    ///   @return the meta definition of the provided type                     
    template<class T>
    NOD() auto MetaOf() {
-      if constexpr (CT::Decayed<T>
-         and requires { T::CTTI_Trait; })
+      if constexpr (CT::Decayed<T> and requires { T::CTTI_Trait; })
          return RTTI::MetaTrait::Of<T>();
       else if constexpr (CT::Decayed<T>
               and (  requires { T::CTTI_Verb; }

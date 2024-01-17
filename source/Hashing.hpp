@@ -576,14 +576,14 @@ namespace Langulus
          // Hashable via a member GetHash() function                    
          return head.GetHash();
       }
-      else if constexpr (CT::StandardContainer<T>
+      else if constexpr (CT::StdContainer<T>
               and requires (TypeOf<T>& a) {{HashOf<true, SEED>(a)} -> CT::Supported; }) {
          // Anything that contiguously iteratable is carried through    
          // HashOf for consistency, because different std library       
          // implementations might have different hashing algorithms.    
          // This should include string_view, string, vector, span, etc. 
          using TT = TypeOf<T>;
-         if constexpr (CT::StandardContiguousContainer<T>
+         if constexpr (CT::StdContiguousContainer<T>
             and (sizeof(TT) == 1 or ::std::is_fundamental_v<TT>)) {   //TODO if i use POD instead of fundamental here, std::string_view will be taken as byte array
             return HashBytes<SEED>(                                   // which uninadvertedly will fuck shit up, and it hints, that CT::POD should be
                head.data(),                                           // completely rethought to avoid any standard definition of POD (huh, probably that's why the
