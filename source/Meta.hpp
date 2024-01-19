@@ -318,16 +318,9 @@ namespace fmt
          return ctx.begin();
       }
 
-      template<class CONTEXT>
-      LANGULUS(INLINED)
-      auto format(T const& meta, CONTEXT& ctx) {
-         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            auto asView = meta->GetShortestUnambiguousToken();
-         #else
-            auto asView = meta->mToken;
-         #endif
-
-         return fmt::format_to(ctx.out(), "{}", asView);
+      template<class CONTEXT> LANGULUS(INLINED)
+      auto format(T const& e, CONTEXT& ctx) {
+         return fmt::format_to(ctx.out(), "{}", e.GetToken());
       }
    };
 
