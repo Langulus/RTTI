@@ -620,6 +620,13 @@ namespace Langulus
          else
             LANGULUS_ERROR("Can't instantiate abstract type");
       }
+      else if constexpr (CT::Reference<T>) {
+         // Can't instantiate as a reference                            
+         if constexpr (FAKE)
+            return Inner::Unsupported {};
+         else
+            LANGULUS_ERROR("Can't SemanticNew at a reference");
+      }
       else if constexpr (S<T>::Move) {
          if constexpr (not S<T>::Keep) {
             // Abandon                                                  
@@ -709,7 +716,14 @@ namespace Langulus
    template<bool FAKE = false, template<class> class S, CT::NotSemantic T, class MT = Decvq<T>>
    requires CT::Semantic<S<T>> LANGULUS(INLINED)
    constexpr decltype(auto) SemanticAssign(MT& lhs, S<T>&& rhs) {
-      if constexpr (S<T>::Move) {
+      if constexpr (CT::Reference<MT>) {
+         // Can't reassign a reference                                  
+         if constexpr (FAKE)
+            return Inner::Unsupported {};
+         else
+            LANGULUS_ERROR("Can't SemanticAssign at a reference");
+      }
+      else if constexpr (S<T>::Move) {
          if constexpr (not S<T>::Keep) {
             // Abandon                                                  
             if constexpr (requires(MT a) { a = Abandon(*rhs); })
