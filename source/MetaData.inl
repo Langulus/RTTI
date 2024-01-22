@@ -634,9 +634,9 @@ namespace Langulus::RTTI
       // It is the same for all kinds of pointers                       
       generated.mAllocationPage = GetAllocationPageOf<void*>();
       constexpr auto minElements = GetAllocationPageOf<void*>() / sizeof(void*);
-      for (Size bit = 0; bit < sizeof(Size) * 8; ++bit) {
-         const Size threshold = Size {1} << bit;
-         const Size elements = threshold / sizeof(void*);
+      for (Offset bit = 0; bit < sizeof(Offset) * 8; ++bit) {
+         const Offset threshold = Offset {1} << bit;
+         const Offset elements = threshold / sizeof(void*);
          generated.mAllocationTable[bit] = ::std::max(minElements, elements);
       }
 
@@ -809,9 +809,9 @@ namespace Langulus::RTTI
          // It is the same, regardless if T is const or not             
          generated.mAllocationPage = GetAllocationPageOf<T>();
          constexpr auto minElements = GetAllocationPageOf<T>() / sizeof(T);
-         for (Size bit = 0; bit < sizeof(Size) * 8; ++bit) {
-            const Size threshold = Size {1} << bit;
-            const Size elements = threshold / sizeof(T);
+         for (Offset bit = 0; bit < sizeof(Offset) * 8; ++bit) {
+            const Offset threshold = Offset {1} << bit;
+            const Offset elements = threshold / sizeof(T);
             generated.mAllocationTable[bit] = ::std::max(minElements, elements);
          }
 
@@ -1806,8 +1806,8 @@ namespace Langulus::RTTI
    LANGULUS(INLINED)
    AllocationRequest MetaData::RequestSize(Count count) const noexcept {
       AllocationRequest result;
-      result.mByteSize = Roof2(::std::max(count * mSize, mAllocationPage));
-      const auto msb = CountTrailingZeroes(result.mByteSize);
+      result.mByteSize = Roof2(::std::max(count * mSize, mAllocationPage.mSize));
+      const auto msb = CountTrailingZeroes(result.mByteSize.mSize);
       result.mElementCount = mAllocationTable[msb];
       return result;
    }
