@@ -662,7 +662,7 @@ namespace Langulus
                LANGULUS_ERROR("Can't move-construct type");
          }
       }
-      else if constexpr (not S<T>::Shallow) {
+      else if constexpr (not S<T>::Shallow and not CT::Void<Decay<T>>) {
          // Clone                                                       
          using DT = Decay<T>;
          if constexpr (requires { new DT (Clone(DenseCast(*value))); })
@@ -759,10 +759,9 @@ namespace Langulus
          }
       }
       else {
-         if constexpr (not S<T>::Shallow) {
+         if constexpr (not S<T>::Shallow and not CT::Void<Decay<T>>) {
             // Clone                                                    
             using DT = Decay<T>;
-
             if constexpr (CT::Mutable<decltype(DenseCast(lhs))>) {
                if constexpr (requires(DT& a) { a = Clone(DenseCast(*rhs)); })
                   return (DenseCast(lhs) = Clone(DenseCast(*rhs)));
@@ -828,18 +827,19 @@ namespace Langulus
 
 namespace Langulus::CT
 {
+   
+   /// Check if T is constructible with each of the provided arguments        
+   /// Notice, that this differs from std::constructible_from, by             
+   /// attempting each argument separately                                    
+   template<class T, class...A>
+   concept MakableFrom = (::std::constructible_from<T, A&&> and ...);
+
+   /// Check if T is assignable with each of the provided arguments           
+   template<class T, class...A>
+   concept AssignableFrom = (::std::assignable_from<T, A&&> and ...);
+
    namespace Inner
    {
-
-      /// Check if T is constructible with each of the provided arguments     
-      /// Notice, that this differs from std::constructible_from, by          
-      /// attempting each argument separately                                 
-      template<class T, class...A>
-      concept MakableFrom = (::std::constructible_from<T, A> and ...);
-
-      /// Check if T is assignable with each of the provided arguments        
-      template<class T, class...A>
-      concept AssignableFrom = (::std::assignable_from<T, A> and ...);
 
       /// Check if T is semantic-constructible by S                           
       template<template<class> class S, class...T>
