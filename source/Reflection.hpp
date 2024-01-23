@@ -255,6 +255,32 @@ namespace Langulus::RTTI
 /// Compile-time checks and concepts associated with RTTI                     
 namespace Langulus::CT
 {
+
+   /// You can make types unallocatable by the memory manager. This serves    
+   /// not only as forcing the type to be either allocated by conventional    
+   /// C++ means, or on the stack, but also optimizes away any memory manager 
+   /// searches, when inserting pointers, if managed memory is enabled        
+   /// Raw function pointers are unallocatable by default                     
+   template<class...T>
+   concept Unallocatable = ((not Complete<T> or Function<T>
+        or (CT::Dense<T> and Decay<T>::CTTI_Unallocatable)
+      ) and ...);
+
+   template<class...T>
+   concept Allocatable = not Unallocatable<T...>;
+
+   /// An uninsertable type is any type with a true static member             
+   /// T::CTTI_Uninsertable. All types are insertable by default              
+   /// Useful to mark some intermediate types, that are not supposed to be    
+   /// inserted in containers                                                 
+   template<class...T>
+   concept Uninsertable = ((not Complete<T>
+        or (CT::Dense<T> and Decay<T>::CTTI_Uninsertable)
+      ) and ...);
+
+   template<class...T>
+   concept Insertable = not Uninsertable<T...>;
+
    namespace Inner
    {
 
@@ -266,20 +292,6 @@ namespace Langulus::CT
       template<class...T>
       concept Abstract = ((not Complete<T>
            or ::std::is_abstract_v<T>) and ...) or (T::CTTI_Abstract and ...);
-
-      template<class...T>
-      concept Uninsertable = ((not Complete<T>
-          or (CT::Dense<T> and T::CTTI_Uninsertable)) and ...);
-
-      template<class...T>
-      concept Insertable = not Uninsertable<T...>;
-
-      template<class...T>
-      concept Unallocatable = ((not Complete<T> or Function<T>
-           or (CT::Dense<T> and T::CTTI_Unallocatable)) and ...);
-
-      template<class...T>
-      concept Allocatable = not Unallocatable<T...>;
 
       template<class...T>
       concept Destroyable = ((not ::std::is_trivially_destructible_v<T>
@@ -390,27 +402,6 @@ namespace Langulus::CT
    /// inside the type you want to reflect                                    
    template<class...T>
    concept Reflectable = Inner::Reflectable<Decay<T>...>;
-
-   /// An uninsertable type is any type with a true static member             
-   /// T::CTTI_Uninsertable. All types are insertable by default              
-   /// Useful to mark some intermediate types, that are not supposed to be    
-   /// inserted in containers                                                 
-   template<class...T>
-   concept Uninsertable = Inner::Uninsertable<Decay<T>...>;
-
-   template<class...T>
-   concept Insertable = not Uninsertable<T...>;
-
-   /// You can make types unallocatable by the memory manager. This serves    
-   /// not only as forcing the type to be either allocated by conventional    
-   /// C++ means, or on the stack, but also optimizes away any memory manager 
-   /// searches, when inserting pointers, if managed memory is enabled        
-   /// Raw function pointers are unallocatable by default                     
-   template<class...T>
-   concept Unallocatable = Inner::Unallocatable<Decay<T>...>;
-
-   template<class...T>
-   concept Allocatable = not Unallocatable<T...>;
 
    /// A POD (Plain Old Data) type is any type with a static member           
    /// T::CTTI_POD set to true. If no such member exists, the type is         
