@@ -27,9 +27,9 @@ namespace Langulus::RTTI
       return mMeta ? mMeta->mHash : Hash {};
    }
 
-   constexpr VMeta::operator AMeta() const noexcept {
+   /*constexpr VMeta::operator AMeta() const noexcept {
       return mMeta;
-   }
+   }*/
 
    constexpr bool VMeta::operator == (const VMeta& rhs) const noexcept {
       return mMeta == rhs.mMeta or (mMeta and mMeta->Is(rhs));

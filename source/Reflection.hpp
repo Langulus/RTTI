@@ -275,7 +275,7 @@ namespace Langulus::CT
       concept Insertable = not Uninsertable<T...>;
 
       template<class...T>
-      concept Unallocatable = ((not Complete<T>
+      concept Unallocatable = ((not Complete<T> or Function<T>
            or (CT::Dense<T> and T::CTTI_Unallocatable)) and ...);
 
       template<class...T>
@@ -405,6 +405,7 @@ namespace Langulus::CT
    /// not only as forcing the type to be either allocated by conventional    
    /// C++ means, or on the stack, but also optimizes away any memory manager 
    /// searches, when inserting pointers, if managed memory is enabled        
+   /// Raw function pointers are unallocatable by default                     
    template<class...T>
    concept Unallocatable = Inner::Unallocatable<Decay<T>...>;
 

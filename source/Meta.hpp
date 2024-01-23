@@ -40,7 +40,7 @@ namespace Langulus::RTTI
 
       const MetaData* operator -> () const noexcept { return mMeta; }
       constexpr explicit operator bool() const noexcept { return mMeta != nullptr; }
-      constexpr operator AMeta() const noexcept;
+      //constexpr operator AMeta() const noexcept;
 
       constexpr bool operator == (const DMeta&) const noexcept;
       constexpr bool operator &= (const DMeta&) const noexcept;
@@ -72,7 +72,7 @@ namespace Langulus::RTTI
 
       const MetaVerb* operator -> () const noexcept { return mMeta; }
       constexpr explicit operator bool() const noexcept { return mMeta != nullptr; }
-      constexpr operator AMeta() const noexcept;
+      //constexpr operator AMeta() const noexcept;
 
       constexpr bool operator == (const VMeta&) const noexcept;
    };
@@ -102,7 +102,7 @@ namespace Langulus::RTTI
 
       const MetaTrait* operator -> () const noexcept { return mMeta; }
       constexpr explicit operator bool() const noexcept { return mMeta != nullptr; }
-      constexpr operator AMeta() const noexcept;
+      //constexpr operator AMeta() const noexcept;
 
       constexpr bool operator == (const TMeta&) const noexcept;
    };
@@ -133,7 +133,7 @@ namespace Langulus::RTTI
 
       const MetaConst* operator -> () const noexcept { return mMeta; }
       constexpr explicit operator bool() const noexcept { return mMeta != nullptr; }
-      constexpr operator AMeta() const noexcept;
+      //constexpr operator AMeta() const noexcept;
 
       constexpr bool operator == (const CMeta&) const noexcept;
    };
@@ -154,6 +154,10 @@ namespace Langulus::RTTI
       constexpr AMeta() noexcept = default;
       constexpr AMeta(const Meta* raw) noexcept
          : mMeta {raw} {}
+      constexpr AMeta(const DMeta&) noexcept;
+      constexpr AMeta(const TMeta&) noexcept;
+      constexpr AMeta(const VMeta&) noexcept;
+      constexpr AMeta(const CMeta&) noexcept;
 
       constexpr Token GetToken() const noexcept;
       constexpr Hash GetHash() const noexcept;
