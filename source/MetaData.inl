@@ -34,10 +34,6 @@ namespace Langulus::RTTI
       return mMeta ? mMeta->mHash : Hash {};
    }
 
-   constexpr DMeta::operator AMeta() const noexcept {
-      return mMeta;
-   }
-
    constexpr bool DMeta::operator == (const DMeta& rhs) const noexcept {
       return mMeta == rhs.mMeta or (mMeta and mMeta->IsExact(rhs));
    }
@@ -62,13 +58,21 @@ namespace Langulus::RTTI
       return mMeta ? mMeta->mHash : Hash {};
    }
 
-   constexpr CMeta::operator AMeta() const noexcept {
-      return mMeta;
-   }
-
    constexpr bool CMeta::operator == (const CMeta& rhs) const noexcept {
       return mMeta == rhs.mMeta or (mMeta and mMeta->Is(rhs));
    }
+
+   constexpr AMeta::AMeta(const DMeta& raw) noexcept
+      : mMeta {raw.mMeta} {}
+
+   constexpr AMeta::AMeta(const TMeta& raw) noexcept
+      : mMeta {raw.mMeta} {}
+
+   constexpr AMeta::AMeta(const VMeta& raw) noexcept
+      : mMeta {raw.mMeta} {}
+
+   constexpr AMeta::AMeta(const CMeta& raw) noexcept
+      : mMeta {raw.mMeta} {}
 
    constexpr Token AMeta::GetToken() const noexcept {
    #if LANGULUS_FEATURE(MANAGED_REFLECTION)
@@ -737,18 +741,18 @@ namespace Langulus::RTTI
    ///   @return the generated (or retrieved) type definition                 
    template<CT::DenseData T> LANGULUS(NOINLINE)
    DMeta MetaData::Of() requires CT::Decayed<T> {
-      static_assert(not ::std::is_function_v<T>, 
+      static_assert(not CT::Function<T>,
          "Can't reflect this function signature origin - "
          "make sure you're using a pointer signature");
-      static_assert(CT::Complete<T>, 
+      static_assert(CT::Complete<T>,
          "Can't reflect incomplete type - "
          "make sure you have included the corresponding headers "
          "before the point of reflection. "
          "This could also be triggered due to an incomplete member in T");
-      static_assert(not CT::Array<T>, 
+      static_assert(not CT::Array<T>,
          "Can't reflect a bounded array type - "
          "either wrap your array in a type, or represent it as a raw pointer");
-      static_assert(not NameOf<T>().empty(), 
+      static_assert(not NameOf<T>().empty(),
          "Invalid data token is not allowed - "
          "you have probably equipped your type with an empty LANGULUS(NAME)");
 
