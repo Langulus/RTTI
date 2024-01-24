@@ -670,8 +670,7 @@ namespace Langulus::RTTI
    
    /// Get the constexpr hash of a type                                       
    ///	@return the hash of the type                                         
-   template<CT::Data T>
-   LANGULUS(INLINED)
+   template<CT::Data> LANGULUS(INLINED)
    constexpr Hash Meta::GenerateHash(const Token& name) noexcept {
       return HashBytes(name.data(), static_cast<int>(name.size()));
    }
@@ -687,16 +686,11 @@ namespace Langulus::RTTI
 
 namespace Langulus::CT
 {
-   
-   namespace Inner
-   {
-      /// Check if T can be hashed with HashOf                                
-      template<class T>
-      concept Hashable = requires (T& a) { {HashOf<true>(a)} -> Supported; };
-   }
 
    /// Check if the origin T can be hashed using HashOf                       
-   template<class... T>
-   concept Hashable = (Inner::Hashable<T> and ...);
+   template<class...T>
+   concept Hashable = requires (T&...a) {
+      {(HashOf<true>(a), ...)} -> Supported;
+   };
 
 } // namespace Langulus::CT

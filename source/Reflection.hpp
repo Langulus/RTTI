@@ -256,30 +256,32 @@ namespace Langulus::RTTI
 namespace Langulus::CT
 {
 
+   /// Check if any of the types are unallocatable                            
    /// You can make types unallocatable by the memory manager. This serves    
    /// not only as forcing the type to be either allocated by conventional    
    /// C++ means, or on the stack, but also optimizes away any memory manager 
    /// searches, when inserting pointers, if managed memory is enabled        
    /// Raw function pointers are unallocatable by default                     
    template<class...T>
-   concept Unallocatable = ((not Complete<T> or Function<T>
-        or (CT::Dense<T> and Decay<T>::CTTI_Unallocatable)
-      ) and ...);
+   concept Unallocatable = not Complete<T...> or Function<T...>
+        or ((CT::Dense<T> and Decay<T>::CTTI_Unallocatable) or ...);
 
+   /// Check if all of the types are allocatable                              
    template<class...T>
-   concept Allocatable = not Unallocatable<T...>;
+   concept Allocatable = ((not Unallocatable<T>) and ...);
 
+   /// Check if any of the types isn't insertable                             
    /// An uninsertable type is any type with a true static member             
    /// T::CTTI_Uninsertable. All types are insertable by default              
    /// Useful to mark some intermediate types, that are not supposed to be    
-   /// inserted in containers                                                 
+   /// inserted in containers, like iterators and handles for example         
    template<class...T>
-   concept Uninsertable = ((not Complete<T>
-        or (CT::Dense<T> and Decay<T>::CTTI_Uninsertable)
-      ) and ...);
+   concept Uninsertable = not Complete<T...> or (
+         (CT::Dense<T> and Decay<T>::CTTI_Uninsertable) or ...);
 
+   /// Check if all of the types are insertable                               
    template<class...T>
-   concept Insertable = not Uninsertable<T...>;
+   concept Insertable = ((not Uninsertable<T>) and ...);
 
    namespace Inner
    {
