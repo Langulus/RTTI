@@ -299,10 +299,9 @@ namespace fmt
       LANGULUS(INLINED)
       auto format(T const& value, CONTEXT& ctx) {
          using namespace Langulus;
-         using DT = Decay<T>;
          auto& denseValue = DenseCast(value);
-         for (auto& constant : DT::CTTI_NamedValues) {
-            if (DT {constant.mValue} != denseValue)
+         for (auto& constant : T::CTTI_NamedValues) {
+            if (T {constant.mValue} != denseValue)
                continue;
 
             return fmt::format_to(ctx.out(), "{}", constant.mToken);

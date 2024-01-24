@@ -337,11 +337,6 @@ namespace Langulus::CT
             typename T::CTTI_InnerType;
             not TypeErased<typename T::CTTI_InnerType>;
          } or requires {typename T::value_type;}) and ...);
-      
-      template<class...T>
-      concept HasNamedValues = Complete<T...> and (requires {
-            T::CTTI_NamedValues;
-         } and ...);
 
       /// Convenience function that wraps std::underlying_type_t for enums,   
       /// as well as any array, or anything with CTTI_InnerType that isn't    
@@ -445,7 +440,9 @@ namespace Langulus::CT
    
    /// Check if a type has reflected named values                             
    template<class...T>
-   concept HasNamedValues = Inner::HasNamedValues<Decay<T>...>;
+   concept HasNamedValues = Complete<T...> and (requires {
+         T::CTTI_NamedValues;
+      } and ...);
 
    /// Get the reflected producer type                                        
    template<class T>
