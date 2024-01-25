@@ -148,8 +148,7 @@ namespace Langulus::RTTI
    /// Reflection is done only on decayed types to avoid static variable      
    /// duplications                                                           
    ///   @tparam T - the type to reflect (will always be decayed)             
-   template<CT::Decayed T>
-   LANGULUS(NOINLINE)
+   template<CT::Decayed T> LANGULUS(NOINLINE)
    VMeta MetaVerb::Of() {
       // This check is not standard, but doesn't hurt afaik             
       static_assert(sizeof(T) > 0,
@@ -164,10 +163,7 @@ namespace Langulus::RTTI
          // previously in another library. Unfortunately we can't keep  
          // a static pointer to the meta, because forementioned library 
          // might be reloaded, and thus produce new pointer.            
-         VMeta meta = Instance.GetMetaVerb(
-            MetaVerb::GetReflectedPositiveVerbToken<T>(),
-            RTTI::Boundary
-         );
+         VMeta meta = Instance.GetMetaVerb(CppNameOf<T>(), RTTI::Boundary);
          if (meta)
             return meta;
       #else
@@ -273,8 +269,7 @@ namespace Langulus::RTTI
    /// Check if two meta definitions match exactly                            
    ///   @tparam T - the verb to compare against                              
    ///   @return true if verbs match                                          
-   template<CT::Data T>
-   LANGULUS(INLINED)
+   template<CT::Data T> LANGULUS(INLINED)
    bool MetaVerb::Is() const {
       return Is(MetaVerb::Of<T>());
    }

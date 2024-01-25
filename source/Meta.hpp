@@ -199,6 +199,9 @@ namespace Langulus::RTTI
       LANGULUS(ABSTRACT) true;
       LANGULUS(UNALLOCATABLE) true;
 
+      Meta() = delete;
+      Meta(const Token&);
+
       /// Virtual destructor required for dynamic_cast                        
       virtual ~Meta() = default;
 
@@ -251,41 +254,6 @@ namespace Langulus::CT
       ) and ...);
 
 } // namespace Langulus::CT
-
-/*namespace std
-{
-
-   using ::Langulus::RTTI::AMeta;
-   using ::Langulus::RTTI::DMeta;
-   using ::Langulus::RTTI::TMeta;
-   using ::Langulus::RTTI::VMeta;
-
-   template<>
-   struct hash<AMeta> {
-      size_t operator()(AMeta) const noexcept;
-   };
-
-   template<>
-   struct hash<DMeta> {
-      size_t operator()(DMeta) const noexcept;
-   };
-
-   template<>
-   struct hash<vector<DMeta>> {
-      size_t operator()(const vector<DMeta>&) const noexcept;
-   };
-
-   template<>
-   struct hash<TMeta> {
-      size_t operator()(TMeta) const noexcept;
-   };
-
-   template<>
-   struct hash<VMeta> {
-      size_t operator()(VMeta) const noexcept;
-   };
-
-}*/ // namespace std
 
 namespace fmt
 {
