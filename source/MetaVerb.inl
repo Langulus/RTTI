@@ -203,22 +203,22 @@ namespace Langulus::RTTI
       }
       else {
          // Verb is implicitly reflected, so let's do our best          
-         generated.mToken = 
-            MetaVerb::GetReflectedPositiveVerbToken<T>();
-         generated.mTokenReverse = 
-            MetaVerb::GetReflectedNegativeVerbToken<T>();
-
-         generated.mOperator =
-            MetaVerb::GetReflectedPositiveVerbOperator<T>();
-         generated.mOperatorReverse =
-            MetaVerb::GetReflectedNegativeVerbOperator<T>();
+         LANGULUS_ASSERT(generated.mToken == MetaVerb::GetReflectedPositiveVerbToken<T>(),
+            Meta, "Token+ not set");
+         LANGULUS_ASSERT(generated.mTokenReverse == MetaVerb::GetReflectedNegativeVerbToken<T>(),
+            Meta, "Token- not set");
+         LANGULUS_ASSERT(generated.mOperator == MetaVerb::GetReflectedPositiveVerbOperator<T>(),
+            Meta, "TokenOp+ not set");
+         LANGULUS_ASSERT(generated.mOperatorReverse == MetaVerb::GetReflectedNegativeVerbOperator<T>(),
+            Meta, "TokenOp- not set");
+         LANGULUS_ASSERT(generated.mHash == HashOf(CppNameOf<T>()),
+            Meta, "Hash not set");
 
          // Reflect info string if any                                  
          if constexpr (requires { T::CTTI_Info; })
             generated.mInfo = T::CTTI_Info;
 
          generated.mCppName = CppNameOf<T>();
-         generated.mHash = GetVerbHash<T>();
 
          // Reflect precedence                                          
          if constexpr (requires { T::CTTI_Precedence; })

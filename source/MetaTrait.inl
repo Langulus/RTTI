@@ -27,10 +27,6 @@ namespace Langulus::RTTI
       return mMeta ? mMeta->mHash : Hash {};
    }
 
-   /*constexpr TMeta::operator AMeta() const noexcept {
-      return mMeta;
-   }*/
-
    constexpr bool TMeta::operator == (const TMeta& rhs) const noexcept {
       return mMeta == rhs.mMeta or (mMeta and mMeta->Is(rhs));
    }
@@ -101,11 +97,14 @@ namespace Langulus::RTTI
       }
       else {
          // Type is implicitly reflected, so let's do our best          
-         generated.mToken = GetReflectedToken<T>();
+         LANGULUS_ASSERT(generated.mToken == GetReflectedToken<T>(), Meta, "Token not set");
+         LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta, "Hash not set");
+
          if constexpr (requires { T::CTTI_Info; })
             generated.mInfo = T::CTTI_Info;
+
          generated.mCppName = CppNameOf<T>();
-         generated.mHash = Meta::GenerateHash<T>(GetReflectedToken<T>());
+
          if constexpr (requires { T::CTTI_VersionMajor; })
             generated.mVersionMajor = T::CTTI_VersionMajor;
          if constexpr (requires { T::CTTI_VersionMinor; })

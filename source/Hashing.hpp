@@ -7,10 +7,11 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #pragma once
-#include "MetaData.hpp"
-#include "MetaVerb.hpp"
-#include "MetaTrait.hpp"
+#include "Byte.hpp"
+#include "Meta.hpp"
 #include <iterator>
+#include <algorithm>
+#include <string>
 
 #if defined(_MSC_VER)
    #define BIG_CONSTANT(x) (x)
@@ -21,6 +22,19 @@
 
 namespace Langulus
 {
+   
+   using Lowercase = ::std::string;
+
+   /// Convert a token to a lowercase string                                  
+   ///   @param token - the token to lowercase                                
+   ///   @return the lowercase string                                         
+   NOD() inline Lowercase ToLowercase(const Token& token) noexcept {
+      Lowercase lc {token};
+      ::std::transform(lc.begin(), lc.end(), lc.begin(),
+         [](char c) { return static_cast<char>(::std::tolower(c)); }
+      );
+      return lc;
+   }
 
    /// Default hash seed used in Langulus                                     
    constexpr uint32_t DefaultHashSeed = 19890212;
@@ -507,7 +521,7 @@ namespace Langulus
       /// Check if T can be hashed with HashOf                                
       template<class T>
       concept HasGetHashMethod = Complete<T> and requires (T& a) {
-         {a.GetHash()} -> Exact<Hash>;
+         {a.GetHash()} -> Same<Hash>;
       };
 
    } // namespace Langulus::CT
@@ -577,14 +591,14 @@ namespace Langulus
          return head.GetHash();
       }
       else if constexpr (CT::StdContainer<T>
-              and requires (TypeOf<T>& a) {{HashOf<true, SEED>(a)} -> CT::Supported; }) {
+      and requires (TypeOf<T>& a) {{HashOf<true, SEED>(a)} -> CT::Supported; }) {
          // Anything that contiguously iteratable is carried through    
          // HashOf for consistency, because different std library       
          // implementations might have different hashing algorithms.    
          // This should include string_view, string, vector, span, etc. 
          using TT = TypeOf<T>;
          if constexpr (CT::StdContiguousContainer<T>
-            and (sizeof(TT) == 1 or ::std::is_fundamental_v<TT>)) {   //TODO if i use POD instead of fundamental here, std::string_view will be taken as byte array
+         and (sizeof(TT) == 1 or ::std::is_fundamental_v<TT>)) {   //TODO if i use POD instead of fundamental here, std::string_view will be taken as byte array
             return HashBytes<SEED>(                                   // which uninadvertedly will fuck shit up, and it hints, that CT::POD should be
                head.data(),                                           // completely rethought to avoid any standard definition of POD (huh, probably that's why the
                static_cast<int>(head.size() * sizeof(TT))             // std::pod concept was deprecated in the first place, so there really ISN'T a definition at all)
@@ -635,10 +649,39 @@ namespace Langulus
 // Let's not pollute the namespace
 #undef BIG_CONSTANT
 
+namespace Langulus::CT
+{
+
+   /// Check if the origin T can be hashed using HashOf                       
+   template<class...T>
+   concept Hashable = requires (T&...a) {
+      {(HashOf<true>(a), ...)} -> Supported;
+   };
+
+} // namespace Langulus::CT
+
 namespace std
 {
 
-   LANGULUS(INLINED)
+   /// Extend std to capable of hashing anything with GetHash method          
+   template<::Langulus::CT::Inner::HasGetHashMethod H>
+   struct hash<H> {
+      LANGULUS(INLINED)
+      size_t operator()(const H& what) const noexcept {
+         return what.GetHash().mHash;
+      }
+   };
+
+   /// Make vectors of DMeta hashable                                         
+   template<>
+   struct hash<vector<::Langulus::RTTI::DMeta>> {
+      LANGULUS(INLINED)
+      size_t operator()(const vector<::Langulus::RTTI::DMeta>& k) const noexcept {
+         return Langulus::HashOf(k).mHash;
+      }
+   };
+
+   /*LANGULUS(INLINED)
    size_t hash<AMeta>::operator()(AMeta k) const noexcept {
       return Langulus::HashOf(k).mHash;
    }
@@ -661,7 +704,7 @@ namespace std
    LANGULUS(INLINED)
    size_t hash<VMeta>::operator()(VMeta k) const noexcept {
       return Langulus::HashOf(k).mHash;
-   }
+   }*/
 
 } // namespace std
 
@@ -670,7 +713,7 @@ namespace Langulus::RTTI
    
    /// Get the constexpr hash of a type                                       
    ///	@return the hash of the type                                         
-   template<CT::Data> LANGULUS(INLINED)
+   /*template<CT::Data> LANGULUS(INLINED)
    constexpr Hash Meta::GenerateHash(const Token& name) noexcept {
       return HashBytes(name.data(), static_cast<int>(name.size()));
    }
@@ -680,17 +723,6 @@ namespace Langulus::RTTI
    LANGULUS(INLINED)
    const Hash& Meta::GetHash() const noexcept {
       return mHash;
-   }
+   }*/
    
 } // namespace Langulus::RTTI
-
-namespace Langulus::CT
-{
-
-   /// Check if the origin T can be hashed using HashOf                       
-   template<class...T>
-   concept Hashable = requires (T&...a) {
-      {(HashOf<true>(a), ...)} -> Supported;
-   };
-
-} // namespace Langulus::CT

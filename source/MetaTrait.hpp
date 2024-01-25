@@ -7,7 +7,7 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #pragma once
-#include "MetaData.hpp"
+#include "Meta.hpp"
 
 
 namespace Langulus::RTTI
@@ -27,17 +27,17 @@ namespace Langulus::RTTI
       DMeta mDataType {};
 
    public:
-      template<CT::Void T>
+      template<CT::Void>
       NOD() static constexpr TMeta Of();
-      template<CT::Decayed T>
+      template<CT::Decayed>
       NOD() static TMeta Of();
       
       NOD() bool Is(TMeta) const noexcept;
-      template<CT::Data T>
+      template<CT::Data>
       NOD() bool Is() const;
 
    protected:
-      template<CT::Data T>
+      template<CT::Data>
       static constexpr Token GetReflectedToken() noexcept;
    };
 

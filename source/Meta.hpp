@@ -138,6 +138,7 @@ namespace Langulus::RTTI
       constexpr bool operator == (const CMeta&) const noexcept;
    };
    
+
    ///                                                                        
    /// Definition interchange format for any of the above                     
    ///                                                                        
@@ -198,30 +199,35 @@ namespace Langulus::RTTI
       LANGULUS(ABSTRACT) true;
       LANGULUS(UNALLOCATABLE) true;
 
+      /// Virtual destructor required for dynamic_cast                        
+      virtual ~Meta() = default;
+
+      /// Custom operator required, to avoid const members                    
+      Meta& operator = (const Meta& rhs) noexcept {
+         mInfo = rhs.mInfo;
+         mCppName = rhs.mCppName;
+         mVersionMajor = rhs.mVersionMajor;
+         mVersionMinor = rhs.mVersionMinor;
+         IF_LANGULUS_MANAGED_MEMORY(mLibraryName = rhs.mLibraryName);
+         return *this;
+      }
+
+      // Each reflected type has an unique hash                         
+      // First for immediate access                                     
+      const Hash mHash;
       // Each reflection primitive has a unique token, but that         
       // uniqueness is checked only if MANAGED_REFLECTION feature is    
       // enabled                                                        
-      Token mToken;
+      const Token mToken;
+
       // Each reflection may or may not have some info                  
-      Token mInfo {"<no info provided>"};
+      Token mInfo = "<no info provided>";
       // Original name of the type                                      
       Token mCppName;
-      // Each reflected type has an unique hash                         
-      Hash mHash {};
       // Major version                                                  
-      Count mVersionMajor {1};
+      Count mVersionMajor = 1;
       // Minor version                                                  
-      Count mVersionMinor {0};
-      // References, increased each time a definition is merged,        
-      // and decreases each time a definition is unregistered           
-      Count mReferences {1};
-
-      NOD() const Hash& GetHash() const noexcept;
-
-      template<CT::Data T>
-      NOD() static constexpr Hash GenerateHash(const Token&) noexcept;
-
-      virtual ~Meta() = default;
+      Count mVersionMinor = 0;
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // The shared library that defined the module, used to unload  
@@ -246,7 +252,7 @@ namespace Langulus::CT
 
 } // namespace Langulus::CT
 
-namespace std
+/*namespace std
 {
 
    using ::Langulus::RTTI::AMeta;
@@ -279,7 +285,7 @@ namespace std
       size_t operator()(VMeta) const noexcept;
    };
 
-} // namespace std
+}*/ // namespace std
 
 namespace fmt
 {
@@ -295,8 +301,7 @@ namespace fmt
          return ctx.begin();
       }
 
-      template<class CONTEXT>
-      LANGULUS(INLINED)
+      template<class CONTEXT> LANGULUS(INLINED)
       auto format(T const& value, CONTEXT& ctx) {
          using namespace Langulus;
          auto& denseValue = DenseCast(value);
