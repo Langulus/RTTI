@@ -328,7 +328,7 @@ namespace Langulus::RTTI
       auto lc = ToLowercase(token);
       LANGULUS_ASSUME(DevAssumes, not GetMetaData(lc, boundary),
          "Data already registered");
-      return Register(new MetaData, mMetaData, lc, boundary);
+      return Register(new MetaData {token}, mMetaData, lc, boundary);
    }
 
    /// Register a constant definition                                         
@@ -340,7 +340,7 @@ namespace Langulus::RTTI
       auto lc = ToLowercase(token);
       LANGULUS_ASSUME(DevAssumes, not GetMetaConstant(lc, boundary),
          "Constant already registered");
-      return Register(new MetaConst, mMetaConstants, lc, boundary);
+      return Register(new MetaConst {token}, mMetaConstants, lc, boundary);
    }
 
    /// Register a trait definition                                            
@@ -352,7 +352,7 @@ namespace Langulus::RTTI
       auto lc = ToLowercase(token);
       LANGULUS_ASSUME(DevAssumes, not GetMetaTrait(lc, boundary),
          "Trait already registered");
-      return Register(new MetaTrait, mMetaTraits, lc, boundary);
+      return Register(new MetaTrait {token}, mMetaTraits, lc, boundary);
    }
 
    /// Register a verb definition                                             
@@ -400,7 +400,8 @@ namespace Langulus::RTTI
             "Negative operator already registered");
       }
 
-      const auto meta = Register<false>(new MetaVerb, mUniqueVerbs, cppnamelc, boundary);
+      const auto meta = Register<false>(
+         new MetaVerb {cppname}, mUniqueVerbs, cppnamelc, boundary);
       VERBOSE("Verb ", token, "/", tokenReverse, " registered");
 
       Register(meta, mMetaVerbs, lc1, boundary);
@@ -591,6 +592,12 @@ namespace Langulus::RTTI
          delete definition.mMeta;
       }
    }
+
+   /// Construct an abstract meta definition by setting token and hashing it  
+   ///   @param name - token                                                  
+   Meta::Meta(const Token& name)
+      : mToken {name}
+      , mHash {HashOf(name)} {}
 
    /// Get the shortest possible token, that is not ambiguous                 
    ///   @return the token                                                    

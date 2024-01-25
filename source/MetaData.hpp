@@ -217,17 +217,17 @@ namespace Langulus::RTTI
       // Type of the base                                               
       DMeta mType;
       // CT::Number of bases that fit in the type                       
-      Count mCount {1};
+      Count mCount = 1;
       // Offset of the base, relative to the derived type               
-      Offset mOffset {};
+      Offset mOffset = 0;
       // Used to map one type onto another                              
       // Usually true when base completely fills the derived type       
-      bool mBinaryCompatible {false};
+      bool mBinaryCompatible = false;
       // Whether or not this base is considered an imposed base or not  
       // Basically, imposed bases are not serialized and don't act in   
       // distance computation or dispatching                            
       // An imposed base can be added only manually                     
-      bool mImposed {false};
+      bool mImposed = false;
 
    public:
       NOD() bool operator == (const Base&) const noexcept;
@@ -246,10 +246,10 @@ namespace Langulus::RTTI
    private:
       struct PurposefullyIncompleteType;
 
-      static_assert(CT::Complete<int>,
-         "Can't reliably detect incomplete types");
-      static_assert(!CT::Complete<PurposefullyIncompleteType>,
-         "Can't reliably detect incomplete types");
+      static_assert(    CT::Complete<int>,
+         "Your compiler can't reliably detect incomplete types");
+      static_assert(not CT::Complete<PurposefullyIncompleteType>,
+         "Your compiler can't reliably detect incomplete types");
 
    public:
       friend struct Member;

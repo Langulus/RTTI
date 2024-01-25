@@ -624,8 +624,10 @@ namespace Langulus::RTTI
             generated.mLibraryName = RTTI::Boundary;
       #endif
 
-      LANGULUS_ASSERT(generated.mToken == NameOf<T>(), Meta, "Token not set");
-      LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta, "Hash not set");
+      LANGULUS_ASSERT(generated.mToken == NameOf<T>(), Meta,
+         "Token not set");
+      LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta,
+         "Hash not set");
 
       // Overwrite pointer-specific stuff                               
       generated.mDecvq = MetaData::Of<DecvqAll<T>>();
@@ -727,8 +729,10 @@ namespace Langulus::RTTI
       #endif
       
       // Overwrite constant-specific stuff                              
-      LANGULUS_ASSERT(generated.mToken == NameOf<T>(), Meta, "Token not set");
-      LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta, "Hash not set");
+      LANGULUS_ASSERT(generated.mToken == NameOf<T>(), Meta,
+         "Token not set");
+      LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta,
+         "Hash not set");
 
       generated.mCppName = CppNameOf<T>();
       generated.mIsConstant = CT::Constant<T>;
@@ -793,8 +797,10 @@ namespace Langulus::RTTI
       }
       else {
          // Type is implicitly reflected, so let's do our best          
-         LANGULUS_ASSERT(generated.mToken == NameOf<T>(), Meta, "Token not set");
-         LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta, "Hash not set");
+         LANGULUS_ASSERT(generated.mToken == NameOf<T>(), Meta,
+            "Token not set");
+         LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta,
+            "Hash not set");
 
          if constexpr (requires { T::CTTI_Info; })
             generated.mInfo = T::CTTI_Info;
