@@ -10,7 +10,7 @@
 #include "NameOf.hpp"
 #include "Semantics.hpp"
 #include "Fundamental.hpp"
-#include "Hashing.hpp"
+#include "MetaData.hpp"
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
    #include "RTTI.hpp"
 #endif
@@ -624,11 +624,12 @@ namespace Langulus::RTTI
             generated.mLibraryName = RTTI::Boundary;
       #endif
 
+      LANGULUS_ASSERT(generated.mToken == NameOf<T>(), Meta, "Token not set");
+      LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta, "Hash not set");
+
       // Overwrite pointer-specific stuff                               
       generated.mDecvq = MetaData::Of<DecvqAll<T>>();
-      generated.mToken = NameOf<T>();
       generated.mCppName = CppNameOf<T>();
-      generated.mHash = Meta::GenerateHash<T>(NameOf<T>());
       generated.mSize = sizeof(T);
       generated.mAlignment = alignof(T);
       generated.mIsSparse = true;
@@ -726,9 +727,10 @@ namespace Langulus::RTTI
       #endif
       
       // Overwrite constant-specific stuff                              
-      generated.mToken = NameOf<T>();
+      LANGULUS_ASSERT(generated.mToken == NameOf<T>(), Meta, "Token not set");
+      LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta, "Hash not set");
+
       generated.mCppName = CppNameOf<T>();
-      generated.mHash = Meta::GenerateHash<T>(NameOf<T>());
       generated.mIsConstant = CT::Constant<T>;
 
       VERBOSE("Data ", Logger::Push, Logger::Cyan, generated.mToken,
@@ -791,11 +793,12 @@ namespace Langulus::RTTI
       }
       else {
          // Type is implicitly reflected, so let's do our best          
-         generated.mToken = NameOf<T>();
+         LANGULUS_ASSERT(generated.mToken == NameOf<T>(), Meta, "Token not set");
+         LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta, "Hash not set");
+
          if constexpr (requires { T::CTTI_Info; })
             generated.mInfo = T::CTTI_Info;
          generated.mCppName = CppNameOf<T>();
-         generated.mHash = Meta::GenerateHash<T>(NameOf<T>());
          generated.mIsAbstract = CT::Abstract<T>;
          generated.mIsNullifiable = CT::Nullifiable<T>;
          generated.mSize = sizeof(T);
@@ -1163,13 +1166,13 @@ namespace Langulus::RTTI
                const auto cmeta = staticMC[i].get();
             #endif
 
-            cmeta->mToken = staticNames[i];
+            LANGULUS_ASSERT(cmeta->mToken == staticNames[i],
+               Meta, "Token not set");
+            LANGULUS_ASSERT(cmeta->mHash == HashOf(cmeta->mToken),
+               Meta, "Hash not set");
+
             cmeta->mInfo = T::CTTI_NamedValues[i].mInfo;
             cmeta->mCppName = cmeta->mToken;
-            cmeta->mHash = HashBytes(
-               cmeta->mToken.data(), 
-               static_cast<int>(cmeta->mToken.size())
-            );
             cmeta->mValueType = &generated;
             new (staticInstances + i) T {{T::CTTI_NamedValues[i].mValue}};
             cmeta->mPtrToValue = staticInstances + i;

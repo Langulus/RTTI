@@ -7,11 +7,10 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #pragma once
-#include "Meta.hpp"
-#include "Byte.hpp"
+#include "Hashing.hpp"
+#include "MetaVerb.hpp"
+#include "MetaTrait.hpp"
 #include <unordered_map>
-#include <algorithm>
-#include <string>
 
 
 namespace Langulus::RTTI
@@ -29,19 +28,7 @@ namespace Langulus::RTTI
    template<class T>
    constexpr Size GetAllocationPageOf() noexcept;
 
-   using Lowercase = ::std::string;
 
-   /// Convert a token to a lowercase string                                  
-   ///   @param token - the token to lowercase                                
-   ///   @return the lowercase string                                         
-   NOD() inline Lowercase ToLowercase(const Token& token) noexcept {
-      Lowercase lc {token};
-      ::std::transform(lc.begin(), lc.end(), lc.begin(),
-         [](char c) { return static_cast<char>(::std::tolower(c)); }
-      );
-      return lc;
-   }
-   
    ///                                                                        
    ///   These methods are sought in each reflected type                      
    ///                                                                        

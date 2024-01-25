@@ -9,9 +9,47 @@
 #include "Main.hpp"
 #include <catch2/catch.hpp>
 
+SCENARIO("Comparing different meta types with one another", "[meta]") {
+   GIVEN("Reflected types") {
+      const auto dmeta = MetaDataOf<Type>();
+      REQUIRE(dmeta);
+
+      const AMeta a_dmeta = dmeta;
+      REQUIRE(a_dmeta);
+      REQUIRE(dmeta == a_dmeta);
+
+      const auto vmeta = MetaVerbOf<Verbs::Create>();
+      REQUIRE(vmeta);
+
+      const AMeta a_vmeta = vmeta;
+      REQUIRE(a_vmeta);
+      REQUIRE(vmeta == a_vmeta);
+
+      const auto tmeta = MetaTraitOf<Traits::Tag>();
+      REQUIRE(tmeta);
+
+      const AMeta a_tmeta = tmeta;
+      REQUIRE(a_tmeta);
+      REQUIRE(tmeta == a_tmeta);
+
+      static_assert(not CT::Comparable<DMeta, TMeta>);
+      static_assert(not CT::Comparable<DMeta, CMeta>);
+      static_assert(not CT::Comparable<DMeta, VMeta>);
+      static_assert(not CT::Comparable<TMeta, VMeta>);
+      static_assert(not CT::Comparable<TMeta, CMeta>);
+      static_assert(    CT::Comparable<DMeta, AMeta>);
+      static_assert(    CT::Comparable<TMeta, AMeta>);
+      static_assert(    CT::Comparable<CMeta, AMeta>);
+      static_assert(    CT::Comparable<VMeta, AMeta>);
+
+      REQUIRE(a_dmeta != a_vmeta);
+      REQUIRE(a_dmeta != a_tmeta);
+      REQUIRE(a_vmeta != a_tmeta);
+   }
+}
 
 SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
-   GIVEN("Three reflected types with similar names in different namespaces") {
+   GIVEN("Reflected types with similar names in different namespaces") {
       const auto n0t = MetaDataOf<Type>();
       const auto n1t = MetaDataOf<N1::Type>();
       const auto n1c = MetaDataOf<N1::Create>();
@@ -19,8 +57,6 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
       const auto n3t = MetaDataOf<N3::type>();
       const auto vvv = MetaVerbOf<Verbs::Create>();
       const auto complexMeta = MetaDataOf<ImplicitlyReflectedDataWithTraits>();
-
-      //const auto nnn = MetaData::Of<ImplicitlyReflectedData>();
 
       WHEN("Meta is retrieved by exact token, that is not case-sensitive") {
          REQUIRE(n0t == RTTI::GetMetaData("Type"));
@@ -102,10 +138,6 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
 
 SCENARIO("Testing operators", "[operators]") {
    GIVEN("Reflected verb with positive and negative operator") {
-      //const auto n1t = MetaData::Of<N1::Type>();
-      //const auto n1c = MetaData::Of<N1::Create>();
-      //const auto n2t = MetaData::Of<N2::Type>();
-      //const auto n3t = MetaData::Of<N3::type>();
       const auto vvv = MetaVerb::Of<Verbs::Create>();
 
       WHEN("Meta is retrieved by operator token, that is not case-sensitive and ignores spaces/tabs/escapes") {
@@ -137,11 +169,10 @@ SCENARIO("Testing constants reflected from another translation unit", "[constant
    }
 }
 
-SCENARIO("Modifying a data type at runtime", "[metadata]") {
+SCENARIO("Modifying a data type at runtime", "[meta]") {
    GIVEN("TODO") {
       WHEN("TODO") {
-         THEN("TODO") {
-         }
+
       }
    }
 }

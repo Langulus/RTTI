@@ -7,7 +7,7 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #pragma once
-#include "MetaData.hpp"
+#include "Meta.hpp"
 #include <unordered_set>
 
 
@@ -33,11 +33,11 @@ namespace Langulus::RTTI
       // Verbs have antonyms, denoted via this 'negative' token         
       // For example, 'Destroy' is the reverse of 'Create'              
       // This is just syntax sugar - reverse token just does mass *= -1 
-      Token mTokenReverse;
+      const Token mTokenReverse;
 
       // Verbs can be tokenized as operators - just syntax sugar        
-      Token mOperator;
-      Token mOperatorReverse;
+      const Token mOperator;
+      const Token mOperatorReverse;
 
       // Verb's reflected precedence                                    
       Real mPrecedence {};
@@ -54,25 +54,25 @@ namespace Langulus::RTTI
       AbleList mAble;
 
    public:
-      template<CT::Void T>
+      template<CT::Void>
       NOD() static constexpr VMeta Of();
-      template<CT::Decayed T>
+      template<CT::Decayed>
       NOD() static VMeta Of();
       
       NOD() bool Is(VMeta) const noexcept;
-      template<CT::Data T>
+      template<CT::Data>
       NOD() bool Is() const;
 
    protected:
-      template<CT::Data T>
+      template<CT::Data>
       static constexpr Token GetReflectedPositiveVerbToken() noexcept;
-      template<CT::Data T>
+      template<CT::Data>
       static constexpr Token GetReflectedNegativeVerbToken() noexcept;
-      template<CT::Data T>
+      template<CT::Data>
       static constexpr Token GetReflectedPositiveVerbOperator() noexcept;
-      template<CT::Data T>
+      template<CT::Data>
       static constexpr Token GetReflectedNegativeVerbOperator() noexcept;
-      template<CT::Data T>
+      template<CT::Data>
       static constexpr Hash GetVerbHash() noexcept;
    };
 
