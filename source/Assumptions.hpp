@@ -82,19 +82,24 @@ namespace Langulus
    #if LANGULUS_COMPILER(CLANG) or LANGULUS_COMPILER(GCC)
       /// Logs error, and throws Except::Assertion if condition isn't met     
       ///   @param level - the level at which assumption will be checked -    
-      ///                  if level is larger than LANGULUS_SAFE(), no check  
-      ///                  will be performed;                                 
+      ///      if level is larger than LANGULUS_SAFE(), no check is done      
       ///   @attention zero level assumptions are always checked              
+      ///   @attention assumption macro is entirely disabled when building    
+      ///      without LANGULUS(SAFE)                                         
       ///   @param condition - the condition to check for failure             
       ///   @param message - the exception message, if condition doesn't hold 
-      #define LANGULUS_ASSUME(level, condition, message, ...) \
-         ::Langulus::Assume<level>((condition)?true:false, message, \
-            LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
+      #if LANGULUS(SAFE)
+         #define LANGULUS_ASSUME(level, condition, message, ...) \
+            ::Langulus::Assume<level>((condition)?true:false, message, \
+               LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
+      #else
+         #define LANGULUS_ASSUME(level, condition, message, ...) 
+      #endif
 
       /// Logs error, and throws an exception of your choice, if condition    
       /// wasn't met                                                          
       ///   @attention assertions are always checked, even in release builds  
-      ///              use assumptions instead, if that is not desired        
+      ///      use assumptions instead, if that is not desired                
       ///   @param condition - the condition to check for failure             
       ///   @param exception - the exception to throw if condition isn't met  
       ///   @param message - the exception message, if condition doesn't hold 
@@ -118,9 +123,13 @@ namespace Langulus
          ::Langulus::Throw<::Langulus::Except::exception>(message, \
             LANGULUS_LOCATION() __VA_OPT__(,) __VA_ARGS__)
    #else
-      #define LANGULUS_ASSUME(level, condition, message, ...) \
-         ::Langulus::Assume<level>((condition)?true:false, message, \
-            LANGULUS_LOCATION(), __VA_ARGS__)
+      #if LANGULUS(SAFE)
+         #define LANGULUS_ASSUME(level, condition, message, ...) \
+            ::Langulus::Assume<level>((condition)?true:false, message, \
+               LANGULUS_LOCATION(), __VA_ARGS__)
+      #else
+         #define LANGULUS_ASSUME(level, condition, message, ...) 
+      #endif
 
       #define LANGULUS_ASSERT(condition, exception, message, ...) \
          ::Langulus::Assume<0, ::Langulus::Except::exception>((condition)?true:false, message, \
@@ -135,8 +144,12 @@ namespace Langulus
             LANGULUS_LOCATION(), __VA_ARGS__)
    #endif
 #else
-   #define LANGULUS_ASSUME(level, condition, message, ...) \
-      ::Langulus::Assume<level>((condition)?true:false)
+   #if LANGULUS(SAFE)
+      #define LANGULUS_ASSUME(level, condition, message, ...) \
+         ::Langulus::Assume<level>((condition)?true:false)
+   #else
+      #define LANGULUS_ASSUME(level, condition, message, ...) 
+   #endif
 
    #define LANGULUS_ASSERT(condition, exception, message, ...) \
       ::Langulus::Assume<0, ::Langulus::Except::exception>((condition)?true:false)
