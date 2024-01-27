@@ -375,7 +375,8 @@ namespace Langulus::RTTI
       LANGULUS_ASSUME(DevAssumes, not boundary.empty(),
          "Bad boundary provided");
       const auto cppnamelc = ToLowercase(cppname);
-      const auto uniqueFound = mUniqueVerbs.find(cppnamelc);
+
+      IF_SAFE(const auto uniqueFound = mUniqueVerbs.find(cppnamelc));
       LANGULUS_ASSUME(DevAssumes, uniqueFound == mUniqueVerbs.end()
          or uniqueFound->second.find(boundary) == uniqueFound->second.end(),
          "Verb already registered for that boundary");
