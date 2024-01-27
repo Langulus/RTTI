@@ -377,7 +377,7 @@ namespace Langulus::RTTI
       const auto cppnamelc = ToLowercase(cppname);
       const auto uniqueFound = mUniqueVerbs.find(cppnamelc);
       LANGULUS_ASSUME(DevAssumes, uniqueFound == mUniqueVerbs.end()
-                               or uniqueFound->second.find(boundary) == uniqueFound->second.end(),
+         or uniqueFound->second.find(boundary) == uniqueFound->second.end(),
          "Verb already registered for that boundary");
 
       auto lc1 = ToLowercase(token);
@@ -401,7 +401,9 @@ namespace Langulus::RTTI
       }
 
       const auto meta = Register<false>(
-         new MetaVerb {cppname}, mUniqueVerbs, cppnamelc, boundary);
+         new MetaVerb {token, tokenReverse, op, opReverse},
+         mUniqueVerbs, cppnamelc, boundary
+      );
       VERBOSE("Verb ", token, "/", tokenReverse, " registered");
 
       Register(meta, mMetaVerbs, lc1, boundary);
@@ -596,8 +598,8 @@ namespace Langulus::RTTI
    /// Construct an abstract meta definition by setting token and hashing it  
    ///   @param name - token                                                  
    Meta::Meta(const Token& name)
-      : mToken {name}
-      , mHash {HashOf(name)} {}
+      : mHash {HashOf(name)}
+      , mToken {name} {}
 
    /// Get the shortest possible token, that is not ambiguous                 
    ///   @return the token                                                    

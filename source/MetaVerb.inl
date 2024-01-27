@@ -27,10 +27,6 @@ namespace Langulus::RTTI
       return mMeta ? mMeta->mHash : Hash {};
    }
 
-   /*constexpr VMeta::operator AMeta() const noexcept {
-      return mMeta;
-   }*/
-
    constexpr bool VMeta::operator == (const VMeta& rhs) const noexcept {
       return mMeta == rhs.mMeta or (mMeta and mMeta->Is(rhs));
    }
@@ -163,7 +159,8 @@ namespace Langulus::RTTI
          // previously in another library. Unfortunately we can't keep  
          // a static pointer to the meta, because forementioned library 
          // might be reloaded, and thus produce new pointer.            
-         VMeta meta = Instance.GetMetaVerb(CppNameOf<T>(), RTTI::Boundary);
+         VMeta meta = Instance.GetMetaVerb(
+            MetaVerb::GetReflectedPositiveVerbToken<T>(), RTTI::Boundary);
          if (meta)
             return meta;
       #else
@@ -207,7 +204,7 @@ namespace Langulus::RTTI
             Meta, "TokenOp+ not set");
          LANGULUS_ASSERT(generated.mOperatorReverse == MetaVerb::GetReflectedNegativeVerbOperator<T>(),
             Meta, "TokenOp- not set");
-         LANGULUS_ASSERT(generated.mHash == HashOf(CppNameOf<T>()),
+         LANGULUS_ASSERT(generated.mHash == HashOf(MetaVerb::GetReflectedPositiveVerbToken<T>()),
             Meta, "Hash not set");
 
          // Reflect info string if any                                  
