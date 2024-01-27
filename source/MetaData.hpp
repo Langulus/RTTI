@@ -172,6 +172,9 @@ namespace Langulus::RTTI
       DMeta mValueType {};
       const void* mPtrToValue {};
 
+   public:
+      MetaConst(const Token& token) : Meta {token} {}
+
       NOD() constexpr bool Is(CMeta) const noexcept;
 
    protected:
@@ -253,6 +256,7 @@ namespace Langulus::RTTI
 
    public:
       friend struct Member;
+
       LANGULUS(NAME) "DMeta";
       LANGULUS_BASES(Meta);
 
@@ -261,6 +265,8 @@ namespace Langulus::RTTI
       };
       
       static constexpr Token DefaultToken = "NoData";
+
+      MetaData(const Token& token) : Meta {token} {}
 
       // The origin type, with all qualifiers and sparseness removed    
       // Will be nullptr for incomplete types                           

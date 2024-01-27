@@ -54,6 +54,12 @@ namespace Langulus::RTTI
       AbleList mAble;
 
    public:
+      MetaVerb(const Token& tp, const Token& tn, const Token& op, const Token& on)
+         : Meta {tp}
+         , mTokenReverse {tn}
+         , mOperator {op}
+         , mOperatorReverse {on} {}
+
       template<CT::Void>
       NOD() static constexpr VMeta Of();
       template<CT::Decayed>

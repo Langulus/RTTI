@@ -40,7 +40,6 @@ namespace Langulus::RTTI
 
       const MetaData* operator -> () const noexcept { return mMeta; }
       constexpr explicit operator bool() const noexcept { return mMeta != nullptr; }
-      //constexpr operator AMeta() const noexcept;
 
       constexpr bool operator == (const DMeta&) const noexcept;
       constexpr bool operator &= (const DMeta&) const noexcept;
@@ -72,7 +71,6 @@ namespace Langulus::RTTI
 
       const MetaVerb* operator -> () const noexcept { return mMeta; }
       constexpr explicit operator bool() const noexcept { return mMeta != nullptr; }
-      //constexpr operator AMeta() const noexcept;
 
       constexpr bool operator == (const VMeta&) const noexcept;
    };
@@ -102,7 +100,6 @@ namespace Langulus::RTTI
 
       const MetaTrait* operator -> () const noexcept { return mMeta; }
       constexpr explicit operator bool() const noexcept { return mMeta != nullptr; }
-      //constexpr operator AMeta() const noexcept;
 
       constexpr bool operator == (const TMeta&) const noexcept;
    };
@@ -133,7 +130,6 @@ namespace Langulus::RTTI
 
       const MetaConst* operator -> () const noexcept { return mMeta; }
       constexpr explicit operator bool() const noexcept { return mMeta != nullptr; }
-      //constexpr operator AMeta() const noexcept;
 
       constexpr bool operator == (const CMeta&) const noexcept;
    };

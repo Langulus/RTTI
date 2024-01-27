@@ -24,6 +24,14 @@ namespace Langulus
          LANGULUS(ABSTRACT) true;
          LANGULUS(UNINSERTABLE) true;
          LANGULUS(UNALLOCATABLE) true;
+
+         /// Semantic types are ephemeral and should never be reassignable    
+         constexpr Semantic() noexcept = default;
+         constexpr Semantic(const Semantic&) noexcept = default;
+         constexpr Semantic(Semantic&&) noexcept = default;
+
+         auto operator = (const Semantic&) = delete;
+         auto operator = (Semantic&&) = delete;
       };
 
       /// An abstract shallow semantic                                        
@@ -125,7 +133,7 @@ namespace Langulus
       LANGULUS(TYPED) T;
 
       Copied() = delete;
-      Copied(const Copied&) = delete;
+      constexpr Copied(const Copied&) noexcept = default;
       explicit constexpr Copied(Copied&&) noexcept = default;
 
       LANGULUS(INLINED)
@@ -206,7 +214,8 @@ namespace Langulus
          "T must be mutable in order to be moved");
 
       Moved() = delete;
-      Moved(const Moved&) = delete;
+      constexpr Moved(const Moved& r) noexcept
+         : mValue {::std::forward<T>(r.mValue)} {}
       explicit constexpr Moved(Moved&&) noexcept = default;
 
       LANGULUS(INLINED)
@@ -307,7 +316,8 @@ namespace Langulus
          "T must be mutable in order to be abandoned");
 
       Abandoned() = delete;
-      Abandoned(const Abandoned&) = delete;
+      constexpr Abandoned(const Abandoned& r) noexcept
+         : mValue {::std::forward<T>(r.mValue)} {}
       explicit constexpr Abandoned(Abandoned&&) noexcept = default;
       
       LANGULUS(INLINED)
@@ -321,7 +331,7 @@ namespace Langulus
          : mValue {::std::forward<T>(value)} {
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
       }
-      
+
       /// Forward as abandoned, never collapse                                
       ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
       template<class ALT_T = T>
@@ -407,7 +417,7 @@ namespace Langulus
       LANGULUS(TYPED) T;
 
       Disowned() = delete;
-      Disowned(const Disowned&) = delete;
+      constexpr Disowned(const Disowned&) noexcept = default;
       explicit constexpr Disowned(Disowned&&) noexcept = default;
 
       LANGULUS(INLINED)
@@ -415,7 +425,7 @@ namespace Langulus
          : mValue {value} {
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
       }
-      
+
       /// Forward as disowned, never collapse                                 
       ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
       template<class ALT_T = T>
@@ -491,7 +501,7 @@ namespace Langulus
       LANGULUS(TYPED) T;
 
       Cloned() = delete;
-      Cloned(const Cloned&) = delete;
+      constexpr Cloned(const Cloned&) noexcept = default;
       explicit constexpr Cloned(Cloned&&) noexcept = default;
 
       LANGULUS(INLINED)
@@ -499,7 +509,7 @@ namespace Langulus
          : mValue {value} {
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
       }
-      
+
       /// Forward as cloned, bever collapse                                   
       template<class ALT_T = T>
       LANGULUS(INLINED)
@@ -570,7 +580,7 @@ namespace Langulus
 
    public:
       Describe() = delete;
-      Describe(const Describe&) = delete;
+      constexpr Describe(const Describe&) noexcept = default;
       explicit constexpr Describe(Describe&&) noexcept = default;
 
       LANGULUS(INLINED)

@@ -27,6 +27,8 @@ namespace Langulus::RTTI
       DMeta mDataType {};
 
    public:
+      MetaTrait(const Token& token) : Meta {token} {}
+
       template<CT::Void>
       NOD() static constexpr TMeta Of();
       template<CT::Decayed>
