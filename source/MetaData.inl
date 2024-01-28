@@ -562,6 +562,9 @@ namespace Langulus::RTTI
    ///   @tparam T - the type to reflect                                      
    template<CT::SparseData T> LANGULUS(NOINLINE)
    DMeta MetaData::Of() {
+      //TODO this should probably be relaxed in the future, but it helps me catch bugs, so...
+      static_assert(not CT::Array<T>, "Reflecting a bound array is forbidden");
+
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
          // previously in another library. Unfortunately we can't keep  
@@ -599,7 +602,7 @@ namespace Langulus::RTTI
             generated.mPool = nullptr;
 
             // Pool tactic is always default for pointers, unless these 
-            // pointers have been registered outside MAIN boundary      
+            // pointers have been registered outside RTTI::MainBoundary 
             #if LANGULUS_FEATURE(MANAGED_REFLECTION)
                generated.mPoolTactic = RTTI::Boundary != RTTI::MainBoundary
                   ? PoolTactic::Type
@@ -616,7 +619,7 @@ namespace Langulus::RTTI
       }
 
       // Set library boundary - non-origin types are always associated  
-      // with their origin type, if reflected by MAIN                   
+      // with their origin type, if reflected in RTTI::MainBoundary     
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          if (RTTI::Boundary == RTTI::MainBoundary and generated.mOrigin)
             generated.mLibraryName = generated.mOrigin->mLibraryName;
