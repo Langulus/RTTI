@@ -62,11 +62,34 @@ SCENARIO("Testing semantics", "[semantics]") {
    static_assert(CT::Exact<Desem<const int&>, const int&>);
 
    static_assert(CT::Exact<SemanticOf<Copied<int>>, Copied<int>>);
+   static_assert(CT::Exact<SemanticOf<Copied<int>&>, Copied<int>>);
+   static_assert(CT::Exact<SemanticOf<Copied<int>&&>, Copied<int>>);
+   static_assert(CT::Exact<SemanticOf<const Copied<int>&>, Copied<int>>);
+
    static_assert(CT::Exact<SemanticOf<Moved<int>>, Moved<int>>);
+   static_assert(CT::Exact<SemanticOf<Moved<int>&>, Moved<int>>);
+   static_assert(CT::Exact<SemanticOf<Moved<int>&&>, Moved<int>>);
+   static_assert(CT::Exact<SemanticOf<const Moved<int>&>, Moved<int>>);
+
    static_assert(CT::Exact<SemanticOf<Abandoned<int>>, Abandoned<int>>);
+   static_assert(CT::Exact<SemanticOf<Abandoned<int>&>, Abandoned<int>>);
+   static_assert(CT::Exact<SemanticOf<Abandoned<int>&&>, Abandoned<int>>);
+   static_assert(CT::Exact<SemanticOf<const Abandoned<int>&>, Abandoned<int>>);
+
    static_assert(CT::Exact<SemanticOf<Disowned<int>>, Disowned<int>>);
+   static_assert(CT::Exact<SemanticOf<Disowned<int>&>, Disowned<int>>);
+   static_assert(CT::Exact<SemanticOf<Disowned<int>&&>, Disowned<int>>);
+   static_assert(CT::Exact<SemanticOf<const Disowned<int>&>, Disowned<int>>);
+
    static_assert(CT::Exact<SemanticOf<Cloned<int>>, Cloned<int>>);
+   static_assert(CT::Exact<SemanticOf<Cloned<int>&>, Cloned<int>>);
+   static_assert(CT::Exact<SemanticOf<Cloned<int>&&>, Cloned<int>>);
+   static_assert(CT::Exact<SemanticOf<const Cloned<int>&>, Cloned<int>>);
+
    static_assert(CT::Exact<SemanticOf<Describe>, Describe>);
+   static_assert(CT::Exact<SemanticOf<Describe&>, Describe>);
+   static_assert(CT::Exact<SemanticOf<Describe&&>, Describe>);
+   static_assert(CT::Exact<SemanticOf<const Describe&>, Describe>);
 
    static_assert(CT::Exact<Desem<Copied<int>>, int>);
    static_assert(CT::Exact<Desem<Moved<int>>, int>);
