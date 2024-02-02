@@ -300,12 +300,12 @@ namespace Langulus::CT
                               and ::std::is_destructible_v<T>) and ...);
 
       template<class...T>
-      concept POD = Complete<T...> and not Abstract<T...> and (((
+      concept POD = Complete<T...> and ((not Abstract<T>) and ...) and (((
             ::std::is_trivial_v<T> or not Destroyable<T>
          ) and ...) or (T::CTTI_POD and ...)); // weird GCC bug fails expanding T::CTTI_POD along other checks
 
       template<class...T>
-      concept Nullifiable = Complete<T...> and not Abstract<T...> and ((
+      concept Nullifiable = Complete<T...> and ((not Abstract<T>) and ...) and ((
             Fundamental<T> and ...) or (T::CTTI_Nullifiable and ...));
 
       template<class...T>
@@ -319,7 +319,7 @@ namespace Langulus::CT
          } and ...);
 
       template<class...T>
-      concept Defaultable = not Abstract<T...> and requires { (T {}, ...); };
+      concept Defaultable = ((not Abstract<T>) and ...) and requires { (T {}, ...); };
 
       template<class...T>
       concept DefaultableNoexcept = Defaultable<T...> and (noexcept(T {}) and ...);
@@ -489,7 +489,7 @@ namespace Langulus
 
       /// Check if a type has no underlying type defined                      
       template<class...T>
-      concept Untyped = not Typed<T...>;
+      concept Untyped = ((not Typed<T>) and ...);
 
    } // namespace namespace CT
 

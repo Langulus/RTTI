@@ -146,17 +146,17 @@ namespace Langulus
    {
 
       /// Byte concept                                                        
-      template<class... T>
+      template<class...T>
       concept Byte = (Same<::Langulus::Byte, T> and ...);
 
-      template<class... T>
+      template<class...T>
       concept UnsignedInteger8 = (((CT::UnsignedInteger<T> or CT::Character<T> or CT::Byte<T>)
          and sizeof(Decay<T>) == 1) and ...);
 
-      template<class... T>
-      concept Integer8 = ((SignedInteger8<T> or UnsignedInteger8<T>)  and ...);
+      template<class...T>
+      concept Integer8 = ((SignedInteger8<T> or UnsignedInteger8<T>) and ...);
 
-      template<class... T>
+      template<class...T>
       concept IntegerX = ((Integer8<T> or Integer16<T> or Integer32<T> or Integer64<T>) and ...);
 
    }
