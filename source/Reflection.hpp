@@ -188,8 +188,9 @@ namespace Langulus::RTTI
 /// These names can be used as constants when parsing code, and are used for  
 /// serialization to code/text/debug                                          
 ///   @attention the property will propagate to any derived class             
-#define LANGULUS_NAMED_VALUES(T) \
-   public: static constexpr ::Langulus::RTTI::NamedValue<T> CTTI_NamedValues[] =
+#define LANGULUS_NAMED_VALUES(...) \
+   public: static constexpr auto CTTI_NamedValues = \
+      ::Langulus::RTTI::CreateNamedValueTuple<__VA_ARGS__>()
 
 /// You can give an optional suffix to your type                              
 /// That suffix is actively used when serializing to/deserializing from text  
@@ -219,7 +220,8 @@ namespace Langulus::RTTI
 
 /// Reflect a property with a trait tag                                       
 #define LANGULUS_PROPERTY_TRAIT(name, trait) \
-   ::Langulus::RTTI::Member::FromTagged<::Langulus::Traits::trait>(&Self::name, #name)
+   ::Langulus::RTTI::Member::FromTagged<::Langulus::Traits::trait> \
+      (&Self::name, #name)
 
 /// Reflect a property without trait tag                                      
 #define LANGULUS_PROPERTY(name) \
@@ -238,11 +240,17 @@ namespace Langulus::RTTI
 #define LANGULUS_VERBS(...) \
    public: using CTTI_Verbs = decltype(::Langulus::CreateTypeList<__VA_ARGS__>())
 
-/// Reflect a list of possible conversions                                    
+/// Reflect a list of possible conversions to list of possible types          
 /// These will be automatically used by Verbs::Interpret if available         
 ///   @attention the list of conversions will be propagated to derived classes
-#define LANGULUS_CONVERSIONS(...) \
-   public: using CTTI_Conversions = decltype(::Langulus::CreateTypeList<__VA_ARGS__>())
+#define LANGULUS_CONVERTS_TO(...) \
+   public: using CTTI_ConvertTo = decltype(::Langulus::CreateTypeList<__VA_ARGS__>())
+
+/// Reflect a list of possible conversions from a list of possible types      
+/// These will be automatically used by Verbs::Interpret if available         
+///   @attention the list of conversions will be propagated to derived classes
+#define LANGULUS_CONVERTS_FROM(...) \
+   public: using CTTI_ConvertFrom = decltype(::Langulus::CreateTypeList<__VA_ARGS__>())
 
 /// You can make types CT::Typed and retrieve their inner type using TypeOf   
 /// by adding LANGULUS(TYPED) <inner type>; as a member. You disable it by    
@@ -443,7 +451,7 @@ namespace Langulus::CT
    /// Check if a type has reflected named values                             
    template<class...T>
    concept HasNamedValues = Complete<T...> and (requires {
-         T::CTTI_NamedValues;
+         (::std::tuple_size_v<decltype(T::CTTI_NamedValues)>) > 0;
       } and ...);
 
    /// Get the reflected producer type                                        
@@ -540,10 +548,9 @@ namespace Langulus
 
       /// Triplet used for named constants reflections inside data types      
       ///   @tparam T - type of the constant                                  
-      template<class T>
+      template<auto T>
       struct NamedValue {
-         Token mToken;
-         T mValue;
+         static constexpr auto Value = T;
          Token mInfo {};
       };
 

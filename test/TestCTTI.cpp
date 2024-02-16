@@ -6,8 +6,7 @@
 /// Distributed under GNU General Public License v3+                          
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
-#include "Main.hpp"
-#include <catch2/catch.hpp>
+#include "Common.hpp"
 
 
 SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]") {
@@ -38,6 +37,9 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
          REQUIRE(meta->mBases.size() == 0);
          REQUIRE(meta->mAbilities.size() == 0);
          REQUIRE(meta->mMembers.size() == 0);
+         REQUIRE(meta->mNamedValues.size() == 0);
+         REQUIRE(meta->mConvertersTo.size() == 0);
+         REQUIRE(meta->mConvertersFrom.size() == 0);
       }
    }
 
@@ -69,6 +71,9 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
          REQUIRE(meta->mBases.size() == 0);
          REQUIRE(meta->mAbilities.size() == 0);
          REQUIRE(meta->mMembers.size() == 0);
+         REQUIRE(meta->mNamedValues.size() == 0);
+         REQUIRE(meta->mConvertersTo.size() == 0);
+         REQUIRE(meta->mConvertersFrom.size() == 0);
       }
    }
 
@@ -100,6 +105,9 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
          REQUIRE(meta->mBases.size() == 0);
          REQUIRE(meta->mAbilities.size() == 0);
          REQUIRE(meta->mMembers.size() == 0);
+         REQUIRE(meta->mNamedValues.size() == 0);
+         REQUIRE(meta->mConvertersTo.size() == 0);
+         REQUIRE(meta->mConvertersFrom.size() == 0);
       }
    }
 
@@ -132,6 +140,9 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
          REQUIRE(meta->mBases.size() == 0);
          REQUIRE(meta->mAbilities.size() == 0);
          REQUIRE(meta->mMembers.size() == 0);
+         REQUIRE(meta->mNamedValues.size() == 0);
+         REQUIRE(meta->mConvertersTo.size() == 0);
+         REQUIRE(meta->mConvertersFrom.size() == 0);
       }
    }
 
@@ -163,6 +174,9 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
          REQUIRE(meta->mBases.size() == 0);
          REQUIRE(meta->mAbilities.size() == 0);
          REQUIRE(meta->mMembers.size() == 0);
+         REQUIRE(meta->mNamedValues.size() == 0);
+         REQUIRE(meta->mConvertersTo.size() == 0);
+         REQUIRE(meta->mConvertersFrom.size() == 0);
       }
    }
 
@@ -194,6 +208,9 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
          REQUIRE(meta->mBases.size() == 0);
          REQUIRE(meta->mAbilities.size() == 0);
          REQUIRE(meta->mMembers.size() == 0);
+         REQUIRE(meta->mNamedValues.size() == 0);
+         REQUIRE(meta->mConvertersTo.size() == 0);
+         REQUIRE(meta->mConvertersFrom.size() == 0);
       }
    }
 }
@@ -268,16 +285,30 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
          REQUIRE(meta->mMembers[3].GetTrait() == nullptr);
          REQUIRE(meta->mMembers[3].GetType()->Is<int>());
 
+         REQUIRE(meta->mNamedValues.size() == 0);
+
          const auto intmeta = MetaData::Of<int>();
-         REQUIRE(meta->mConverters.size() == 1);
-         REQUIRE(meta->mConverters.at(intmeta).mDestrinationType->Is<int>());
-         REQUIRE(meta->mConverters.at(intmeta).mFunction);
-         REQUIRE(meta->GetConverter<int>() == meta->mConverters.at(intmeta).mFunction);
-         REQUIRE(meta->GetConverter(intmeta) == meta->mConverters.at(intmeta).mFunction);
+         REQUIRE(meta->mConvertersTo.size() == 1);
+         REQUIRE(meta->mConvertersTo.at(intmeta).mType->Is<int>());
+         REQUIRE(meta->mConvertersTo.at(intmeta).mFunction);
+         REQUIRE(meta->GetConverter(intmeta) == meta->mConvertersTo.at(intmeta).mFunction);
+
+         const auto pimeta = MetaData::Of<Pi>();
+         REQUIRE(meta->mConvertersFrom.size() == 1);
+         REQUIRE(meta->mConvertersFrom.at(pimeta).mType->Is<Pi>());
+         REQUIRE(meta->mConvertersFrom.at(pimeta).mFunction);
+         REQUIRE(meta->GetConverter(pimeta) == nullptr);
+
+         REQUIRE(pimeta->GetConverter(meta) == meta->mConvertersFrom.at(pimeta).mFunction);
 
          int converted = 1;
          meta->GetConverter(intmeta)(&instance, &converted);
          REQUIRE(converted == 664);
+
+         Pi source;
+         ImplicitlyReflectedDataWithTraits convertedFromPi1;
+         pimeta->GetConverter(meta)(&source, &convertedFromPi1);
+         REQUIRE(convertedFromPi1.member == 314);
       }
    }
 }
@@ -304,7 +335,10 @@ SCENARIO("A simple type reflected with CTTI traits", "[metadata]") {
          REQUIRE(meta->mIsAbstract == false);
          REQUIRE(meta->mSize == sizeof(ImplicitlyReflectedData));
          REQUIRE(meta->mAlignment == alignof(ImplicitlyReflectedData));
+
          REQUIRE(meta->mNamedValues.size() == 3);
+         REQUIRE(meta->mConvertersTo.size() == 0);
+         REQUIRE(meta->mConvertersFrom.size() == 0);
       }
    }
 }

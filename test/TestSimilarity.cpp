@@ -6,22 +6,19 @@
 /// Distributed under GNU General Public License v3+                          
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
-#include "Main.hpp"
-#include <catch2/catch.hpp>
+#include "Common.hpp"
 
 
 /// A freestanding type compatibility check                                   
 /// Purely cosmetic, to avoid typing `template` before member function        
-template<CT::Data T, bool ADVANCED = false>
-LANGULUS(INLINED)
+template<CT::Data T, bool ADVANCED = false> LANGULUS(INLINED)
 bool CastsTo(DMeta from) {
    return from->template CastsTo<T, ADVANCED>();
 }
 
 /// A freestanding type compatibility check                                   
 /// Purely cosmetic, to avoid typing `template` before member function        
-template<CT::Data T>
-LANGULUS(INLINED)
+template<CT::Data T> LANGULUS(INLINED)
 bool CastsTo(DMeta from, Count count) {
    return from->template CastsTo<T>(count);
 }

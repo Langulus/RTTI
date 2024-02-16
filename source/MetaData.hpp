@@ -19,7 +19,7 @@ namespace Langulus::RTTI
    /// A simple request for allocating memory                                 
    /// It is used as optimization to avoid divisions by stride                
    struct AllocationRequest {
-      Size mByteSize IF_SAFE(= 0);
+      Size  mByteSize IF_SAFE(= 0);
       Count mElementCount IF_SAFE(= 0);
 
       IF_UNSAFE(constexpr AllocationRequest() {})
@@ -182,6 +182,9 @@ namespace Langulus::RTTI
       static constexpr Token GetReflectedToken() noexcept;
    };
 
+   template<auto...>
+   constexpr auto CreateNamedValueTuple();
+
    using NamedValueList = ::std::vector<CMeta>;
    using AbilityList = ::std::unordered_map<VMeta, Ability>;
    using MutableOverloadList = typename Ability::MutableOverloadList;
@@ -196,18 +199,18 @@ namespace Langulus::RTTI
       LANGULUS(UNINSERTABLE) true;
 
       // The data ID we're converting to                                
-      DMeta mDestrinationType {};
+      DMeta mType {};
       // Address of function to call                                    
       FCopyConstruct mFunction {};
       
    public:
       NOD() constexpr bool operator == (const Converter&) const noexcept;
 
-      template<class, class TO>
-      NOD() static Converter From() noexcept;
+      template<CT::Decayed FROM, CT::Decayed TO>
+      NOD() static Converter From(DMeta) noexcept;
    };
 
-   using ConverterList = ::std::unordered_map<DMeta, Converter>;
+   using ConverterMap = ::std::unordered_map<DMeta, Converter>;
 
 
    ///                                                                        
@@ -280,7 +283,7 @@ namespace Langulus::RTTI
       // Default concretization                                         
       // Used as redirection, when requesting the creation of asbtracts 
       FTypeRetriever mConcreteRetriever {};
-      // Types with producers can be instantiated only by the invokation
+      // Types with producers can be instantiated only by the invocation
       // of Verbs::Create in the context of the producer                
       FTypeRetriever mProducerRetriever {};
       // True if reflected data is sparse (a pointer)                   
@@ -302,6 +305,8 @@ namespace Langulus::RTTI
       bool mIsUninsertable = false;
       // True if origin type is allocatable (and thus clonable)         
       bool mIsUnallocatable = false;
+      // True if origin type is executable (derived from Flow::Verb)    
+      bool mIsExecutable = false;
       // Size of the reflected type (in bytes)                          
       Size mSize {};
       // Alignof (in bytes)                                             
@@ -396,31 +401,37 @@ namespace Langulus::RTTI
       AbilityList mAbilities {};
       // List of reflected bases of the origin type                     
       BaseList mBases {};
-      // List of reflected converters of the origin type                
-      ConverterList mConverters {};
+      // List of reflected converters to/from the origin type           
+      ConverterMap mConvertersTo {};
+      ConverterMap mConvertersFrom {};
       // List of named values of the origin type                        
       NamedValueList mNamedValues {};
 
    protected:
       friend struct Base;
 
-      template<CT::Fundamental T>
+      template<CT::Fundamental>
       static void ReflectFundamentalType(MetaData&) noexcept;
 
-      template<CT::Decayed T>
+      template<CT::Decayed>
       static void ReflectOriginType(MetaData&) noexcept;
 
       NOD() const Member* GetMemberInner(TMeta, DMeta, Offset&) const noexcept;
       NOD() Count GetMemberCountInner(TMeta, DMeta, Offset&) const noexcept;
 
-      template<class T, CT::Dense... Args>
+      template<class, CT::Dense...Args>
       void SetBases(Types<Args...>) noexcept;
 
-      template<CT::Dense T, CT::Dense... Args>
+      template<CT::Dense, CT::Dense...Args>
       void SetAbilities(Types<Args...>) noexcept;
 
-      template<class T, class... Args>
-      void SetConverters(Types<Args...>) noexcept;
+      template<class, class...Args>
+      void SetConvertersTo(Types<Args...>) noexcept;
+      template<class, class...Args>
+      void SetConvertersFrom(Types<Args...>) noexcept;
+
+      template<class>
+      void AddConstant(auto&&);
 
    public:
       template<CT::Void>
@@ -481,9 +492,7 @@ namespace Langulus::RTTI
       //                                                                
       // Morphisms and comparison                                       
       //                                                                
-      template<class>
-      FCopyConstruct GetConverter() const noexcept;
-      FCopyConstruct GetConverter(DMeta) const noexcept;
+      FCopyConstruct GetConverter(DMeta) const;
 
       template<bool ADVANCED = false, bool BINARY_COMPATIBLE = false>
       NOD() bool CastsTo(DMeta) const;

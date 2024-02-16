@@ -424,6 +424,37 @@ namespace Langulus::RTTI
    NOD() constexpr Token CppNameOf() noexcept {
       return Inner::StatefulNameOfEnum<E>::Name.data();
    }
+   
+   /// Same as CppNameOf, but removes all namespaces                          
+   ///   @tparam T - the enum to get the name of                              
+   ///   @return the name                                                     
+   template<auto E>
+   NOD() constexpr Token LastCppNameOf() noexcept {
+      // Find the last ':' symbol, that is not inside <...> scope       
+      Token name = Inner::StatefulNameOfEnum<E>::Name.data();
+      size_t depth = 0;
+      for (auto i = name.size(); i > 0; --i) {
+         switch (name[i - 1]) {
+         case ':':
+            if (depth == 0) {
+               name.remove_prefix(i);
+               return name;
+            }
+            break;
+         case '>':
+            ++depth;
+            break;
+         case '<':
+            --depth;
+            break;
+         default:
+            break;
+         }
+      }
+
+      // Something's not right if this was reached                      
+      return "";
+   }
 
 } // namespace Langulus::RTTI
 
@@ -495,22 +526,42 @@ namespace Langulus
 
 
    ///                                                                        
-   ///   NameOf that also considers LANGULUS(NAME) reflection, if any         
+   ///   NameOf that considers the following name reflections, if any,        
+   ///   in the specified order:                                              
+   ///      LANGULUS(POSITIVE_VERB)                                           
+   ///      LANGULUS(VERB)                                                    
+   ///      LANGULUS(TRAIT)                                                   
+   ///      LANGULUS(NAME)                                                    
+   ///      or fallbacks to the C++ name                                      
    ///                                                                        
    template<CT::Data T>
    constexpr Token NameOf() noexcept {
       using DT = Decay<T>;
-      if constexpr (requires { DT::CTTI_Name; }) {
-         if constexpr (CT::Decayed<Deref<T>>) {
-            // Just return the custom name                              
-            return DT::CTTI_Name;
-         }
-         else {
-            // Reconstruct the type name around reflected LANGULUS(NAME)
+      if constexpr (requires { DT::CTTI_PositiveVerb; }) {
+         if constexpr (CT::Decayed<Deref<T>>)
+            return DT::CTTI_PositiveVerb;
+         else
             return CustomNameOf<Deref<T>>::Generate();
-         }
       }
-      else return RTTI::CppNameOf<Deref<T>>(); // Fallback to C++ name  
+      else if constexpr (requires { DT::CTTI_Verb; }) {
+         if constexpr (CT::Decayed<Deref<T>>)
+            return DT::CTTI_Verb;
+         else
+            return CustomNameOf<Deref<T>>::Generate();
+      }
+      else if constexpr (requires { DT::CTTI_Trait; }) {
+         if constexpr (CT::Decayed<Deref<T>>)
+            return DT::CTTI_Trait;
+         else
+            return CustomNameOf<Deref<T>>::Generate();
+      }
+      else if constexpr (requires { DT::CTTI_Name; }) {
+         if constexpr (CT::Decayed<Deref<T>>)
+            return DT::CTTI_Name;
+         else
+            return CustomNameOf<Deref<T>>::Generate();
+      }
+      else return RTTI::CppNameOf<Deref<T>>();
    }
    
    ///                                                                        

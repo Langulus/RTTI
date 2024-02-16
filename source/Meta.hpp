@@ -8,6 +8,7 @@
 ///                                                                           
 #pragma once
 #include "Reflection.hpp"
+#include "NameOf.hpp"
 #include <Core/Utilities.hpp>
 #include <vector>
 
@@ -266,17 +267,32 @@ namespace fmt
       }
 
       template<class CONTEXT> LANGULUS(INLINED)
+      bool langulus_format_inner(T const& lhs, auto const& rhs, CONTEXT& ctx) {
+         using namespace Langulus;
+         using D = Deref<decltype(rhs)>;
+
+         if (T {D::Value} != DenseCast(lhs))
+            return false;
+
+         fmt::format_to(ctx.out(), "{}::{}",
+            NameOf<T>(),
+            RTTI::LastCppNameOf<D::Value>()
+         );
+         return true;
+      }
+
+      template<class CONTEXT> LANGULUS(INLINED)
       auto format(T const& value, CONTEXT& ctx) {
          using namespace Langulus;
-         auto& denseValue = DenseCast(value);
-         for (auto& constant : T::CTTI_NamedValues) {
-            if (T {constant.mValue} != denseValue)
-               continue;
 
-            return fmt::format_to(ctx.out(), "{}", constant.mToken);
-         }
+         bool found = std::apply([&](auto&&...args) {
+            return (... or langulus_format_inner(value, args, ctx));
+         }, T::CTTI_NamedValues);
 
-         return fmt::format_to(ctx.out(), "<bad named value>");
+         if (found)
+            return ctx.out();
+         else
+            return fmt::format_to(ctx.out(), "<bad named value>");
       }
    };
    
