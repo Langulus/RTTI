@@ -35,10 +35,6 @@ namespace Langulus::Traits
 using namespace Langulus;
 using namespace Langulus::RTTI;
 
-//#define LANGULUS_STD_BENCHMARK
-
-#define CATCH_CONFIG_ENABLE_BENCHMARKING
-
 using uint = unsigned int;
 template<class T>
 using some = std::vector<T>;
@@ -135,17 +131,10 @@ struct ImplicitlyReflectedData {
    LANGULUS(POD) true;
    LANGULUS(FILES) "ASE";
 
-   enum Named {
-      One, Two, Three
-   };
+   enum Named {One, Two, Three};
+   LANGULUS_NAMED_VALUES(One, Two, Three);
 
-   LANGULUS_NAMED_VALUES(Named) {
-      {"One", One},
-      {"Two", Two},
-      {"Three", Three}
-   };
-
-   Named v {One};
+   Named v = One;
 
    inline bool operator == (const ImplicitlyReflectedData&) const noexcept = default;
 };
@@ -169,6 +158,10 @@ public:
       ++member;
    }
 
+   ImplicitlyReflectedDataWithTraits() = default;
+   explicit ImplicitlyReflectedDataWithTraits(Pi)
+      : member {314} {}
+
    LANGULUS(NAME) "MyType";
    LANGULUS(INFO) "Info about MyType";
    LANGULUS(FILES) "txt, pdf";
@@ -184,7 +177,9 @@ public:
    LANGULUS(ABSTRACT) true;
    LANGULUS_BASES(ImplicitlyReflectedData);
    LANGULUS_VERBS(Verbs::Create);
-   LANGULUS_CONVERSIONS(int);
+   LANGULUS_CONVERTS_TO(int);
+   LANGULUS_CONVERTS_FROM(Pi);
+   LANGULUS_NAMED_VALUES();
 
    LANGULUS_PROPERTIES_START(ImplicitlyReflectedDataWithTraits)
       LANGULUS_PROPERTY(member),
@@ -221,6 +216,17 @@ public:
          delete sparseMember;
    }
 };
+
+struct AnotherTypeWithSimilarilyNamedValues {
+   enum Named {One = 501, Two, Three};
+   LANGULUS_NAMED_VALUES(One, Two, Three);
+   LANGULUS(NAME) "YetAnotherNamedType";
+
+   int v = One;
+
+   inline bool operator == (const AnotherTypeWithSimilarilyNamedValues&) const noexcept = default;
+};
+
 
 class ContainsComplex {
    Complex mData;

@@ -6,8 +6,8 @@
 /// Distributed under GNU General Public License v3+                          
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
-#include "Main.hpp"
-#include <catch2/catch.hpp>
+#include "Common.hpp"
+
 
 class ImplicitlyConstructible {};
 
@@ -48,6 +48,7 @@ class DescriptorConstructible {
 public:
    DescriptorConstructible(Describe&&) {}
 };
+
 
 SCENARIO("Testing semantics", "[semantics]") {
 

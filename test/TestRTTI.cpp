@@ -6,8 +6,8 @@
 /// Distributed under GNU General Public License v3+                          
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
-#include "Main.hpp"
-#include <catch2/catch.hpp>
+#include "Common.hpp"
+
 
 SCENARIO("Comparing different meta types with one another", "[meta]") {
    GIVEN("Reflected types") {
@@ -57,6 +57,7 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
       const auto n3t = MetaDataOf<N3::type>();
       const auto vvv = MetaVerbOf<Verbs::Create>();
       const auto complexMeta = MetaDataOf<ImplicitlyReflectedDataWithTraits>();
+      (void) MetaDataOf<AnotherTypeWithSimilarilyNamedValues>();
 
       WHEN("Meta is retrieved by exact token, that is not case-sensitive") {
          REQUIRE(n0t == RTTI::GetMetaData("Type"));
@@ -111,7 +112,9 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
          REQUIRE_THROWS(RTTI::DisambiguateMeta("::type"));
          REQUIRE(RTTI::DisambiguateMeta("create"));
          REQUIRE_THROWS(RTTI::DisambiguateMeta("one"));
-         REQUIRE(RTTI::DisambiguateMeta("MyType::one"));
+         REQUIRE(RTTI::DisambiguateMeta("YetAnotherNamedType::one"));
+         REQUIRE(RTTI::DisambiguateMeta("ImplicitlyReflectedData::one"));
+         REQUIRE_THROWS(RTTI::DisambiguateMeta("MyType::one"));
          REQUIRE_THROWS(RTTI::DisambiguateMeta("two"));
          REQUIRE_THROWS(RTTI::DisambiguateMeta("three"));
          REQUIRE(RTTI::DisambiguateMeta("MyType"));

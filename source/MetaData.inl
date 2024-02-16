@@ -15,6 +15,7 @@
    #include "RTTI.hpp"
 #endif
 #include <Core/Utilities.hpp>
+#include <tuple>
 
 #define VERBOSE(...) //Logger::Verbose("RTTI: ", __VA_ARGS__)
 
@@ -432,46 +433,25 @@ namespace Langulus::RTTI
    ///   @return true if both converters have the same type                   
    LANGULUS(INLINED)
    constexpr bool Converter::operator == (const Converter& rhs) const noexcept {
-      return mDestrinationType &= rhs.mDestrinationType;
+      return mType &= rhs.mType;
    }
 
    /// Create a converter, utilizing available cast operators/constructors    
    ///   @return the converter                                                
-   template<class T, class TO>
-   Converter Converter::From() noexcept {
-      static_assert(not CT::Void<TO>,
-         "Can't have converter to void");
-      static_assert(CT::Convertible<T, TO>,
-         "Converter reflected, but conversion is not possible - "
-         "implement a public cast operator in T, or a public constructor in TO"
-         " - these can be either explicit or not");
-
-      using DT = Decay<T>;
-      using DTO = Decay<TO>;
+   template<CT::Decayed FROM, CT::Decayed TO>
+   Converter Converter::From(DMeta type) noexcept {
+      static_assert(not CT::Void<TO>, "Can't have converter to void");
 
       return {
-         MetaData::Of<DTO>(),
+         type,
          [](const void* from, void* to) {
-            auto fromT = reinterpret_cast<const T*>(from);
-            auto toT = reinterpret_cast<TO*>(to);
+            auto fromT = const_cast<FROM*>(reinterpret_cast<const FROM*>(from));
+            auto toT   = reinterpret_cast<TO*>(to);
 
-            // These should be in sync with CT::Inner::Convertible      
-            if constexpr (requires (DT & from) { DTO {from}; }) {
-               new (&DenseCastMutable(toT)) DTO {
-                  DenseCastMutable(fromT)
-               };
-            }
-            else if constexpr (requires (DT & from) { DTO {from.operator DTO()}; }) {
-               new (&DenseCastMutable(toT)) DTO {
-                  DenseCastMutable(fromT).operator DTO()
-               };
-            }
-            else if constexpr (requires (DT & from) { static_cast<DTO>(from); }) {
-               new (&DenseCastMutable(toT)) DTO {
-                  static_cast<DTO>(DenseCastMutable(fromT))
-               };
-            }
-            else LANGULUS_ERROR("Unhandled conversion route");
+            if constexpr (requires {static_cast<TO>(*fromT);})
+               new (toT) TO {static_cast<TO>(*fromT)};
+            else
+               LANGULUS_ERROR("Unhandled conversion route");
          }
       };
    }
@@ -542,6 +522,15 @@ namespace Langulus::RTTI
          result.mBinaryCompatible = (0 == result.mOffset);
       return result;
    }
+
+   /// Generate constexpr tuple with the constants                            
+   ///   @return a tuple of the desired constants                             
+   template<auto...T>
+   constexpr auto CreateNamedValueTuple() {
+      return ::std::tuple {NamedValue<T> {/*TODO pass info here somehow*/}...};
+   }
+
+
 
    /// Reflecting a void type always returns nullptr                          
    ///   @return nullptr                                                      
@@ -815,6 +804,7 @@ namespace Langulus::RTTI
          generated.mIsPOD = CT::POD<T>;
          generated.mIsUninsertable = CT::Uninsertable<T>;
          generated.mIsUnallocatable = CT::Unallocatable<T>;
+         generated.mIsExecutable = CT::DerivedFrom<T, Flow::Verb>;
          generated.mSuffix = SuffixOf<T>();
 
          // This is the origin type, so self-refer                      
@@ -905,27 +895,27 @@ namespace Langulus::RTTI
       else if constexpr (CT::Bool<T>) {
          using Bases = Types<A::Bool>;
          generated.SetBases<T>(Bases {});
-         generated.SetConverters<T>(Converters {});
+         generated.SetConvertersTo<T>(Converters {});
       }
       else if constexpr (CT::Character<T>) {
          using Bases = Types<A::Text>;
          generated.SetBases<T>(Bases {});
-         generated.SetConverters<T>(Converters {});
+         generated.SetConvertersTo<T>(Converters {});
       }
       else if constexpr (CT::SignedInteger<T>) {
          using Bases = Types<A::SignedInteger>;
          generated.SetBases<T>(Bases {});
-         generated.SetConverters<T>(Converters {});
+         generated.SetConvertersTo<T>(Converters {});
       }
       else if constexpr (CT::UnsignedInteger<T>) {
          using Bases = Types<A::UnsignedInteger>;
          generated.SetBases<T>(Bases {});
-         generated.SetConverters<T>(Converters {});
+         generated.SetConvertersTo<T>(Converters {});
       }
       else if constexpr (CT::Real<T>) {
          using Bases = Types<A::Real>;
          generated.SetBases<T>(Bases {});
-         generated.SetConverters<T>(Converters {});
+         generated.SetConvertersTo<T>(Converters {});
       }
       else LANGULUS_ERROR("Unimplemented fundamental type reflector");
    }
@@ -1142,55 +1132,22 @@ namespace Langulus::RTTI
       if constexpr (requires { typename T::CTTI_Verbs; })
          generated.SetAbilities<T>(typename T::CTTI_Verbs {});
 
-      // Set reflected converters                                       
-      if constexpr (requires { typename T::CTTI_Conversions; })
-         generated.SetConverters<T>(typename T::CTTI_Conversions {});
+      // Set reflected to-converters                                    
+      if constexpr (requires { typename T::CTTI_ConvertTo; })
+         generated.SetConvertersTo<T>(typename T::CTTI_ConvertTo {});
+
+      // Set reflected from-converters                                  
+      if constexpr (requires { typename T::CTTI_ConvertFrom; })
+         generated.SetConvertersFrom<T>(typename T::CTTI_ConvertFrom {});
 
       // Reflected named values if this type is origin type             
       if constexpr (CT::HasNamedValues<T>) {
          static_assert(CT::Comparable<T, T>, 
             "Named values specified for type, but type instances are not comparable");
 
-         constexpr auto c = ExtentOf<decltype(T::CTTI_NamedValues)>;
-         static T staticInstances[c];
-         static ::std::string staticNames[c] {};
-         IF_NOT_LANGULUS_MANAGED_REFLECTION(
-            static constinit ::std::unique_ptr<MetaConst> staticMC[c] {}
-         );
-
-         // Register each named values as a reflected constant          
-         for (Offset i = 0; i < c; ++i) {
-            staticNames[i] += generated.mToken;
-            staticNames[i] += "::";
-            staticNames[i] += T::CTTI_NamedValues[i].mToken;
-
-            #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-               const auto cmeta = const_cast<MetaConst*>(
-                  Instance.RegisterConstant(staticNames[i], RTTI::Boundary).mMeta);
-               LANGULUS_ASSERT(cmeta, Meta,
-                  "Meta constant conflict on registration");
-               cmeta->mLibraryName = RTTI::Boundary;
-            #else
-               staticMC[i] = ::std::make_unique<MetaConst>();
-               const auto cmeta = staticMC[i].get();
-            #endif
-
-            LANGULUS_ASSERT(cmeta->mToken == staticNames[i],
-               Meta, "Token not set");
-            LANGULUS_ASSERT(cmeta->mHash == HashOf(cmeta->mToken),
-               Meta, "Hash not set");
-
-            cmeta->mInfo = T::CTTI_NamedValues[i].mInfo;
-            cmeta->mCppName = cmeta->mToken;
-            cmeta->mValueType = &generated;
-            new (staticInstances + i) T {{T::CTTI_NamedValues[i].mValue}};
-            cmeta->mPtrToValue = staticInstances + i;
-
-            VERBOSE("Constant ", Logger::Push, Logger::Yellow, cmeta->mToken,
-               Logger::Pop, Logger::Green, " registered (", cmeta->mLibraryName, ")");
-
-            generated.mNamedValues.emplace_back(cmeta);
-         }
+         std::apply([&generated](auto&&...args) {
+            (generated.AddConstant<T>(args), ...);
+         }, T::CTTI_NamedValues);
       }
 
       // Set reflected members                                          
@@ -1200,7 +1157,7 @@ namespace Langulus::RTTI
 
    /// Set the list of bases for a given meta definition                      
    ///   @tparam Args... - all the bases                                      
-   template<class T, CT::Dense... BASE>
+   template<class T, CT::Dense...BASE>
    void MetaData::SetBases(Types<BASE...>) noexcept {
       if constexpr (Types<BASE...>::Empty)
          return;
@@ -1216,7 +1173,7 @@ namespace Langulus::RTTI
 
    /// Set the list of abilities for a given meta definition                  
    ///   @tparam Args... - all the abilities                                  
-   template<CT::Dense T, CT::Dense... VERB>
+   template<CT::Dense T, CT::Dense...VERB>
    void MetaData::SetAbilities(Types<VERB...>) noexcept {
       if constexpr (Types<VERB...>::Empty)
          return;
@@ -1232,46 +1189,127 @@ namespace Langulus::RTTI
       }
    }
 
-   /// Set the list of converters for a given meta definition                 
-   ///   @tparam Args... - all the abilities                                  
-   template<class FROM, class... TO>
-   void MetaData::SetConverters(Types<TO...>) noexcept {
+   /// Set the list of to-converters for a given meta definition              
+   template<class FROM, class...TO>
+   void MetaData::SetConvertersTo(Types<TO...>) noexcept {
       if constexpr (Types<TO...>::Empty)
          return;
       else {
+         static_assert((CT::Convertible<FROM, TO> and ...),
+            "Converter reflected, but conversion is not possible - "
+            "implement a public cast operator in FROM, or a public constructor in TO"
+            " - these can be either explicit or not");
+
          static const ::std::pair<DMeta, Converter> list[] {
             ::std::pair<DMeta, Converter>(
-               MetaData::Of<Decay<TO>>(), Converter::From<FROM, TO>()
+               MetaData::Of<Decay<TO>>(),
+               Converter::From<FROM, TO>(MetaData::Of<Decay<TO>>())
             )...
          };
 
-         for (const auto& i : list) {
-            if (i.first)
-               mConverters.insert(i);
-         }
+         for (const auto& i : list)
+            if (i.first) mConvertersTo.insert(i);
+      }
+   }
+   
+   /// Set the list of from-converters for a given meta definition            
+   template<class TO, class...FROM>
+   void MetaData::SetConvertersFrom(Types<FROM...>) noexcept {
+      if constexpr (Types<FROM...>::Empty)
+         return;
+      else {
+         static_assert((CT::Convertible<FROM, TO> and ...),
+            "Converter reflected, but conversion is not possible - "
+            "implement a public cast operator in FROM, or a public constructor in TO"
+            " - these can be either explicit or not");
+
+         static const ::std::pair<DMeta, Converter> list[] {
+            ::std::pair<DMeta, Converter>(
+               MetaData::Of<Decay<FROM>>(),
+               Converter::From<FROM, TO>(MetaData::Of<Decay<FROM>>())
+            )...
+         };
+
+         for (const auto& i : list)
+            if (i.first) mConvertersFrom.insert(i);
       }
    }
 
-   /// Get a converter to a specific static type                              
-   ///   @tparam T - the type to seek a conversion to                         
-   ///   @return the conversion function                                      
-   template<class T> LANGULUS(INLINED)
-   FCopyConstruct MetaData::GetConverter() const noexcept {
-      return GetConverter(MetaData::Of<T>());
+   /// Register a meta constant definition, and add it to a data definition   
+   /// as a named value                                                       
+   ///   @param named - the named value definition                            
+   template<class T>
+   void MetaData::AddConstant(auto&& named) {
+      using D = Deref<decltype(named)>;
+      static_assert(::std::constructible_from<T, decltype(D::Value)>,
+         "Type is not constructible with provided named value");
+
+      static const std::string generatedToken =
+         std::string {mToken} + "::" + std::string {LastCppNameOf<D::Value>()};
+      static T staticInstance;
+      IF_NOT_LANGULUS_MANAGED_REFLECTION(
+         static constinit ::std::unique_ptr<MetaConst> staticMC
+      );
+
+      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         const auto cmeta = const_cast<MetaConst*>(
+            Instance.RegisterConstant(generatedToken, RTTI::Boundary).mMeta);
+         LANGULUS_ASSERT(cmeta, Meta,
+            "Meta constant conflict on registration");
+         cmeta->mLibraryName = RTTI::Boundary;
+      #else
+         staticMC = ::std::make_unique<MetaConst>();
+         const auto cmeta = staticMC.get();
+      #endif
+
+      LANGULUS_ASSERT(cmeta->mToken == generatedToken,
+         Meta, "Token not set");
+      LANGULUS_ASSERT(cmeta->mHash == HashOf(cmeta->mToken),
+         Meta, "Hash not set");
+
+      cmeta->mInfo = named.mInfo;
+      cmeta->mCppName = cmeta->mToken;
+      cmeta->mValueType = this;
+      new (&staticInstance) T {D::Value};
+      cmeta->mPtrToValue = &staticInstance;
+
+      VERBOSE("Constant ", Logger::Push, Logger::Yellow, cmeta->mToken,
+         Logger::Pop, Logger::Green, " registered (", cmeta->mLibraryName, ")");
+
+      mNamedValues.emplace_back(cmeta);
    }
 
-   /// Get a converter to a specific dynamic type                             
+   /// Get a converter to a specific type                                     
+   ///   @attention converter assumes destination memory is not initialized   
    ///   @param meta - the type we're converting to                           
    ///   @return the conversion function                                      
    LANGULUS(INLINED)
-   FCopyConstruct MetaData::GetConverter(DMeta meta) const noexcept {
-      if (not mOrigin)
-         return FCopyConstruct {};
+   FCopyConstruct MetaData::GetConverter(DMeta meta) const {
+      if (not meta)
+         return {};
 
-      const auto found = mOrigin->mConverters.find(meta);
-      if (found != mOrigin->mConverters.end())
-         return found->second.mFunction;
-      return FCopyConstruct {};
+      FCopyConstruct convertTo {};
+      if (mOrigin) {
+         const auto foundTo = mOrigin->mConvertersTo.find(meta);
+         if (foundTo != mOrigin->mConvertersTo.end())
+            convertTo = foundTo->second.mFunction;
+      }
+
+      FCopyConstruct convertFrom {};
+      if (meta->mOrigin) {
+         const auto foundFrom = meta->mOrigin->mConvertersFrom.find(this);
+         if (foundFrom != meta->mOrigin->mConvertersFrom.end())
+            convertFrom = foundFrom->second.mFunction;
+      }
+
+      if (convertTo or convertFrom) {
+         LANGULUS_ASSERT(not convertTo != not convertFrom, Convert,
+            "Ambiguous conversion", " from ", mOrigin, " to ", meta,
+            ": conversions in both directions were reflected"
+            " - not sure which one to use");
+         return convertTo ? convertTo : convertFrom;
+      }
+      else return {};
    }
    
    /// Get a reflected member by trait, type, and/or offset (inner)           

@@ -39,6 +39,10 @@ namespace Langulus
       if constexpr (LEVEL <= LANGULUS(SAFE)) {
          if (not condition) {
          #if LANGULUS(SAFE)
+            // Log location first, because message might cause          
+            // additional errors                                        
+            Logger::Error("At ", location);
+
             // Log error message                                        
             if constexpr (LEVEL == 0)
                Logger::Error("Assertion failure: ",
@@ -52,9 +56,6 @@ namespace Langulus
             else 
                Logger::Error("Assumption level ", LEVEL, " failure: ",
                   message, Forward<MORE>(additional_messages)...);
-
-            // Log location                                             
-            Logger::Error("At ", location);
          #else
             if constexpr (LEVEL == 0)
                Logger::Error("Assertion failure");
