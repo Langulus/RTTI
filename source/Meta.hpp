@@ -15,176 +15,6 @@
 
 namespace Langulus::RTTI
 {
-   
-   ///                                                                        
-   /// Type interchange format, makes sure to call IsExact on operator ==,    
-   /// as well as other handy operations                                      
-   ///                                                                        
-   struct LANGULUS_API(RTTI) DMeta {
-      LANGULUS(POD) true;
-      LANGULUS(NULLIFIABLE) true;
-
-   protected:
-      friend struct AMeta;
-      friend struct Meta;
-      friend class Registry;
-      friend struct MetaData;
-      const MetaData* mMeta {};
-
-   public:
-      constexpr DMeta() noexcept = default;
-      constexpr DMeta(const MetaData* raw) noexcept
-         : mMeta {raw} {}
-
-      constexpr Token GetToken() const noexcept;
-      constexpr Hash GetHash() const noexcept;
-
-      const MetaData* operator -> () const noexcept { return mMeta; }
-      constexpr explicit operator bool() const noexcept { return mMeta != nullptr; }
-
-      constexpr bool operator == (const DMeta&) const noexcept;
-      constexpr bool operator &= (const DMeta&) const noexcept;
-      constexpr bool operator |= (const DMeta&) const noexcept;
-   };
-
-         
-   ///                                                                        
-   /// Definition interchange format for verbs                                
-   ///                                                                        
-   struct LANGULUS_API(RTTI) VMeta {
-      LANGULUS(POD) true;
-      LANGULUS(NULLIFIABLE) true;
-
-   protected:
-      friend struct AMeta;
-      friend struct Meta;
-      friend class Registry;
-      friend struct MetaVerb;
-      const MetaVerb* mMeta {};
-
-   public:
-      constexpr VMeta() noexcept = default;
-      constexpr VMeta(const MetaVerb* raw) noexcept
-         : mMeta {raw} {}
-
-      constexpr Token GetToken() const noexcept;
-      constexpr Hash GetHash() const noexcept;
-
-      const MetaVerb* operator -> () const noexcept { return mMeta; }
-      constexpr explicit operator bool() const noexcept { return mMeta != nullptr; }
-
-      constexpr bool operator == (const VMeta&) const noexcept;
-   };
-      
-
-   ///                                                                        
-   /// Definition interchange format for traits                               
-   ///                                                                        
-   struct LANGULUS_API(RTTI) TMeta {
-      LANGULUS(POD) true;
-      LANGULUS(NULLIFIABLE) true;
-
-   protected:
-      friend struct AMeta;
-      friend struct Meta;
-      friend class Registry;
-      friend struct MetaTrait;
-      const MetaTrait* mMeta {};
-
-   public:
-      constexpr TMeta() noexcept = default;
-      constexpr TMeta(const MetaTrait* raw) noexcept
-         : mMeta {raw} {}
-
-      constexpr Token GetToken() const noexcept;
-      constexpr Hash GetHash() const noexcept;
-
-      const MetaTrait* operator -> () const noexcept { return mMeta; }
-      constexpr explicit operator bool() const noexcept { return mMeta != nullptr; }
-
-      constexpr bool operator == (const TMeta&) const noexcept;
-   };
-
-
-   ///                                                                        
-   /// Definition interchange format for constants                            
-   ///                                                                        
-   struct LANGULUS_API(RTTI) CMeta {
-      LANGULUS(POD) true;
-      LANGULUS(NULLIFIABLE) true;
-
-   protected:
-      friend struct AMeta;
-      friend struct Meta;
-      friend class Registry;
-      friend struct MetaConst;
-      friend struct MetaData;
-      const MetaConst* mMeta {};
-
-   public:
-      constexpr CMeta() noexcept = default;
-      constexpr CMeta(const MetaConst* raw) noexcept
-         : mMeta {raw} {}
-
-      constexpr Token GetToken() const noexcept;
-      constexpr Hash GetHash() const noexcept;
-
-      const MetaConst* operator -> () const noexcept { return mMeta; }
-      constexpr explicit operator bool() const noexcept { return mMeta != nullptr; }
-
-      constexpr bool operator == (const CMeta&) const noexcept;
-   };
-   
-
-   ///                                                                        
-   /// Definition interchange format for any of the above                     
-   ///                                                                        
-   struct LANGULUS_API(RTTI) AMeta {
-      LANGULUS(POD) true;
-      LANGULUS(NULLIFIABLE) true;
-
-   protected:
-      friend struct Meta;
-      friend class Registry;
-      const Meta* mMeta {};
-
-   public:
-      constexpr AMeta() noexcept = default;
-      constexpr AMeta(const Meta* raw) noexcept
-         : mMeta {raw} {}
-      constexpr AMeta(const DMeta&) noexcept;
-      constexpr AMeta(const TMeta&) noexcept;
-      constexpr AMeta(const VMeta&) noexcept;
-      constexpr AMeta(const CMeta&) noexcept;
-
-      constexpr Token GetToken() const noexcept;
-      constexpr Hash GetHash() const noexcept;
-
-      const Meta* operator -> () const noexcept { return mMeta; }
-      constexpr explicit operator bool() const noexcept { return mMeta != nullptr; }
-      constexpr operator DMeta() const noexcept;
-      constexpr operator TMeta() const noexcept;
-      constexpr operator CMeta() const noexcept;
-      constexpr operator VMeta() const noexcept;
-
-      constexpr bool operator == (const VMeta&) const noexcept;
-      constexpr bool operator == (const TMeta&) const noexcept;
-      constexpr bool operator == (const CMeta&) const noexcept;
-
-      constexpr bool operator == (const DMeta&) const noexcept;
-      constexpr bool operator &= (const DMeta&) const noexcept;
-      constexpr bool operator |= (const DMeta&) const noexcept;
-
-      constexpr bool operator == (const AMeta&) const noexcept;
-      constexpr bool operator &= (const AMeta&) const noexcept;
-      constexpr bool operator |= (const AMeta&) const noexcept;
-
-      template<class T>
-      NOD() constexpr T As() const noexcept;
-
-      constexpr Token Kind() const noexcept;
-   };
-
 
    ///                                                                        
    ///   Meta                                                                 
@@ -238,17 +68,155 @@ namespace Langulus::RTTI
          Token GetShortestUnambiguousToken() const;
       #endif
    };
+   
+
+   ///                                                                        
+   ///   Abstract definition interchange format                               
+   ///                                                                        
+   /// Can contain DMeta, TMeta, VMeta or CMeta, which are dynamical_cast     
+   /// on demand to the appropriate type                                      
+   ///                                                                        
+   struct LANGULUS_API(RTTI) AMeta {
+      LANGULUS(POD) true;
+      LANGULUS(NULLIFIABLE) true;
+
+   protected:
+      friend struct Meta;
+      friend class  Registry;
+
+      // Pointer to the definition                                      
+      const Meta* mMeta {};
+
+   public:
+      constexpr AMeta() noexcept = default;
+      constexpr AMeta(const AMeta&) noexcept = default;
+      constexpr AMeta(AMeta&&) noexcept = default;
+      constexpr AMeta(const Meta* meta) noexcept
+         : mMeta {meta} {}
+      constexpr AMeta(::std::nullptr_t) noexcept {}
+
+      constexpr AMeta& operator = (const AMeta&) noexcept = default;
+      constexpr AMeta& operator = (AMeta&&) noexcept = default;
+
+      constexpr Token GetToken() const noexcept;
+
+      constexpr Hash  GetHash() const noexcept {
+         return mMeta ? mMeta->mHash : Hash {};
+      }
+
+      const Meta* operator -> () const noexcept {
+         return mMeta;
+      }
+
+      constexpr explicit operator bool() const noexcept {
+         return mMeta != nullptr;
+      }
+
+      constexpr operator DMeta() const noexcept;
+      constexpr operator TMeta() const noexcept;
+      constexpr operator CMeta() const noexcept;
+      constexpr operator VMeta() const noexcept;
+
+      constexpr bool operator == (const VMeta&) const noexcept;
+      constexpr bool operator == (const TMeta&) const noexcept;
+      constexpr bool operator == (const CMeta&) const noexcept;
+
+      constexpr bool operator == (const DMeta&) const noexcept;
+      constexpr bool operator &  (const DMeta&) const noexcept;
+      constexpr bool operator |  (const DMeta&) const noexcept;
+
+      constexpr bool operator == (const AMeta&) const noexcept;
+      constexpr bool operator &  (const AMeta&) const noexcept;
+      constexpr bool operator |  (const AMeta&) const noexcept;
+
+      template<class T>
+      NOD() constexpr T As() const noexcept;
+
+      constexpr Token Kind() const noexcept;
+   };
+
+
+   ///                                                                        
+   /// Data type interchange format                                           
+   ///                                                                        
+   struct LANGULUS_API(RTTI) DMeta : AMeta {
+      LANGULUS_BASES(AMeta);
+
+      using AMeta::AMeta;
+      constexpr DMeta(const MetaData*) noexcept;
+
+      constexpr Token GetToken() const noexcept;
+
+      const MetaData* operator -> () const noexcept;
+      const MetaData& operator *  () const noexcept;
+
+      constexpr bool operator == (const DMeta&) const noexcept;
+      constexpr bool operator |  (const DMeta&) const noexcept;
+      constexpr bool operator &  (const DMeta&) const noexcept;
+   };
+
+         
+   ///                                                                        
+   /// Verb type interchange format                                           
+   ///                                                                        
+   struct LANGULUS_API(RTTI) VMeta : AMeta {
+      LANGULUS_BASES(AMeta);
+
+      using AMeta::AMeta;
+      constexpr VMeta(const MetaVerb*) noexcept;
+
+      constexpr Token GetToken() const noexcept;
+
+      const MetaVerb* operator -> () const noexcept;
+      const MetaVerb& operator *  () const noexcept;
+
+      constexpr bool operator == (const VMeta&) const noexcept;
+   };
+      
+
+   ///                                                                        
+   /// Trait type interchange format                                          
+   ///                                                                        
+   struct LANGULUS_API(RTTI) TMeta : AMeta {
+      LANGULUS_BASES(AMeta);
+
+      using AMeta::AMeta;
+      constexpr TMeta(const MetaTrait*) noexcept;
+
+      constexpr Token GetToken() const noexcept;
+
+      const MetaTrait* operator -> () const noexcept;
+      const MetaTrait& operator *  () const noexcept;
+
+      constexpr bool operator == (const TMeta&) const noexcept;
+   };
+
+
+   ///                                                                        
+   /// Definition interchange format for constants                            
+   ///                                                                        
+   struct LANGULUS_API(RTTI) CMeta : AMeta {
+      LANGULUS_BASES(AMeta);
+
+      using AMeta::AMeta;
+      constexpr CMeta(const MetaConst*) noexcept;
+
+      constexpr Token GetToken() const noexcept;
+
+      const MetaConst* operator -> () const noexcept;
+      const MetaConst& operator *  () const noexcept;
+
+      constexpr bool operator == (const CMeta&) const noexcept;
+   };
 
 } // namespace Langulus::RTTI
 
 namespace Langulus::CT
 {
 
-   /// Concept for meta definitions                                           
+   /// Concept for meta type interchangers                                    
    template<class...T>
-   concept Meta = ((SameAsOneOf<T,
-         RTTI::AMeta, RTTI::DMeta, RTTI::TMeta, RTTI::VMeta, RTTI::CMeta>
-      ) and ...);
+   concept Meta = (DerivedFrom<T, RTTI::AMeta> and ...);
 
 } // namespace Langulus::CT
 

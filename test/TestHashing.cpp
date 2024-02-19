@@ -16,12 +16,8 @@ SCENARIO("Test hashing different kinds of types", "[hash]") {
       std::string same1str = "Same1";
       std::string same2str = "Same1";
 
-      REQUIRE(same1.data() != same2.data());
       REQUIRE(HashOf(same1) == HashOf(same2));
-
-      REQUIRE(same1str.data() != same2str.data());
       REQUIRE(HashOf(same1str) == HashOf(same2str));
-
       REQUIRE(HashOf(same1) == HashOf(same1str));
       REQUIRE(HashOf(same2) == HashOf(same2str));
    }

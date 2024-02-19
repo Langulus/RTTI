@@ -30,3 +30,10 @@ using timer = Catch::Benchmark::Chronometer;
 
 template<class T>
 using uninitialized = Catch::Benchmark::storage_for<T>;
+
+template<class L, class R, bool RESULT = true>
+struct TypePair {
+   using LHS = L;
+   using RHS = R;
+   static constexpr bool Result = RESULT;
+};

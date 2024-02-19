@@ -84,8 +84,8 @@ namespace Langulus::RTTI
 
 
    ///                                                                        
-   ///   Used to reflect a member variable                                    
-   ///   You can reflect arrays of elements, tag members as traits, etc.      
+   ///   Type-erased member variable reflection                               
+   ///   Can represent arrays of elements, tag members as traits, etc.        
    ///                                                                        
    struct Member {
       LANGULUS(UNALLOCATABLE) true;
@@ -105,30 +105,29 @@ namespace Langulus::RTTI
       // We can't get at reflection time, so we generate a lambda that  
       // retrieves it when required                                     
       FTraitRetriever mTraitRetriever {};
-      // Member token                                                   
-      Token mName {};
 
    public:
-      template<CT::Data OWNER, CT::Data DATA>
-      NOD() static Member From(DATA OWNER::* member, const Token&);
-      template<CT::Decayed TRAIT, CT::Data OWNER, CT::Data DATA>
-      NOD() static Member FromTagged(DATA OWNER::* member, const Token&);
+      constexpr Member() noexcept = default;
+      constexpr Member(const Member&) noexcept = default;
+
+      template<class T1, class T2>
+      Member(const NamedMember<T1, T2>&);
 
       NOD() bool operator == (const Member&) const noexcept;
       
       template<CT::Data T>
-      NOD() const T& As(const Byte*) const noexcept;
+      NOD() T const& As(const Byte*) const noexcept;
       template<CT::Data T>
       NOD() T& As(Byte*) const noexcept;
       
-      NOD() constexpr const Byte* Get(const Byte*) const noexcept;
-      NOD() constexpr Byte* Get(Byte*) const noexcept;
+      NOD() constexpr Byte const* Get(Byte const*) const noexcept;
+      NOD() constexpr Byte*       Get(Byte*) const noexcept;
 
       NOD() DMeta GetType() const;
       NOD() TMeta GetTrait() const;
    };
 
-   using MemberList = ::std::span<const Member>;
+   using MemberList = ::std::vector<Member>;
 
    
    ///                                                                        

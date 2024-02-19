@@ -15,22 +15,6 @@
 namespace Langulus::RTTI
 {
 
-   constexpr Token TMeta::GetToken() const noexcept {
-   #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-      return mMeta ? mMeta->GetShortestUnambiguousToken() : MetaTrait::DefaultToken;
-   #else
-      return mMeta ? mMeta->mToken : MetaTrait::DefaultToken;
-   #endif
-   }
-
-   constexpr Hash TMeta::GetHash() const noexcept {
-      return mMeta ? mMeta->mHash : Hash {};
-   }
-
-   constexpr bool TMeta::operator == (const TMeta& rhs) const noexcept {
-      return mMeta == rhs.mMeta or (mMeta and mMeta->Is(rhs));
-   }
-
    /// Get the reflected token for a type                                     
    /// If type wasn't reflected with LANGULUS(NAME), then the original C++    
    /// name will be used                                                      
@@ -83,7 +67,7 @@ namespace Langulus::RTTI
       // reflection function might end up forever looping otherwise     
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          meta = Instance.RegisterTrait(GetReflectedToken<T>(), RTTI::Boundary);
-         MetaTrait& generated = *const_cast<MetaTrait*>(meta.mMeta);
+         MetaTrait& generated = const_cast<MetaTrait&>(*meta);
       #else
          meta = ::std::make_unique<MetaTrait>();
          MetaTrait& generated = *const_cast<MetaTrait*>(meta.get());
@@ -137,6 +121,4 @@ namespace Langulus::RTTI
 
 } // namespace Langulus::RTTI
 
-#ifdef VERBOSE
-   #undef VERBOSE
-#endif
+#undef VERBOSE
