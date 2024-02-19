@@ -7,12 +7,11 @@
 /// See LICENSE file, or https://www.gnu.org/licenses                         
 ///                                                                           
 #pragma once
-#include "../../source/MetaData.hpp"
+#include "../../source/Meta.inl"
 #include "../../source/MetaData.inl"
-#include "../../source/MetaTrait.hpp"
 #include "../../source/MetaTrait.inl"
-#include "../../source/MetaVerb.hpp"
 #include "../../source/MetaVerb.inl"
+#include "../../source/Tag.hpp"
 
 
 namespace Langulus

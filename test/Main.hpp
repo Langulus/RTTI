@@ -142,7 +142,7 @@ struct ImplicitlyReflectedData {
 class alignas(128) ImplicitlyReflectedDataWithTraits : public ImplicitlyReflectedData {
 public:
    int member {664};
-   bool anotherMember {};
+   RTTI::Tag<bool, Traits::Tag> anotherMember {};
    int anotherMemberArray [12] {};
    int* sparseMember {};
 
@@ -181,12 +181,13 @@ public:
    LANGULUS_CONVERTS_FROM(Pi);
    LANGULUS_NAMED_VALUES();
 
-   LANGULUS_PROPERTIES_START(ImplicitlyReflectedDataWithTraits)
-      LANGULUS_PROPERTY(member),
-      LANGULUS_PROPERTY_TRAIT(anotherMember, Tag),
-      LANGULUS_PROPERTY(anotherMemberArray),
-      LANGULUS_PROPERTY(sparseMember)
-   LANGULUS_PROPERTIES_END();
+   using Self = ImplicitlyReflectedDataWithTraits;
+   LANGULUS_MEMBERS(
+      &Self::member,
+      &Self::anotherMember,
+      &Self::anotherMemberArray,
+      &Self::sparseMember
+   );
 };
 
 class alignas(128) Complex {
@@ -203,12 +204,13 @@ public:
    IF_LANGULUS_MANAGED_MEMORY(LANGULUS(POOL_TACTIC) PoolTactic::Size);
    LANGULUS(ALLOCATION_PAGE) 250;
 
-   LANGULUS_PROPERTIES_START(Complex)
-      LANGULUS_PROPERTY(member),
-      LANGULUS_PROPERTY_TRAIT(anotherMember, Tag),
-      LANGULUS_PROPERTY(anotherMemberArray),
-      LANGULUS_PROPERTY(sparseMember)
-   LANGULUS_PROPERTIES_END();
+   using Self = Complex;
+   LANGULUS_MEMBERS(
+      &Self::member,
+      &Self::anotherMember,
+      &Self::anotherMemberArray,
+      &Self::sparseMember
+   );
 
    Complex(int stuff) : member(stuff) {}
    ~Complex() {
@@ -227,6 +229,11 @@ struct AnotherTypeWithSimilarilyNamedValues {
    inline bool operator == (const AnotherTypeWithSimilarilyNamedValues&) const noexcept = default;
 };
 
+struct CheckingWhatGetsInherited : ImplicitlyReflectedDataWithTraits {
+   LANGULUS(NAME) "CheckingWhatGetsInherited";
+
+   using ImplicitlyReflectedDataWithTraits::ImplicitlyReflectedDataWithTraits;
+};
 
 class ContainsComplex {
    Complex mData;

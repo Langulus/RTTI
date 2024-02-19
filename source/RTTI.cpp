@@ -10,6 +10,7 @@
 #include "MetaData.inl"
 #include "MetaVerb.inl"
 #include "MetaTrait.inl"
+#include "Meta.inl"
 #include "Assumptions.hpp"
 #include <cctype>
 

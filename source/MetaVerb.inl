@@ -15,22 +15,6 @@
 namespace Langulus::RTTI
 {
 
-   constexpr Token VMeta::GetToken() const noexcept {
-   #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-      return mMeta ? mMeta->GetShortestUnambiguousToken() : MetaVerb::DefaultToken;
-   #else
-      return mMeta ? mMeta->mToken : MetaVerb::DefaultToken;
-   #endif
-   }
-
-   constexpr Hash VMeta::GetHash() const noexcept {
-      return mMeta ? mMeta->mHash : Hash {};
-   }
-
-   constexpr bool VMeta::operator == (const VMeta& rhs) const noexcept {
-      return mMeta == rhs.mMeta or (mMeta and mMeta->Is(rhs));
-   }
-
    /// Isolate and lowercase an operator token                                
    ///   @param token - the operator                                          
    ///   @return the lowercased and isolated operator token                   
@@ -182,7 +166,7 @@ namespace Langulus::RTTI
             MetaVerb::GetReflectedNegativeVerbOperator<T>(),
             RTTI::Boundary
          );
-         MetaVerb& generated = *const_cast<MetaVerb*>(meta.mMeta);
+         MetaVerb& generated = const_cast<MetaVerb&>(*meta);
       #else
          meta = ::std::make_unique<MetaVerb>();
          MetaVerb& generated = *const_cast<MetaVerb*>(meta.get());
@@ -273,6 +257,4 @@ namespace Langulus::RTTI
 
 } // namespace Langulus::RTTI
 
-#ifdef VERBOSE
-   #undef VERBOSE
-#endif
+#undef VERBOSE

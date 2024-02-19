@@ -675,6 +675,7 @@ namespace Langulus
       else if constexpr (not S<T>::Shallow and not CT::Void<Decay<T>>) {
          // Clone                                                       
          using DT = Decay<T>;
+
          if constexpr (requires { new DT (Clone(DenseCast(*value))); })
             return new (placement) DT (Clone(DenseCast(*value)));
          else if constexpr (CT::Inner::POD<DT>) {
@@ -772,6 +773,7 @@ namespace Langulus
          if constexpr (not S<T>::Shallow and not CT::Void<Decay<T>>) {
             // Clone                                                    
             using DT = Decay<T>;
+
             if constexpr (CT::Mutable<decltype(DenseCast(lhs))>) {
                if constexpr (requires(DT& a) { a = Clone(DenseCast(*rhs)); })
                   return (DenseCast(lhs) = Clone(DenseCast(*rhs)));

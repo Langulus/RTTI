@@ -262,25 +262,21 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
 
          REQUIRE(meta->mMembers.size() == 4);
          REQUIRE(meta->mMembers[0].mCount == 1);
-         REQUIRE(meta->mMembers[0].mName == "member");
          REQUIRE(meta->mMembers[0].mOffset >= sizeof(ImplicitlyReflectedData));
          REQUIRE(meta->mMembers[0].GetTrait() == nullptr);
          REQUIRE(meta->mMembers[0].GetType()->Is<int>());
 
          REQUIRE(meta->mMembers[1].mCount == 1);
-         REQUIRE(meta->mMembers[1].mName == "anotherMember");
          REQUIRE(meta->mMembers[1].mOffset > meta->mMembers[0].mOffset);
          REQUIRE(meta->mMembers[1].GetTrait()->Is<Traits::Tag>());
          REQUIRE(meta->mMembers[1].GetType()->Is<bool>());
 
          REQUIRE(meta->mMembers[2].mCount == 12);
-         REQUIRE(meta->mMembers[2].mName == "anotherMemberArray");
          REQUIRE(meta->mMembers[2].mOffset > meta->mMembers[1].mOffset);
          REQUIRE(meta->mMembers[2].GetTrait() == nullptr);
          REQUIRE(meta->mMembers[2].GetType()->Is<int>());
 
          REQUIRE(meta->mMembers[3].mCount == 1);
-         REQUIRE(meta->mMembers[3].mName == "sparseMember");
          REQUIRE(meta->mMembers[3].mOffset > meta->mMembers[2].mOffset);
          REQUIRE(meta->mMembers[3].GetTrait() == nullptr);
          REQUIRE(meta->mMembers[3].GetType()->Is<int>());
@@ -307,6 +303,77 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
 
          Pi source;
          ImplicitlyReflectedDataWithTraits convertedFromPi1;
+         pimeta->GetConverter(meta)(&source, &convertedFromPi1);
+         REQUIRE(convertedFromPi1.member == 314);
+      }
+   }
+
+   GIVEN("CheckingWhatGetsInherited") {
+      WHEN("Reflected") {
+         CheckingWhatGetsInherited instance;
+         ImplicitlyReflectedData* ptrtobase = &static_cast<ImplicitlyReflectedData&>(instance);
+         const auto baseoffset = reinterpret_cast<char*>(ptrtobase) - reinterpret_cast<char*>(&instance);
+         auto meta = MetaData::Of<CheckingWhatGetsInherited>();
+
+         REQUIRE(meta != nullptr);
+         REQUIRE(meta->mInfo == "Info about MyType");
+         REQUIRE(meta->mFileExtensions == "txt, pdf");
+         REQUIRE(meta->mVersionMajor == 2);
+         REQUIRE(meta->mVersionMinor == 1);
+         REQUIRE(meta->mIsDeep == true);
+         REQUIRE(meta->mIsPOD == false);           // not POD due to being abstract
+         REQUIRE(meta->mIsNullifiable == false);   // not nullifiable due to being abstract
+         IF_LANGULUS_MANAGED_MEMORY(REQUIRE(meta->mPoolTactic == PoolTactic::Size));
+         REQUIRE(meta->mConcreteRetriever()->Is<ImplicitlyReflectedData>());
+         REQUIRE(meta->mIsUninsertable == true);
+         REQUIRE(meta->mAllocationPage == Roof2(250 * sizeof(ImplicitlyReflectedDataWithTraits)));
+         REQUIRE(meta->mIsAbstract == true);
+         REQUIRE(meta->mSize == sizeof(ImplicitlyReflectedDataWithTraits));
+         REQUIRE(meta->mAlignment == alignof(ImplicitlyReflectedDataWithTraits));
+         REQUIRE(meta->mOrigin == meta);
+         REQUIRE(meta->mIsConstant == false);
+         REQUIRE(meta->mDeptr == nullptr);
+         REQUIRE(meta->mDecvq == MetaData::Of<CheckingWhatGetsInherited>());
+
+         REQUIRE(meta->mBases.size() == 1);
+         REQUIRE(meta->mBases[0].mType->Is<ImplicitlyReflectedData>());
+         REQUIRE(meta->mBases[0].mImposed == false);
+         REQUIRE(meta->mBases[0].mBinaryCompatible == false);
+         REQUIRE(meta->mBases[0].mCount == 1);
+         REQUIRE(baseoffset >= 0);
+         REQUIRE(meta->mBases[0].mOffset == static_cast<Offset>(baseoffset));
+
+         REQUIRE(meta->mAbilities.size() == 1);
+         REQUIRE(meta->mAbilities.begin()->first->Is<Verbs::Create>());
+         REQUIRE(meta->mAbilities.begin()->second.mVerb->Is<Verbs::Create>());
+         REQUIRE(meta->mAbilities.begin()->second.mOverloadsConstant.size() == 1);
+         REQUIRE(meta->mAbilities.begin()->second.mOverloadsConstant.contains(Ability::Signature {}));
+         REQUIRE(meta->mAbilities.begin()->second.mOverloadsMutable.size() == 1);
+         REQUIRE(meta->mAbilities.begin()->second.mOverloadsMutable.contains(Ability::Signature {}));
+
+         REQUIRE(meta->mMembers.size() == 0);
+         REQUIRE(meta->mNamedValues.size() == 0);
+
+         const auto intmeta = MetaData::Of<int>();
+         REQUIRE(meta->mConvertersTo.size() == 1);
+         REQUIRE(meta->mConvertersTo.at(intmeta).mType->Is<int>());
+         REQUIRE(meta->mConvertersTo.at(intmeta).mFunction);
+         REQUIRE(meta->GetConverter(intmeta) == meta->mConvertersTo.at(intmeta).mFunction);
+
+         const auto pimeta = MetaData::Of<Pi>();
+         REQUIRE(meta->mConvertersFrom.size() == 1);
+         REQUIRE(meta->mConvertersFrom.at(pimeta).mType->Is<Pi>());
+         REQUIRE(meta->mConvertersFrom.at(pimeta).mFunction);
+         REQUIRE(meta->GetConverter(pimeta) == nullptr);
+
+         REQUIRE(pimeta->GetConverter(meta) == meta->mConvertersFrom.at(pimeta).mFunction);
+
+         int converted = 1;
+         meta->GetConverter(intmeta)(&instance, &converted);
+         REQUIRE(converted == 664);
+
+         Pi source;
+         CheckingWhatGetsInherited convertedFromPi1;
          pimeta->GetConverter(meta)(&source, &convertedFromPi1);
          REQUIRE(convertedFromPi1.member == 314);
       }

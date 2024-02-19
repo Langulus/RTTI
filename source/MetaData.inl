@@ -23,221 +23,6 @@
 namespace Langulus::RTTI
 {
 
-   constexpr Token DMeta::GetToken() const noexcept {
-   #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-      return mMeta ? mMeta->GetShortestUnambiguousToken() : MetaData::DefaultToken;
-   #else
-      return mMeta ? mMeta->mToken : MetaData::DefaultToken;
-   #endif
-   }
-
-   constexpr Hash DMeta::GetHash() const noexcept {
-      return mMeta ? mMeta->mHash : Hash {};
-   }
-
-   constexpr bool DMeta::operator == (const DMeta& rhs) const noexcept {
-      return mMeta == rhs.mMeta or (mMeta and mMeta->IsExact(rhs));
-   }
-
-   constexpr bool DMeta::operator |= (const DMeta& rhs) const noexcept {
-      return mMeta == rhs.mMeta or (mMeta and mMeta->IsSimilar(rhs));
-   }
-
-   constexpr bool DMeta::operator &= (const DMeta& rhs) const noexcept {
-      return mMeta == rhs.mMeta or (mMeta and mMeta->Is(rhs));
-   }
-
-   constexpr Token CMeta::GetToken() const noexcept {
-   #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-      return mMeta ? mMeta->GetShortestUnambiguousToken() : MetaConst::DefaultToken;
-   #else
-      return mMeta ? mMeta->mToken : MetaConst::DefaultToken;
-   #endif
-   }
-
-   constexpr Hash CMeta::GetHash() const noexcept {
-      return mMeta ? mMeta->mHash : Hash {};
-   }
-
-   constexpr bool CMeta::operator == (const CMeta& rhs) const noexcept {
-      return mMeta == rhs.mMeta or (mMeta and mMeta->Is(rhs));
-   }
-
-   constexpr AMeta::AMeta(const DMeta& raw) noexcept
-      : mMeta {raw.mMeta} {}
-
-   constexpr AMeta::AMeta(const TMeta& raw) noexcept
-      : mMeta {raw.mMeta} {}
-
-   constexpr AMeta::AMeta(const VMeta& raw) noexcept
-      : mMeta {raw.mMeta} {}
-
-   constexpr AMeta::AMeta(const CMeta& raw) noexcept
-      : mMeta {raw.mMeta} {}
-
-   constexpr Token AMeta::GetToken() const noexcept {
-   #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-      return mMeta ? mMeta->GetShortestUnambiguousToken() : "null";
-   #else
-      return mMeta ? mMeta->mToken : "null";
-   #endif
-   }
-   constexpr Hash AMeta::GetHash() const noexcept {
-      return mMeta ? mMeta->mHash : Hash {};
-   }
-
-   constexpr bool AMeta::operator == (const AMeta& rhs) const noexcept {
-      if (mMeta == rhs.mMeta)
-         return true;
-
-      const DMeta lhs_dmeta = dynamic_cast<const MetaData*>(mMeta);
-      const DMeta rhs_dmeta = dynamic_cast<const MetaData*>(rhs.mMeta);
-      if (lhs_dmeta and rhs_dmeta)
-         return lhs_dmeta == rhs_dmeta;
-
-      const TMeta lhs_tmeta = dynamic_cast<const MetaTrait*>(mMeta);
-      const TMeta rhs_tmeta = dynamic_cast<const MetaTrait*>(rhs.mMeta);
-      if (lhs_tmeta and rhs_tmeta)
-         return lhs_tmeta == rhs_tmeta;
-
-      const VMeta lhs_vmeta = dynamic_cast<const MetaVerb*>(mMeta);
-      const VMeta rhs_vmeta = dynamic_cast<const MetaVerb*>(rhs.mMeta);
-      if (lhs_vmeta and rhs_vmeta)
-         return lhs_vmeta == rhs_vmeta;
-
-      const CMeta lhs_cmeta = dynamic_cast<const MetaConst*>(mMeta);
-      const CMeta rhs_cmeta = dynamic_cast<const MetaConst*>(rhs.mMeta);
-      if (lhs_cmeta and rhs_cmeta)
-         return lhs_cmeta == rhs_cmeta;
-
-      return false;
-   }
-   
-   constexpr bool AMeta::operator &= (const AMeta& rhs) const noexcept {
-      if (mMeta == rhs.mMeta)
-         return true;
-
-      const DMeta lhs_dmeta = dynamic_cast<const MetaData*>(mMeta);
-      const DMeta rhs_dmeta = dynamic_cast<const MetaData*>(rhs.mMeta);
-      if (lhs_dmeta and rhs_dmeta)
-         return lhs_dmeta &= rhs_dmeta;
-
-      return false;
-   }
-
-   constexpr bool AMeta::operator |= (const AMeta& rhs) const noexcept {
-      if (mMeta == rhs.mMeta)
-         return true;
-
-      const DMeta lhs_dmeta = dynamic_cast<const MetaData*>(mMeta);
-      const DMeta rhs_dmeta = dynamic_cast<const MetaData*>(rhs.mMeta);
-      if (lhs_dmeta and rhs_dmeta)
-         return lhs_dmeta |= rhs_dmeta;
-
-      return false;
-   }
-
-   constexpr bool AMeta::operator == (const VMeta& rhs) const noexcept {
-      if (mMeta == static_cast<const Meta*>(rhs.mMeta))
-         return true;
-
-      const VMeta lhs_vmeta = dynamic_cast<const MetaVerb*>(mMeta);
-      const VMeta rhs_vmeta = dynamic_cast<const MetaVerb*>(rhs.mMeta);
-      if (lhs_vmeta and rhs_vmeta)
-         return lhs_vmeta == rhs_vmeta;
-
-      return false;
-   }
-
-   constexpr bool AMeta::operator == (const TMeta& rhs) const noexcept {
-      if (mMeta == static_cast<const Meta*>(rhs.mMeta))
-         return true;
-
-      const TMeta lhs_tmeta = dynamic_cast<const MetaTrait*>(mMeta);
-      const TMeta rhs_tmeta = dynamic_cast<const MetaTrait*>(rhs.mMeta);
-      if (lhs_tmeta and rhs_tmeta)
-         return lhs_tmeta == rhs_tmeta;
-
-      return false;
-   }
-
-   constexpr bool AMeta::operator == (const CMeta& rhs) const noexcept {
-      if (mMeta == static_cast<const Meta*>(rhs.mMeta))
-         return true;
-
-      const CMeta lhs_cmeta = dynamic_cast<const MetaConst*>(mMeta);
-      const CMeta rhs_cmeta = dynamic_cast<const MetaConst*>(rhs.mMeta);
-      if (lhs_cmeta and rhs_cmeta)
-         return lhs_cmeta == rhs_cmeta;
-
-      return false;
-   }
-
-   constexpr bool AMeta::operator == (const DMeta& rhs) const noexcept {
-      const DMeta lhs_dmeta = dynamic_cast<const MetaData*>(mMeta);
-      return lhs_dmeta ? lhs_dmeta == rhs : false;
-   }
-
-   constexpr bool AMeta::operator &= (const DMeta& rhs) const noexcept {
-      const DMeta lhs_dmeta = dynamic_cast<const MetaData*>(mMeta);
-      return lhs_dmeta ? lhs_dmeta &= rhs : false;
-   }
-
-   constexpr bool AMeta::operator |= (const DMeta& rhs) const noexcept {
-      const DMeta lhs_dmeta = dynamic_cast<const MetaData*>(mMeta);
-      return lhs_dmeta ? lhs_dmeta |= rhs : false;
-   }
-
-   template<class T>
-   constexpr T AMeta::As() const noexcept {
-      if (not mMeta)
-         return {};
-
-      if constexpr (CT::Exact<T, DMeta>)
-         return dynamic_cast<const MetaData*>(mMeta);
-      else if constexpr (CT::Exact<T, TMeta>)
-         return dynamic_cast<const MetaTrait*>(mMeta);
-      else if constexpr (CT::Exact<T, VMeta>)
-         return dynamic_cast<const MetaVerb*>(mMeta);
-      else if constexpr (CT::Exact<T, CMeta>)
-         return dynamic_cast<const MetaConst*>(mMeta);
-      else if constexpr (CT::Exact<T, AMeta>)
-         return *this;
-      else LANGULUS_ERROR(
-         "T is not a definition interchange type, "
-         "has to be one of the following: DMeta, TMeta, CMeta, VMeta, AMeta"
-      );
-   }
-
-   constexpr AMeta::operator DMeta() const noexcept {
-      return As<DMeta>();
-   }
-   constexpr AMeta::operator TMeta() const noexcept {
-      return As<TMeta>();
-   }
-   constexpr AMeta::operator CMeta() const noexcept {
-      return As<CMeta>();
-   }
-   constexpr AMeta::operator VMeta() const noexcept {
-      return As<VMeta>();
-   }
-
-   constexpr Token AMeta::Kind() const noexcept {
-      if (not mMeta)
-         return "unknown";
-
-      if (dynamic_cast<const MetaData*>(mMeta))
-         return "meta data";
-      else if (dynamic_cast<const MetaTrait*>(mMeta))
-         return "meta trait";
-      else if (dynamic_cast<const MetaVerb*>(mMeta))
-         return "meta verb";
-      else if (dynamic_cast<const MetaConst*>(mMeta))
-         return "meta const";
-      else 
-         return "unknown";
-   }
-
    /// Get the minimum allocation page size of the type (in bytes)            
    /// This guarantees two things:                                            
    ///   1. The byte size is always a power-of-two                            
@@ -263,16 +48,17 @@ namespace Langulus::RTTI
    ///                                                                        
 
    /// Generate a member definition                                           
-   ///   @tparam OWNER - the owner of the member (deduced)                    
-   ///   @tparam DATA - the type of the member (deduced)                      
-   ///   @param member - pointer to member                                    
-   ///   @param name - variable name                                          
+   ///   @param member - a NamedMember reflection                             
    ///   @return the generated member descriptor                              
-   template<CT::Data OWNER, CT::Data DATA>
-   Member Member::From(DATA OWNER::* member, const Token& name) {
+   template<class T1, class T2>
+   Member::Member(const NamedMember<T1, T2>& member) {
+      using T = NamedMember<T1, T2>;
+      using OWNER = typename T::Owner;
+      using DATA  = typename T::Type;
+
       alignas(OWNER) static const Byte storage[sizeof(OWNER)];
       const auto This = reinterpret_cast<const OWNER*>(storage);
-      const auto Prop = ::std::addressof(This->*member);
+      const auto Prop = ::std::addressof(This->*member.mHandle);
       const auto offset =
            reinterpret_cast<const Byte*>(Prop)
          - reinterpret_cast<const Byte*>(This);
@@ -280,26 +66,14 @@ namespace Langulus::RTTI
          "Member is laid (memorywise) before owner");
 
       //TODO if offset is outside instance limits, then mark as static, instead of throw?
-      Member m;
-      m.mTypeRetriever = MetaData::Of<Deext<DATA>>;
-      m.mOffset = static_cast<Offset>(offset);
-      m.mCount = ExtentOf<DATA>;
-      m.mName = name;
-      return m;
-   }
-
-   /// Generate a member definition, and tag it with a trait definition       
-   ///   @tparam TRAIT - the trait to tag with                                
-   ///   @tparam OWNER - the owner of the member (deduced)                    
-   ///   @tparam DATA - the type of the member (deduced)                      
-   ///   @param member - pointer to member                                    
-   ///   @param name - variable name                                          
-   ///   @return the generated member descriptor                              
-   template<CT::Decayed TRAIT, CT::Data OWNER, CT::Data DATA>
-   Member Member::FromTagged(DATA OWNER::* member, const Token& name) {
-      Member result = Member::From(member, name);
-      result.mTraitRetriever = MetaTrait::Of<TRAIT>;
-      return result;
+      mOffset = static_cast<Offset>(offset);
+      mCount = ExtentOf<DATA>;
+      if constexpr (requires { DATA::CTTI_TagTag; }) {
+         // Reflect the trait tag                                       
+         mTypeRetriever  = MetaData::Of<typename Decay<DATA>::DataType>;
+         mTraitRetriever = MetaTrait::Of<typename Decay<DATA>::TagType>;
+      }
+      else mTypeRetriever = MetaData::Of<Deext<DATA>>;
    }
 
    /// Get the reflected member type at runtime                               
@@ -333,8 +107,7 @@ namespace Langulus::RTTI
       return (type1 == type2 or (type1 and type1->IsExact(type2)))
          and mOffset == rhs.mOffset
          and mCount == rhs.mCount
-         and (trait1 == trait2 or (trait1 and trait1->Is(trait2)))
-         and mName == rhs.mName;
+         and (trait1 == trait2 or (trait1 and trait1->Is(trait2)));
    }
 
    /// Reinterpret the member as a given type and access it (const, unsafe)   
@@ -368,7 +141,14 @@ namespace Langulus::RTTI
    constexpr Byte* Member::Get(Byte* instance) const noexcept {
       return instance + mOffset;
    }
-   
+
+   /// Generate constexpr tuple with the members                              
+   ///   @return a tuple of the desired member pointers                       
+   template<class THIS, class...DATA>
+   constexpr auto CreateMembersTuple(DATA THIS::*... handle) {
+      return ::std::tuple {NamedMember<THIS, DATA>{handle}...};
+   }
+
 
    ///                                                                        
    ///   Ability implementation                                               
@@ -433,7 +213,7 @@ namespace Langulus::RTTI
    ///   @return true if both converters have the same type                   
    LANGULUS(INLINED)
    constexpr bool Converter::operator == (const Converter& rhs) const noexcept {
-      return mType &= rhs.mType;
+      return mType == rhs.mType;
    }
 
    /// Create a converter, utilizing available cast operators/constructors    
@@ -445,13 +225,26 @@ namespace Langulus::RTTI
       return {
          type,
          [](const void* from, void* to) {
-            auto fromT = const_cast<FROM*>(reinterpret_cast<const FROM*>(from));
-            auto toT   = reinterpret_cast<TO*>(to);
+            auto fromT1 = reinterpret_cast<const FROM*>(from);
+            auto fromT2 = const_cast<FROM*>(reinterpret_cast<const FROM*>(from));
+            auto toT    = reinterpret_cast<TO*>(to);
 
-            if constexpr (requires {static_cast<TO>(*fromT);})
-               new (toT) TO {static_cast<TO>(*fromT)};
+            // Conversion is a complete mess across compilers, so all   
+            // these acrobatics are needed to remain consistent         
+            if constexpr (requires { TO {*fromT1}; })
+               new (toT) TO {*fromT1};
+            else if constexpr (requires { TO {*fromT2}; })
+               new (toT) TO {*fromT2};
+            else if constexpr (requires { TO {fromT1->operator TO()}; })
+               new (toT) TO {fromT1->operator TO()};
+            else if constexpr (requires { TO {fromT2->operator TO()}; })
+               new (toT) TO {fromT2->operator TO()};
+            else if constexpr (requires { TO {static_cast<TO>(*fromT1)}; })
+               new (toT) TO {static_cast<TO>(*fromT1)};
+            else if constexpr (requires { TO {static_cast<TO>(*fromT2)}; })
+               new (toT) TO {static_cast<TO>(*fromT2)};
             else
-               LANGULUS_ERROR("Unhandled conversion route");
+               LANGULUS_ERROR("Unhandled conversion route (MSVC bad behavior detection)");
          }
       };
    }
@@ -567,7 +360,7 @@ namespace Langulus::RTTI
          // We immediately request its spot in the database, or the     
          // reflection function might end up forever looping otherwise  
          meta = Instance.RegisterData(NameOf<T>(), RTTI::Boundary);
-         auto& generated = *const_cast<MetaData*>(meta.mMeta);
+         auto& generated = const_cast<MetaData&>(*meta);
       #else
          // Keep a static meta pointer for each translation unit        
          static constinit ::std::unique_ptr<MetaData> meta;
@@ -584,7 +377,7 @@ namespace Langulus::RTTI
       if constexpr (CT::Complete<Deptr<T>>) {
          // Reflect the denser type and propagate its origin properties 
          auto denser = MetaData::Of<Deptr<T>>();
-         generated = *denser.mMeta;
+         generated = *denser;
          generated.mDeptr = denser;
 
          #if LANGULUS_FEATURE(MANAGED_MEMORY)
@@ -676,7 +469,7 @@ namespace Langulus::RTTI
          // We immediately request its spot in the database, or the     
          // reflection function might end up forever looping otherwise  
          meta = Instance.RegisterData(NameOf<T>(), RTTI::Boundary);
-         auto& generated = *const_cast<MetaData*>(meta.mMeta);
+         auto& generated = const_cast<MetaData&>(*meta);
       #else
          // Keep a static meta pointer for each translation unit        
          static constinit ::std::unique_ptr<MetaData> meta;
@@ -692,7 +485,7 @@ namespace Langulus::RTTI
 
       // Reflect the origin type and propagate its properties           
       auto denser = MetaData::Of<Decay<T>>();
-      generated = *denser.mMeta;
+      generated = *denser;
       generated.mOrigin = denser;
       generated.mDecvq = MetaData::Of<DecvqAll<T>>();
 
@@ -767,7 +560,7 @@ namespace Langulus::RTTI
          // We immediately request its spot in the database, or the     
          // reflection function might end up forever looping otherwise  
          meta = Instance.RegisterData(NameOf<T>(), RTTI::Boundary);
-         MetaData& generated = *const_cast<MetaData*>(meta.mMeta);
+         MetaData& generated = const_cast<MetaData&>(*meta);
       #else
          // Keep a static meta pointer for each translation unit        
          static constinit ::std::unique_ptr<MetaData> meta;
@@ -1151,8 +944,17 @@ namespace Langulus::RTTI
       }
 
       // Set reflected members                                          
-      if constexpr (requires { T::CTTI_Members; })
-         generated.mMembers = T::CTTI_Members;
+      if constexpr (requires { T::CTTI_Members; }) {
+         // Make sure that members don't come from a base class         
+         using List = decltype(T::CTTI_Members);
+
+         if constexpr (::std::tuple_size_v<List>
+         and CT::Exact<typename ::std::tuple_element<0, List>::type::Owner, T>) {
+            std::apply([&generated](auto&&...args) {
+               (generated.mMembers.emplace_back(args), ...);
+            }, T::CTTI_Members);
+         }
+      }
    }
 
    /// Set the list of bases for a given meta definition                      
@@ -1252,31 +1054,29 @@ namespace Langulus::RTTI
       );
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         const auto cmeta = const_cast<MetaConst*>(
-            Instance.RegisterConstant(generatedToken, RTTI::Boundary).mMeta);
-         LANGULUS_ASSERT(cmeta, Meta,
-            "Meta constant conflict on registration");
-         cmeta->mLibraryName = RTTI::Boundary;
+         auto& cmeta = const_cast<MetaConst&>(
+            *Instance.RegisterConstant(generatedToken, RTTI::Boundary));
+         cmeta.mLibraryName = RTTI::Boundary;
       #else
          staticMC = ::std::make_unique<MetaConst>();
-         const auto cmeta = staticMC.get();
+         auto& cmeta = *staticMC.get();
       #endif
 
-      LANGULUS_ASSERT(cmeta->mToken == generatedToken,
+      LANGULUS_ASSERT(cmeta.mToken == generatedToken,
          Meta, "Token not set");
-      LANGULUS_ASSERT(cmeta->mHash == HashOf(cmeta->mToken),
+      LANGULUS_ASSERT(cmeta.mHash == HashOf(cmeta.mToken),
          Meta, "Hash not set");
 
-      cmeta->mInfo = named.mInfo;
-      cmeta->mCppName = cmeta->mToken;
-      cmeta->mValueType = this;
+      cmeta.mInfo = named.mInfo;
+      cmeta.mCppName = cmeta.mToken;
+      cmeta.mValueType = this;
       new (&staticInstance) T {D::Value};
-      cmeta->mPtrToValue = &staticInstance;
+      cmeta.mPtrToValue = &staticInstance;
 
-      VERBOSE("Constant ", Logger::Push, Logger::Yellow, cmeta->mToken,
-         Logger::Pop, Logger::Green, " registered (", cmeta->mLibraryName, ")");
+      VERBOSE("Constant ", Logger::Push, Logger::Yellow, cmeta.mToken,
+         Logger::Pop, Logger::Green, " registered (", cmeta.mLibraryName, ")");
 
-      mNamedValues.emplace_back(cmeta);
+      mNamedValues.emplace_back(&cmeta);
    }
 
    /// Get a converter to a specific type                                     
@@ -1285,28 +1085,26 @@ namespace Langulus::RTTI
    ///   @return the conversion function                                      
    LANGULUS(INLINED)
    FCopyConstruct MetaData::GetConverter(DMeta meta) const {
-      if (not meta)
+      const auto lhs = mOrigin;
+      const auto rhs = meta ? meta->mOrigin : nullptr;
+      if (not lhs or not rhs)
          return {};
 
       FCopyConstruct convertTo {};
-      if (mOrigin) {
-         const auto foundTo = mOrigin->mConvertersTo.find(meta);
-         if (foundTo != mOrigin->mConvertersTo.end())
-            convertTo = foundTo->second.mFunction;
-      }
+      const auto foundTo = lhs->mConvertersTo.find(rhs);
+      if (foundTo != lhs->mConvertersTo.end())
+         convertTo = foundTo->second.mFunction;
 
       FCopyConstruct convertFrom {};
-      if (meta->mOrigin) {
-         const auto foundFrom = meta->mOrigin->mConvertersFrom.find(this);
-         if (foundFrom != meta->mOrigin->mConvertersFrom.end())
-            convertFrom = foundFrom->second.mFunction;
-      }
+      const auto foundFrom = rhs->mConvertersFrom.find(lhs);
+      if (foundFrom != rhs->mConvertersFrom.end())
+         convertFrom = foundFrom->second.mFunction;
 
       if (convertTo or convertFrom) {
          LANGULUS_ASSERT(not convertTo != not convertFrom, Convert,
-            "Ambiguous conversion", " from ", mOrigin, " to ", meta,
+            "Ambiguous conversion", " from ", lhs, " to ", rhs,
             ": conversions in both directions were reflected"
-            " - not sure which one to use");
+            " - not sure which one to pick");
          return convertTo ? convertTo : convertFrom;
       }
       else return {};
@@ -1330,7 +1128,7 @@ namespace Langulus::RTTI
 
       // Then locally                                                   
       for (auto& member : mOrigin->mMembers) {
-         if (member.GetTrait() != trait or not (member.GetType() &= type))
+         if (member.GetTrait() != trait or not (member.GetType() | type))
             continue;
 
          // Match found                                                 
@@ -1361,7 +1159,7 @@ namespace Langulus::RTTI
 
       // Then locally                                                   
       for (auto& member : mOrigin->mMembers) {
-         if (member.GetTrait() != trait or not (member.GetType() &= type))
+         if (member.GetTrait() != trait or not (member.GetType() | type))
             continue;
 
          // Match found                                                 

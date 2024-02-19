@@ -212,23 +212,11 @@ namespace Langulus::RTTI
 #define LANGULUS_ABSTRACT() \
    public: static constexpr bool CTTI_Abstract = 
 
-/// Start reflecting members                                                  
+/// Reflecting members                                                        
 ///   @attention the list of members will be propagated to any derived class  
-#define LANGULUS_PROPERTIES_START(SELF) \
-   using Self = SELF; \
-   public: inline static const Langulus::RTTI::Member CTTI_Members [] = {
-
-/// Reflect a property with a trait tag                                       
-#define LANGULUS_PROPERTY_TRAIT(name, trait) \
-   ::Langulus::RTTI::Member::FromTagged<::Langulus::Traits::trait> \
-      (&Self::name, #name)
-
-/// Reflect a property without trait tag                                      
-#define LANGULUS_PROPERTY(name) \
-   ::Langulus::RTTI::Member::From(&Self::name, #name)
-
-/// End reflecting members                                                    
-#define LANGULUS_PROPERTIES_END() }
+#define LANGULUS_MEMBERS(...) \
+   public: static constexpr auto CTTI_Members = \
+      ::Langulus::RTTI::CreateMembersTuple(__VA_ARGS__)
 
 /// Reflect a list of bases                                                   
 ///   @attention the list of bases will be propagated to any derived class    
@@ -546,11 +534,22 @@ namespace Langulus
       /// The main boundary indentifier token                                 
       constexpr Token MainBoundary = "MAIN";
 
-      /// Triplet used for named constants reflections inside data types      
+      /// Used for named constants reflections inside data types              
       ///   @tparam T - type of the constant                                  
       template<auto T>
       struct NamedValue {
          static constexpr auto Value = T;
+         Token mInfo {};
+      };
+
+      /// Used for member reflections inside data types                       
+      ///   @tparam THIS - the class that owns the member                     
+      ///   @tparam DATA - the member type                                    
+      template<class THIS, class DATA>
+      struct NamedMember {
+         using Owner = THIS;
+         using Type = DATA;
+         DATA THIS::*mHandle;
          Token mInfo {};
       };
 
