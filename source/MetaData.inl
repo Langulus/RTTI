@@ -29,7 +29,8 @@ namespace Langulus::RTTI
    ///   2. The byte size is never smaller than LANGULUS(ALIGN)               
    template<class T>
    constexpr Size GetAllocationPageOf() noexcept {
-      if constexpr (CT::Dense<T> and requires {{T::CTTI_AllocationPage} -> CT::Integer;}) {
+      if constexpr (CT::Dense<T>
+      and requires {{T::CTTI_AllocationPage} -> CT::Integer;}) {
          constexpr auto candidate = T::CTTI_AllocationPage * sizeof(T);
          if constexpr (candidate < Alignment)
             return Alignment;
@@ -89,9 +90,7 @@ namespace Langulus::RTTI
    ///   @return return the trait, if any, or nullptr otherwise               
    LANGULUS(INLINED)
    TMeta Member::GetTrait() const {
-      if (mTraitRetriever)
-         return mTraitRetriever();
-      return {};
+      return mTraitRetriever ? mTraitRetriever() : TMeta {};
    }
    
    /// Compare members                                                        
@@ -622,7 +621,8 @@ namespace Langulus::RTTI
                generated.mPoolTactic = T::CTTI_Pool;
          
             #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            if (RTTI::Boundary != RTTI::MainBoundary && generated.mPoolTactic == PoolTactic::Default)
+            if (RTTI::Boundary != RTTI::MainBoundary
+            and generated.mPoolTactic == PoolTactic::Default)
                generated.mPoolTactic = PoolTactic::Type;
             #endif
          #endif
@@ -675,8 +675,7 @@ namespace Langulus::RTTI
    void MetaData::ReflectFundamentalType(MetaData& generated) noexcept {
       static_assert(CT::Complete<T>, "T must be a complete type");
       using Converters = Types<
-         bool,
-         wchar_t, char8_t, char16_t, char32_t,
+         bool, wchar_t, char8_t, char16_t, char32_t,
          ::std::int8_t,  ::std::int16_t,  ::std::int32_t,  ::std::int64_t,
          ::std::uint8_t, ::std::uint16_t, ::std::uint32_t, ::std::uint64_t,
          float, double
@@ -691,7 +690,7 @@ namespace Langulus::RTTI
          generated.SetConvertersTo<T>(Converters {});
       }
       else if constexpr (CT::Character<T>) {
-         using Bases = Types<A::Text>;
+         using Bases = Types<A::Char>;
          generated.SetBases<T>(Bases {});
          generated.SetConvertersTo<T>(Converters {});
       }
@@ -1115,7 +1114,9 @@ namespace Langulus::RTTI
    ///   @param type - filter by data type, or nullptr if irrelevant          
    ///   @param offset - considers only matches after that many matches       
    ///   @return the member interface if found, or nullptr if not             
-   inline const Member* MetaData::GetMemberInner(TMeta trait, DMeta type, Offset& offset) const noexcept {
+   inline const Member* MetaData::GetMemberInner(
+      TMeta trait, DMeta type, Offset& offset
+   ) const noexcept {
       if (not mOrigin)
          return nullptr;
 
@@ -1148,7 +1149,9 @@ namespace Langulus::RTTI
    ///   @param type - filter by data type, or nullptr if irrelevant          
    ///   @param offset - considers only matches after that many matches       
    ///   @return the member interface if found, or nullptr if not             
-   inline Count MetaData::GetMemberCountInner(TMeta trait, DMeta type, Offset& offset) const noexcept {
+   inline Count MetaData::GetMemberCountInner(
+      TMeta trait, DMeta type, Offset& offset
+   ) const noexcept {
       if (not mOrigin)
          return 0;
 
@@ -1182,7 +1185,9 @@ namespace Langulus::RTTI
    ///   @param offset - considers only matches after that many matches       
    ///   @return the member interface if found, or nullptr if not             
    LANGULUS(INLINED)
-   const Member* MetaData::GetMember(TMeta trait, DMeta type, Offset offset) const noexcept {
+   const Member* MetaData::GetMember(
+      TMeta trait, DMeta type, Offset offset
+   ) const noexcept {
       return GetMemberInner(trait, type, offset);
    }
 
@@ -1192,7 +1197,9 @@ namespace Langulus::RTTI
    ///   @param offset - considers only matches after that many matches       
    ///   @return the number of matching members                               
    LANGULUS(INLINED)
-   Count MetaData::GetMemberCount(TMeta trait, DMeta type, Offset offset) const noexcept {
+   Count MetaData::GetMemberCount(
+      TMeta trait, DMeta type, Offset offset
+   ) const noexcept {
       return GetMemberCountInner(trait, type, offset);
    }
 
@@ -1401,7 +1408,7 @@ namespace Langulus::RTTI
    ///   @tparam V - the type of the verb                                     
    ///   @tparam D - the type of the verb's argument                          
    ///   @return the functor if found                                         
-   template<bool MUTABLE, CT::Data V, CT::Data... A> LANGULUS(INLINED)
+   template<bool MUTABLE, CT::Data V, CT::Data...A> LANGULUS(INLINED)
    auto MetaData::GetAbility() const {
       static_assert(CT::DerivedFrom<V, ::Langulus::Flow::Verb>,
          "V must be derived from Flow::Verb");
