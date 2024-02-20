@@ -76,10 +76,10 @@ namespace Langulus::A
    };
 
    /// Check if a type is compatible with CT::Character concept at runtime    
-   struct Text {
+   struct Char {
       LANGULUS(ABSTRACT) true;
       LANGULUS(CONCRETE) char;
-      ~Text() = delete;
+      ~Char() = delete;
    };
 
    /// Check if a type is compatible with CT::Bool concept at runtime         
