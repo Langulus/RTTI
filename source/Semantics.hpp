@@ -19,7 +19,9 @@ namespace Langulus
    namespace A
    {
 
+      ///                                                                     
       /// An abstract semantic                                                
+      ///                                                                     
       struct Semantic {
          LANGULUS(ABSTRACT) true;
          LANGULUS(UNINSERTABLE) true;
@@ -35,40 +37,61 @@ namespace Langulus
       };
 
       /// An abstract shallow semantic                                        
+      /// Shallow semantics are generally not propagated through indirections 
       struct ShallowSemantic : Semantic {
          static constexpr bool Shallow = true;
       };
 
       /// An abstract deep semantic                                           
+      /// Deep semantics are propagated through indirection layers            
       struct DeepSemantic : Semantic {
          static constexpr bool Shallow = false;
       };
 
+      /// An abstract refer semantic                                          
+      /// It doesn't copy anything but the container state, and references    
+      /// data. For pointers, the Refered semantic collapses to the Copy      
+      /// semantic                                                            
+      struct Refered : ShallowSemantic {
+         static constexpr bool Keep = true;
+         static constexpr bool Move = false;
+      };
+      
       /// An abstract shallow-copy semantic                                   
+      /// A shallowc-copy is like a Clone semantic, but doesn't clone past    
+      /// indirection layers                                                  
       struct Copied : ShallowSemantic {
          static constexpr bool Keep = true;
          static constexpr bool Move = false;
       };
 
-      /// An abstract shallow-move semantic                                   
+      /// An abstract move semantic                                           
+      /// Moving transfers ownership, and ensures, that the source is reset   
+      /// and left in a safe, consistent state after the move                 
       struct Moved : ShallowSemantic {
          static constexpr bool Keep = true;
          static constexpr bool Move = true;
       };
 
-      /// An abstract shallow-abandon-move semantic                           
+      /// An abstract abandon-move semantic                                   
+      /// Unlike the Move semantic, this doesn't guarantee, that the moved    
+      /// instance is in a consistent and safe state. Instead, it makes sure  
+      /// only that it is safely destructible, to save on some performance.   
       struct Abandoned : ShallowSemantic {
          static constexpr bool Keep = false;
          static constexpr bool Move = true;
       };
 
-      /// An abstract shallow-disowned-copy semantic                          
+      /// An abstract disowned-refer semantic                                 
+      /// Similar to Refer semantic, but doesn't actually reference data,     
+      /// producing what's essentially a cheap view over the data (unsafe)    
       struct Disowned : ShallowSemantic {
          static constexpr bool Keep = false;
          static constexpr bool Move = false;
       };
 
       /// An abstract clone semantic (a.k.a. deep-copy semantic)              
+      /// Copies all elements across all indirection layers                   
       struct Cloned : DeepSemantic {
          static constexpr bool Keep = true;
          static constexpr bool Move = false;
@@ -97,6 +120,10 @@ namespace Langulus
       template<class...T>
       concept DeepSemantic = (DerivedFrom<T, A::DeepSemantic> and ...);
 
+      /// Check if a type is a refer semantic                                 
+      template<class...T>
+      concept Refered = (DerivedFrom<T, A::Refered> and ...);
+      
       /// Check if a type is a shallow-copy semantic                          
       template<class...T>
       concept Copied = (DerivedFrom<T, A::Copied> and ...);
@@ -119,6 +146,83 @@ namespace Langulus
 
    } // namespace Langulus::CT
 
+   
+   ///                                                                        
+   /// Refered value intermediate type, use in constructors and assignments   
+   /// to refer to data explicitly                                            
+   ///   @tparam T - the type to refer                                        
+   template<class T>
+   struct Refered : A::Refered {
+   private:
+      const T& mValue;
+
+   public:
+      LANGULUS(TYPED) T;
+
+      Refered() = delete;
+      constexpr Refered(const Refered&) noexcept = default;
+      explicit constexpr Refered(Refered&&) noexcept = default;
+
+      LANGULUS(INLINED)
+      explicit constexpr Refered(const T& value) noexcept
+         : mValue {value} {
+         static_assert(CT::NotSemantic<T>, "Can't nest semantics");
+      }
+      
+      /// Forward as refered                                                  
+      ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
+      template<class ALT_T = T> LANGULUS(INLINED)
+      constexpr decltype(auto) Forward() const noexcept {
+         static_assert(CT::NotSemantic<ALT_T>,
+            "Can't nest semantics");
+         static_assert(CT::Similar<T, ALT_T> or CT::DerivedFrom<T, ALT_T>,
+            "Can't forward as this type");
+         return Refered<ALT_T> {mValue};
+      }
+
+      /// Refer something else                                                
+      LANGULUS(INLINED)
+      static constexpr decltype(auto) Nest(auto&& value) noexcept {
+         using ALT = Decvq<Deref<decltype(value)>>;
+         if constexpr (CT::Semantic<ALT>)
+            return Refered<TypeOf<ALT>> {*value};
+         else
+            return Refered<ALT> {value};
+      }
+
+      template<class ALT>
+      using As = Conditional<CT::Semantic<ALT>, Refered<TypeOf<ALT>>, Refered<ALT>>;
+
+      LANGULUS(INLINED)
+      const T& operator * () const noexcept { return mValue; }
+
+      LANGULUS(INLINED)
+      auto operator -> () const noexcept {
+         if constexpr (CT::Sparse<T>)
+            return mValue;
+         else
+            return &mValue;
+      }
+
+      /// Implicitly collapse the semantic, when applying it to fundamentals  
+      /// This way this wrapper is seamlessly integrated with the standard    
+      /// C++20 copy semantics                                                
+      LANGULUS(INLINED)
+      constexpr operator const T& () const noexcept {
+         return mValue;
+      }
+   };
+   
+   /// Refer a value                                                          
+   NOD() LANGULUS(INLINED) 
+   constexpr auto Refer(auto&& value) noexcept {
+      using ALT = Decvq<Deref<decltype(value)>>;
+      if constexpr (CT::Semantic<ALT>)
+         return Refered<TypeOf<ALT>> {*value};
+      else
+         return Refered<ALT> {value};
+   }
+   
    
    ///                                                                        
    /// Copied value intermediate type, use in constructors and assignments    
@@ -144,8 +248,7 @@ namespace Langulus
       
       /// Forward as copied                                                   
       ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
-      template<class ALT_T = T>
-      LANGULUS(INLINED)
+      template<class ALT_T = T> LANGULUS(INLINED)
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>,
             "Can't nest semantics");
@@ -180,7 +283,7 @@ namespace Langulus
 
       /// Implicitly collapse the semantic, when applying it to fundamentals  
       /// This way this wrapper is seamlessly integrated with the standard    
-      /// C++20 semantics                                                     
+      /// C++20 copy semantics                                                
       LANGULUS(INLINED)
       constexpr operator const T& () const noexcept {
          return mValue;
@@ -232,8 +335,7 @@ namespace Langulus
 
       /// Forward as moved                                                    
       ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
-      template<class ALT_T = T>
-      LANGULUS(INLINED)
+      template<class ALT_T = T> LANGULUS(INLINED)
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>,
             "Can't nest semantics");
@@ -272,7 +374,7 @@ namespace Langulus
 
       /// Implicitly collapse the semantic, when applying it to fundamentals  
       /// This way this wrapper is seamlessly integrated with the standard    
-      /// C++20 semantics                                                     
+      /// C++20 move-semantics                                                
       LANGULUS(INLINED)
       constexpr operator T&& () const noexcept {
          return ::std::forward<T>(mValue);
@@ -334,8 +436,7 @@ namespace Langulus
 
       /// Forward as abandoned, never collapse                                
       ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
-      template<class ALT_T = T>
-      LANGULUS(INLINED)
+      template<class ALT_T = T> LANGULUS(INLINED)
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>,
             "Can't nest semantics");
@@ -428,8 +529,7 @@ namespace Langulus
 
       /// Forward as disowned, never collapse                                 
       ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
-      template<class ALT_T = T>
-      LANGULUS(INLINED)
+      template<class ALT_T = T> LANGULUS(INLINED)
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>,
             "Can't nest semantics");
@@ -511,8 +611,7 @@ namespace Langulus
       }
 
       /// Forward as cloned, bever collapse                                   
-      template<class ALT_T = T>
-      LANGULUS(INLINED)
+      template<class ALT_T = T> LANGULUS(INLINED)
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>,
             "Can't nest semantics");
@@ -705,7 +804,7 @@ namespace Langulus
          else
             LANGULUS_ERROR("Can't disown-construct type");
       }
-      else {
+      else if constexpr (CT::Copied<S<T>>) {
          // Copy                                                        
          if constexpr (requires { new T (Copy(*value)); })
             return new (placement) T (Copy(*value));
@@ -715,6 +814,17 @@ namespace Langulus
             return Inner::Unsupported {};
          else
             LANGULUS_ERROR("Can't copy-construct type");
+      }
+      else {
+         // Refer                                                       
+         if constexpr (requires { new T (Refer(*value)); })
+            return new (placement) T (Refer(*value));
+         else if constexpr (requires { new T (*value); })
+            return new (placement) T (*value);
+         else if constexpr (FAKE)
+            return Inner::Unsupported {};
+         else
+            LANGULUS_ERROR("Can't refer-construct type");
       }
    }
 
@@ -809,7 +919,7 @@ namespace Langulus
             else
                LANGULUS_ERROR("Can't disown-assign type");
          }
-         else {
+         else if constexpr (CT::Copied<S<T>>) {
             // Copy                                                     
             if constexpr (requires(MT& a) { a = Copy(*rhs); })
                return (lhs = Copy(*rhs));
@@ -820,15 +930,28 @@ namespace Langulus
             else
                LANGULUS_ERROR("Can't copy-assign type");
          }
+         else {
+            // Refer                                                    
+            if constexpr (requires(MT& a) { a = Refer(*rhs); })
+               return (lhs = Refer(*rhs));
+            else if constexpr (requires(MT& a) { a = *rhs; })
+               return (lhs = *rhs);
+            else if constexpr (FAKE)
+               return Inner::Unsupported {};
+            else
+               LANGULUS_ERROR("Can't refer-assign type");
+         }
       }
    }
 
    /// Deduce the proper semantic type, based on whether T already has a      
    /// specified semantic, or is an rvalue (&&) or not                        
+   /// If it is, then we use move semantics; if it isn't - we use refer       
+   /// semantics (which can fallback to copy semantics)                       
    template<class T>
    using SemanticOf = Conditional<CT::Semantic<T>, Decay<T>, 
       Conditional<::std::is_rvalue_reference_v<T> and CT::Mutable<Deref<T>>,
-         Moved<Deref<T>>, Copied<Deref<T>>>>;
+         Moved<Deref<T>>, Refered<Deref<T>>>>;
 
    /// Remove the semantic from a type, or just return the type, if not       
    /// wrapped inside a semantic                                              
@@ -841,10 +964,23 @@ namespace Langulus::CT
 {
    
    /// Check if T is constructible with each of the provided arguments        
-   /// Notice, that this differs from std::constructible_from, by             
-   /// attempting each argument separately                                    
+   ///   @attention that this differs from std::constructible_from, by        
+   ///      attempting each argument separately                               
+   ///   @attention this doesn't check for aggregate construction for plain   
+   ///      C types - use MakableFromAggregate for that                       
    template<class T, class...A>
-   concept MakableFrom = (::std::constructible_from<T, A&&> and ...);
+   concept MakableFrom = ((
+       not ::std::is_aggregate_v<T> and ::std::constructible_from<T, A&&>
+      ) and ...);
+
+   /// Check if T is constructible with each of the provided arguments        
+   ///   @attention that this differs from std::constructible_from, by        
+   ///      attempting each argument separately                               
+   ///   @attention this checks only for aggregate construction               
+   template<class T, class...A>
+   concept MakableFromAggregate = ((
+       ::std::is_aggregate_v<T> and ::std::constructible_from<T, A&&>
+      ) and ...);
 
    /// Check if T is assignable with each of the provided arguments           
    template<class T, class...A>
@@ -888,6 +1024,10 @@ namespace Langulus::CT
       template<class...T>
       concept AbandonMakable = (SemanticMakable<Langulus::Abandoned, T> and ...);
 
+      /// Check if T is refer-constructible                                   
+      template<class...T>
+      concept ReferMakable = (SemanticMakable<Langulus::Refered, T> and ...);
+      
       /// Check if T is copy-constructible                                    
       template<class...T>
       concept CopyMakable = (SemanticMakable<Langulus::Copied, T> and ...);
@@ -909,6 +1049,10 @@ namespace Langulus::CT
       template<class...T>
       concept AbandonAssignable = (SemanticAssignable<Langulus::Abandoned, T> and ...);
 
+      /// Check if the T is refer-assignable                                  
+      template<class...T>
+      concept ReferAssignable = (SemanticAssignable<Langulus::Refered, T> and ...);
+      
       /// Check if the T is copy-assignable                                   
       template<class...T>
       concept CopyAssignable = (SemanticAssignable<Langulus::Copied, T> and ...);
@@ -962,6 +1106,10 @@ namespace Langulus::CT
    template<class...T>
    concept AbandonMakable = SemanticMakable<Langulus::Abandoned, T...>;
    
+   /// Check if origin T is refer-constructible                               
+   template<class...T>
+   concept ReferMakable = SemanticMakable<Langulus::Refered, T...>;
+      
    /// Check if origin T is copy-constructible                                
    template<class...T>
    concept CopyMakable = SemanticMakable<Langulus::Copied, T...>;
@@ -983,6 +1131,10 @@ namespace Langulus::CT
    template<class...T>
    concept AbandonAssignable = SemanticAssignable<Langulus::Abandoned, T...>;
 
+   /// Check if origin T is refer-assignable                                  
+   template<class...T>
+   concept ReferAssignable = SemanticAssignable<Langulus::Refered, T...>;
+   
    /// Check if origin T is copy-assignable                                   
    template<class...T>
    concept CopyAssignable = SemanticAssignable<Langulus::Copied, T...>;

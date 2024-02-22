@@ -769,6 +769,16 @@ namespace Langulus::RTTI
             };
       }
             
+      // Wrap the refer constructor of the type inside lambda           
+      if constexpr (CT::ReferMakable<T>) {
+         generated.mReferConstructor = 
+            [](const void* from, void* to) {
+               auto fromT = static_cast<const T*>(from);
+               auto toT = static_cast<T*>(to);
+               SemanticNew(toT, Refer(*fromT));
+            };
+      }
+            
       // Wrap the clone constructor of the type inside lambda           
       if constexpr (CT::CloneMakable<T>) {
          generated.mCloneConstructor = 
@@ -835,6 +845,16 @@ namespace Langulus::RTTI
                auto fromT = static_cast<const T*>(from);
                auto toT = static_cast<T*>(to);
                SemanticAssign(*toT, Copy(*fromT));
+            };
+      }
+      
+      // Wrap the refer-assignment of the type inside a lambda          
+      if constexpr (CT::ReferAssignable<T>) {
+         generated.mReferAssigner = 
+            [](const void* from, void* to) {
+               auto fromT = static_cast<const T*>(from);
+               auto toT = static_cast<T*>(to);
+               SemanticAssign(*toT, Refer(*fromT));
             };
       }
 

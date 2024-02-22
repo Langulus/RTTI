@@ -48,12 +48,12 @@ namespace Langulus::RTTI
          : mData {} {}
 
       LANGULUS(INLINED)
-      constexpr Tag(const Tag& t) requires CT::Inner::CopyMakable<DATA>
-         : mData {t.mData} {}
+      constexpr Tag(const Tag& t) requires CT::Inner::ReferMakable<DATA>
+         : mData {Refer(t.mData)} {}
 
       LANGULUS(INLINED)
       constexpr Tag(Tag&& t) requires CT::Inner::MoveMakable<DATA>
-         : mData {::std::move(t.mData)} {}
+         : mData {Move(t.mData)} {}
 
       template<class T>
       requires CT::MakableFrom<DATA, T> LANGULUS(INLINED)
@@ -75,14 +75,14 @@ namespace Langulus::RTTI
       }
 
       constexpr Tag& operator = (const Tag& rhs) 
-      requires CT::Inner::CopyAssignable<DATA> {
-         mData = rhs.mData;
+      requires CT::Inner::ReferAssignable<DATA> {
+         mData = Refer(rhs.mData);
          return *this;
       }
 
       constexpr Tag& operator = (Tag&& rhs)
       requires CT::Inner::MoveAssignable<DATA> {
-         mData = ::std::move(rhs.mData);
+         mData = Move(rhs.mData);
          return *this;
       }
 

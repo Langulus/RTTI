@@ -342,6 +342,9 @@ namespace Langulus::RTTI
       // Copy constructor wrapped in a lambda upon reflection           
       // @attention this always works with the origin type              
       FCopyConstruct mCopyConstructor {};
+      // Refer constructor wrapped in a lambda upon reflection          
+      // @attention this always works with the origin type              
+      FCopyConstruct mReferConstructor {};
       // Disowned constructor wrapped in a lambda upon reflection       
       // @attention this always works with the origin type              
       FCopyConstruct mDisownConstructor {};
@@ -362,6 +365,9 @@ namespace Langulus::RTTI
       // Copy-assignment operator, wrapped in a lambda upon reflection  
       // @attention this always works with the origin type              
       FCopy mCopyAssigner {};
+      // Refer-assignment operator, wrapped in a lambda upon reflection 
+      // @attention this always works with the origin type              
+      FCopy mReferAssigner {};
       // Disown-assignment operator, wrapped in a lambda upon reflection
       // @attention this always works with the origin type              
       FCopy mDisownAssigner {};
