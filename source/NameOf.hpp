@@ -17,62 +17,69 @@ namespace Langulus::RTTI
 {
    namespace Inner
    {
-      
-      /// These definitions might change in future compiler versions          
-      /// and will probably need constant maintenance                         
-      #if defined(__clang__)
-         // Designed for Clang 16 (including clang-cl version)          
-         constexpr Token Prefix = "Token Langulus::RTTI::Inner::IsolateTypename() [T = ";
-         constexpr Token Suffix = "]";
-      #elif defined(__GNUC__) and not defined(__clang__)
-         constexpr Token Prefix = "constexpr Langulus::Token Langulus::RTTI::Inner::IsolateTypename() [with T = ";
-         constexpr Token Suffix = "; Langulus::Token = std::basic_string_view<char>]";
-      #elif defined(_MSC_VER)
-         constexpr Token Prefix = "class std::basic_string_view<char,struct std::char_traits<char> > __cdecl Langulus::RTTI::Inner::IsolateTypename<";
-         constexpr Token Suffix = ">(void)";
-      #else
-         #error "No support for this compiler, \
-            you should inspect the __FUNC__ equivalent for your compiler, \
-            and fill in the Prefix and Suffix around the type substring \
-            (see above)"
-      #endif
 
-      /// Filter a literal matching at the front                              
-      ///   @param str - the string view to modify as constexpr               
-      ///   @param prefix - the prefix to skip                                
-      constexpr void SkipPrefix(Token& str, const Token& prefix) {
-         if (str.starts_with(prefix))
-            str.remove_prefix(prefix.size());
+      /// String length at compile-time                                       
+      consteval int LengthOf(const char* str) {
+         int n = 0;
+         while (*str++) n++;
+         return n;
       }
 
-      /// Filter a literal matching at the back                               
-      ///   @param str - the string view to modify as constexpr               
-      ///   @param suffix - the suffix to skip                                
-      constexpr void SkipSuffix(Token& str, const Token& suffix) {
-         if (str.size() >= suffix.size() and suffix.size() > 0 and str.ends_with(suffix))
-            str.remove_suffix(suffix.size());
+      /// String match at compile-time                                        
+      consteval bool Match(const char* str1, const char* what) {
+         while (*str1 and *what and *str1 == *what) {
+            ++str1;
+            ++what;
+         }
+         return *what == 0;
       }
 
-      /// Skip all decorations in front of a type name                        
-      ///   @return the modified constexpr string view                        
       template<class T>
-      NOD() constexpr Token IsolateTypename() {
-         Token original = LANGULUS(FUNCTION);
-         SkipPrefix(original, Prefix);
-         SkipSuffix(original, Suffix);
-         return original;
+      consteval auto WrappedTypeName() {
+         return LANGULUS_FUNCTION();
       }
 
-      /// Skip all decorations in front of a constant, named or not           
-      /// Also, skips all namespaces for enums, since those need to pass      
-      /// through the name splitter anyways                                   
-      ///   @return the modified constexpr string view                        
       template<auto T>
-      NOD() constexpr Token IsolateConstant() {
-         Token original = LANGULUS(FUNCTION);
-         SkipPrefix(original, Prefix);
-         SkipSuffix(original, Suffix);
-         return original;
+      consteval auto WrappedEnumName() {
+         return LANGULUS_FUNCTION();
+      }
+
+      /// Skip all decorations in front and the back of a WrappedTypeName     
+      ///   @return the type token                                            
+      template<class T>
+      consteval Token IsolateTypename() {
+         enum Oddly_Specific_Type {};
+         constexpr auto name = WrappedTypeName<T>();
+         constexpr auto len = LengthOf(name);
+         constexpr auto helper_name = WrappedTypeName<Oddly_Specific_Type>();
+         constexpr auto helper_len = LengthOf(helper_name);
+
+         int left {}, right {};
+         while (helper_name[left] == name[left])
+            left++;
+         while (helper_name[helper_len - right] == name[len - right]
+         and not Match(helper_name + helper_len - right - 19, "Oddly_Specific_Type"))
+            right++;
+         return Token {name + left, name + len - right};
+      }
+
+      /// Skip all decorations in front and back of a WrappedEnumName         
+      ///   @return the named value token                                     
+      template<auto T>
+      consteval Token IsolateConstant() {
+         enum { Oddly_Specific_Enum };
+         constexpr auto name = WrappedEnumName<T>();
+         constexpr auto len = LengthOf(name);
+         constexpr auto helper_name = WrappedEnumName<Oddly_Specific_Enum>();
+         constexpr auto helper_len = LengthOf(helper_name);
+
+         int left {}, right {};
+         while (helper_name[left] == name[left])
+            left++;
+         while (helper_name[helper_len - right] == name[len - right]
+         and not Match(helper_name + helper_len - right - 19, "Oddly_Specific_Enum"))
+            right++;
+         return Token {name + left, name + len - right};
       }
 
       /// Replace these patterns when demangling names                        
@@ -112,7 +119,7 @@ namespace Langulus::RTTI
       ///   @param remaining - part of source that is potentially transitive  
       ///   @param s - the offset in remaining to check if transitive         
       ///   @return true if a transition occurs at the given offset           
-      NOD() constexpr bool IsTransition(const Token& source, const Token& remaining, Count s) {
+      NOD() consteval bool IsTransition(const Token& source, const Token& remaining, Count s) {
          return (
                remaining.data() == source.data()
                or     IsAlpha(*(remaining.data()))
@@ -131,14 +138,14 @@ namespace Langulus::RTTI
       ///   @attention this function should be in sync with                   
       ///              StatefulNameOfFunc::Normalize()                        
       ///   @return the required buffer size in bytes                         
-      NOD() constexpr ::std::size_t AnticipateSizeOfFunc(const Token& source) {
+      NOD() consteval ::std::size_t AnticipateSizeOfFunc(const Token& source) {
          ::std::size_t it = 9; // size of "Function<" prefix            
          Token remaining = source;
          while (remaining.size() > 0) {
             bool recycle = false;
 
             // Do replacements                                          
-            for (auto replace : ReplacePatterns) {
+            for (auto& replace : ReplacePatterns) {
                if (not remaining.starts_with(replace.first))
                   continue;
 
@@ -166,7 +173,7 @@ namespace Langulus::RTTI
       ///   @attention this function should be in sync with                   
       ///              StatefulNameOfType::Normalize()                        
       ///   @return the required buffer size in bytes                         
-      NOD() constexpr ::std::size_t AnticipateSizeOfType(const Token& source) {
+      NOD() consteval ::std::size_t AnticipateSizeOfType(const Token& source) {
          ::std::size_t it = 0;
 
          Token remaining = source;
@@ -174,7 +181,7 @@ namespace Langulus::RTTI
             bool recycle = false;
 
             // Do replacements                                          
-            for (auto replace : ReplacePatterns) {
+            for (auto& replace : ReplacePatterns) {
                if (not remaining.starts_with(replace.first))
                   continue;
 
@@ -202,7 +209,7 @@ namespace Langulus::RTTI
       ///   @attention this function should be in sync with                   
       ///              StatefulNameOfEnum::Normalize()                        
       ///   @return the required buffer size in bytes                         
-      NOD() constexpr ::std::size_t AnticipateSizeOfEnum(const Token& source, const Token& enumName) {
+      NOD() consteval ::std::size_t AnticipateSizeOfEnum(const Token& source, const Token& enumName) {
          ::std::size_t it = 0;
 
          // Copy the normalized enum name                               
@@ -227,7 +234,7 @@ namespace Langulus::RTTI
          ///   @attention this function should be in sync with                
          ///              AnticipateSizeOfFunc()                              
          ///   @return the normalized compile-time token for T                
-         NOD() static constexpr auto Normalize() {
+         NOD() static consteval auto Normalize() {
             constexpr Token Original = IsolateTypename<T>();
             ::std::size_t it = 0;
             ::std::array<char, AnticipateSizeOfFunc(Original)> output {};
@@ -282,7 +289,7 @@ namespace Langulus::RTTI
          ///   @attention this function should be in sync with                
          ///              AnticipateSizeOfType()                              
          ///   @return the normalized compile-time token for T                
-         NOD() static constexpr auto Normalize() {
+         NOD() static consteval auto Normalize() {
             constexpr Token Original = IsolateTypename<T>();
             ::std::size_t it = 0;
             ::std::array<char, AnticipateSizeOfType(Original)> output {};
@@ -336,7 +343,7 @@ namespace Langulus::RTTI
          ///   @attention this function should be in sync with                
          ///              AnticipateSizeOfEnum()                              
          ///   @return the normalized compile-time token for E                
-         NOD() static constexpr auto Normalize() {
+         NOD() static consteval auto Normalize() {
             constexpr Token Original = IsolateConstant<E>();
             constexpr Token EnumName = StatefulNameOfType<decltype(E)>::Name.data();
 
@@ -375,7 +382,7 @@ namespace Langulus::RTTI
    ///   @tparam T - the type to get the name of                              
    ///   @return the type name                                                
    template<class T>
-   NOD() constexpr Token CppNameOf() noexcept {
+   NOD() consteval Token CppNameOf() noexcept {
       if constexpr (::std::is_function_v<Decay<T>>)
          return Inner::StatefulNameOfFunc<T>::Name.data();
       else
@@ -386,7 +393,7 @@ namespace Langulus::RTTI
    ///   @tparam T - the type to get the name of                              
    ///   @return the type name                                                
    template<class T>
-   NOD() constexpr Token LastCppNameOf() noexcept {
+   NOD() consteval Token LastCppNameOf() noexcept {
       if constexpr (::std::is_function_v<Decay<T>>)
          return Inner::StatefulNameOfFunc<T>::Name.data();
       else {
@@ -421,7 +428,7 @@ namespace Langulus::RTTI
    ///   @tparam E - the constant to get the name of                          
    ///   @return the name of the constant                                     
    template<auto E>
-   NOD() constexpr Token CppNameOf() noexcept {
+   NOD() consteval Token CppNameOf() noexcept {
       return Inner::StatefulNameOfEnum<E>::Name.data();
    }
    
@@ -429,7 +436,7 @@ namespace Langulus::RTTI
    ///   @tparam T - the enum to get the name of                              
    ///   @return the name                                                     
    template<auto E>
-   NOD() constexpr Token LastCppNameOf() noexcept {
+   NOD() consteval Token LastCppNameOf() noexcept {
       // Find the last ':' symbol, that is not inside <...> scope       
       Token name = Inner::StatefulNameOfEnum<E>::Name.data();
       size_t depth = 0;
@@ -469,7 +476,7 @@ namespace Langulus
    /// You have to define CustomName(Of<your type>)                           
    ///                                                                        
    template<class CLASS>
-   constexpr auto CustomName(Of<CLASS>&&) noexcept;
+   consteval auto CustomName(Of<CLASS>&&) noexcept;
 
    template<class CLASS>
    struct CustomNameOf {
@@ -480,19 +487,19 @@ namespace Langulus
       static constexpr auto GeneratedClassName = CustomName(Of<CLASS> {});
 
    public:
-      static constexpr Token Generate() noexcept {
+      static consteval Token Generate() noexcept {
          return Token {GeneratedClassName.data()};
       }
    };
 
    template<CT::Data T>
-   constexpr Token NameOf() noexcept;
+   consteval Token NameOf() noexcept;
    template<auto E>
-   constexpr Token NameOf() noexcept;
+   consteval Token NameOf() noexcept;
 
    /// Custom name generator at compile-time for sparse stuff                 
    template<CT::NotDecayed T>
-   constexpr auto CustomName(Of<T>&&) noexcept {
+   consteval auto CustomName(Of<T>&&) noexcept {
       if constexpr (CT::Sparse<T>) {
          // Get the depointered name, and append a pointer to it        
          constexpr auto token = NameOf<Deptr<T>>();
@@ -535,7 +542,7 @@ namespace Langulus
    ///      or fallbacks to the C++ name                                      
    ///                                                                        
    template<CT::Data T>
-   constexpr Token NameOf() noexcept {
+   consteval Token NameOf() noexcept {
       using DT = Decay<T>;
       if constexpr (requires { DT::CTTI_PositiveVerb; }) {
          if constexpr (CT::Decayed<Deref<T>>)
@@ -568,7 +575,7 @@ namespace Langulus
    ///   NameOf for enum types                                                
    ///                                                                        
    template<auto E>
-   constexpr Token NameOf() noexcept {
+   consteval Token NameOf() noexcept {
       return RTTI::CppNameOf<E>();
    }
 
