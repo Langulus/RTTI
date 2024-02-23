@@ -28,13 +28,13 @@ namespace Langulus
    ///   @param condition - the condition that must hold true                 
    ///   @param message - an error message if condition doesn't hold          
    ///   @param location - the location of the error, if any                  
-   template<unsigned LEVEL, class EXCEPTION = Except::Assertion, class... MORE>
+   template<unsigned LEVEL, class EXCEPTION = Except::Assertion, class...MORE>
    LANGULUS(INLINED) IF_UNSAFE(constexpr)
    void Assume(
       bool condition, 
       const char* message = "<unknown assumption failure>", 
       const char* location = "<unknown location>",
-      UNUSED() MORE&&... additional_messages
+      UNUSED() MORE&&...additional_messages
    ) noexcept (LEVEL > LANGULUS(SAFE)) {
       if constexpr (LEVEL <= LANGULUS(SAFE)) {
          if (not condition) {
