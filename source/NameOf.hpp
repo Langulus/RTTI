@@ -54,9 +54,11 @@ namespace Langulus::RTTI
          constexpr auto helper_name = WrappedTypeName<Oddly_Specific_Type>();
          constexpr auto helper_len = LengthOf(helper_name);
 
-         int left {}, right {};
-         while (helper_name[left] == name[left])
+         int left = 0;
+         while (left < helper_len and left < len and helper_name[left] == name[left])
             left++;
+
+         int right = 0;
          while (helper_name[helper_len - right] == name[len - right]
          and not Match(helper_name + helper_len - right - 19, "Oddly_Specific_Type"))
             right++;
@@ -73,9 +75,11 @@ namespace Langulus::RTTI
          constexpr auto helper_name = WrappedEnumName<Oddly_Specific_Enum>();
          constexpr auto helper_len = LengthOf(helper_name);
 
-         int left {}, right {};
-         while (helper_name[left] == name[left])
+         int left = 0;
+         while (left < helper_len and left < len and helper_name[left] == name[left])
             left++;
+
+         int right = 0;
          while (helper_name[helper_len - right] == name[len - right]
          and not Match(helper_name + helper_len - right - 19, "Oddly_Specific_Enum"))
             right++;
