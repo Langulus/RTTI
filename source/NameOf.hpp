@@ -54,7 +54,8 @@ namespace Langulus::RTTI
          static_assert(helper_len > 19);
 
          int left = 0;
-         while (left < helper_len and left < len and helper_name[left] == name[left])
+         while (left < helper_len and left < len and helper_name[left] == name[left]
+         and not Match(helper_name + left, "Oddly_Specific_Type"))
             left++;
 
          int right = 1;
@@ -81,7 +82,8 @@ namespace Langulus::RTTI
          static_assert(helper_len > 19);
 
          int left = 0;
-         while (left < helper_len and left < len and helper_name[left] == name[left])
+         while (left < helper_len and left < len and helper_name[left] == name[left]
+         and not Match(helper_name + left, "Oddly_Specific_Enum"))
             left++;
 
          int right = 1;
