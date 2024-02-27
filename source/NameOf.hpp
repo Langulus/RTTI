@@ -179,7 +179,6 @@ namespace Langulus::RTTI
       ///   @return the required buffer size in bytes                         
       NOD() consteval ::std::size_t AnticipateSizeOfType(const Token& source) {
          ::std::size_t it = 0;
-
          Token remaining = source;
          while (remaining.size() > 0) {
             bool recycle = false;
