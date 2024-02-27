@@ -132,7 +132,7 @@ namespace Langulus::RTTI
       ///   @param remaining - part of source that is potentially transitive  
       ///   @param s - the offset in remaining to check if transitive         
       ///   @return true if a transition occurs at the given offset           
-      NOD() consteval bool IsTransition(const Token& source, const Token& remaining, Count s) {
+      NOD() constexpr bool IsTransition(const Token& source, const Token& remaining, Count s) {
          return (
                remaining.data() == source.data()
                or     IsAlpha(*(remaining.data()))
@@ -151,7 +151,7 @@ namespace Langulus::RTTI
       ///   @attention this function should be in sync with                   
       ///              StatefulNameOfFunc::Normalize()                        
       ///   @return the required buffer size in bytes                         
-      NOD() consteval ::std::size_t AnticipateSizeOfFunc(const Token& source) {
+      NOD() constexpr ::std::size_t AnticipateSizeOfFunc(const Token& source) {
          ::std::size_t it = 9; // size of "Function<" prefix            
          Token remaining = source;
          while (remaining.size() > 0) {
@@ -186,7 +186,7 @@ namespace Langulus::RTTI
       ///   @attention this function should be in sync with                   
       ///              StatefulNameOfType::Normalize()                        
       ///   @return the required buffer size in bytes                         
-      NOD() consteval ::std::size_t AnticipateSizeOfType(const Token& source) {
+      NOD() constexpr ::std::size_t AnticipateSizeOfType(const Token& source) {
          ::std::size_t it = 0;
          Token remaining = source;
          while (remaining.size() > 0) {
@@ -221,7 +221,9 @@ namespace Langulus::RTTI
       ///   @attention this function should be in sync with                   
       ///              StatefulNameOfEnum::Normalize()                        
       ///   @return the required buffer size in bytes                         
-      NOD() consteval ::std::size_t AnticipateSizeOfEnum(const Token& source, const Token& enumName) {
+      NOD() constexpr ::std::size_t AnticipateSizeOfEnum(
+         const Token& source, const Token& enumName
+      ) {
          ::std::size_t it = 0;
 
          // Copy the normalized enum name                               
@@ -246,7 +248,7 @@ namespace Langulus::RTTI
          ///   @attention this function should be in sync with                
          ///              AnticipateSizeOfFunc()                              
          ///   @return the normalized compile-time token for T                
-         NOD() static consteval auto Normalize() {
+         NOD() static constexpr auto Normalize() {
             constexpr Token Original = IsolateTypename<T>();
             ::std::size_t it = 0;
             ::std::array<char, AnticipateSizeOfFunc(Original)> output {};
@@ -303,7 +305,7 @@ namespace Langulus::RTTI
          ///   @attention this function should be in sync with                
          ///              AnticipateSizeOfType()                              
          ///   @return the normalized compile-time token for T                
-         NOD() static consteval auto Normalize() {
+         NOD() static constexpr auto Normalize() {
             constexpr Token Original = IsolateTypename<T>();
             ::std::size_t it = 0;
             ::std::array<char, AnticipateSizeOfType(Original)> output {};
@@ -359,7 +361,7 @@ namespace Langulus::RTTI
          ///   @attention this function should be in sync with                
          ///              AnticipateSizeOfEnum()                              
          ///   @return the normalized compile-time token for E                
-         NOD() static consteval auto Normalize() {
+         NOD() static constexpr auto Normalize() {
             constexpr Token Original = IsolateConstant<E>();
             constexpr Token EnumName = StatefulNameOfType<decltype(E)>::Name.data();
 
@@ -400,7 +402,7 @@ namespace Langulus::RTTI
    ///   @tparam T - the type to get the name of                              
    ///   @return the type name                                                
    template<class T>
-   NOD() consteval Token CppNameOf() {
+   NOD() constexpr Token CppNameOf() {
       if constexpr (::std::is_function_v<Decay<T>>)
          return Inner::StatefulNameOfFunc<T>::Name.data();
       else
@@ -411,7 +413,7 @@ namespace Langulus::RTTI
    ///   @tparam T - the type to get the name of                              
    ///   @return the type name                                                
    template<class T>
-   NOD() consteval Token LastCppNameOf() {
+   NOD() constexpr Token LastCppNameOf() {
       if constexpr (::std::is_function_v<Decay<T>>)
          return Inner::StatefulNameOfFunc<T>::Name.data();
       else {
@@ -445,7 +447,7 @@ namespace Langulus::RTTI
    ///   @tparam E - the constant to get the name of                          
    ///   @return the name of the constant                                     
    template<auto E>
-   NOD() consteval Token CppNameOf() {
+   NOD() constexpr Token CppNameOf() {
       return Inner::StatefulNameOfEnum<E>::Name.data();
    }
    
@@ -453,7 +455,7 @@ namespace Langulus::RTTI
    ///   @tparam T - the enum to get the name of                              
    ///   @return the name                                                     
    template<auto E>
-   NOD() consteval Token LastCppNameOf() {
+   NOD() constexpr Token LastCppNameOf() {
       // Find the last ':' symbol, that is not inside <...> scope       
       Token name = Inner::StatefulNameOfEnum<E>::Name.data();
       size_t depth = 0;
@@ -492,7 +494,7 @@ namespace Langulus
    /// You have to define CustomName(Of<your type>)                           
    ///                                                                        
    template<class CLASS>
-   consteval auto CustomName(Of<CLASS>&&);
+   constexpr auto CustomName(Of<CLASS>&&);
 
    template<class CLASS>
    struct CustomNameOf {
@@ -503,19 +505,19 @@ namespace Langulus
       static constexpr auto GeneratedClassName = CustomName(Of<CLASS> {});
 
    public:
-      static consteval Token Generate() {
+      static constexpr Token Generate() {
          return Token {GeneratedClassName.data()};
       }
    };
 
    template<CT::Data T>
-   consteval Token NameOf();
+   constexpr Token NameOf();
    template<auto E>
-   consteval Token NameOf();
+   constexpr Token NameOf();
 
    /// Custom name generator at compile-time for sparse stuff                 
    template<CT::NotDecayed T>
-   consteval auto CustomName(Of<T>&&) {
+   constexpr auto CustomName(Of<T>&&) {
       if constexpr (CT::Sparse<T>) {
          // Get the depointered name, and append a pointer to it        
          constexpr auto token = NameOf<Deptr<T>>();
@@ -562,7 +564,7 @@ namespace Langulus
    ///      or fallbacks to the C++ name                                      
    ///                                                                        
    template<CT::Data T>
-   consteval Token NameOf() {
+   constexpr Token NameOf() {
       using DT = Decay<T>;
       if constexpr (requires { DT::CTTI_PositiveVerb; }) {
          if constexpr (CT::Decayed<Deref<T>>)
@@ -595,7 +597,7 @@ namespace Langulus
    ///   NameOf for enum types                                                
    ///                                                                        
    template<auto E>
-   consteval Token NameOf() {
+   constexpr Token NameOf() {
       return RTTI::CppNameOf<E>();
    }
 
