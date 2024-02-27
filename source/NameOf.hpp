@@ -20,9 +20,9 @@ namespace Langulus::RTTI
 
       /// String length at compile-time                                       
       consteval int LengthOf(const char* str) {
-         int n = 0;
-         while (*str++) n++;
-         return n;
+         const char* n = str;
+         while (*n) ++n;
+         return n - str;
       }
 
       /// String match at compile-time                                        
