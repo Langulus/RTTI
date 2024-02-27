@@ -113,6 +113,8 @@ namespace Langulus::RTTI
       template<class T1, class T2>
       Member(const NamedMember<T1, T2>&);
 
+      Member& operator = (const Member&) noexcept = default;
+
       NOD() bool operator == (const Member&) const noexcept;
       
       template<CT::Data T>

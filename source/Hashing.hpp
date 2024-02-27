@@ -29,8 +29,8 @@ namespace Langulus
    ///   @param token - the token to lowercase                                
    ///   @return the lowercase string                                         
    NOD() LANGULUS(INLINED) Lowercase ToLowercase(const Token& token) noexcept {
-      Lowercase lc {token};
-      ::std::transform(lc.begin(), lc.end(), lc.begin(),
+      Lowercase lc;
+      ::std::transform(token.begin(), token.end(), std::back_inserter(lc),
          [](char c) { return static_cast<char>(::std::tolower(c)); }
       );
       return lc;

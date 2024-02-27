@@ -27,10 +27,7 @@ namespace Langulus::RTTI
 
       /// String match at compile-time                                        
       consteval bool Match(const char* str1, const char* what) {
-         while (*str1 and *what and *str1 == *what) {
-            ++str1;
-            ++what;
-         }
+         while (*str1 and *what and *(str1++) == *(what++));
          return *what == 0;
       }
 
@@ -53,15 +50,21 @@ namespace Langulus::RTTI
          constexpr auto len = LengthOf(name);
          constexpr auto helper_name = WrappedTypeName<Oddly_Specific_Type>();
          constexpr auto helper_len = LengthOf(helper_name);
+         static_assert(len > 0);
+         static_assert(helper_len > 19);
 
          int left = 0;
          while (left < helper_len and left < len and helper_name[left] == name[left])
             left++;
 
-         int right = 0;
-         while (helper_name[helper_len - right] == name[len - right]
-         and not Match(helper_name + helper_len - right - 19, "Oddly_Specific_Type"))
+         int right = 1;
+         while (right + 19 <= helper_len and right <= len
+         and helper_name[helper_len - right] == name[len - right]
+         and not Match(helper_name + (helper_len - right - 19), "Oddly_Specific_Type"))
             right++;
+
+         if (len - right <= left)
+            throw "invalid token";
          return Token {name + left, name + len - right};
       }
 
@@ -74,15 +77,21 @@ namespace Langulus::RTTI
          constexpr auto len = LengthOf(name);
          constexpr auto helper_name = WrappedEnumName<Oddly_Specific_Enum>();
          constexpr auto helper_len = LengthOf(helper_name);
+         static_assert(len > 0);
+         static_assert(helper_len > 19);
 
          int left = 0;
          while (left < helper_len and left < len and helper_name[left] == name[left])
             left++;
 
-         int right = 0;
-         while (helper_name[helper_len - right] == name[len - right]
-         and not Match(helper_name + helper_len - right - 19, "Oddly_Specific_Enum"))
+         int right = 1;
+         while (right + 19 <= helper_len and right <= len
+         and helper_name[helper_len - right] == name[len - right]
+         and not Match(helper_name + (helper_len - right - 19), "Oddly_Specific_Enum"))
             right++;
+
+         if (len - right <= left)
+            throw "invalid token";
          return Token {name + left, name + len - right};
       }
 
@@ -169,7 +178,7 @@ namespace Langulus::RTTI
             remaining.remove_prefix(1);
          }
 
-         return it + 3; // append ">*"                                  
+         return it + 3; // append ">*\0"                                
       }
       
       /// Do the skip/replace scan without writing to any buffer, in order    
@@ -204,7 +213,7 @@ namespace Langulus::RTTI
             remaining.remove_prefix(1);
          }
 
-         return it + 1;
+         return it + 1; // append \0                                    
       }
 
       /// Do the skip/replace scan without writing to any buffer, in order    
@@ -224,7 +233,7 @@ namespace Langulus::RTTI
          const auto nameStart = source.find_last_of(':');
          auto name = source;
          name.remove_prefix(nameStart + 1);
-         return it + name.size() + 1;
+         return it + name.size() + 1; // append \0                      
       }
 
 
@@ -276,6 +285,8 @@ namespace Langulus::RTTI
             output[it++] = '>';
             output[it++] = '*';
             output[it] = '\0';
+            if (it >= output.size())
+               throw "Limit breached";
             return output;
          }
 
@@ -330,6 +341,8 @@ namespace Langulus::RTTI
                output[it-1] = '\0';
             else
                output[it] = '\0';
+            if (it >= output.size())
+               throw "Limit breached";
             return output;
          }
 
@@ -371,6 +384,8 @@ namespace Langulus::RTTI
             else LANGULUS_ERROR("Bad named value provided");
 
             output[it] = '\0';
+            if (it >= output.size())
+               throw "Limit breached";
             return output;
          }
 
@@ -422,8 +437,7 @@ namespace Langulus::RTTI
             }
          }
 
-         // Something's not right if this was reached                   
-         return "";
+         throw "Invalid token";
       }
    }
 
@@ -462,8 +476,7 @@ namespace Langulus::RTTI
          }
       }
 
-      // Something's not right if this was reached                      
-      return "";
+      throw "Invalid token";
    }
 
 } // namespace Langulus::RTTI
@@ -513,6 +526,8 @@ namespace Langulus
             tokenPtr[idx++] = i;
          tokenPtr[idx++] = '*';
          tokenPtr[idx] = '\0';
+         if (idx >= tokenPtr.size())
+            throw "Limit breached";
          return tokenPtr;
       }
       else {
@@ -530,6 +545,8 @@ namespace Langulus
          for (auto i : token)
             constToken[idx++] = i;
          constToken[idx] = '\0';
+         if (idx >= constToken.size())
+            throw "Limit breached";
          return constToken;
       }
    }
