@@ -681,48 +681,4 @@ namespace std
       }
    };
 
-   /*LANGULUS(INLINED)
-   size_t hash<AMeta>::operator()(AMeta k) const noexcept {
-      return Langulus::HashOf(k).mHash;
-   }
-
-   LANGULUS(INLINED)
-   size_t hash<DMeta>::operator()(DMeta k) const noexcept {
-      return Langulus::HashOf(k).mHash;
-   }
-
-   LANGULUS(INLINED)
-   size_t hash<vector<DMeta>>::operator()(const vector<DMeta>& k) const noexcept {
-      return Langulus::HashOf(k).mHash;
-   }
-
-   LANGULUS(INLINED)
-   size_t hash<TMeta>::operator()(TMeta k) const noexcept {
-      return Langulus::HashOf(k).mHash;
-   }
-
-   LANGULUS(INLINED)
-   size_t hash<VMeta>::operator()(VMeta k) const noexcept {
-      return Langulus::HashOf(k).mHash;
-   }*/
-
 } // namespace std
-
-namespace Langulus::RTTI
-{
-   
-   /// Get the constexpr hash of a type                                       
-   ///	@return the hash of the type                                         
-   /*template<CT::Data> LANGULUS(INLINED)
-   constexpr Hash Meta::GenerateHash(const Token& name) noexcept {
-      return HashBytes(name.data(), static_cast<int>(name.size()));
-   }
-   
-   /// Get the generated hash, making any meta derivation CT::Hashable        
-   ///	@return the hash of the type                                         
-   LANGULUS(INLINED)
-   const Hash& Meta::GetHash() const noexcept {
-      return mHash;
-   }*/
-   
-} // namespace Langulus::RTTI
