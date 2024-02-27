@@ -400,7 +400,7 @@ namespace Langulus::RTTI
    ///   @tparam T - the type to get the name of                              
    ///   @return the type name                                                
    template<class T>
-   NOD() consteval Token CppNameOf() noexcept {
+   NOD() consteval Token CppNameOf() {
       if constexpr (::std::is_function_v<Decay<T>>)
          return Inner::StatefulNameOfFunc<T>::Name.data();
       else
@@ -411,7 +411,7 @@ namespace Langulus::RTTI
    ///   @tparam T - the type to get the name of                              
    ///   @return the type name                                                
    template<class T>
-   NOD() consteval Token LastCppNameOf() noexcept {
+   NOD() consteval Token LastCppNameOf() {
       if constexpr (::std::is_function_v<Decay<T>>)
          return Inner::StatefulNameOfFunc<T>::Name.data();
       else {
@@ -445,7 +445,7 @@ namespace Langulus::RTTI
    ///   @tparam E - the constant to get the name of                          
    ///   @return the name of the constant                                     
    template<auto E>
-   NOD() consteval Token CppNameOf() noexcept {
+   NOD() consteval Token CppNameOf() {
       return Inner::StatefulNameOfEnum<E>::Name.data();
    }
    
@@ -453,7 +453,7 @@ namespace Langulus::RTTI
    ///   @tparam T - the enum to get the name of                              
    ///   @return the name                                                     
    template<auto E>
-   NOD() consteval Token LastCppNameOf() noexcept {
+   NOD() consteval Token LastCppNameOf() {
       // Find the last ':' symbol, that is not inside <...> scope       
       Token name = Inner::StatefulNameOfEnum<E>::Name.data();
       size_t depth = 0;
@@ -492,7 +492,7 @@ namespace Langulus
    /// You have to define CustomName(Of<your type>)                           
    ///                                                                        
    template<class CLASS>
-   consteval auto CustomName(Of<CLASS>&&) noexcept;
+   consteval auto CustomName(Of<CLASS>&&);
 
    template<class CLASS>
    struct CustomNameOf {
@@ -503,19 +503,19 @@ namespace Langulus
       static constexpr auto GeneratedClassName = CustomName(Of<CLASS> {});
 
    public:
-      static consteval Token Generate() noexcept {
+      static consteval Token Generate() {
          return Token {GeneratedClassName.data()};
       }
    };
 
    template<CT::Data T>
-   consteval Token NameOf() noexcept;
+   consteval Token NameOf();
    template<auto E>
-   consteval Token NameOf() noexcept;
+   consteval Token NameOf();
 
    /// Custom name generator at compile-time for sparse stuff                 
    template<CT::NotDecayed T>
-   consteval auto CustomName(Of<T>&&) noexcept {
+   consteval auto CustomName(Of<T>&&) {
       if constexpr (CT::Sparse<T>) {
          // Get the depointered name, and append a pointer to it        
          constexpr auto token = NameOf<Deptr<T>>();
@@ -562,7 +562,7 @@ namespace Langulus
    ///      or fallbacks to the C++ name                                      
    ///                                                                        
    template<CT::Data T>
-   consteval Token NameOf() noexcept {
+   consteval Token NameOf() {
       using DT = Decay<T>;
       if constexpr (requires { DT::CTTI_PositiveVerb; }) {
          if constexpr (CT::Decayed<Deref<T>>)
@@ -595,7 +595,7 @@ namespace Langulus
    ///   NameOf for enum types                                                
    ///                                                                        
    template<auto E>
-   consteval Token NameOf() noexcept {
+   consteval Token NameOf() {
       return RTTI::CppNameOf<E>();
    }
 
