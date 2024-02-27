@@ -45,7 +45,7 @@ namespace Langulus::RTTI
       ///   @return the type token                                            
       template<class T>
       consteval Token IsolateTypename() {
-         enum Oddly_Specific_Type {};
+         struct Oddly_Specific_Type {};
          constexpr auto name = WrappedTypeName<T>();
          constexpr auto len = LengthOf(name);
          constexpr auto helper_name = WrappedTypeName<Oddly_Specific_Type>();
