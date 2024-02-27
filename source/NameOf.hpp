@@ -17,12 +17,14 @@ namespace Langulus::RTTI
 {
    namespace Inner
    {
+      struct Oddly_Specific_Type {};
+      enum { Oddly_Specific_Enum };
 
       /// String length at compile-time                                       
       consteval int LengthOf(const char* str) {
-         const char* n = str;
-         while (*n) ++n;
-         return n - str;
+         int n = 0;
+         while (*(str++)) ++n;
+         return n;
       }
 
       /// String match at compile-time                                        
@@ -45,7 +47,6 @@ namespace Langulus::RTTI
       ///   @return the type token                                            
       template<class T>
       consteval Token IsolateTypename() {
-         struct Oddly_Specific_Type {};
          constexpr auto name = WrappedTypeName<T>();
          constexpr auto len = LengthOf(name);
          constexpr auto helper_name = WrappedTypeName<Oddly_Specific_Type>();
@@ -72,7 +73,6 @@ namespace Langulus::RTTI
       ///   @return the named value token                                     
       template<auto T>
       consteval Token IsolateConstant() {
-         enum { Oddly_Specific_Enum };
          constexpr auto name = WrappedEnumName<T>();
          constexpr auto len = LengthOf(name);
          constexpr auto helper_name = WrappedEnumName<Oddly_Specific_Enum>();
