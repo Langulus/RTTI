@@ -21,32 +21,32 @@ namespace Langulus::RTTI
       enum { Oddly_Specific_Enum };
 
       /// String length at compile-time                                       
-      consteval int LengthOf(const char* str) {
+      constexpr int LengthOf(const char* str) {
          int n = 0;
          while (*(str++)) ++n;
          return n;
       }
 
       /// String match at compile-time                                        
-      consteval bool Match(const char* str1, const char* what) {
+      constexpr bool Match(const char* str1, const char* what) {
          while (*str1 and *what and *(str1++) == *(what++));
          return *what == 0;
       }
 
       template<class T>
-      consteval auto WrappedTypeName() {
+      constexpr auto WrappedTypeName() {
          return LANGULUS_FUNCTION();
       }
 
       template<auto T>
-      consteval auto WrappedEnumName() {
+      constexpr auto WrappedEnumName() {
          return LANGULUS_FUNCTION();
       }
 
       /// Skip all decorations in front and the back of a WrappedTypeName     
       ///   @return the type token                                            
       template<class T>
-      consteval Token IsolateTypename() {
+      constexpr Token IsolateTypename() {
          constexpr auto name = WrappedTypeName<T>();
          constexpr auto len = LengthOf(name);
          constexpr auto helper_name = WrappedTypeName<Oddly_Specific_Type>();
@@ -72,7 +72,7 @@ namespace Langulus::RTTI
       /// Skip all decorations in front and back of a WrappedEnumName         
       ///   @return the named value token                                     
       template<auto T>
-      consteval Token IsolateConstant() {
+      constexpr Token IsolateConstant() {
          constexpr auto name = WrappedEnumName<T>();
          constexpr auto len = LengthOf(name);
          constexpr auto helper_name = WrappedEnumName<Oddly_Specific_Enum>();
