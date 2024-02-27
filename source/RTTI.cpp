@@ -75,7 +75,9 @@ namespace Langulus::RTTI
    ///   @param token - the token to search for                               
    ///   @param boundary - the boundary to search in (optional)               
    ///   @return the found element, or nullptr if not found                   
-   auto Registry::GetMeta(const auto& where, const Token& token, const Token& boundary) const noexcept {
+   auto Registry::GetMeta(
+      const auto& where, const Token& token, const Token& boundary
+   ) const noexcept {
       using R = decltype(where.begin()->second.begin()->second);
       const auto lc = ToLowercase(token);
       const auto foundToken = where.find(lc);
@@ -106,7 +108,9 @@ namespace Langulus::RTTI
    ///   @param token - the token to search for                               
    ///   @param boundary - the boundary to search in (optional)               
    ///   @return the list of associated meta definitions                      
-   const MetaList& Registry::GetMetaList(const auto& where, const Token& token, const Token& boundary) const noexcept {
+   const MetaList& Registry::GetMetaList(
+      const auto& where, const Token& token, const Token& boundary
+   ) const noexcept {
       static const MetaList fallback {};
       const auto lc = ToLowercase(ToLastToken(token));
       const auto foundToken = where.find(lc);
@@ -179,7 +183,9 @@ namespace Langulus::RTTI
    ///   @param token - the token to search for                               
    ///   @param boundary - the boundary to search in (optional)               
    ///   @return the list of associated meta definitions                      
-   const MetaList& Registry::GetAmbiguousMeta(const Token& token, const Token& boundary) const noexcept {
+   const MetaList& Registry::GetAmbiguousMeta(
+      const Token& token, const Token& boundary
+   ) const noexcept {
       return GetMetaList(mMetaAmbiguous, token, boundary);
    }
    
@@ -251,7 +257,9 @@ namespace Langulus::RTTI
    ///   @param token - the file extension to search for                      
    ///   @param boundary - the boundary to search in (optional)               
    ///   @return all meta definitions associated with the file extension      
-   const MetaList& Registry::ResolveFileExtension(const Token& token, const Token& boundary) const {
+   const MetaList& Registry::ResolveFileExtension(
+      const Token& token, const Token& boundary
+   ) const {
       return GetMetaList(mFileDatabase, token, boundary);
    }
    
@@ -259,7 +267,9 @@ namespace Langulus::RTTI
    ///   @param boundary - the boundary to register in                        
    ///   @param token - the token to register                                 
    ///   @param meta - the definition to add                                  
-   void Registry::RegisterAmbiguous(const Token& boundary, const Lowercase& token, AMeta meta) noexcept {
+   void Registry::RegisterAmbiguous(
+      const Token& boundary, const Lowercase& token, AMeta meta
+   ) noexcept {
       Lowercase ambiguous {ToLastToken(token)};
       const auto foundAmbiguous = mMetaAmbiguous.find(ambiguous);
       if (foundAmbiguous == mMetaAmbiguous.end()) {
@@ -279,7 +289,9 @@ namespace Langulus::RTTI
    ///   @param boundary - the boundary to unregister from                    
    ///   @param token - the token to unregister                               
    ///   @param meta - the definition to remove                               
-   void Registry::UnregisterAmbiguous(const Token& boundary, const Lowercase& token, AMeta meta) noexcept {
+   void Registry::UnregisterAmbiguous(
+      const Token& boundary, const Lowercase& token, AMeta meta
+   ) noexcept {
       Lowercase ambiguous {ToLastToken(token)};
       const auto foundAmbiguous = mMetaAmbiguous.find(ambiguous);
       if (foundAmbiguous == mMetaAmbiguous.end())
@@ -304,7 +316,9 @@ namespace Langulus::RTTI
    ///   @param boundary - the boundary to register in                        
    ///   @return the newly defined meta for that token                        
    template<bool REGISTER_AMBIGUOUS>
-   auto Registry::Register(auto meta, auto& where, const Lowercase& lc, const Token& boundary) IF_UNSAFE(noexcept) {
+   auto Registry::Register(
+      auto meta, auto& where, const Lowercase& lc, const Token& boundary
+   ) IF_UNSAFE(noexcept) {
       LANGULUS_ASSUME(DevAssumes, not boundary.empty(), "Bad boundary");
 
       // If reached, then not found, so insert a new definition         
@@ -325,7 +339,9 @@ namespace Langulus::RTTI
    ///   @param token - the data token to reserve                             
    ///   @param boundary - the boundary to register in                        
    ///   @return the newly defined meta data for that token                   
-   DMeta Registry::RegisterData(const Token& token, const Token& boundary) IF_UNSAFE(noexcept) {
+   DMeta Registry::RegisterData(
+      const Token& token, const Token& boundary
+   ) IF_UNSAFE(noexcept) {
       auto lc = ToLowercase(token);
       LANGULUS_ASSUME(DevAssumes, not GetMetaData(lc, boundary),
          "Data already registered");
@@ -337,7 +353,9 @@ namespace Langulus::RTTI
    ///   @param token - the constant token to reserve                         
    ///   @param boundary - the boundary to register in                        
    ///   @return the newly defined meta constant for that token               
-   CMeta Registry::RegisterConstant(const Token& token, const Token& boundary) IF_UNSAFE(noexcept) {
+   CMeta Registry::RegisterConstant(
+      const Token& token, const Token& boundary
+   ) IF_UNSAFE(noexcept) {
       auto lc = ToLowercase(token);
       LANGULUS_ASSUME(DevAssumes, not GetMetaConstant(lc, boundary),
          "Constant already registered");
@@ -349,7 +367,9 @@ namespace Langulus::RTTI
    ///   @param token - the trait token to reserve                            
    ///   @param boundary - the boundary to register in                        
    ///   @return the newly defined meta trait for that token                  
-   TMeta Registry::RegisterTrait(const Token& token, const Token& boundary) IF_UNSAFE(noexcept) {
+   TMeta Registry::RegisterTrait(
+      const Token& token, const Token& boundary
+   ) IF_UNSAFE(noexcept) {
       auto lc = ToLowercase(token);
       LANGULUS_ASSUME(DevAssumes, not GetMetaTrait(lc, boundary),
          "Trait already registered");
@@ -429,7 +449,9 @@ namespace Langulus::RTTI
    ///   @param token - the file extension token to reserve                   
    ///   @param type - the data to associate file with                        
    ///   @param boundary - the boundary to register in                        
-   void Registry::RegisterFileExtension(const Token& token, DMeta type, const Token& boundary) IF_UNSAFE(noexcept) {
+   void Registry::RegisterFileExtension(
+      const Token& token, DMeta type, const Token& boundary
+   ) IF_UNSAFE(noexcept) {
       LANGULUS_ASSUME(DevAssumes, not token.empty(),
          "Bad file extension");
       LANGULUS_ASSUME(DevAssumes, type,
