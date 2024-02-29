@@ -252,7 +252,7 @@ namespace Langulus::RTTI
          ///   @attention this function should be in sync with                
          ///              AnticipateSizeOfFunc()                              
          ///   @return the normalized compile-time token for T                
-         NOD() static consteval auto Normalize() {
+         static consteval auto Normalize() {
             constexpr Token Original = IsolateTypename<T>();
             ::std::size_t it = 0;
             ::std::array<char, AnticipateSizeOfFunc(Original)> output {};
@@ -309,7 +309,7 @@ namespace Langulus::RTTI
          ///   @attention this function should be in sync with                
          ///              AnticipateSizeOfType()                              
          ///   @return the normalized compile-time token for T                
-         NOD() static consteval auto Normalize() {
+         static consteval auto Normalize() {
             constexpr Token Original = IsolateTypename<T>();
             ::std::size_t it = 0;
             ::std::array<char, AnticipateSizeOfType(Original)> output {};
@@ -365,7 +365,7 @@ namespace Langulus::RTTI
          ///   @attention this function should be in sync with                
          ///              AnticipateSizeOfEnum()                              
          ///   @return the normalized compile-time token for E                
-         NOD() static consteval auto Normalize() {
+         static consteval auto Normalize() {
             constexpr Token Original = IsolateConstant<E>();
             constexpr Token EnumName = StatefulNameOfType<decltype(E)>::Name.data();
 
@@ -406,7 +406,7 @@ namespace Langulus::RTTI
    ///   @tparam T - the type to get the name of                              
    ///   @return the type name                                                
    template<class T>
-   NOD() consteval Token CppNameOf() {
+   consteval Token CppNameOf() {
       if constexpr (::std::is_function_v<Decay<T>>)
          return Inner::StatefulNameOfFunc<T>::Name.data();
       else
@@ -417,7 +417,7 @@ namespace Langulus::RTTI
    ///   @tparam T - the type to get the name of                              
    ///   @return the type name                                                
    template<class T>
-   NOD() consteval Token LastCppNameOf() {
+   consteval Token LastCppNameOf() {
       if constexpr (::std::is_function_v<Decay<T>>)
          return Inner::StatefulNameOfFunc<T>::Name.data();
       else {
@@ -451,7 +451,7 @@ namespace Langulus::RTTI
    ///   @tparam E - the constant to get the name of                          
    ///   @return the name of the constant                                     
    template<auto E>
-   NOD() consteval Token CppNameOf() {
+   consteval Token CppNameOf() {
       return Inner::StatefulNameOfEnum<E>::Name.data();
    }
    
@@ -459,7 +459,7 @@ namespace Langulus::RTTI
    ///   @tparam T - the enum to get the name of                              
    ///   @return the name                                                     
    template<auto E>
-   NOD() consteval Token LastCppNameOf() {
+   consteval Token LastCppNameOf() {
       // Find the last ':' symbol, that is not inside <...> scope       
       Token name = Inner::StatefulNameOfEnum<E>::Name.data();
       size_t depth = 0;

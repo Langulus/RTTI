@@ -28,19 +28,19 @@ namespace Langulus::RTTI
    ///   1. The byte size is always a power-of-two                            
    ///   2. The byte size is never smaller than LANGULUS(ALIGN)               
    template<class T>
-   constexpr Size GetAllocationPageOf() noexcept {
+   consteval Size GetAllocationPageOf() noexcept {
       if constexpr (CT::Dense<T>
       and requires {{T::CTTI_AllocationPage} -> CT::Integer;}) {
          constexpr auto candidate = T::CTTI_AllocationPage * sizeof(T);
          if constexpr (candidate < Alignment)
             return Alignment;
          else 
-            return Roof2cexpr(candidate);
+            return Roof2(candidate);
       }
       else if constexpr (sizeof(T) < Alignment)
          return Alignment;
       else 
-         return Roof2cexpr(sizeof(T));
+         return Roof2(sizeof(T));
    }
 
 

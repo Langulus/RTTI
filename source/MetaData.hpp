@@ -25,9 +25,6 @@ namespace Langulus::RTTI
       IF_UNSAFE(constexpr AllocationRequest() {})
    };
 
-   template<class T>
-   constexpr Size GetAllocationPageOf() noexcept;
-
 
    ///                                                                        
    ///   These methods are sought in each reflected type                      
