@@ -81,7 +81,7 @@ namespace Verbs
       /// Check if the verb is available in a type, and with given arguments  
       ///   @return true if verb is available in T with arguments A...        
       template<CT::Data T, CT::Data... A>
-      static constexpr bool AvailableFor() noexcept {
+      static consteval bool AvailableFor() noexcept {
          if constexpr (sizeof...(A) == 0)
             return requires (T & t, Verb & v) { t.Create(v); };
          else
@@ -91,7 +91,7 @@ namespace Verbs
       /// Get the verb functor for the given type and arguments               
       ///   @return the function, or nullptr if not available                 
       template<CT::Data T, CT::Data... A>
-      static constexpr auto Of() noexcept {
+      static consteval auto Of() noexcept {
          if constexpr (!Create::AvailableFor<T, A...>()) {
             return nullptr;
          }

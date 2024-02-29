@@ -179,7 +179,7 @@ namespace Langulus::CT
       /// The resulting count will be (bounded array extent) * any MemberCount
       /// constexpr static member, or constexpr size() method                 
       template<class T>
-      constexpr Count CountOfInner() noexcept {
+      consteval Count CountOfInner() noexcept {
          using DT = Decay<T>;
          if constexpr (requires {{DT::MemberCount} -> UnsignedInteger; })
             return DT::MemberCount * ExtentOf<T>;
@@ -193,7 +193,7 @@ namespace Langulus::CT
       }
 
       template<class T1, class...TN>
-      constexpr Count CountOf() noexcept {
+      consteval Count CountOf() noexcept {
          if constexpr (sizeof...(TN))
             return CountOfInner<T1>() + (CountOfInner<TN>() + ...);
          else
@@ -253,8 +253,7 @@ namespace Langulus
    ///   @tparam T - type of the scalar/enum to cast                          
    ///   @param a - the scalar to cast                                        
    ///   @return a reference to the underlying type                           
-   template<CT::Scalar T>
-   NOD() LANGULUS(INLINED)
+   template<CT::Scalar T> NOD() LANGULUS(INLINED)
    constexpr decltype(auto) FundamentalCast(const T& a) noexcept {
       if constexpr (CT::Fundamental<T>) {
          // Already fundamental, just forward it                        
@@ -274,8 +273,7 @@ namespace Langulus
    ///   @tparam T - type of the scalar/enum to cast                          
    ///   @param a - the scalar to cast                                        
    ///   @return a reference to the underlying type                           
-   template<CT::Scalar T>
-   NOD() LANGULUS(INLINED)
+   template<CT::Scalar T> NOD() LANGULUS(INLINED)
    constexpr decltype(auto) FundamentalCast(T& a) noexcept {
       if constexpr (CT::Fundamental<T>) {
          // Already fundamental, just forward it                        
@@ -298,7 +296,7 @@ namespace Langulus
    ///           the bigger extent, if one of the arguments isn't an array    
    ///           1 if both arguments are not arrays                           
    template<class LHS, class RHS>
-   NOD() constexpr Count OverlapExtents() noexcept {
+   consteval Count OverlapExtents() noexcept {
       constexpr auto lhs = ExtentOf<LHS>;
       constexpr auto rhs = ExtentOf<RHS>;
 
@@ -324,7 +322,7 @@ namespace Langulus
    ///           the bigger extent, if one of the arguments isn't a vector    
    ///           1 if both arguments are not arrays                           
    template<class LHS, class RHS>
-   NOD() constexpr Count OverlapCounts() noexcept {
+   consteval Count OverlapCounts() noexcept {
       constexpr auto lhs = CountOf<LHS>;
       constexpr auto rhs = CountOf<RHS>;
 
@@ -356,7 +354,7 @@ namespace Langulus
       ///    preferred (fallback)                                             
       ///   @attention this will discard any sparseness or other modifiers    
       template<class T1, class T2>
-      constexpr auto Lossless() noexcept {
+      consteval auto Lossless() noexcept {
          constexpr auto size = OverlapCounts<T1, T2>();
          using LHS = Decay<TypeOf<T1>>;
          using RHS = Decay<TypeOf<T2>>;
@@ -414,23 +412,23 @@ namespace Langulus
       }
 
       /// Nest the above function for all types in a variadic template        
-      template<class T1, class T2, class... TAIL>
-      constexpr auto LosslessNestedInner() noexcept {
+      template<class T1, class T2, class...TN>
+      consteval auto LosslessNestedInner() noexcept {
          using T1T2 = decltype(Lossless<T1, T2>());
 
-         if constexpr (sizeof...(TAIL))
-            return LosslessNestedInner<T1T2, TAIL...>();
+         if constexpr (sizeof...(TN))
+            return LosslessNestedInner<T1T2, TN...>();
          else
             return T1T2 {};
       }
 
       /// Nest the above function for all types in a variadic template        
-      template<class T1, class... TAIL>
-      constexpr auto LosslessNested() noexcept {
-         if constexpr (sizeof...(TAIL) == 0)
+      template<class T1, class...TN>
+      consteval auto LosslessNested() noexcept {
+         if constexpr (sizeof...(TN) == 0)
             return ::std::array<Decay<TypeOf<T1>>, CountOf<T1>> {};
          else
-            return LosslessNestedInner<T1, TAIL...>();
+            return LosslessNestedInner<T1, TN...>();
       }
 
    } // namespace Langulus::Inner
@@ -439,11 +437,12 @@ namespace Langulus
    /// after an arithmetic operation is performed between them. If any type   
    /// is an array, an array of OverlapCount size will be given back.         
    ///   @attention this will discard any sparseness or other modifiers       
-   template<class T1, class... TAIL>
-   using Lossless = Conditional<CountOf<decltype(Inner::LosslessNested<T1, TAIL...>())> == 1,
-         TypeOf<decltype(Inner::LosslessNested<T1, TAIL...>())>,
-         TypeOf<decltype(Inner::LosslessNested<T1, TAIL...>())>
-            [CountOf<decltype(Inner::LosslessNested<T1, TAIL...>())>]
+   template<class T1, class...TN>
+   using Lossless = Conditional<
+         CountOf<decltype(Inner::LosslessNested<T1, TN...>())> == 1,
+         TypeOf<decltype(Inner::LosslessNested<T1, TN...>())>,
+         TypeOf<decltype(Inner::LosslessNested<T1, TN...>())>
+            [CountOf<decltype(Inner::LosslessNested<T1, TN...>())>]
       >;
 
 } // namespace Langulus

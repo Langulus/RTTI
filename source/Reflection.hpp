@@ -344,7 +344,7 @@ namespace Langulus::CT
       ///   - if T is an enum, return pointer of the underlying type          
       ///   - otherwise just return a decayed T pointer                       
       template<class T>
-      constexpr auto GetUnderlyingType() noexcept {
+      consteval auto GetUnderlyingType() noexcept {
          if constexpr (Array<T>)
             return (Deref<Deext<T>>*) nullptr;
          else {
@@ -493,7 +493,7 @@ namespace Langulus
    /// anything reflected with LANGULUS(SUFFIX)                               
    ///   @return the suffix depending on the template argument                
    template<CT::Dense T>
-   constexpr Token SuffixOf() {
+   consteval Token SuffixOf() {
       if constexpr (requires { T::CTTI_Suffix; })
          return T::CTTI_Suffix;
       else if constexpr (CT::Same<T, signed int>)

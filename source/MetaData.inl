@@ -28,7 +28,7 @@ namespace Langulus::RTTI
    ///   1. The byte size is always a power-of-two                            
    ///   2. The byte size is never smaller than LANGULUS(ALIGN)               
    template<class T>
-   consteval Size GetAllocationPageOf() noexcept {
+   consteval Offset GetAllocationPageOf() noexcept {
       if constexpr (CT::Dense<T>
       and requires {{T::CTTI_AllocationPage} -> CT::Integer;}) {
          constexpr auto candidate = T::CTTI_AllocationPage * sizeof(T);
@@ -327,7 +327,7 @@ namespace Langulus::RTTI
    /// Reflecting a void type always returns nullptr                          
    ///   @return nullptr                                                      
    template<CT::Void> LANGULUS(INLINED)
-   constexpr DMeta MetaData::Of() {
+   consteval DMeta MetaData::Of() {
       return nullptr;
    }
    

@@ -36,7 +36,7 @@ namespace Langulus::RTTI
    /// Get the reflected positive token for a verb                            
    ///   @return the token                                                    
    template<CT::Data T>
-   constexpr Token MetaVerb::GetReflectedPositiveVerbToken() noexcept {
+   consteval Token MetaVerb::GetReflectedPositiveVerbToken() noexcept {
       if constexpr (requires { T::CTTI_Verb; })
          return T::CTTI_Verb;
       else if constexpr (requires { T::CTTI_PositiveVerb; }) {
@@ -55,7 +55,7 @@ namespace Langulus::RTTI
    /// Get the reflected negative token for a verb                            
    ///   @return the token                                                    
    template<CT::Data T>
-   constexpr Token MetaVerb::GetReflectedNegativeVerbToken() noexcept {
+   consteval Token MetaVerb::GetReflectedNegativeVerbToken() noexcept {
       if constexpr (requires { T::CTTI_Verb; })
          return T::CTTI_Verb;
       else if constexpr (requires { T::CTTI_NegativeVerb; }) {
@@ -74,7 +74,7 @@ namespace Langulus::RTTI
    /// Get the reflected positive operator for a verb                         
    ///   @return the token                                                    
    template<CT::Data T>
-   constexpr Token MetaVerb::GetReflectedPositiveVerbOperator() noexcept {
+   consteval Token MetaVerb::GetReflectedPositiveVerbOperator() noexcept {
       if constexpr (requires { T::CTTI_Operator; })
          return T::CTTI_Operator;
       else if constexpr (requires { T::CTTI_PositiveOperator; }) {
@@ -93,7 +93,7 @@ namespace Langulus::RTTI
    /// Get the reflected negative operator for a verb                         
    ///   @return the token                                                    
    template<CT::Data T>
-   constexpr Token MetaVerb::GetReflectedNegativeVerbOperator() noexcept {
+   consteval Token MetaVerb::GetReflectedNegativeVerbOperator() noexcept {
       if constexpr (requires { T::CTTI_Operator; })
          return T::CTTI_Operator;
       else if constexpr (requires { T::CTTI_NegativeOperator; }) {
@@ -112,7 +112,7 @@ namespace Langulus::RTTI
    /// Get the constexpr hash of a verb                                       
    ///   @return the hash of the type                                         
    template<CT::Data T>
-   constexpr Hash MetaVerb::GetVerbHash() noexcept {
+   consteval Hash MetaVerb::GetVerbHash() noexcept {
       const auto name = MetaVerb::GetReflectedPositiveVerbToken<T>();
       return HashBytes(name.data(), static_cast<int>(name.size()));
    }
@@ -120,7 +120,7 @@ namespace Langulus::RTTI
    /// Meta of a void always returns nullptr                                  
    ///   @return nullptr                                                      
    template<CT::Void T>
-   constexpr VMeta MetaVerb::Of() {
+   consteval VMeta MetaVerb::Of() {
       return nullptr;
    }
 
