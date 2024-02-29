@@ -20,7 +20,7 @@ namespace Langulus::RTTI
    /// name will be used                                                      
    ///   @return the token                                                    
    template<CT::Data T>
-   constexpr Token MetaTrait::GetReflectedToken() noexcept {
+   consteval Token MetaTrait::GetReflectedToken() noexcept {
       if constexpr (requires { T::CTTI_Trait; })
          return T::CTTI_Trait;
       else
@@ -30,7 +30,7 @@ namespace Langulus::RTTI
    /// Get the meta definition of a void trait                                
    ///   @return always nullptr                                               
    template<CT::Void T>
-   constexpr TMeta MetaTrait::Of() {
+   consteval TMeta MetaTrait::Of() {
       return nullptr;
    }
 

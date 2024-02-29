@@ -30,7 +30,7 @@ namespace Langulus::RTTI
       MetaTrait(const Token& token) : Meta {token} {}
 
       template<CT::Void>
-      NOD() static constexpr TMeta Of();
+      NOD() static consteval TMeta Of();
       template<CT::Decayed>
       NOD() static TMeta Of();
       
@@ -40,7 +40,7 @@ namespace Langulus::RTTI
 
    protected:
       template<CT::Data>
-      static constexpr Token GetReflectedToken() noexcept;
+      static consteval Token GetReflectedToken() noexcept;
    };
 
 } // namespace Langulus::RTTI

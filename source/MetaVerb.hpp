@@ -61,7 +61,7 @@ namespace Langulus::RTTI
          , mOperatorReverse {on} {}
 
       template<CT::Void>
-      NOD() static constexpr VMeta Of();
+      NOD() static consteval VMeta Of();
       template<CT::Decayed>
       NOD() static VMeta Of();
       
@@ -71,15 +71,15 @@ namespace Langulus::RTTI
 
    protected:
       template<CT::Data>
-      static constexpr Token GetReflectedPositiveVerbToken() noexcept;
+      static consteval Token GetReflectedPositiveVerbToken() noexcept;
       template<CT::Data>
-      static constexpr Token GetReflectedNegativeVerbToken() noexcept;
+      static consteval Token GetReflectedNegativeVerbToken() noexcept;
       template<CT::Data>
-      static constexpr Token GetReflectedPositiveVerbOperator() noexcept;
+      static consteval Token GetReflectedPositiveVerbOperator() noexcept;
       template<CT::Data>
-      static constexpr Token GetReflectedNegativeVerbOperator() noexcept;
+      static consteval Token GetReflectedNegativeVerbOperator() noexcept;
       template<CT::Data>
-      static constexpr Hash GetVerbHash() noexcept;
+      static consteval Hash GetVerbHash() noexcept;
    };
 
 } // namespace Langulus::RTTI

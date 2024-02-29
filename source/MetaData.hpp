@@ -439,7 +439,7 @@ namespace Langulus::RTTI
 
    public:
       template<CT::Void>
-      NOD() static constexpr DMeta Of();
+      NOD() static consteval DMeta Of();
       template<CT::DataReference>
       NOD() static DMeta Of();
       template<CT::SparseData>
