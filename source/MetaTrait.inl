@@ -44,7 +44,7 @@ namespace Langulus::RTTI
       // This check is not standard, but doesn't hurt afaik             
       static_assert(sizeof(T) > 0,
          "Can't reflect an incomplete type");
-      static_assert(not GetReflectedToken<T>().empty(),
+      static_assert(GetReflectedToken<T>() != "",
          "Invalid trait token is not allowed");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
@@ -73,27 +73,19 @@ namespace Langulus::RTTI
          MetaTrait& generated = *const_cast<MetaTrait*>(meta.get());
       #endif
 
-      // We'll try to explicitly or implicitly reflect it               
-      if constexpr (CT::Reflectable<T>) {
-         // The trait is explicitly reflected with a custom function    
-         // Let's call it...                                            
-         generated = T::Reflect();
-      }
-      else {
-         // Type is implicitly reflected, so let's do our best          
-         LANGULUS_ASSERT(generated.mToken == GetReflectedToken<T>(), Meta, "Token not set");
-         LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta, "Hash not set");
+      // Type is implicitly reflected, so let's do our best             
+      LANGULUS_ASSERT(generated.mToken == GetReflectedToken<T>(), Meta, "Token not set");
+      LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta, "Hash not set");
 
-         if constexpr (requires { T::CTTI_Info; })
-            generated.mInfo = T::CTTI_Info;
+      if constexpr (requires { T::CTTI_Info; })
+         generated.mInfo = T::CTTI_Info;
 
-         generated.mCppName = CppNameOf<T>();
+      generated.mCppName = CppNameOf<T>();
 
-         if constexpr (requires { T::CTTI_VersionMajor; })
-            generated.mVersionMajor = T::CTTI_VersionMajor;
-         if constexpr (requires { T::CTTI_VersionMinor; })
-            generated.mVersionMinor = T::CTTI_VersionMinor;
-      }
+      if constexpr (requires { T::CTTI_VersionMajor; })
+         generated.mVersionMajor = T::CTTI_VersionMajor;
+      if constexpr (requires { T::CTTI_VersionMinor; })
+         generated.mVersionMinor = T::CTTI_VersionMinor;
 
       IF_LANGULUS_MANAGED_REFLECTION(generated.mLibraryName = RTTI::Boundary);
 

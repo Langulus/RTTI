@@ -283,11 +283,6 @@ namespace Langulus::CT
    {
 
       template<class...T>
-      concept Reflectable = (requires {
-            {T::Reflect()} -> Same<RTTI::MetaData>;
-         } and ...);
-
-      template<class...T>
       concept Abstract = ((not Complete<T>
            or ::std::is_abstract_v<T>) and ...) or (T::CTTI_Abstract and ...);
 
@@ -389,12 +384,6 @@ namespace Langulus::CT
    template<class... T>
    concept Destroyable = Complete<Decay<T>...>
        and Inner::Destroyable<Decay<T>...>;
-
-   /// A reflected type is a type that has a public Reflection field          
-   /// This field is automatically added when using LANGULUS(REFLECT) macro   
-   /// inside the type you want to reflect                                    
-   template<class...T>
-   concept Reflectable = Inner::Reflectable<Decay<T>...>;
 
    /// A POD (Plain Old Data) type is any type with a static member           
    /// T::CTTI_POD set to true. If no such member exists, the type is         
