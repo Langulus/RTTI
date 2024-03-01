@@ -133,9 +133,9 @@ namespace Langulus::RTTI
       // This check is not standard, but doesn't hurt afaik             
       static_assert(sizeof(T) > 0,
          "Can't reflect an incomplete type");
-      static_assert(not GetReflectedPositiveVerbToken<T>().empty(),
+      static_assert(GetReflectedPositiveVerbToken<T>() != "",
          "Invalid verb token is not allowed");
-      static_assert(not GetReflectedNegativeVerbToken<T>().empty(),
+      static_assert(GetReflectedNegativeVerbToken<T>() != "",
          "Invalid verb token is not allowed");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
@@ -172,51 +172,43 @@ namespace Langulus::RTTI
          MetaVerb& generated = *const_cast<MetaVerb*>(meta.get());
       #endif
 
-      // We'll try to explicitly or implicitly reflect it               
-      if constexpr (CT::Reflectable<T>) {
-         // The verb is explicitly reflected with a custom function     
-         // Let's call it...                                            
-         generated = T::Reflect();
-      }
-      else {
-         // Verb is implicitly reflected, so let's do our best          
-         LANGULUS_ASSERT(generated.mToken == MetaVerb::GetReflectedPositiveVerbToken<T>(),
-            Meta, "Token+ not set");
-         LANGULUS_ASSERT(generated.mTokenReverse == MetaVerb::GetReflectedNegativeVerbToken<T>(),
-            Meta, "Token- not set");
-         LANGULUS_ASSERT(generated.mOperator == MetaVerb::GetReflectedPositiveVerbOperator<T>(),
-            Meta, "TokenOp+ not set");
-         LANGULUS_ASSERT(generated.mOperatorReverse == MetaVerb::GetReflectedNegativeVerbOperator<T>(),
-            Meta, "TokenOp- not set");
-         LANGULUS_ASSERT(generated.mHash == HashOf(MetaVerb::GetReflectedPositiveVerbToken<T>()),
-            Meta, "Hash not set");
+      // Verb is implicitly reflected, so let's do our best             
+      LANGULUS_ASSERT(generated.mToken == MetaVerb::GetReflectedPositiveVerbToken<T>(),
+         Meta, "Token+ not set");
+      LANGULUS_ASSERT(generated.mTokenReverse == MetaVerb::GetReflectedNegativeVerbToken<T>(),
+         Meta, "Token- not set");
+      LANGULUS_ASSERT(generated.mOperator == MetaVerb::GetReflectedPositiveVerbOperator<T>(),
+         Meta, "TokenOp+ not set");
+      LANGULUS_ASSERT(generated.mOperatorReverse == MetaVerb::GetReflectedNegativeVerbOperator<T>(),
+         Meta, "TokenOp- not set");
+      LANGULUS_ASSERT(generated.mHash == HashOf(MetaVerb::GetReflectedPositiveVerbToken<T>()),
+         Meta, "Hash not set");
 
-         // Reflect info string if any                                  
-         if constexpr (requires { T::CTTI_Info; })
-            generated.mInfo = T::CTTI_Info;
+      // Reflect info string if any                                     
+      if constexpr (requires { T::CTTI_Info; })
+         generated.mInfo = T::CTTI_Info;
 
-         generated.mCppName = CppNameOf<T>();
+      generated.mCppName = CppNameOf<T>();
 
-         // Reflect precedence                                          
-         if constexpr (requires { T::CTTI_Precedence; })
-            generated.mPrecedence = T::CTTI_Precedence;
+      // Reflect precedence                                             
+      if constexpr (requires { T::CTTI_Precedence; })
+         generated.mPrecedence = T::CTTI_Precedence;
 
-         // Reflect version                                             
-         if constexpr (requires { T::CTTI_VersionMajor; })
-            generated.mVersionMajor = T::CTTI_VersionMajor;
+      // Reflect version                                                
+      if constexpr (requires { T::CTTI_VersionMajor; })
+         generated.mVersionMajor = T::CTTI_VersionMajor;
 
-         if constexpr (requires { T::CTTI_VersionMinor; })
-            generated.mVersionMinor = T::CTTI_VersionMinor;
+      if constexpr (requires { T::CTTI_VersionMinor; })
+         generated.mVersionMinor = T::CTTI_VersionMinor;
 
-         if constexpr (CT::DefaultableVerbMutable<T>)
-            generated.mDefaultInvocationMutable = FDefaultVerbMutable {&T::ExecuteDefault};
+      if constexpr (CT::DefaultableVerbMutable<T>)
+         generated.mDefaultInvocationMutable = FDefaultVerbMutable {&T::ExecuteDefault};
 
-         if constexpr (CT::DefaultableVerbConstant<T>)
-            generated.mDefaultInvocationConstant = FDefaultVerbConstant {&T::ExecuteDefault};
+      if constexpr (CT::DefaultableVerbConstant<T>)
+         generated.mDefaultInvocationConstant = FDefaultVerbConstant {&T::ExecuteDefault};
 
-         if constexpr (CT::StatelessVerb<T>)
-            generated.mStatelessInvocation = FStatelessVerb {T::ExecuteStateless};
-      }
+      if constexpr (CT::StatelessVerb<T>)
+         generated.mStatelessInvocation = FStatelessVerb {T::ExecuteStateless};
 
       IF_LANGULUS_MANAGED_REFLECTION(generated.mLibraryName = RTTI::Boundary);
 

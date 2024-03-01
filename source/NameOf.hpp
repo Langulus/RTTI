@@ -66,7 +66,7 @@ namespace Langulus::RTTI
 
          if (len - right <= left)
             throw "invalid token";
-         return Token {name + left, name + len - right};
+         return Token (name + left, name + len - right);
       }
 
       /// Skip all decorations in front and back of a WrappedEnumName         
@@ -94,7 +94,7 @@ namespace Langulus::RTTI
 
          if (len - right <= left)
             throw "invalid token";
-         return Token {name + left, name + len - right};
+         return Token (name + left, name + len - right);
       }
 
       /// Replace these patterns when demangling names                        
@@ -443,7 +443,7 @@ namespace Langulus::RTTI
             }
          }
 
-         throw "Invalid token";
+         return name;
       }
    }
 
@@ -482,7 +482,7 @@ namespace Langulus::RTTI
          }
       }
 
-      throw "Invalid token";
+      return name;
    }
 
 } // namespace Langulus::RTTI

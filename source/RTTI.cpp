@@ -507,7 +507,7 @@ namespace Langulus::RTTI
             continue;
          }
 
-         VERBOSE("File ", Logger::Push, Logger::Cyan, found->second->mToken,
+         VERBOSE("File ", Logger::Push, Logger::Cyan, pair->first,
             Logger::Pop, Logger::Red, " unregistered (", boundary, ")");
 
          pair->second.erase(found);

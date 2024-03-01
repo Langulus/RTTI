@@ -451,7 +451,7 @@ namespace Langulus::RTTI
          "either wrap your array in a type, or represent it as a raw pointer");
       static_assert(not CT::DataReference<T>, 
          "Can't reflect a reference");
-      static_assert(not NameOf<T>().empty(), 
+      static_assert(NameOf<T>() != "",
          "Invalid data token is not allowed - "
          "you have probably equipped your type with an empty LANGULUS(NAME)");
 
@@ -542,7 +542,7 @@ namespace Langulus::RTTI
       static_assert(not CT::Array<T>,
          "Can't reflect a bounded array type - "
          "either wrap your array in a type, or represent it as a raw pointer");
-      static_assert(not NameOf<T>().empty(),
+      static_assert(NameOf<T>() != "",
          "Invalid data token is not allowed - "
          "you have probably equipped your type with an empty LANGULUS(NAME)");
 
@@ -573,95 +573,87 @@ namespace Langulus::RTTI
          MetaData& generated = *const_cast<MetaData*>(meta.get());
       #endif
 
-      // We'll try to explicitly or implicitly reflect it               
-      if constexpr (CT::Reflectable<T>) {
-         // The type is explicitly reflected with a custom function     
-         // Let's call it...                                            
-         generated = T::Reflect();
+      // Type is implicitly reflected, so let's do our best             
+      LANGULUS_ASSERT(generated.mToken == NameOf<T>(), Meta,
+         "Token not set");
+      LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta,
+         "Hash not set");
+
+      if constexpr (requires { T::CTTI_Info; })
+         generated.mInfo = T::CTTI_Info;
+      generated.mCppName = CppNameOf<T>();
+      generated.mIsAbstract = CT::Abstract<T>;
+      generated.mIsNullifiable = CT::Nullifiable<T>;
+      generated.mSize = sizeof(T);
+      generated.mAlignment = alignof(T);
+      generated.mIsPOD = CT::POD<T>;
+      generated.mIsUninsertable = CT::Uninsertable<T>;
+      generated.mIsUnallocatable = CT::Unallocatable<T>;
+      generated.mIsExecutable = CT::DerivedFrom<T, Flow::Verb>;
+      generated.mSuffix = SuffixOf<T>();
+
+      // This is the origin type, so self-refer                         
+      generated.mOrigin = &generated;
+      generated.mDecvq = &generated;
+
+      // Calculate the allocation page and table                        
+      // It is the same, regardless if T is const or not                
+      generated.mAllocationPage = GetAllocationPageOf<T>();
+      constexpr auto minElements = GetAllocationPageOf<T>() / sizeof(T);
+      for (Offset bit = 0; bit < sizeof(Offset) * 8; ++bit) {
+         const Offset threshold = Offset {1} << bit;
+         const Offset elements = threshold / sizeof(T);
+         generated.mAllocationTable[bit] = ::std::max(minElements, elements);
       }
-      else {
-         // Type is implicitly reflected, so let's do our best          
-         LANGULUS_ASSERT(generated.mToken == NameOf<T>(), Meta,
-            "Token not set");
-         LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta,
-            "Hash not set");
 
-         if constexpr (requires { T::CTTI_Info; })
-            generated.mInfo = T::CTTI_Info;
-         generated.mCppName = CppNameOf<T>();
-         generated.mIsAbstract = CT::Abstract<T>;
-         generated.mIsNullifiable = CT::Nullifiable<T>;
-         generated.mSize = sizeof(T);
-         generated.mAlignment = alignof(T);
-         generated.mIsPOD = CT::POD<T>;
-         generated.mIsUninsertable = CT::Uninsertable<T>;
-         generated.mIsUnallocatable = CT::Unallocatable<T>;
-         generated.mIsExecutable = CT::DerivedFrom<T, Flow::Verb>;
-         generated.mSuffix = SuffixOf<T>();
+      // Consider the boundary and pool tactics                         
+      IF_LANGULUS_MANAGED_REFLECTION(generated.mLibraryName = RTTI::Boundary);
 
-         // This is the origin type, so self-refer                      
-         generated.mOrigin = &generated;
-         generated.mDecvq = &generated;
-
-         // Calculate the allocation page and table                     
-         // It is the same, regardless if T is const or not             
-         generated.mAllocationPage = GetAllocationPageOf<T>();
-         constexpr auto minElements = GetAllocationPageOf<T>() / sizeof(T);
-         for (Offset bit = 0; bit < sizeof(Offset) * 8; ++bit) {
-            const Offset threshold = Offset {1} << bit;
-            const Offset elements = threshold / sizeof(T);
-            generated.mAllocationTable[bit] = ::std::max(minElements, elements);
-         }
-
-         // Consider the boundary and pool tactics                      
-         IF_LANGULUS_MANAGED_REFLECTION(generated.mLibraryName = RTTI::Boundary);
-
-         #if LANGULUS_FEATURE(MANAGED_MEMORY)
-            if constexpr (requires { T::CTTI_Pool; })
-               generated.mPoolTactic = T::CTTI_Pool;
+      #if LANGULUS_FEATURE(MANAGED_MEMORY)
+         if constexpr (requires { T::CTTI_Pool; })
+            generated.mPoolTactic = T::CTTI_Pool;
          
-            #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            if (RTTI::Boundary != RTTI::MainBoundary
-            and generated.mPoolTactic == PoolTactic::Default)
-               generated.mPoolTactic = PoolTactic::Type;
-            #endif
+         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         if (RTTI::Boundary != RTTI::MainBoundary
+         and generated.mPoolTactic == PoolTactic::Default)
+            generated.mPoolTactic = PoolTactic::Type;
          #endif
+      #endif
 
-         if constexpr (requires { T::CTTI_Files; }) {
-            generated.mFileExtensions = T::CTTI_Files;
+      if constexpr (requires { T::CTTI_Files; }) {
+         generated.mFileExtensions = T::CTTI_Files;
 
-            #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-               // Register all file extensions                          
-               const auto ext = generated.mFileExtensions;
-               Offset sequential = 0;
-               for (Offset e = 0; e < ext.size(); ++e) {
-                  if (IsSpace(ext[e]) or ext[e] == ',') {
-                     if (sequential) {
-                        const auto lc = ext.substr(e - sequential, sequential);
-                        Instance.RegisterFileExtension(lc, &generated, RTTI::Boundary);
-                     }
-
-                     sequential = 0;
-                     continue;
+         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+            // Register all file extensions                             
+            const auto ext = generated.mFileExtensions;
+            Offset sequential = 0;
+            for (Offset e = 0; e < ext.size(); ++e) {
+               if (IsSpace(ext[e]) or ext[e] == ',') {
+                  if (sequential) {
+                     const auto lc = ext.substr(e - sequential, sequential);
+                     Instance.RegisterFileExtension(lc, &generated, RTTI::Boundary);
                   }
 
-                  ++sequential;
+                  sequential = 0;
+                  continue;
                }
 
-               if (sequential) {
-                  const auto lc = ext.substr(ext.size() - sequential, sequential);
-                  Instance.RegisterFileExtension(lc, &generated, RTTI::Boundary);
-               }
-            #endif
-         }
+               ++sequential;
+            }
 
-         if constexpr (requires { T::CTTI_VersionMajor; })
-            generated.mVersionMajor = T::CTTI_VersionMajor;
-         if constexpr (requires { T::CTTI_VersionMinor; })
-            generated.mVersionMinor = T::CTTI_VersionMinor;
-
-         ReflectOriginType<T>(generated);
+            if (sequential) {
+               const auto lc = ext.substr(ext.size() - sequential, sequential);
+               Instance.RegisterFileExtension(lc, &generated, RTTI::Boundary);
+            }
+         #endif
       }
+
+      if constexpr (requires { T::CTTI_VersionMajor; })
+         generated.mVersionMajor = T::CTTI_VersionMajor;
+      if constexpr (requires { T::CTTI_VersionMinor; })
+         generated.mVersionMinor = T::CTTI_VersionMinor;
+
+      ReflectOriginType<T>(generated);
 
       VERBOSE("Data ", Logger::Push, Logger::Cyan, generated.mToken,
          Logger::Pop, Logger::Green, " registered (", generated.mLibraryName, ")");
@@ -983,12 +975,7 @@ namespace Langulus::RTTI
       if constexpr (Types<BASE...>::Empty)
          return;
       else {
-         static const Base list[] {
-            Base::From<Decay<T>, BASE>()...
-         };
-
-         for (const auto& i : list)
-            mBases.push_back(i);
+         (mBases.push_back(Base::From<Decay<T>, BASE>()), ...);
       }
    }
 
@@ -999,14 +986,9 @@ namespace Langulus::RTTI
       if constexpr (Types<VERB...>::Empty)
          return;
       else {
-         static const ::std::pair<VMeta, Ability> list[] {
-            ::std::pair<VMeta, Ability>(
-               MetaVerb::Of<VERB>(), Ability::From<T, VERB>()
-            )...
-         };
-
-         for (const auto& i : list)
-            mAbilities.insert(i);
+         (mAbilities.emplace(
+            MetaVerb::Of<VERB>(), Ability::From<T, VERB>()
+         ), ...);
       }
    }
 
@@ -1021,7 +1003,7 @@ namespace Langulus::RTTI
             "implement a public cast operator in FROM, or a public constructor in TO"
             " - these can be either explicit or not");
 
-         static const ::std::pair<DMeta, Converter> list[] {
+         const ::std::pair<DMeta, Converter> list[] {
             ::std::pair<DMeta, Converter>(
                MetaData::Of<Decay<TO>>(),
                Converter::From<FROM, TO>(MetaData::Of<Decay<TO>>())
@@ -1029,7 +1011,8 @@ namespace Langulus::RTTI
          };
 
          for (const auto& i : list)
-            if (i.first) mConvertersTo.insert(i);
+            if (i.first)
+               mConvertersTo.insert(i);
       }
    }
    
@@ -1044,7 +1027,7 @@ namespace Langulus::RTTI
             "implement a public cast operator in FROM, or a public constructor in TO"
             " - these can be either explicit or not");
 
-         static const ::std::pair<DMeta, Converter> list[] {
+         const ::std::pair<DMeta, Converter> list[] {
             ::std::pair<DMeta, Converter>(
                MetaData::Of<Decay<FROM>>(),
                Converter::From<FROM, TO>(MetaData::Of<Decay<FROM>>())
@@ -1052,7 +1035,8 @@ namespace Langulus::RTTI
          };
 
          for (const auto& i : list)
-            if (i.first) mConvertersFrom.insert(i);
+            if (i.first)
+               mConvertersFrom.insert(i);
       }
    }
 
