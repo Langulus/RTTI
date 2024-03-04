@@ -67,6 +67,12 @@ namespace Langulus::RTTI
    /// Takes the pointer to the instance for hashing                          
    /// Returns the hash                                                       
    using FHash = Hash(*)(const void*);
+   
+   /// The reference function wrapped in a lambda                             
+   /// Takes the pointer to the instance for referencing                      
+   /// Returns the number of references after being referenced                
+   /// (use 0 modifier to just get references)                                
+   using FReference = Count(*)(const void*, int modifier);
 
    /// A custom verb dispatcher, wrapped in a lambda expression               
    /// Takes the pointer to the instance that will dispatch, and a verb       
@@ -356,6 +362,10 @@ namespace Langulus::RTTI
       // Abandon constructor wrapped in a lambda upon reflection        
       // @attention this always works with the origin type              
       FMoveConstruct mAbandonConstructor {};
+
+      // Reference function (if any), wrapped in a lambda on reflection 
+      // @attention this always works with the origin type              
+      FReference mReference {};
 
       // Destructor wrapped in a lambda upon reflection                 
       // @attention this always works with the origin type              
