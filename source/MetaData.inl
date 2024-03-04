@@ -811,6 +811,15 @@ namespace Langulus::RTTI
             };
       }
 
+      // Wrap the reference function of the origin type inside a lambda 
+      if constexpr (CT::Referencable<T>) {
+         generated.mReference = 
+            [](const void* at, int modifier) -> Count {
+               auto atT = static_cast<const T*>(at);
+               return atT->Reference(modifier);
+            };
+      }
+      
       // Wrap the destructor of the origin type inside a lambda         
       if constexpr (CT::Destroyable<T>) {
          generated.mDestructor = 
