@@ -200,39 +200,36 @@ namespace Langulus::CT
             return CountOfInner<T1>();
       }
 
-      /// Array/vector concept for a single type                              
-      template<class T>
-      concept Vector = (
-              not Semantic<T> 
-              and Typed<T>
-              and CountOf<T>() > 1
-              and sizeof(T) == sizeof(TypeOf<T>) * CountOf<T>())
-           or (ExtentOf<T>) > 1;
-
-      /// Scalar concept for a single type                                    
-      template<class T>
-      concept Scalar = not Semantic<T> and not Vector<T>;
-
    } // namespace Langulus::CT::Inner
          
-   /// Vector concept                                                         
+   /// Check if all the provided types are considered Vector types            
    /// Any type that is Typed and has CountOf that is at least 2, and         
    /// the T's size is exactly equal to sizeof(TypeOf<T>) * CountOf<T>        
    /// Additionally, bounded arrays with more than a single element are also  
-   /// considered Vector. Semantics are never considered vectors              
+   /// considered Vector.                                                     
+   ///   @attention any semantics are ignored, so that the usual semantics    
+   ///      play well with custom vector types                                
    template<class...T>
-   concept Vector = (Inner::Vector<T> and ...);
+   concept Vector = (((
+               Typed<Desem<T>>
+           and Inner::CountOf<Desem<T>>() > 1
+           and sizeof(Desem<T>) == sizeof(TypeOf<Desem<T>>) * Inner::CountOf<Desem<T>>()
+         )
+         or (ExtentOf<Desem<T>> > 1)
+      ) and ...);
 
    template<class...T>
-   concept DenseVector = ((Dense<T> and Inner::Vector<T>) and ...);
+   concept DenseVector = ((Dense<Desem<T>> and Vector<T>) and ...);
 
    /// Scalar concept                                                         
    /// Any type that isn't a Vector type, and isn't a Semantic                
+   ///   @attention any semantics are ignored, so that the usual semantics    
+   ///      play well with custom vector types                                
    template<class...T>
-   concept Scalar = (Inner::Scalar<T> and ...);
+   concept Scalar = ((not Vector<Desem<T>>) and ...);
 
    template<class...T>
-   concept DenseScalar = ((Dense<T> and Inner::Scalar<T>) and ...);
+   concept DenseScalar = ((Dense<Desem<T>> and Scalar<T>) and ...);
 
 } // namespace Langulus::CT
 
