@@ -27,7 +27,7 @@ namespace Langulus
       LANGULUS(INLINED)
       ~Referenced() {
          LANGULUS_ASSUME(DevAssumes, mReferences <= 1,
-            "Leftover references on instance destruction. "
+            "Leftover references (", mReferences,") on instance destruction. "
             "When inheriting from Referenced, you're supposed to "
             "implement either an appropriate destructor (or surrounding logic) "
             "that makes sure references are reduced down to zero, before "
