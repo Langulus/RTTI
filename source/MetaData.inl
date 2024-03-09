@@ -909,7 +909,7 @@ namespace Langulus::RTTI
       }
 
       // Wrap the GetHash() method inside a lambda                      
-      if constexpr (CT::Hashable<T> and not CT::POD<T>) {
+      if constexpr (CT::Inner::HasGetHashMethod<T>) {
          generated.mHasher = 
             [](const void* at) {
                auto atT = static_cast<const T*>(at);
