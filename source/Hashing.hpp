@@ -519,7 +519,8 @@ namespace Langulus
    namespace CT::Inner
    {
 
-      /// Check if T can be hashed with HashOf                                
+      /// Check if T has a GetHash() method                                   
+      /// It is always preferred when hashing data                            
       template<class T>
       concept HasGetHashMethod = Complete<T> and requires (T& a) {
          {a.GetHash()} -> Same<Hash>;
