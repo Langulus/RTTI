@@ -326,7 +326,15 @@ namespace Langulus::RTTI
 
       #if LANGULUS_FEATURE(MANAGED_MEMORY)
          // The pooling tactic used for the type                        
-         PoolTactic mPoolTactic = PoolTactic::Default;
+         #if LANGULUS(DEBUG)
+            // Use dedicated type pools, so that dumping memory pools   
+            // gives better information about leaks, etc.               
+            PoolTactic mPoolTactic = PoolTactic::Type;
+         #else
+            // Use the default pool chain for better memory/performance 
+            PoolTactic mPoolTactic = PoolTactic::Default;
+         #endif
+
          private:
             // The pool chain for the type                              
             // Access it through GetPool() method, because it might not 
