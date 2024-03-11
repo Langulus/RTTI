@@ -385,11 +385,8 @@ namespace Langulus::RTTI
             // Pool tactic is always default for pointers, unless these 
             // pointers have been registered outside RTTI::MainBoundary 
             #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-               generated.mPoolTactic = RTTI::Boundary != RTTI::MainBoundary
-                  ? PoolTactic::Type
-                  : PoolTactic::Default;
-            #else
-               generated.mPoolTactic = PoolTactic::Default;
+               if (RTTI::Boundary != RTTI::MainBoundary)
+                  generated.mPoolTactic = PoolTactic::Type;
             #endif
          #endif
       }
