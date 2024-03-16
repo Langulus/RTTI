@@ -10,6 +10,17 @@
 #include "Semantics.hpp"
 
 
+namespace Langulus::CT
+{
+
+   template<class...T>
+   concept Tagged = (requires { Decay<T>::CTTI_TagTag; } and ...);
+
+   template<class...T>
+   concept NotTagged = ((not Tagged<T>) and ...);
+
+} // namespace Langulus::CT
+
 namespace Langulus::RTTI
 {
 
@@ -26,71 +37,65 @@ namespace Langulus::RTTI
    /// values from the hierarchy.                                             
    ///                                                                        
    ///   @tparam DATA - type to apply the attributes to                       
-   ///   @tparam TAG - the attribute                                          
+   ///   @tparam TAGS - the attributes                                        
    ///                                                                        
-   template<class DATA, class TAG>
-   struct alignas(alignof(DATA)) Tag : A::Semantic {
+   #pragma pack(push, 1)
+   template<class DATA, class...TAGS>
+   struct Tag : A::Semantic {
+      LANGULUS(TYPED) DATA;
+
       static constexpr bool CTTI_TagTag = true;
 
       static_assert(not CT::Array<DATA>,
          "Carry the extent of the array outside the tag: "
          "`Tag<bool[64], Trait> mMember` becomes `Tag<bool, Trait> mMember[64]` "
-         " - this is required for reflection to work properly"
-      );
+         " - this is required for reflection to work properly");
 
       DATA mData;
 
       using DataType = DATA;
-      using TagType  = TAG;
+      using Tags = Types<TAGS...>;
 
-      LANGULUS(INLINED)
-      constexpr Tag() requires CT::Inner::Defaultable<DATA>
-         : mData {} {}
+      constexpr Tag() = default;
 
-      LANGULUS(INLINED)
-      constexpr Tag(const Tag& t) requires CT::Inner::ReferMakable<DATA>
-         : mData {Refer(t.mData)} {}
-
-      LANGULUS(INLINED)
-      constexpr Tag(Tag&& t) requires CT::Inner::MoveMakable<DATA>
-         : mData {Move(t.mData)} {}
-
-      template<class T>
+      template<CT::NotTagged T>
       requires CT::MakableFrom<DATA, T> LANGULUS(INLINED)
       constexpr Tag(T&& t)
          : mData {Forward<T>(t)} {}
 
+      constexpr Tag(const Tag& other)
+         : mData {other.mData} {}
+
+      constexpr Tag(Tag&& other)
+         : mData {::std::move(other.mData)} {}
+
+      constexpr Tag& operator = (const Tag& rhs) {
+         mData = rhs.mData;
+         return *this;
+      }
+
+      constexpr Tag& operator = (Tag&& rhs) {
+         mData = ::std::move(rhs.mData);
+         return *this;
+      }
+
+      template<CT::NotTagged T>
+      requires CT::AssignableFrom<DATA, T> LANGULUS(INLINED)
+      constexpr Tag& operator = (T&& rhs) {
+         mData = Forward<T>(rhs);
+         return *this;
+      }
+
       LANGULUS(INLINED)
       constexpr operator DATA& () noexcept {
          static_assert(sizeof (Tag) == sizeof (DATA));
-         static_assert(alignof(Tag) == alignof(DATA));
          return mData;
       }
 
       LANGULUS(INLINED)
       constexpr operator DATA const& () const noexcept {
          static_assert(sizeof (Tag) == sizeof (DATA));
-         static_assert(alignof(Tag) == alignof(DATA));
          return mData;
-      }
-
-      constexpr Tag& operator = (const Tag& rhs) 
-      requires CT::Inner::ReferAssignable<DATA> {
-         mData = Refer(rhs.mData);
-         return *this;
-      }
-
-      constexpr Tag& operator = (Tag&& rhs)
-      requires CT::Inner::MoveAssignable<DATA> {
-         mData = Move(rhs.mData);
-         return *this;
-      }
-
-      template<class T>
-      requires CT::AssignableFrom<DATA, T> LANGULUS(INLINED)
-      constexpr Tag& operator = (T&& rhs) {
-         mData = Forward<T>(rhs);
-         return *this;
       }
 
       LANGULUS(INLINED)
@@ -129,16 +134,6 @@ namespace Langulus::RTTI
             return mData;
       }
    };
+   #pragma pack(pop)
 
 } // namespace Langulus::RTTI
-
-namespace Langulus::CT
-{
-
-   template<class...T>
-   concept Tagged = (requires { Decay<T>::CTTI_TagTag; } and ...);
-
-   template<class...T>
-   concept NotTagged = ((not Tagged<T>) and ...);
-
-} // namespace Langulus::CT
