@@ -83,7 +83,7 @@ namespace Langulus::RTTI
    using FVerbConstant = FDispatchConstant;
 
    using FTypeRetriever = DMeta(*)();
-   using FTraitRetriever = TMeta(*)();
+   using FTraitRetriever = TMeta(*)(int);
 
 
    ///                                                                        
@@ -129,7 +129,11 @@ namespace Langulus::RTTI
       NOD() constexpr Byte*       Get(Byte*) const noexcept;
 
       NOD() DMeta GetType() const;
-      NOD() TMeta GetTrait() const;
+      NOD() TMeta GetTrait(int) const;
+
+   private:
+      template<class...T>
+      static TMeta TraitSelector(int, Types<T...>&&);
    };
 
    using MemberList = ::std::vector<Member>;

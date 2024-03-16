@@ -299,22 +299,23 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
          REQUIRE(meta->mMembers.size() == 4);
          REQUIRE(meta->mMembers[0].mCount == 1);
          REQUIRE(meta->mMembers[0].mOffset >= sizeof(ImplicitlyReflectedData));
-         REQUIRE(meta->mMembers[0].GetTrait() == nullptr);
+         REQUIRE(meta->mMembers[0].GetTrait(0) == nullptr);
          REQUIRE(meta->mMembers[0].GetType()->Is<int>());
 
          REQUIRE(meta->mMembers[1].mCount == 1);
          REQUIRE(meta->mMembers[1].mOffset > meta->mMembers[0].mOffset);
-         REQUIRE(meta->mMembers[1].GetTrait()->Is<Traits::Tag>());
+         REQUIRE(meta->mMembers[1].GetTrait(0)->Is<Traits::Tag>());
+         REQUIRE(meta->mMembers[1].GetTrait(1) == nullptr);
          REQUIRE(meta->mMembers[1].GetType()->Is<bool>());
 
          REQUIRE(meta->mMembers[2].mCount == 12);
          REQUIRE(meta->mMembers[2].mOffset > meta->mMembers[1].mOffset);
-         REQUIRE(meta->mMembers[2].GetTrait() == nullptr);
+         REQUIRE(meta->mMembers[2].GetTrait(0) == nullptr);
          REQUIRE(meta->mMembers[2].GetType()->Is<int>());
 
          REQUIRE(meta->mMembers[3].mCount == 1);
          REQUIRE(meta->mMembers[3].mOffset > meta->mMembers[2].mOffset);
-         REQUIRE(meta->mMembers[3].GetTrait() == nullptr);
+         REQUIRE(meta->mMembers[3].GetTrait(0) == nullptr);
          REQUIRE(meta->mMembers[3].GetType()->Is<int>());
 
          REQUIRE(meta->mNamedValues.size() == 0);

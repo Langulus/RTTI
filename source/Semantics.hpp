@@ -26,14 +26,15 @@ namespace Langulus
          LANGULUS(ABSTRACT) true;
          LANGULUS(UNINSERTABLE) true;
          LANGULUS(UNALLOCATABLE) true;
+         LANGULUS(REFLECTABLE) false;
 
          /// Semantic types are ephemeral and should never be reassignable    
-         constexpr Semantic() noexcept = default;
+         /*constexpr Semantic() noexcept = default;
          constexpr Semantic(const Semantic&) noexcept = default;
-         constexpr Semantic(Semantic&&) noexcept = default;
+         constexpr Semantic(Semantic&&) noexcept = default;*/
 
-         auto operator = (const Semantic&) = delete;
-         auto operator = (Semantic&&) = delete;
+         /*auto operator = (const Semantic&) = delete;
+         auto operator = (Semantic&&) = delete;*/
       };
 
       /// An abstract shallow semantic                                        
@@ -1217,7 +1218,8 @@ namespace Langulus
       using T = decltype(what);
       if constexpr (CT::Semantic<T>)
          return DecayCast(Forward<T>(what));
-      else return what;
+      else
+         return what;
    }
 
 } // namespace Langulus

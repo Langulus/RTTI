@@ -168,6 +168,11 @@ namespace Langulus::RTTI
 #define LANGULUS_PRODUCER() \
    public: using CTTI_Producer = 
 
+/// You can make types not reflectable. All types are reflectable by default  
+///   @attention the property will propagate to any derived class             
+#define LANGULUS_REFLECTABLE() \
+   public: static constexpr bool CTTI_Reflectable =
+
 /// You can make types not insertable to Anyness containers, such as some     
 /// intermediate types, like Block::KnownPointer. These types will produce    
 /// a compile-time error when a push is attempted. All reflected types are    
@@ -404,6 +409,16 @@ namespace Langulus::CT
    /// Use LANGULUS(NULLIFIABLE) macro as member to tag nullifiable types     
    template<class...T>
    concept Nullifiable = ((Sparse<T> or Inner::Nullifiable<Decay<T>>) and ...);
+   
+   /// A non-reflectable type is any type with a static member                
+   /// T::CTTI_Reflectable set to false. This attribute will ignore sparsity  
+   /// and qualifiers                                                         
+   /// Use LANGULUS(REFLECTABLE) macro as member to tag nullifiable types     
+   template<class...T>
+   concept Unreflectable = ((not T::CTTI_Reflectable) and ...);
+
+   template<class...T>
+   concept Reflectable = ((not Unreflectable<T>) and ...);
 
    /// A concretizable type is any type with a member type CTTI_Concrete      
    /// If no such member exists, the type is assumed NOT concretizable by     

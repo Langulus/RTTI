@@ -60,9 +60,8 @@ namespace Langulus::RTTI
       alignas(OWNER) static const Byte storage[sizeof(OWNER)];
       const auto This = reinterpret_cast<const OWNER*>(storage);
       const auto Prop = ::std::addressof(This->*member.mHandle);
-      const auto offset =
-           reinterpret_cast<const Byte*>(Prop)
-         - reinterpret_cast<const Byte*>(This);
+      const auto offset = reinterpret_cast<const Byte*>(Prop)
+                        - reinterpret_cast<const Byte*>(This);
       LANGULUS_ASSERT(offset >= 0, Meta,
          "Member is laid (memorywise) before owner");
 
@@ -72,9 +71,23 @@ namespace Langulus::RTTI
       if constexpr (requires { DATA::CTTI_TagTag; }) {
          // Reflect the trait tag                                       
          mTypeRetriever  = MetaData::Of<typename Decay<DATA>::DataType>;
-         mTraitRetriever = MetaTrait::Of<typename Decay<DATA>::TagType>;
+         mTraitRetriever = [](int index) {
+            return TraitSelector(index, typename Decay<DATA>::Tags {});
+         };
       }
       else mTypeRetriever = MetaData::Of<Deext<DATA>>;
+   }
+
+   /// Helper function for retrieving a specific tag                          
+   /// You can repeat this function with increasing indices, until an invalid 
+   /// TMeta is returned: while(member->GetTrait(i++))                        
+   template<class...T>
+   TMeta Member::TraitSelector(int index, Types<T...>&&) {
+      if (index < static_cast<int>(sizeof...(T))) {
+         const TMeta tags[] {MetaTrait::Of<T>()...};
+         return tags[index];
+      }
+      else return {};
    }
 
    /// Get the reflected member type at runtime                               
@@ -87,10 +100,11 @@ namespace Langulus::RTTI
    }
 
    /// Get the reflected member trait at runtime                              
+   ///   @param index - multiple traits are supported, select them with index 
    ///   @return return the trait, if any, or nullptr otherwise               
    LANGULUS(INLINED)
-   TMeta Member::GetTrait() const {
-      return mTraitRetriever ? mTraitRetriever() : TMeta {};
+   TMeta Member::GetTrait(int index) const {
+      return mTraitRetriever ? mTraitRetriever(index) : TMeta {};
    }
    
    /// Compare members                                                        
@@ -98,15 +112,20 @@ namespace Langulus::RTTI
    ///   @return true if members match                                        
    LANGULUS(INLINED)
    bool Member::operator == (const Member& rhs) const noexcept {
-      const auto type1 = GetType();
-      const auto trait1 = GetTrait();
-      const auto type2 = rhs.GetType();
-      const auto trait2 = rhs.GetTrait();
+      // Compare type and size/offset first                             
+      if (GetType() != rhs.GetType()
+      or mOffset != rhs.mOffset or mCount != rhs.mCount)
+         return false;
 
-      return (type1 == type2 or (type1 and type1->IsExact(type2)))
-         and mOffset == rhs.mOffset
-         and mCount == rhs.mCount
-         and (trait1 == trait2 or (trait1 and trait1->Is(trait2)));
+      // Then check if all tags are the same                            
+      int tagIndex = 0;
+      TMeta t1, t2;
+      do {
+         t1 = GetTrait(tagIndex);
+         t2 = rhs.GetTrait(tagIndex);
+         ++tagIndex;
+      } while (t1 and t2 and t1 == t2);
+      return not t1 and not t2;
    }
 
    /// Reinterpret the member as a given type and access it (const, unsafe)   
@@ -344,6 +363,8 @@ namespace Langulus::RTTI
    template<CT::SparseData T> LANGULUS(NOINLINE)
    DMeta MetaData::Of() {
       //TODO this should probably be relaxed in the future, but it helps me catch bugs, so...
+      static_assert(CT::Reflectable<T>,
+         "Can't reflect type that was explicitly marked unreflectable");
       static_assert(not CT::Array<T>, "Reflecting a bound array is forbidden");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
@@ -443,7 +464,9 @@ namespace Langulus::RTTI
          "make sure you have included the corresponding headers "
          "before the point of reflection. "
          "This could also be triggered due to an incomplete member in T");
-      static_assert(not CT::Array<T>, 
+      static_assert(CT::Reflectable<T>,
+         "Can't reflect type that was explicitly marked unreflectable");
+      static_assert(not CT::Array<T>,
          "Can't reflect a bounded array type - "
          "either wrap your array in a type, or represent it as a raw pointer");
       static_assert(not CT::DataReference<T>, 
@@ -536,6 +559,8 @@ namespace Langulus::RTTI
          "make sure you have included the corresponding headers "
          "before the point of reflection. "
          "This could also be triggered due to an incomplete member in T");
+      static_assert(CT::Reflectable<T>,
+         "Can't reflect type that was explicitly marked unreflectable");
       static_assert(not CT::Array<T>,
          "Can't reflect a bounded array type - "
          "either wrap your array in a type, or represent it as a raw pointer");
@@ -1139,8 +1164,19 @@ namespace Langulus::RTTI
 
       // Then locally                                                   
       for (auto& member : mOrigin->mMembers) {
-         if (member.GetTrait() != trait or not (member.GetType() | type))
+         // Eliminate by type                                           
+         if (type and not (member.GetType() & type))
             continue;
+
+         // Eliminate by tag                                            
+         if (trait) {
+            int tagIndex = 0;
+            TMeta tag;
+            do tag = member.GetTrait(tagIndex++);
+            while (tag and tag != trait);
+            if (tag != trait)
+               continue;
+         }
 
          // Match found                                                 
          if (0 == offset)
@@ -1166,14 +1202,25 @@ namespace Langulus::RTTI
          return 0;
 
       // Search in all bases first                                      
-      Count result {};
+      Count result = 0;
       for (auto& base : mOrigin->mBases)
          result += base.mType->GetMemberCountInner(trait, type, offset);
 
       // Then locally                                                   
       for (auto& member : mOrigin->mMembers) {
-         if (member.GetTrait() != trait or not (member.GetType() | type))
+         // Eliminate by type                                           
+         if (type and not (member.GetType() & type))
             continue;
+
+         // Eliminate by tag                                            
+         if (trait) {
+            int tagIndex = 0;
+            TMeta tag;
+            do tag = member.GetTrait(tagIndex++);
+            while (tag and tag != trait);
+            if (tag != trait)
+               continue;
+         }
 
          // Match found                                                 
          if (0 == offset) {
