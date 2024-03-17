@@ -1199,11 +1199,11 @@ namespace Langulus
          if constexpr (requires { what.DecayCast(); })
             return what.DecayCast();
          else if constexpr (requires { what.operator TT&& (); })
-            return what.operator TT && ();
+            return what.operator TT&& ();
          else if constexpr (requires { what.operator TT& (); })
-            return what.operator TT & ();
+            return what.operator TT& ();
          else if constexpr (requires { what.operator const TT& (); })
-            return what.operator const TT & ();
+            return what.operator const TT& ();
          else
             LANGULUS_ERROR("No cast operator available for decaying to inner type");
       }
