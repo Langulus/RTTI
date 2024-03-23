@@ -483,8 +483,8 @@ namespace Langulus
       }
 
       /// Implicitly collapse the semantic, when applying it to fundamentals  
-      /// This way this wrapper is seamlessly integrated with the standard    
-      /// C++20 semantics                                                     
+      /// or aggregates. This way this wrapper is seamlessly integrated with  
+      /// the standard C++20 semantics, by imitating ordinary move semantic   
       LANGULUS(INLINED) constexpr operator T&& () const noexcept
       requires (not CT::Inner::Destroyable<T>) {
          return ::std::forward<T>(mValue);
@@ -994,21 +994,10 @@ namespace Langulus::CT
    /// Check if T is constructible with each of the provided arguments        
    ///   @attention that this differs from std::constructible_from, by        
    ///      attempting each argument separately                               
-   ///   @attention this doesn't check for aggregate construction for plain   
-   ///      C types - use MakableFromAggregate for that                       
+   ///   @attention this also includes aggregate type construction, so it     
+   ///      will return true if first member is constructible from A&&        
    template<class T, class...A>
-   concept MakableFrom = ((
-       not ::std::is_aggregate_v<T> and ::std::constructible_from<T, A&&>
-      ) and ...);
-
-   /// Check if T is constructible with each of the provided arguments        
-   ///   @attention that this differs from std::constructible_from, by        
-   ///      attempting each argument separately                               
-   ///   @attention this checks only for aggregate construction               
-   template<class T, class...A>
-   concept MakableFromAggregate = ((
-       ::std::is_aggregate_v<T> and ::std::constructible_from<T, A&&>
-      ) and ...);
+   concept MakableFrom = ((::std::constructible_from<T, A&&>) and ...);
 
    /// Check if T is assignable with each of the provided arguments           
    template<class T, class...A>

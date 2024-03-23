@@ -307,7 +307,8 @@ namespace Langulus::RTTI
       bool mIsNullifiable = false;
       // If origin type is abstract                                     
       bool mIsAbstract = false;
-      // True if origin type satisifes the CT::Deep concept             
+      // True if origin type is marked LANGULUS(DEEP) true              
+      // Types marked deep can be iterated through                      
       bool mIsDeep = false;
       // True if origin type is not insertable into containers          
       bool mIsUninsertable = false;
