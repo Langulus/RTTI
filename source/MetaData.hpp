@@ -100,23 +100,22 @@ namespace Langulus::RTTI
       // We can't get at reflection time, so we generate a lambda that  
       // retrieves it when required                                     
       FTypeRetriever mTypeRetriever {};
-      // Member offset. This is relative to the type it is offsetted    
-      // in! If accessed through a derived type, that offset might      
-      // be wrong! Type must be resolved first!                         
-      Offset mOffset {};
+      // Get pointer to the member. Assumes argument points to an       
+      // instance of the member owner.                                  
+      FDynamicCast mValueRetriever {};
       // Number of elements in mData (in case of an array)              
-      Count mCount {1};
+      Count mCount = 1;
       // Trait tag                                                      
       // We can't get at reflection time, so we generate a lambda that  
-      // retrieves it when required                                     
+      // retrieves it when required (TODO this is the first tag only)   
       FTraitRetriever mTraitRetriever {};
 
    public:
       constexpr Member() noexcept = default;
       constexpr Member(const Member&) noexcept = default;
 
-      template<class T1, class T2>
-      Member(const NamedMember<T1, T2>&);
+      template<auto HANDLE>
+      Member(const NamedMember<HANDLE>&);
 
       Member& operator = (const Member&) noexcept = default;
 
@@ -127,8 +126,8 @@ namespace Langulus::RTTI
       template<CT::Data T>
       NOD() T& As(Byte*) const noexcept;
       
-      NOD() constexpr Byte const* Get(Byte const*) const noexcept;
-      NOD() constexpr Byte*       Get(Byte*) const noexcept;
+      NOD() Byte const* Get(Byte const*) const noexcept;
+      NOD() Byte*       Get(Byte*) const noexcept;
 
       NOD() DMeta GetType() const;
       NOD() TMeta GetTrait(int) const;

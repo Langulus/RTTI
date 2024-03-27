@@ -51,23 +51,18 @@ namespace Langulus::RTTI
    /// Generate a member definition                                           
    ///   @param member - a NamedMember reflection                             
    ///   @return the generated member descriptor                              
-   template<class T1, class T2>
-   Member::Member(const NamedMember<T1, T2>& member) {
-      using T = NamedMember<T1, T2>;
-      using OWNER = typename T::Owner;
-      using DATA  = typename T::Type;
+   template<auto HANDLE>
+   Member::Member(const NamedMember<HANDLE>& member) {
+      using THIS = typename NamedMember<HANDLE>::Owner;
+      using DATA = typename NamedMember<HANDLE>::Type;
 
-      alignas(OWNER) static const Byte storage[sizeof(OWNER)];
-      const auto This = reinterpret_cast<const OWNER*>(storage);
-      const auto Prop = ::std::addressof(This->*member.mHandle);
-      const auto offset = reinterpret_cast<const Byte*>(Prop)
-                        - reinterpret_cast<const Byte*>(This);
-      LANGULUS_ASSERT(offset >= 0, Meta,
-         "Member is laid (memorywise) before owner");
+      mValueRetriever = [](void* owner) -> void* {
+         auto context = reinterpret_cast<THIS*>(owner);
+         return &(context->*HANDLE);
+      };
 
-      //TODO if offset is outside instance limits, then mark as static, instead of throw?
-      mOffset = static_cast<Offset>(offset);
       mCount = ExtentOf<DATA>;
+
       if constexpr (requires { DATA::CTTI_TagTag; }) {
          // Reflect the trait tag                                       
          mTypeRetriever  = MetaData::Of<typename Decay<DATA>::DataType>;
@@ -113,8 +108,7 @@ namespace Langulus::RTTI
    LANGULUS(INLINED)
    bool Member::operator == (const Member& rhs) const noexcept {
       // Compare type and size/offset first                             
-      if (GetType() != rhs.GetType()
-      or mOffset != rhs.mOffset or mCount != rhs.mCount)
+      if (GetType() != rhs.GetType() or mCount != rhs.mCount)
          return false;
 
       // Then check if all tags are the same                            
@@ -148,25 +142,30 @@ namespace Langulus::RTTI
    ///   @param instance - pointer to the beginning of the owning type        
    ///   @return a raw constant pointer to the member inside the instance     
    LANGULUS(INLINED)
-   constexpr const Byte* Member::Get(const Byte* instance) const noexcept {
-      return instance + mOffset;
+   const Byte* Member::Get(const Byte* instance) const noexcept {
+      return reinterpret_cast<Byte*>(
+         mValueRetriever(const_cast<Byte*>(instance)));
    }
    
    /// Directly get a pointer to the type-erased member (unsafe)              
    ///   @param instance - pointer to the beginning of the owning type        
    ///   @return a raw pointer to the member inside the instance              
    LANGULUS(INLINED)
-   constexpr Byte* Member::Get(Byte* instance) const noexcept {
-      return instance + mOffset;
+   Byte* Member::Get(Byte* instance) const noexcept {
+      return reinterpret_cast<Byte*>(mValueRetriever(instance));
    }
 
-   /// Generate constexpr tuple with the members                              
-   ///   @return a tuple of the desired member pointers                       
-   template<class THIS, class...DATA>
-   constexpr auto CreateMembersTuple(DATA THIS::*... handle) {
-      return ::std::tuple {NamedMember<THIS, DATA>{handle}...};
-   }
+   namespace Inner
+   {
 
+      /// Generate constexpr tuple with the members                           
+      ///   @return a tuple of the desired member pointers                    
+      template<auto...HANDLES>
+      consteval auto CreateMembersTuple() {
+         return ::std::tuple {NamedMember<HANDLES> {}...};
+      }
+
+   }
 
    ///                                                                        
    ///   Ability implementation                                               
@@ -1002,10 +1001,10 @@ namespace Langulus::RTTI
          // Make sure that members don't come from a base class         
          using List = decltype(T::CTTI_Members);
 
-         if constexpr (::std::tuple_size_v<List>
-         and CT::Exact<typename ::std::tuple_element<0, List>::type::Owner, T>) {
+         if constexpr (::std::tuple_size_v<List>) {
             std::apply([&generated](auto&&...args) {
-               (generated.mMembers.emplace_back(args), ...);
+               if constexpr (CT::Exact<T, T, typename Deref<decltype(args)>::Owner...>)
+                  (generated.mMembers.emplace_back(args), ...);
             }, T::CTTI_Members);
          }
       }
@@ -1315,7 +1314,7 @@ namespace Langulus::RTTI
       if (not mOrigin or not type)
          return false;
 
-      Count scanned {};
+      Count scanned = 0;
       for (auto& b : mOrigin->mBases) {
          // Check base                                                  
          if (type->IsExact(b.mType)) {
@@ -1327,15 +1326,16 @@ namespace Langulus::RTTI
          }
 
          // Dig deeper                                                  
-         Base local {};
-         Offset index {};
+         Base local;
+         Offset index = 0;
          while (b.mType->GetBase(type, index, local)) {
             if (scanned == offset) {
                local.mOffset += b.mOffset;
                local.mCount *= b.mCount;
                local.mBinaryCompatible = b.mBinaryCompatible
-                                      and local.mBinaryCompatible;
+                                 and local.mBinaryCompatible;
                local.mImposed = b.mImposed or local.mImposed;
+               local.mVirtualBase = b.mVirtualBase or local.mVirtualBase;
                base = local;
                return true;
             }
@@ -1445,9 +1445,10 @@ namespace Langulus::RTTI
          if (foundv != mAbilities.end()) {
             const auto& overloads = foundv->second.mOverloadsConstant;
             auto foundo = overloads.find({dmeta});
-            if (foundo != overloads.end())
+            if (foundo != overloads.end()) {
                // Specific overloads is available                       
                return foundo->second;
+            }
 
             // Always fallback to default function, if reflected        
             foundo = overloads.find({});
@@ -1475,7 +1476,7 @@ namespace Langulus::RTTI
    /// Get an ability with static verb and argument type                      
    ///   @tparam MUTABLE - whether to get mutable/immutable overload          
    ///   @tparam V - the type of the verb                                     
-   ///   @tparam D - the type of the verb's argument                          
+   ///   @tparam A... - the type of the verb's arguments                      
    ///   @return the functor if found                                         
    template<bool MUTABLE, CT::Data V, CT::Data...A> LANGULUS(INLINED)
    auto MetaData::GetAbility() const {
@@ -1504,9 +1505,9 @@ namespace Langulus::RTTI
 
    /// Check if this type interprets as another without conversion            
    ///   @tparam ADVANCED - whether or not to do an advanced search in the    
-   ///                      opposite inheritance order                        
+   ///      opposite inheritance order                                        
    ///	@tparam BINARY_COMPATIBLE - do we require for the other to be        
-   ///                               binary compatible with this              
+   ///      binary compatible with this                                       
    ///	@param other - the type to try interpreting as                       
    ///	@return true if this type interprets as other                        
    template<bool ADVANCED, bool BINARY_COMPATIBLE>
@@ -1523,7 +1524,7 @@ namespace Langulus::RTTI
       }
       else {
          // Get the base and check if binary compatible                 
-         Base found {};
+         Base found;
          if (GetBase(other, 0, found))
             return found.mBinaryCompatible;
       }
@@ -1533,7 +1534,7 @@ namespace Langulus::RTTI
          // might be derived from this one. The inherited should either 
          // have a resolver and be later checked at runtime, or be      
          // binary-compatible with this                                 
-         Base found {};
+         Base found;
          if (other->GetBase(this, 0, found)) {
             if constexpr (BINARY_COMPATIBLE)
                return found.mBinaryCompatible;
@@ -1549,9 +1550,9 @@ namespace Langulus::RTTI
    /// Check if this type interprets as another without conversion            
    ///   @tparam T - the type to try interpreting as                          
    ///   @tparam ADVANCED - whether or not to do an advanced search in the    
-   ///                      opposite inheritance order                        
+   ///      opposite inheritance order                                        
    ///   @tparam BINARY_COMPATIBLE - do we require for the other to be        
-   ///                               binary compatible with this              
+   ///      binary compatible with this                                       
    ///   @return true if this type interprets as other                        
    template<class T, bool ADVANCED, bool BINARY_COMPATIBLE> LANGULUS(INLINED)
    bool MetaData::CastsTo() const {
@@ -1564,7 +1565,7 @@ namespace Langulus::RTTI
    /// Check if this type interprets as an exact number of another, without   
    /// any conversion                                                         
    ///   @tparam BINARY_COMPATIBLE - do we require for the other to be        
-   ///                               binary compatible with this              
+   ///      binary compatible with this                                       
    ///   @param other - the type to try interpreting as                       
    ///   @param count - the number of items to interpret as                   
    ///   @return true if this type interprets as other                        
@@ -1573,21 +1574,22 @@ namespace Langulus::RTTI
       if (Is(other) and count == 1)
          return true;
 
-      Base found {};
-      Count scanned {};
+      Base found;
+      Count scanned = 0;
       while (GetBase(other, scanned, found)) {
-         if (found.mOffset != 0) {
-            // Base caused a memory gap, so early failure occurs        
-            // All bases must fit neatly into the original type         
-            return false;
-         }
-
          if constexpr (BINARY_COMPATIBLE) {
+            if (found.mOffset != 0) {
+               // Base caused a memory gap, so early failure occurs     
+               // All bases must fit neatly into the original type      
+               return false;
+            }
+
             if (found.mBinaryCompatible and count == found.mCount)
                return true;
          }
          else {
-            if ((other->mIsAbstract or found.mBinaryCompatible) and count == found.mCount)
+            if ((other->mIsAbstract or found.mBinaryCompatible)
+            and count == found.mCount)
                return true;
          }
          
@@ -1604,7 +1606,7 @@ namespace Langulus::RTTI
    /// Check if this type interprets as an exact number of another, without   
    /// any conversion                                                         
    ///   @tparam BINARY_COMPATIBLE - do we require for the other to be        
-   ///                               binary compatible with this              
+   ///      binary compatible with this                                       
    ///   @tparam T - the type to try interpreting as                          
    ///   @return true if this type interprets as other                        
    template<class T, bool BINARY_COMPATIBLE> LANGULUS(INLINED)
