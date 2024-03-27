@@ -221,7 +221,7 @@ namespace Langulus::RTTI
 ///   @attention the list of members will be propagated to any derived class  
 #define LANGULUS_MEMBERS(...) \
    public: static constexpr auto CTTI_Members = \
-      ::Langulus::RTTI::CreateMembersTuple(__VA_ARGS__)
+      ::Langulus::RTTI::Inner::CreateMembersTuple<__VA_ARGS__>()
 
 /// Reflect a list of bases                                                   
 ///   @attention the list of bases will be propagated to any derived class    
@@ -534,6 +534,27 @@ namespace Langulus
 
    namespace RTTI
    {
+      namespace Inner
+      {
+
+         template <typename T>
+         struct TypeOfMember;
+
+         template <typename M, typename T>
+         struct TypeOfMember<M T::*> {
+            using Type = M;
+         };
+
+         template <typename T>
+         struct OwnerOfMember;
+
+         template <typename M, typename T>
+         struct OwnerOfMember<M T::*> {
+            using Type = T;
+         };
+
+      }
+
 
       /// The main boundary indentifier token                                 
       constexpr Token MainBoundary = "MAIN";
@@ -547,13 +568,15 @@ namespace Langulus
       };
 
       /// Used for member reflections inside data types                       
-      ///   @tparam THIS - the class that owns the member                     
-      ///   @tparam DATA - the member type                                    
-      template<class THIS, class DATA>
+      ///   @tparam HANDLE - a pointer to a member variable                   
+      template<auto HANDLE>
       struct NamedMember {
-         using Owner = THIS;
-         using Type = DATA;
-         DATA THIS::*mHandle;
+         static_assert(std::is_member_pointer_v<decltype(HANDLE)>,
+            "HANDLE must be a member pointer");
+         using Owner = typename Inner::OwnerOfMember<decltype(HANDLE)>::Type;
+         using Type = typename Inner::TypeOfMember<decltype(HANDLE)>::Type;
+         static constexpr auto Handle = HANDLE;
+
          Token mInfo {};
       };
 
