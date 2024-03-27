@@ -298,21 +298,32 @@ namespace Langulus::RTTI
          // This will fail if base is private                           
          // This is detectable by is_convertible_v                      
          if constexpr (::std::is_convertible_v<T*, BASE*>) {
-            // The devil's work, right here                             
-            alignas(T) static const Byte storage[sizeof(T)];
-            // First reinterpret the storage as T                       
-            const auto derived = reinterpret_cast<const T*>(storage);
-            // Then cast it down to base                                
-            const auto base = static_cast<const BASE*>(derived);
-            // Then reinterpret back to byte array and get difference   
-            const auto offset =
-               reinterpret_cast<const Byte*>(base) -
-               reinterpret_cast<const Byte*>(derived);
+            if constexpr (CT::VirtuallyDerivedFrom<T, BASE>) {
+               // Can't use pointer arithmetics when base is virtual    
+               result.mVirtualBase = true;
+               result.mDynamicCast = [](void* from) -> void* {
+                  return dynamic_cast<BASE*>(reinterpret_cast<T*>(from));
+               };
+            }
+            else {
+               // The devil's work, right here                          
+               // @attention works only with conventional inheritance   
+               alignas(T) static const Byte storage[sizeof(T)];
+               // First reinterpret the storage as T                    
+               const auto derived = reinterpret_cast<const T*>(storage);
+               // Then cast it down to base                             
+               const auto base = static_cast<const BASE*>(derived);
+               // Then reinterpret back to byte array and get difference
+               const auto offset =
+                  reinterpret_cast<const Byte*>(base) -
+                  reinterpret_cast<const Byte*>(derived);
 
-            LANGULUS_ASSERT(offset >= 0, Meta,
-               "BASE is laid (memorywise) before T");
-            result.mOffset = static_cast<Offset>(offset);
+               LANGULUS_ASSERT(offset >= 0, Meta,
+                  "BASE is laid (memorywise) before T");
+               result.mOffset = static_cast<Offset>(offset);
+            }
          }
+         else LANGULUS_ERROR("Can't reflect private base");
       }
       else {
          // If not inherited in C++, then always imposed                
@@ -329,7 +340,8 @@ namespace Langulus::RTTI
 
       // If sizes match and there's no byte offset, then the base       
       // and the derived type are binary compatible                     
-      if constexpr (sizeof(BASE) == sizeof(T))
+      if constexpr (sizeof(BASE) == sizeof(T)
+      and not CT::VirtuallyDerivedFrom<T, BASE>)
          result.mBinaryCompatible = (0 == result.mOffset);
       return result;
    }

@@ -85,6 +85,8 @@ namespace Langulus::RTTI
    using FTypeRetriever = DMeta(*)();
    using FTraitRetriever = TMeta(*)(int);
 
+   using FDynamicCast = void*(*)(void*);
+
 
    ///                                                                        
    ///   Type-erased member variable reflection                               
@@ -233,6 +235,7 @@ namespace Langulus::RTTI
       // CT::Number of bases that fit in the type                       
       Count mCount = 1;
       // Offset of the base, relative to the derived type               
+      // @attention valid only if not mVirtualBase                      
       Offset mOffset = 0;
       // Used to map one type onto another                              
       // Usually true when base completely fills the derived type       
@@ -242,6 +245,11 @@ namespace Langulus::RTTI
       // distance computation or dispatching                            
       // An imposed base can be added only manually                     
       bool mImposed = false;
+
+      // True if base is virtual                                        
+      bool mVirtualBase = false;
+      // Only possible way to get pointer to a virtual base             
+      FDynamicCast mDynamicCast = nullptr;
 
    public:
       NOD() bool operator == (const Base&) const noexcept;
