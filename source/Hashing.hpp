@@ -539,7 +539,7 @@ namespace Langulus
    ///   @param head, rest... - the data to hash                              
    ///   @return the hash                                                     
    template<bool FAKE = false, uint32_t SEED = DefaultHashSeed, class T, class... MORE>
-   constexpr auto HashOf(const T& head, const MORE&... rest) {
+   auto HashOf(const T& head, const MORE&... rest) {
       if constexpr (CT::Unsupported<T, MORE...>)
          return Inner::Unsupported {};
       else if constexpr (sizeof...(MORE)) {
