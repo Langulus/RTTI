@@ -1001,7 +1001,9 @@ namespace Langulus::CT
 
    /// Check if T is assignable with each of the provided arguments           
    template<class T, class...A>
-   concept AssignableFrom = (::std::assignable_from<T, A&&> and ...);
+   concept AssignableFrom = ((
+         requires (T t, A&& a) { t = Forward<A>(a); }
+      ) and ...);
 
    namespace Inner
    {
