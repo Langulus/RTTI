@@ -52,7 +52,7 @@ namespace Langulus::RTTI
    ///   @param member - a NamedMember reflection                             
    ///   @return the generated member descriptor                              
    template<auto HANDLE>
-   Member::Member(const NamedMember<HANDLE>& member) {
+   Member::Member(const NamedMember<HANDLE>&) {
       using THIS = typename NamedMember<HANDLE>::Owner;
       using DATA = typename NamedMember<HANDLE>::Type;
 
