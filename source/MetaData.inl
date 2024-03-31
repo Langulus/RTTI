@@ -13,6 +13,7 @@
 #include "MetaData.hpp"
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
    #include "RTTI.hpp"
+#else
    #include <memory>
 #endif
 #include <Core/Utilities.hpp>
