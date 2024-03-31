@@ -133,18 +133,22 @@ namespace Langulus::RTTI
       // This check is not standard, but doesn't hurt afaik             
       static_assert(sizeof(T) > 0,
          "Can't reflect an incomplete type");
-      static_assert(GetReflectedPositiveVerbToken<T>() != "",
-         "Invalid verb token is not allowed");
-      static_assert(GetReflectedNegativeVerbToken<T>() != "",
-         "Invalid verb token is not allowed");
+      
+      constexpr auto verbPos = GetReflectedPositiveVerbToken<T>();
+      constexpr auto verbNeg = GetReflectedNegativeVerbToken<T>();
+
+      static_assert(verbPos != "", "Invalid verb token is not allowed");
+      static_assert(verbNeg != "", "Invalid verb token is not allowed");
+
+      constexpr auto opPos = GetReflectedPositiveVerbOperator<T>();
+      constexpr auto opNeg = GetReflectedNegativeVerbOperator<T>();
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
          // previously in another library. Unfortunately we can't keep  
          // a static pointer to the meta, because forementioned library 
          // might be reloaded, and thus produce new pointer.            
-         VMeta meta = Instance.GetMetaVerb(
-            MetaVerb::GetReflectedPositiveVerbToken<T>(), RTTI::Boundary);
+         VMeta meta = Instance.GetMetaVerb(verbPos, RTTI::Boundary);
          if (meta)
             return meta;
       #else
@@ -160,28 +164,27 @@ namespace Langulus::RTTI
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          meta = Instance.RegisterVerb(
             CppNameOf<T>(),
-            MetaVerb::GetReflectedPositiveVerbToken<T>(),
-            MetaVerb::GetReflectedNegativeVerbToken<T>(),
-            MetaVerb::GetReflectedPositiveVerbOperator<T>(),
-            MetaVerb::GetReflectedNegativeVerbOperator<T>(),
+            verbPos, verbNeg, opPos, opNeg,
             RTTI::Boundary
          );
-         MetaVerb& generated = const_cast<MetaVerb&>(*meta);
+         auto& generated = const_cast<MetaVerb&>(*meta);
       #else
-         meta = ::std::make_unique<MetaVerb>();
-         MetaVerb& generated = *const_cast<MetaVerb*>(meta.get());
+         meta = ::std::make_unique<MetaVerb>(
+            verbPos, verbNeg, opPos, opNeg
+         );
+         auto& generated = *const_cast<MetaVerb*>(meta.get());
       #endif
 
       // Verb is implicitly reflected, so let's do our best             
-      LANGULUS_ASSERT(generated.mToken == MetaVerb::GetReflectedPositiveVerbToken<T>(),
+      LANGULUS_ASSERT(generated.mToken == verbPos,
          Meta, "Token+ not set");
-      LANGULUS_ASSERT(generated.mTokenReverse == MetaVerb::GetReflectedNegativeVerbToken<T>(),
+      LANGULUS_ASSERT(generated.mTokenReverse == verbNeg,
          Meta, "Token- not set");
-      LANGULUS_ASSERT(generated.mOperator == MetaVerb::GetReflectedPositiveVerbOperator<T>(),
+      LANGULUS_ASSERT(generated.mOperator == opPos,
          Meta, "TokenOp+ not set");
-      LANGULUS_ASSERT(generated.mOperatorReverse == MetaVerb::GetReflectedNegativeVerbOperator<T>(),
+      LANGULUS_ASSERT(generated.mOperatorReverse == opNeg,
          Meta, "TokenOp- not set");
-      LANGULUS_ASSERT(generated.mHash == HashOf(MetaVerb::GetReflectedPositiveVerbToken<T>()),
+      LANGULUS_ASSERT(generated.mHash == HashOf(verbPos),
          Meta, "Hash not set");
 
       // Reflect info string if any                                     

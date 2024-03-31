@@ -42,17 +42,17 @@ namespace Langulus::RTTI
    LANGULUS(NOINLINE)
    TMeta MetaTrait::Of() {
       // This check is not standard, but doesn't hurt afaik             
-      static_assert(sizeof(T) > 0,
-         "Can't reflect an incomplete type");
-      static_assert(GetReflectedToken<T>() != "",
-         "Invalid trait token is not allowed");
+      static_assert(sizeof(T) > 0, "Can't reflect an incomplete type");
+
+      constexpr auto token = GetReflectedToken<T>();
+      static_assert(token != "", "Invalid trait token is not allowed");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
          // previously in another library. Unfortunately we can't keep  
          // a static pointer to the meta, because forementioned library 
          // might be reloaded, and thus produce new pointer.            
-         TMeta meta = Instance.GetMetaTrait(GetReflectedToken<T>(), RTTI::Boundary);
+         TMeta meta = Instance.GetMetaTrait(token, RTTI::Boundary);
          if (meta)
             return meta;
       #else
@@ -66,16 +66,16 @@ namespace Langulus::RTTI
       // We immediately place it in the static here, because the        
       // reflection function might end up forever looping otherwise     
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         meta = Instance.RegisterTrait(GetReflectedToken<T>(), RTTI::Boundary);
+         meta = Instance.RegisterTrait(token, RTTI::Boundary);
          MetaTrait& generated = const_cast<MetaTrait&>(*meta);
       #else
-         meta = ::std::make_unique<MetaTrait>();
+         meta = ::std::make_unique<MetaTrait>(token);
          MetaTrait& generated = *const_cast<MetaTrait*>(meta.get());
       #endif
 
       // Type is implicitly reflected, so let's do our best             
-      LANGULUS_ASSERT(generated.mToken == GetReflectedToken<T>(), Meta, "Token not set");
-      LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta, "Hash not set");
+      LANGULUS_ASSERT(generated.mToken == token, Meta, "Token not set");
+      LANGULUS_ASSERT(generated.mHash == HashOf(token), Meta, "Hash not set");
 
       if constexpr (requires { T::CTTI_Info; })
          generated.mInfo = T::CTTI_Info;

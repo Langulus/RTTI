@@ -380,19 +380,22 @@ namespace Langulus::RTTI
          "Can't reflect type that was explicitly marked unreflectable");
       static_assert(not CT::Array<T>, "Reflecting a bound array is forbidden");
 
+      constexpr auto token = NameOf<T>();
+      static_assert(token != "", "Invalid data token is not allowed");
+
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
          // previously in another library. Unfortunately we can't keep  
          // a static pointer to the meta, because forementioned library 
          // might be reloaded, and thus produce new pointer.            
-         DMeta meta = Instance.GetMetaData(NameOf<T>(), RTTI::Boundary);
+         DMeta meta = Instance.GetMetaData(token, RTTI::Boundary);
          if (meta)
             return meta;
 
          // If this is reached, then type is not defined yet            
          // We immediately request its spot in the database, or the     
          // reflection function might end up forever looping otherwise  
-         meta = Instance.RegisterData(NameOf<T>(), RTTI::Boundary);
+         meta = Instance.RegisterData(token, RTTI::Boundary);
          auto& generated = const_cast<MetaData&>(*meta);
       #else
          // Keep a static meta pointer for each translation unit        
@@ -403,7 +406,7 @@ namespace Langulus::RTTI
          // If this is reached, then type is not defined yet            
          // We immediately place it in the static here, or the          
          // reflection function might end up forever looping otherwise  
-         meta = ::std::make_unique<MetaData>();
+         meta = ::std::make_unique<MetaData>(token);
          auto& generated = *const_cast<MetaData*>(meta.get());
       #endif
 
@@ -439,9 +442,9 @@ namespace Langulus::RTTI
             generated.mLibraryName = RTTI::Boundary;
       #endif
 
-      LANGULUS_ASSERT(generated.mToken == NameOf<T>(), Meta,
+      LANGULUS_ASSERT(generated.mToken == token, Meta,
          "Token not set");
-      LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta,
+      LANGULUS_ASSERT(generated.mHash == HashOf(token), Meta,
          "Hash not set");
 
       // Overwrite pointer-specific stuff                               
@@ -484,7 +487,9 @@ namespace Langulus::RTTI
          "either wrap your array in a type, or represent it as a raw pointer");
       static_assert(not CT::DataReference<T>, 
          "Can't reflect a reference");
-      static_assert(NameOf<T>() != "",
+
+      constexpr auto token = NameOf<T>();
+      static_assert(token != "",
          "Invalid data token is not allowed - "
          "you have probably equipped your type with an empty LANGULUS(NAME)");
 
@@ -493,14 +498,14 @@ namespace Langulus::RTTI
          // previously in another library. Unfortunately we can't keep  
          // a static pointer to the meta, because forementioned library 
          // might be reloaded, and thus produce new pointer.            
-         DMeta meta = Instance.GetMetaData(NameOf<T>(), RTTI::Boundary);
+         DMeta meta = Instance.GetMetaData(token, RTTI::Boundary);
          if (meta)
             return meta;
 
          // If this is reached, then type is not defined yet            
          // We immediately request its spot in the database, or the     
          // reflection function might end up forever looping otherwise  
-         meta = Instance.RegisterData(NameOf<T>(), RTTI::Boundary);
+         meta = Instance.RegisterData(token, RTTI::Boundary);
          auto& generated = const_cast<MetaData&>(*meta);
       #else
          // Keep a static meta pointer for each translation unit        
@@ -511,7 +516,7 @@ namespace Langulus::RTTI
          // If this is reached, then type is not defined yet            
          // We immediately place it in the static here, or the          
          // reflection function might end up forever looping otherwise  
-         meta = ::std::make_unique<MetaData>();
+         meta = ::std::make_unique<MetaData>(token);
          auto& generated = *const_cast<MetaData*>(meta.get());
       #endif
 
@@ -546,7 +551,7 @@ namespace Langulus::RTTI
       #endif
       
       // Overwrite constant-specific stuff                              
-      LANGULUS_ASSERT(generated.mToken == NameOf<T>(), Meta,
+      LANGULUS_ASSERT(generated.mToken == token, Meta,
          "Token not set");
       LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta,
          "Hash not set");
@@ -577,7 +582,9 @@ namespace Langulus::RTTI
       static_assert(not CT::Array<T>,
          "Can't reflect a bounded array type - "
          "either wrap your array in a type, or represent it as a raw pointer");
-      static_assert(NameOf<T>() != "",
+
+      constexpr auto token = NameOf<T>();
+      static_assert(token != "",
          "Invalid data token is not allowed - "
          "you have probably equipped your type with an empty LANGULUS(NAME)");
 
@@ -586,14 +593,14 @@ namespace Langulus::RTTI
          // previously in another library. Unfortunately we can't keep  
          // a static pointer to the meta, because forementioned library 
          // might be reloaded, and thus produce new pointer.            
-         DMeta meta = Instance.GetMetaData(NameOf<T>(), RTTI::Boundary);
+         DMeta meta = Instance.GetMetaData(token, RTTI::Boundary);
          if (meta)
             return meta;
 
          // If this is reached, then type is not defined yet            
          // We immediately request its spot in the database, or the     
          // reflection function might end up forever looping otherwise  
-         meta = Instance.RegisterData(NameOf<T>(), RTTI::Boundary);
+         meta = Instance.RegisterData(token, RTTI::Boundary);
          MetaData& generated = const_cast<MetaData&>(*meta);
       #else
          // Keep a static meta pointer for each translation unit        
@@ -604,14 +611,14 @@ namespace Langulus::RTTI
          // If this is reached, then type is not defined yet            
          // We immediately place it in the static here, because the     
          // reflection function might end up forever looping otherwise  
-         meta = ::std::make_unique<MetaData>();
+         meta = ::std::make_unique<MetaData>(token);
          MetaData& generated = *const_cast<MetaData*>(meta.get());
       #endif
 
       // Type is implicitly reflected, so let's do our best             
-      LANGULUS_ASSERT(generated.mToken == NameOf<T>(), Meta,
+      LANGULUS_ASSERT(generated.mToken == token, Meta,
          "Token not set");
-      LANGULUS_ASSERT(generated.mHash == HashOf(generated.mToken), Meta,
+      LANGULUS_ASSERT(generated.mHash == HashOf(token), Meta,
          "Hash not set");
 
       if constexpr (requires { T::CTTI_Info; })
@@ -1105,7 +1112,7 @@ namespace Langulus::RTTI
             *Instance.RegisterConstant(generatedToken, RTTI::Boundary));
          cmeta.mLibraryName = RTTI::Boundary;
       #else
-         staticMC = ::std::make_unique<MetaConst>();
+         staticMC = ::std::make_unique<MetaConst>(generatedToken);
          auto& cmeta = *staticMC.get();
       #endif
 
