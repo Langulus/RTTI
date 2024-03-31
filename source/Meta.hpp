@@ -76,7 +76,7 @@ namespace Langulus::RTTI
    /// Can contain DMeta, TMeta, VMeta or CMeta, which are dynamical_cast     
    /// on demand to the appropriate type                                      
    ///                                                                        
-   struct LANGULUS_API(RTTI) AMeta {
+   struct AMeta {
       LANGULUS(POD) true;
       LANGULUS(NULLIFIABLE) true;
 
@@ -139,7 +139,7 @@ namespace Langulus::RTTI
    ///                                                                        
    /// Data type interchange format                                           
    ///                                                                        
-   struct LANGULUS_API(RTTI) DMeta : AMeta {
+   struct DMeta : AMeta {
       LANGULUS_BASES(AMeta);
 
       using AMeta::AMeta;
@@ -159,7 +159,7 @@ namespace Langulus::RTTI
    ///                                                                        
    /// Verb type interchange format                                           
    ///                                                                        
-   struct LANGULUS_API(RTTI) VMeta : AMeta {
+   struct VMeta : AMeta {
       LANGULUS_BASES(AMeta);
 
       using AMeta::AMeta;
@@ -177,7 +177,7 @@ namespace Langulus::RTTI
    ///                                                                        
    /// Trait type interchange format                                          
    ///                                                                        
-   struct LANGULUS_API(RTTI) TMeta : AMeta {
+   struct TMeta : AMeta {
       LANGULUS_BASES(AMeta);
 
       using AMeta::AMeta;
@@ -195,7 +195,7 @@ namespace Langulus::RTTI
    ///                                                                        
    /// Definition interchange format for constants                            
    ///                                                                        
-   struct LANGULUS_API(RTTI) CMeta : AMeta {
+   struct CMeta : AMeta {
       LANGULUS_BASES(AMeta);
 
       using AMeta::AMeta;
