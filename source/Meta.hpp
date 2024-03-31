@@ -38,7 +38,7 @@ namespace Langulus::RTTI
          mCppName = rhs.mCppName;
          mVersionMajor = rhs.mVersionMajor;
          mVersionMinor = rhs.mVersionMinor;
-         IF_LANGULUS_MANAGED_MEMORY(mLibraryName = rhs.mLibraryName);
+         IF_LANGULUS_MANAGED_REFLECTION(mLibraryName = rhs.mLibraryName);
          return *this;
       }
 
