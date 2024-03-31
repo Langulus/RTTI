@@ -8,6 +8,7 @@
 ///                                                                           
 #pragma once
 #include <Core/Exceptions.hpp>
+#include <Core/Utilities.hpp>
 #include <Logger/Logger.hpp>
 
 
