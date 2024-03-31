@@ -339,5 +339,12 @@ namespace Langulus::RTTI
       else 
          return "unknown";
    }
+   
+   /// Construct an abstract meta definition by setting token and hashing it  
+   ///   @param name - token                                                  
+   LANGULUS(INLINED)
+   Meta::Meta(const Token& name)
+      : mHash {HashOf(name)}
+      , mToken {name} {}
 
 } // namespace Langulus::RTTI

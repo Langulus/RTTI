@@ -619,12 +619,6 @@ namespace Langulus::RTTI
       }
    }
 
-   /// Construct an abstract meta definition by setting token and hashing it  
-   ///   @param name - token                                                  
-   Meta::Meta(const Token& name)
-      : mHash {HashOf(name)}
-      , mToken {name} {}
-
    /// Get the shortest possible token, that is not ambiguous                 
    ///   @return the token                                                    
    Token Meta::GetShortestUnambiguousToken() const {
