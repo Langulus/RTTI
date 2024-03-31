@@ -235,7 +235,7 @@ namespace fmt
       }
 
       template<class CONTEXT> LANGULUS(INLINED)
-      bool langulus_format_inner(T const& lhs, auto const& rhs, CONTEXT& ctx) {
+      bool langulus_format_inner(T const& lhs, auto const& rhs, CONTEXT& ctx) const {
          using namespace Langulus;
          using D = Deref<decltype(rhs)>;
 
@@ -250,7 +250,7 @@ namespace fmt
       }
 
       template<class CONTEXT> LANGULUS(INLINED)
-      auto format(T const& value, CONTEXT& ctx) {
+      auto format(T const& value, CONTEXT& ctx) const {
          using namespace Langulus;
 
          bool found = std::apply([&](auto&&...args) {
@@ -275,7 +275,7 @@ namespace fmt
       }
 
       template<class CONTEXT> LANGULUS(INLINED)
-      auto format(T const& e, CONTEXT& ctx) {
+      auto format(T const& e, CONTEXT& ctx) const {
          return fmt::format_to(ctx.out(), "{}", e.GetToken());
       }
    };
