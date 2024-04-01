@@ -164,7 +164,7 @@ namespace Langulus::RTTI
       ///   @return a tuple of the desired member pointers                    
       template<auto...HANDLES>
       consteval auto CreateMembersTuple() {
-         return ::std::tuple {NamedMember<HANDLES> {}...};
+         return Types<NamedMember<HANDLES>...>{};// ::std::tuple {NamedMember<HANDLES> {}...};
       }
 
    }
@@ -1006,16 +1006,14 @@ namespace Langulus::RTTI
       }
 
       // Set reflected members                                          
-      if constexpr (requires { T::CTTI_Members; }) {
-         // Make sure that members don't come from a base class         
-         using List = decltype(T::CTTI_Members);
+      if constexpr (requires { typename T::CTTI_Members; }) {
+         using List = typename T::CTTI_Members;
 
-         if constexpr (::std::tuple_size_v<List>) {
-            std::apply([&generated](auto&&...args) {
-               if constexpr (CT::Exact<T, T, typename Deref<decltype(args)>::Owner...>)
-                  (generated.mMembers.emplace_back(args), ...);
-            }, T::CTTI_Members);
-         }
+         List::ForEach([&generated]<class M>{
+            // Make sure that members don't come from inheritance       
+            if constexpr (CT::Exact<T, typename M::Owner>)
+               generated.mMembers.emplace_back(M {});
+         });
       }
    }
 

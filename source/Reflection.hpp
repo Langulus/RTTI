@@ -220,8 +220,8 @@ namespace Langulus::RTTI
 /// Reflecting members                                                        
 ///   @attention the list of members will be propagated to any derived class  
 #define LANGULUS_MEMBERS(...) \
-   public: static constexpr auto CTTI_Members = \
-      ::Langulus::RTTI::Inner::CreateMembersTuple<__VA_ARGS__>()
+   public: using CTTI_Members = \
+      decltype(::Langulus::RTTI::Inner::CreateMembersTuple<__VA_ARGS__>())
 
 /// Reflect a list of bases                                                   
 ///   @attention the list of bases will be propagated to any derived class    
@@ -537,23 +537,23 @@ namespace Langulus
       namespace Inner
       {
 
-         template <typename T>
+         template<class T>
          struct TypeOfMember;
 
-         template <typename M, typename T>
+         template<class M, class T>
          struct TypeOfMember<M T::*> {
             using Type = M;
          };
 
-         template <typename T>
+         template<class T>
          struct OwnerOfMember;
 
-         template <typename M, typename T>
+         template<class M, class T>
          struct OwnerOfMember<M T::*> {
             using Type = T;
          };
 
-      }
+      } // namespace Langulus::RTTI::Inner
 
 
       /// The main boundary indentifier token                                 
@@ -571,11 +571,11 @@ namespace Langulus
       ///   @tparam HANDLE - a pointer to a member variable                   
       template<auto HANDLE>
       struct NamedMember {
-         static_assert(std::is_member_pointer_v<decltype(HANDLE)>,
-            "HANDLE must be a member pointer");
-         using Owner = typename Inner::OwnerOfMember<decltype(HANDLE)>::Type;
-         using Type = typename Inner::TypeOfMember<decltype(HANDLE)>::Type;
-         static constexpr auto Handle = HANDLE;
+         using Member = decltype(HANDLE);
+         static_assert(std::is_member_pointer_v<Member>,
+            "Member must be a member pointer");
+         using Owner = typename Inner::OwnerOfMember<Member>::Type;
+         using Type  = typename Inner::TypeOfMember<Member>::Type;
 
          Token mInfo {};
       };
