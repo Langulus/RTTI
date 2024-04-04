@@ -20,7 +20,7 @@ namespace Langulus
    /// The destructor of this type guarantees, that after destruction, the    
    /// member mReferences is zeroed.                                          
    ///                                                                        
-   class LANGULUS_API(RTTI) Referenced {
+   class Referenced {
       mutable Count mReferences = 1;
 
    public:
