@@ -27,14 +27,6 @@ namespace Langulus
          LANGULUS(UNINSERTABLE) true;
          LANGULUS(UNALLOCATABLE) true;
          LANGULUS(REFLECTABLE) false;
-
-         /// Semantic types are ephemeral and should never be reassignable    
-         /*constexpr Semantic() noexcept = default;
-         constexpr Semantic(const Semantic&) noexcept = default;
-         constexpr Semantic(Semantic&&) noexcept = default;*/
-
-         /*auto operator = (const Semantic&) = delete;
-         auto operator = (Semantic&&) = delete;*/
       };
 
       /// An abstract shallow semantic                                        
@@ -287,7 +279,9 @@ namespace Langulus
       /// since Refer == Copy in those cases                                  
       LANGULUS(INLINED)
       constexpr operator const T& () const noexcept requires (
-         CT::Inner::POD<T> or CT::Sparse<T> or ::std::is_trivially_copy_constructible_v<T>
+         CT::Inner::POD<T> or CT::Sparse<T>
+         or ::std::is_trivially_copy_constructible_v<T>
+         or ::std::is_aggregate_v<T>
       ) {
          return mValue;
       }
@@ -751,17 +745,6 @@ namespace Langulus
             // Abandon                                                  
             if constexpr (requires { new T (Abandon(*value)); })
                return new (placement) T (Abandon(*value));
-            else if constexpr (not CT::Inner::Destroyable<T>) {
-               // If type is not destroyable (like fundamentals), then  
-               // it is always acceptable to abandon them - just use    
-               // the standard move-semantics                           
-               if constexpr (requires { new T (::std::move(*value)); })
-                  return new (placement) T (::std::move(*value));
-               else if constexpr (FAKE)
-                  return Inner::Unsupported {};
-               else
-                  LANGULUS_ERROR("Can't abandon/move-construct non-destructible type");
-            }
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
@@ -773,8 +756,6 @@ namespace Langulus
             // Move                                                     
             if constexpr (requires { new T (Move(*value)); })
                return new (placement) T (Move(*value));
-            else if constexpr (requires { new T (::std::move(*value)); })
-               return new (placement) T (::std::move(*value));
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
@@ -788,12 +769,6 @@ namespace Langulus
          if constexpr (not CT::Void<Decay<T>>) {
             if constexpr (requires { new DT(Clone(DenseCast(*value))); })
                return new (placement) DT(Clone(DenseCast(*value)));
-            else if constexpr (CT::Inner::POD<DT>) {
-               // If type is POD (like fundamentals, or trivials), then 
-               // it is always acceptable to clone by memcpy            
-               ::std::memcpy(placement, &DenseCast(*value), sizeof(DT));
-               return reinterpret_cast<DT*>(placement);
-            }
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
@@ -808,13 +783,6 @@ namespace Langulus
          // Disown                                                      
          if constexpr (requires { new T (Disown(*value)); })
             return new (placement) T (Disown(*value));
-         else if constexpr (CT::Inner::POD<T>) {
-            // If type is POD (like fundamentals, or trivials), then    
-            // it is always acceptable to disown by memcpy, because     
-            // PODs don't have ownership anyways                        
-            ::std::memcpy(placement, &(*value), sizeof(T));
-            return reinterpret_cast<T*>(placement);
-         }
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
@@ -824,10 +792,6 @@ namespace Langulus
          // Copy                                                        
          if constexpr (requires { new T (Copy(*value)); })
             return new (placement) T (Copy(*value));
-         else if constexpr (CT::Inner::POD<T> or CT::Sparse<T>) {
-            ::std::memcpy(placement, &(*value), sizeof(T));
-            return reinterpret_cast<T*>(placement);
-         }
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
@@ -837,8 +801,6 @@ namespace Langulus
          // Refer                                                       
          if constexpr (requires { new T (Refer(*value)); })
             return new (placement) T (Refer(*value));
-         else if constexpr (requires { new T (*value); })
-            return new (placement) T (*value);
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
@@ -870,17 +832,6 @@ namespace Langulus
             // Abandon                                                  
             if constexpr (requires(MT a) { a = Abandon(*rhs); })
                return (lhs = Abandon(*rhs));
-            else if constexpr (not CT::Inner::Destroyable<T>) {
-               // If type is not destroyable (like fundamentals), then  
-               // it is always acceptable to abandon them - just use    
-               // the standard move-semantics                           
-               if constexpr (requires(MT& a) { a = ::std::move(*rhs); })
-                  return (lhs = ::std::move(*rhs));
-               else if constexpr (FAKE)
-                  return Inner::Unsupported {};
-               else
-                  LANGULUS_ERROR("Can't abandon/move-assign non-destructible type");
-            }
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
@@ -892,8 +843,6 @@ namespace Langulus
             // Move                                                     
             if constexpr (requires(MT& a) { a = Move(*rhs); })
                return (lhs = Move(*rhs));
-            else if constexpr (requires(MT& a) { a = ::std::move(*rhs); })
-               return (lhs = ::std::move(*rhs));
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
@@ -908,12 +857,6 @@ namespace Langulus
             if constexpr (CT::Mutable<decltype(DenseCast(lhs))>) {
                if constexpr (requires(DT& a) { a = Clone(DenseCast(*rhs)); })
                   return (DenseCast(lhs) = Clone(DenseCast(*rhs)));
-               else if constexpr (CT::Inner::POD<DT>) {
-                  // If type is POD (like fundamentals, or trivials),   
-                  // then it is always acceptable to clone by memcpy    
-                  ::std::memcpy(&DenseCast(lhs), &DenseCast(*rhs), sizeof(DT));
-                  return (lhs);
-               }
                else if constexpr (FAKE)
                   return Inner::Unsupported {};
                else
@@ -933,13 +876,6 @@ namespace Langulus
          // Disown                                                      
          if constexpr (requires(MT& a) { a = Disown(*rhs); })
             return (lhs = Disown(*rhs));
-         else if constexpr (CT::Inner::POD<T>) {
-            // If type is POD (like fundamentals, or trivials), then    
-            // it is always acceptable to disown by memcpy, because     
-            // PODs don't have ownership anyways                        
-            ::std::memcpy(&lhs, &(*rhs), sizeof(T));
-            return (lhs);
-         }
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
@@ -949,10 +885,6 @@ namespace Langulus
          // Copy                                                        
          if constexpr (requires(MT& a) { a = Copy(*rhs); })
             return (lhs = Copy(*rhs));
-         else if constexpr (CT::Inner::POD<T> or CT::Sparse<T>) {
-            ::std::memcpy(&lhs, &(*rhs), sizeof(T));
-            return (lhs);
-         }
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
@@ -962,8 +894,6 @@ namespace Langulus
          // Refer                                                       
          if constexpr (requires(MT& a) { a = Refer(*rhs); })
             return (lhs = Refer(*rhs));
-         else if constexpr (requires(MT& a) { a = *rhs; })
-            return (lhs = *rhs);
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
@@ -995,7 +925,7 @@ namespace Langulus::CT
    ///   @attention that this differs from std::constructible_from, by        
    ///      attempting each argument separately                               
    ///   @attention this also includes aggregate type construction, so it     
-   ///      will return true if first member is constructible from A&&        
+   ///      will return true if first member is constructible from first A    
    template<class T, class...A>
    concept MakableFrom = ((::std::constructible_from<T, A&&>) and ...);
 
@@ -1084,12 +1014,12 @@ namespace Langulus::CT
       /// Check if the T is descriptor-constructible                          
       template<class...T>
       concept DescriptorMakable = not Abstract<T...> and not Enum<T...>
-          and requires (const Anyness::Neat& a) { (T {Describe {a}}, ...); };
+          and requires (const Anyness::Neat& a) { (T (Describe {a}), ...); };
 
       /// Check if the T is noexcept-descriptor-constructible                 
       template<class...T>
       concept DescriptorMakableNoexcept = DescriptorMakable<T...>
-          and (noexcept ( T {Describe {Fake<const Anyness::Neat&>()}}) and ...);
+          and (noexcept ( T (Describe {Fake<const Anyness::Neat&>()})) and ...);
 
    } // namespace Langulus::CT::Inner
 

@@ -180,16 +180,16 @@ namespace Langulus::CT
       /// constexpr static member, or constexpr size() method                 
       template<class T>
       consteval Count CountOfInner() noexcept {
-         using DT = Decay<T>;
+         using DT = Decay<Desem<T>>;
          if constexpr (requires {{DT::MemberCount} -> UnsignedInteger; })
-            return DT::MemberCount * ExtentOf<T>;
+            return DT::MemberCount * ExtentOf<Desem<T>>;
          else if constexpr (requires (DT a) {{a.size()} -> UnsignedInteger;}) {
             if constexpr (IsConstexpr([] { return DT {}.size(); }))
-               return DT {}.size() * ExtentOf<T>;
+               return DT {}.size() * ExtentOf<Desem<T>>;
             else
-               return ExtentOf<T>;
+               return ExtentOf<Desem<T>>;
          }
-         else return ExtentOf<T>;
+         else return ExtentOf<Desem<T>>;
       }
 
       template<class T1, class...TN>
@@ -210,8 +210,7 @@ namespace Langulus::CT
    ///   @attention any semantics are ignored, so that the usual semantics    
    ///      play well with custom vector types                                
    template<class...T>
-   concept Vector = (((
-               Typed<Desem<T>>
+   concept Vector = (((Typed<Desem<T>>
            and Inner::CountOf<Desem<T>>() > 1
            and sizeof(Desem<T>) == sizeof(TypeOf<Desem<T>>) * Inner::CountOf<Desem<T>>()
          )
@@ -294,8 +293,8 @@ namespace Langulus
    ///           1 if both arguments are not arrays                           
    template<class LHS, class RHS>
    consteval Count OverlapExtents() noexcept {
-      constexpr auto lhs = ExtentOf<LHS>;
-      constexpr auto rhs = ExtentOf<RHS>;
+      constexpr auto lhs = ExtentOf<Desem<LHS>>;
+      constexpr auto rhs = ExtentOf<Desem<RHS>>;
 
       if constexpr (lhs > 1 and rhs > 1)
          return lhs < rhs ? lhs : rhs;
@@ -320,8 +319,8 @@ namespace Langulus
    ///           1 if both arguments are not arrays                           
    template<class LHS, class RHS>
    consteval Count OverlapCounts() noexcept {
-      constexpr auto lhs = CountOf<LHS>;
-      constexpr auto rhs = CountOf<RHS>;
+      constexpr auto lhs = CountOf<Desem<LHS>>;
+      constexpr auto rhs = CountOf<Desem<RHS>>;
 
       if constexpr (lhs > 1 and rhs > 1)
          return lhs < rhs ? lhs : rhs;
@@ -350,11 +349,12 @@ namespace Langulus
       ///  - if both types are not CT::Fundamental, the first type is always  
       ///    preferred (fallback)                                             
       ///   @attention this will discard any sparseness or other modifiers    
+      ///   @attention this will discard any semantics                        
       template<class T1, class T2>
       consteval auto Lossless() noexcept {
          constexpr auto size = OverlapCounts<T1, T2>();
-         using LHS = Decay<TypeOf<T1>>;
-         using RHS = Decay<TypeOf<T2>>;
+         using LHS = Decay<TypeOf<Desem<T1>>>;
+         using RHS = Decay<TypeOf<Desem<T2>>>;
 
          if constexpr (CT::Fundamental<LHS, RHS>) {
             // Both types are fundamental                               
