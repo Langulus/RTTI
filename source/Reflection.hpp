@@ -256,12 +256,20 @@ namespace Langulus::RTTI
 /// Compile-time checks and concepts associated with RTTI                     
 namespace Langulus::CT
 {
+   
+   /// Check if all T are abstract (have at least one pure virtual function,  
+   /// or are explicitly marked as LANGULUS(ABSTRACT) true). Sparse types are 
+   /// never abstract                                                         
+   template<class...T>
+   concept Abstract = Complete<T...>
+         and ((::std::is_abstract_v<T> or Decay<T>::CTTI_Abstract
+      ) and ...);
 
    /// Check if any of the types are unallocatable                            
    /// You can make types unallocatable by the memory manager. This serves    
    /// not only as forcing the type to be either allocated by conventional    
    /// C++ means, or on the stack, but also optimizes away any memory manager 
-   /// searches, when inserting pointers, if managed memory is enabled        
+   /// searches, when inserting pointers, if managed memory is enabled.       
    /// Raw function pointers are unallocatable by default                     
    template<class...T>
    concept Unallocatable = not Complete<T...> or Function<T...>
@@ -286,50 +294,9 @@ namespace Langulus::CT
 
    namespace Inner
    {
-
-      template<class...T>
-      concept Abstract = ((not Complete<T>
-           or ::std::is_abstract_v<T>) and ...) or (T::CTTI_Abstract and ...);
-
-      template<class...T>
-      concept Destroyable = ((not ::std::is_trivially_destructible_v<T>
-                              and ::std::is_destructible_v<T>) and ...);
-
-      template<class...T>
-      concept POD = Complete<T...> and ((not Abstract<T>) and ...) and (((
-            ::std::is_trivial_v<T> or not Destroyable<T>
-         ) and ...) or (T::CTTI_POD and ...)); // weird GCC bug fails expanding T::CTTI_POD along other checks
-
-      template<class...T>
-      concept Nullifiable = Complete<T...> and ((not Abstract<T>) and ...) and ((
-            Fundamental<T> and ...) or (T::CTTI_Nullifiable and ...));
-
-      template<class...T>
-      concept Concretizable = Complete<T...> and (requires {
-            typename T::CTTI_Concrete;
-         } and ...);
-
-      template<class...T>
-      concept Producible = Complete<T...> and (requires {
-            typename T::CTTI_Producer;
-         } and ...);
-
-      template<class...T>
-      concept Defaultable = ((not Abstract<T>) and ...) and requires { (T {}, ...); };
-
-      template<class...T>
-      concept DefaultableNoexcept = Defaultable<T...> and (noexcept(T {}) and ...);
       
-      template<class...T>
-      concept DispatcherMutable = requires (Flow::Verb b, T...a) {
-            {(a.Do(b), ...)};
-         };
-
-      template<class...T>
-      concept DispatcherConstant = requires (Flow::Verb b, const T...a) {
-            {(a.Do(b), ...)};
-         };
-      
+      /// Check if all T are typed, having either CTTI_InnerType or value_type
+      /// as member type declarations                                         
       template<class...T>
       concept Typed = Complete<T...> and ((requires {
             typename T::CTTI_InnerType;
@@ -361,54 +328,91 @@ namespace Langulus::CT
                return (Deref<T>*) nullptr;
          }
       };
-      
-      template<class...T>
-      concept Resolvable = requires (T&...a) {
-            {(a.GetType(), ...)}  -> Exact<RTTI::DMeta>;
-            {(a.GetBlock(), ...)} -> Exact<Anyness::Block>;
-         };
+
+      /// Check if a type is POD (plain old data)                             
+      ///   @tparam T - the type to check                                     
+      ///   @return true if T is a POD type                                   
+      template<class T>
+      consteval bool IsPOD() noexcept {
+         if constexpr (Complete<T>) {
+            if constexpr (not Abstract<T>) {
+               if constexpr (Fundamental<T> or Sparse<T>)
+                  return true;
+               else if constexpr (Dense<T> and requires { T::CTTI_POD; })
+                  return T::CTTI_POD;
+               else
+                  return false;
+            }
+            else return false;
+         }
+         else return false;
+      };
+
+      /// Check if a type is nullifiable                                      
+      ///   @tparam T - the type to check                                     
+      ///   @return true if T is nullifiable                                  
+      template<class T>
+      consteval bool IsNullifiable() noexcept {
+         if constexpr (Complete<T>) {
+            if constexpr (not Abstract<T>) {
+               if constexpr (Fundamental<T> or Sparse<T>)
+                  return true;
+               else if constexpr (Dense<T> and requires { T::CTTI_Nullifiable; })
+                  return T::CTTI_Nullifiable;
+               else
+                  return false;
+            }
+            else return false;
+         }
+         else return false;
+      };
 
    } // namespace Langulus::CT::Inner
 
    
    /// Check if the origin T is resolvable at runtime                         
    template<class...T>
-   concept Resolvable = Complete<Decay<T>...>
-       and Inner::Resolvable<Decay<T>...>;
+   concept Resolvable = Complete<T...> and requires (T&...a) {
+         { (a.GetType(), ...) }  -> Exact<RTTI::DMeta>;
+         { (a.GetBlock(), ...) } -> Exact<Anyness::Block>;
+      };
 
-   /// Check if the origin T is default-constructible                         
+   /// Check if T is default-constructible                                    
+   ///   @attention this includes even fundamentals that are not initialized  
    template<class...T>
-   concept Defaultable = Complete<Decay<T>...>
-       and Inner::Defaultable<Decay<T>...>;
+   concept Defaultable = ((not Abstract<T>) and ...)
+       and requires { (T {}, ...); };
 
+   /// Check if T is noexcept default-constructible                           
+   ///   @attention this includes even fundamentals that are not initialized  
    template<class...T>
-   concept DefaultableNoexcept = Complete<Decay<T>...>
-       and Inner::DefaultableNoexcept<Decay<T>...>;
+   concept DefaultableNoexcept = Defaultable<T...>
+       and (noexcept(T {}) and ...);
 
-   /// Check if the origin T requires its destructor being called             
-   template<class... T>
-   concept Destroyable = Complete<Decay<T>...>
-       and Inner::Destroyable<Decay<T>...>;
+   /// Check if T requires its destructor being called                        
+   template<class...T>
+   concept Destroyable = ((not ::std::is_trivially_destructible_v<T>
+                           and ::std::is_destructible_v<T>) and ...);
 
    /// A POD (Plain Old Data) type is any type with a static member           
    /// T::CTTI_POD set to true. If no such member exists, the type is         
    /// assumed NOT POD by default, unless ::std::is_trivial, which seems to   
-   /// inconsistent across compilers.                                         
+   /// be inconsistent across compilers.                                      
    /// POD types improve construction, destruction, copying, and cloning      
    /// by using some batching runtime optimizations                           
    /// All POD types are also directly serializable to binary                 
-   /// Use LANGULUS(POD) macro as member to tag POD types                     
+   /// Use "LANGULUS(POD) true;" as member to tag POD types                   
    template<class...T>
-   concept POD = Inner::POD<Decay<T>...>;
+   concept POD = sizeof...(T) > 0 and (Inner::IsPOD<T>() and ...);
 
    /// A nullifiable type is any type with a static member                    
    /// T::CTTI_Nullifiable set to true. If no such member exists, the type    
    /// is assumed NOT nullifiable by default, unless it is sparse             
    /// Nullifiable types improve default-construction by using some batching  
    /// runtime optimizations                                                  
-   /// Use LANGULUS(NULLIFIABLE) macro as member to tag nullifiable types     
+   /// Use LANGULUS(NULLIFIABLE) true; as member to tag nullifiable types     
    template<class...T>
-   concept Nullifiable = ((Sparse<T> or Inner::Nullifiable<Decay<T>>) and ...);
+   concept Nullifiable = sizeof...(T) > 0 and (Inner::IsNullifiable<T>() and ...);
    
    /// A non-reflectable type is any type with a static member                
    /// T::CTTI_Reflectable set to false. This attribute will ignore sparsity  
@@ -426,7 +430,9 @@ namespace Langulus::CT
    /// when	allocating abstract types                                         
    /// Use LANGULUS(CONCRETIZABLE) macro as member to tag such types          
    template<class...T>
-   concept Concretizable = Inner::Concretizable<Decay<T>...>;
+   concept Concretizable = Complete<T...> and (requires {
+         typename Decay<T>::CTTI_Concrete;
+      } and ...);
 
    /// Get the reflected concrete type                                        
    template<class T>
@@ -438,8 +444,10 @@ namespace Langulus::CT
    /// to be produced by executing Verbs::Create in the producer's context    
    /// Use LANGULUS(PRODUCER) macro as member to tag such types               
    template<class...T>
-   concept Producible = Inner::Producible<Decay<T>...>;
-   
+   concept Producible = Complete<T...> and (requires {
+         typename Decay<T>::CTTI_Producer;
+      } and ...);
+
    /// Check if a type has reflected named values                             
    template<class...T>
    concept HasNamedValues = Complete<T...> and (requires {
@@ -450,19 +458,17 @@ namespace Langulus::CT
    template<class T>
    using ProducerOf = typename Decay<T>::CTTI_Producer;
 
-   /// Check if T is abstract (has at least one pure virtual function, or is  
-   /// explicitly marked as LANGULUS(ABSTRACT)). Sparse types are never       
-   /// abstract                                                               
-   template<class...T>
-   concept Abstract = Inner::Abstract<Decay<T>...>;
-
    /// Check if all T have a mutable dispatcher (have `Do(Verb&)` method)     
    template<class...T>
-   concept DispatcherMutable = Inner::DispatcherMutable<T...>;
+   concept DispatcherMutable = requires (Flow::Verb b, T...a) {
+         {(a.Do(b), ...)};
+      };
 
    /// Check if all T have a constant dispatcher (have `Do(Verb&) const`)     
    template<class...T>
-   concept DispatcherConstant = Inner::DispatcherConstant<T...>;
+   concept DispatcherConstant = requires (Flow::Verb b, const T...a) {
+         {(a.Do(b), ...)};
+      };
 
    /// Check if all T have a dispatcher, compatible with the cv-quality of T  
    template<class...T>

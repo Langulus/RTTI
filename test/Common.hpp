@@ -37,3 +37,77 @@ struct TypePair {
    using RHS = R;
    static constexpr bool Result = RESULT;
 };
+
+/// An empty trivial type                                                     
+class ImplicitlyConstructible {};
+
+/// Explicitly deleted destructor                                             
+class NonDestructible {
+   ~NonDestructible() = delete;
+};
+
+/// Has an explicit destructor                                                
+class Destructible {
+public:
+   char* someptr {};
+
+   ~Destructible() {
+      if (someptr)
+         delete someptr;
+   }
+};
+
+/// Default-constructible, but only privately                                 
+class PrivatelyConstructible {
+   PrivatelyConstructible() = default;
+};
+
+/// Had no explicit semantic constructors and assigners                       
+/// Has only implicit refer & move constructors and assigners                 
+class NonSemanticConstructible {
+public:
+   NonSemanticConstructible(CT::NotSemantic auto&&) {}
+};
+
+/// Has explicit copy, move, refer, clone, abandon, disown constructors       
+/// Has implicit refer & move constructors, too                               
+/// Has no explicit semantic assigners, only implicit refer & move            
+class PartiallySemanticConstructible {
+public:
+   template<template<class> class S, class T>
+   PartiallySemanticConstructible(S<T>&&) requires CT::Semantic<S<T>> {}
+};
+
+/// Has all semantic constructors + implicit refer & move ones                
+/// Has no explicit semantic assigners, only implicit refer & move ones       
+/// Making constructor explicit makes sure, that no implicit semantic assign  
+/// happens                                                                   
+class AllSemanticConstructible {
+public:
+   LANGULUS(POD) false;
+   explicit AllSemanticConstructible(CT::Semantic auto&&) {}
+};
+
+/// Has all semantic constructors + implicit refer & move ones                
+/// Has no explicit semantic assigners, only implicit refer & move ones       
+/// Making constructor implicit also allows for semantic assignments          
+class AllSemanticConstructibleImplicit {
+public:
+   LANGULUS(POD) false;
+   AllSemanticConstructibleImplicit(CT::Semantic auto&&) {}
+};
+
+/// Has all semantic constructors and assigners + implicit refer & move ones  
+class AllSemanticConstructibleAndAssignable {
+public:
+   LANGULUS(POD) false;
+   AllSemanticConstructibleAndAssignable(CT::Semantic auto&&) {}
+   AllSemanticConstructibleAndAssignable& operator = (CT::Semantic auto&&) { return *this; }
+};
+
+/// Has explicit descriptor constructor, and implicit refer & move ones       
+/// Has no explicit semantic assigners, only implicit refer & move            
+class DescriptorConstructible {
+public:
+   DescriptorConstructible(Describe&&) {}
+};

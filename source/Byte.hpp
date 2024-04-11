@@ -21,123 +21,178 @@ namespace Langulus
    /// the result is always truncated back down to a byte.                    
    ///                                                                        
    struct Byte {
-      LANGULUS(TYPED) ::std::uint8_t;
+      using Type = ::std::uint8_t;
+      LANGULUS(TYPED) Type;
       LANGULUS(POD) true;
       LANGULUS(NULLIFIABLE) true;
 
-      ::std::uint8_t mValue {};
+      Type mValue {};
 
    public:
       constexpr Byte() noexcept = default;
       constexpr Byte(const Byte&) noexcept = default;
       constexpr Byte(Byte&&) noexcept = default;
-      constexpr Byte(const ::std::uint8_t& a) noexcept
+
+      LANGULUS(INLINED)
+      constexpr Byte(const Type& a) noexcept
          : mValue {a} {}
 
       Byte& operator = (const Byte&) noexcept = default;
       Byte& operator = (Byte&&) noexcept = default;
-      Byte& operator = (const ::std::uint8_t& a) noexcept {
+
+      LANGULUS(INLINED)
+      Byte& operator = (const Type& a) noexcept {
          mValue = a;
          return *this;
       }
 
       /// All conversions are explicit only, to preserve type                 
-      constexpr explicit operator const ::std::uint8_t& () const noexcept {
-         return mValue;
-      }
-      constexpr explicit operator ::std::uint8_t& () noexcept {
+      LANGULUS(INLINED)
+      constexpr explicit operator const Type& () const noexcept {
          return mValue;
       }
 
-      template<CT::BuiltinNumber T>
+      LANGULUS(INLINED)
+      constexpr explicit operator Type& () noexcept {
+         return mValue;
+      }
+
+      template<CT::BuiltinNumber T> LANGULUS(INLINED)
       constexpr explicit operator T () const noexcept
-      requires (CT::Dense<T> and not CT::Same<T, ::std::uint8_t>) {
+      requires (CT::Dense<T> and not CT::Same<T, Type>) {
          return static_cast<T>(mValue);
       }
 
-      NOD() constexpr Byte operator + (const Byte& rhs) const noexcept {
+      NOD() LANGULUS(INLINED)
+      constexpr Byte operator + (const Byte& rhs) const noexcept {
          return mValue + rhs.mValue;
       }
-      NOD() constexpr Byte operator - (const Byte& rhs) const noexcept {
+
+      NOD() LANGULUS(INLINED)
+      constexpr Byte operator - (const Byte& rhs) const noexcept {
          return mValue - rhs.mValue;
       }
-      NOD() constexpr Byte operator * (const Byte& rhs) const noexcept {
+
+      NOD() LANGULUS(INLINED)
+      constexpr Byte operator * (const Byte& rhs) const noexcept {
          return mValue * rhs.mValue;
       }
-      NOD() constexpr Byte operator / (const Byte& rhs) const noexcept {
+
+      NOD() LANGULUS(INLINED)
+      constexpr Byte operator / (const Byte& rhs) const noexcept {
          return mValue / rhs.mValue;
       }
-      NOD() constexpr Byte operator % (const Byte& rhs) const noexcept {
+
+      NOD() LANGULUS(INLINED)
+      constexpr Byte operator % (const Byte& rhs) const noexcept {
          return mValue % rhs.mValue;
       }
-      NOD() constexpr Byte operator << (const Byte& rhs) const noexcept {
+
+      NOD() LANGULUS(INLINED)
+      constexpr Byte operator << (const Byte& rhs) const noexcept {
          return mValue << rhs.mValue;
       }
-      NOD() constexpr Byte operator >> (const Byte& rhs) const noexcept {
+
+      NOD() LANGULUS(INLINED)
+      constexpr Byte operator >> (const Byte& rhs) const noexcept {
          return mValue >> rhs.mValue;
       }
-      NOD() constexpr Byte operator ^ (const Byte& rhs) const noexcept {
+
+      NOD() LANGULUS(INLINED)
+      constexpr Byte operator ^ (const Byte& rhs) const noexcept {
          return mValue ^ rhs.mValue;
       }
-      NOD() constexpr Byte operator & (const Byte& rhs) const noexcept {
+
+      NOD() LANGULUS(INLINED)
+      constexpr Byte operator & (const Byte& rhs) const noexcept {
          return mValue & rhs.mValue;
       }
-      NOD() constexpr Byte operator | (const Byte& rhs) const noexcept {
+
+      NOD() LANGULUS(INLINED)
+      constexpr Byte operator | (const Byte& rhs) const noexcept {
          return mValue | rhs.mValue;
       }
 
+      LANGULUS(INLINED)
       constexpr Byte& operator += (const Byte& rhs) noexcept {
          mValue += rhs.mValue;
          return *this;
       }
+
+      LANGULUS(INLINED)
       constexpr Byte& operator -= (const Byte& rhs) noexcept {
          mValue -= rhs.mValue;
          return *this;
       }
+
+      LANGULUS(INLINED)
       constexpr Byte& operator *= (const Byte& rhs) noexcept {
          mValue *= rhs.mValue;
          return *this;
       }
+
+      LANGULUS(INLINED)
       constexpr Byte& operator /= (const Byte& rhs) noexcept {
          mValue /= rhs.mValue;
          return *this;
       }
+
+      LANGULUS(INLINED)
       constexpr Byte& operator %= (const Byte& rhs) noexcept {
          mValue %= rhs.mValue;
          return *this;
       }
+
+      LANGULUS(INLINED)
       constexpr Byte& operator <<= (const Byte& rhs) noexcept {
          mValue <<= rhs.mValue;
          return *this;
       }
+
+      LANGULUS(INLINED)
       constexpr Byte& operator >>= (const Byte& rhs) noexcept {
          mValue >>= rhs.mValue;
          return *this;
       }
+
+      LANGULUS(INLINED)
       constexpr Byte& operator ^= (const Byte& rhs) noexcept {
          mValue ^= rhs.mValue;
          return *this;
       }
+
+      LANGULUS(INLINED)
       constexpr Byte& operator &= (const Byte& rhs) noexcept {
          mValue &= rhs.mValue;
          return *this;
       }
+
+      LANGULUS(INLINED)
       constexpr Byte& operator |= (const Byte& rhs) noexcept {
          mValue |= rhs.mValue;
          return *this;
       }
 
-      NOD() constexpr bool operator == (const Byte&) const noexcept = default;
-      NOD() constexpr bool operator <= (const Byte& rhs) const noexcept {
+      NOD() LANGULUS(INLINED)
+      constexpr bool operator == (const Byte&) const noexcept = default;
+
+      NOD() LANGULUS(INLINED)
+      constexpr bool operator <= (const Byte& rhs) const noexcept {
          return mValue <= rhs.mValue;
       }
-      NOD() constexpr bool operator >= (const Byte& rhs) const noexcept {
+
+      NOD() LANGULUS(INLINED)
+      constexpr bool operator >= (const Byte& rhs) const noexcept {
          return mValue >= rhs.mValue;
       }
-      NOD() constexpr bool operator < (const Byte& rhs) const noexcept {
+
+      NOD() LANGULUS(INLINED)
+      constexpr bool operator < (const Byte& rhs) const noexcept {
          return mValue < rhs.mValue;
       }
-      NOD() constexpr bool operator > (const Byte& rhs) const noexcept {
+
+      NOD() LANGULUS(INLINED)
+      constexpr bool operator > (const Byte& rhs) const noexcept {
          return mValue > rhs.mValue;
       }
    };
@@ -147,17 +202,21 @@ namespace Langulus
 
       /// Byte concept                                                        
       template<class...T>
-      concept Byte = (Same<::Langulus::Byte, T> and ...);
+      concept Byte = sizeof...(T) > 0
+          and (Similar<::Langulus::Byte, Deref<T>> and ...);
 
       template<class...T>
-      concept UnsignedInteger8 = (((CT::UnsignedInteger<T> or CT::Character<T> or CT::Byte<T>)
-         and sizeof(Decay<T>) == 1) and ...);
+      concept UnsignedInteger8 = sizeof...(T) > 0
+          and (((CT::UnsignedInteger<T> or CT::Character<T> or CT::Byte<T>)
+          and sizeof(Decay<T>) == 1) and ...);
 
       template<class...T>
-      concept Integer8 = ((SignedInteger8<T> or UnsignedInteger8<T>) and ...);
+      concept Integer8 = sizeof...(T) > 0
+          and ((SignedInteger8<T> or UnsignedInteger8<T>) and ...);
 
       template<class...T>
-      concept IntegerX = ((Integer8<T> or Integer16<T> or Integer32<T> or Integer64<T>) and ...);
+      concept IntegerX = sizeof...(T) > 0
+          and ((Integer8<T> or Integer16<T> or Integer32<T> or Integer64<T>) and ...);
 
    }
    
@@ -166,10 +225,9 @@ namespace Langulus
    ///   @tparam FROM - source memory type (deducible)                        
    ///   @param to - [out] destination memory                                 
    ///   @param from - source of data to copy                                 
-   template<class TO, class FROM>
-   LANGULUS(INLINED)
+   template<class TO, class FROM> LANGULUS(INLINED)
    void CopyMemory(TO* to, const FROM* from) noexcept {
-      static_assert(CT::Void<TO> or CT::Sparse<TO> or CT::Inner::POD<TO>, 
+      static_assert(CT::Void<TO> or CT::Sparse<TO> or CT::POD<TO>, 
          "TO must be either pointer, reflected as POD, or trivial "
          "(you can suppress this error by casting pointer to void*)");
 
@@ -194,10 +252,9 @@ namespace Langulus
    ///   @param from - source of data to copy                                 
    ///   @param count - number of elements to copy                            
    ///   @attention count becomes bytecount, when TO is void                  
-   template<class TO, class FROM>
-   LANGULUS(INLINED)
+   template<class TO, class FROM> LANGULUS(INLINED)
    void CopyMemory(TO* to, const FROM* from, const Count& count) noexcept {
-      static_assert(CT::Void<TO> or CT::Sparse<TO> or CT::Inner::POD<TO>,
+      static_assert(CT::Void<TO> or CT::Sparse<TO> or CT::POD<TO>,
          "TO must be either pointer, reflected as POD, or trivial "
          "(you can suppress this error by casting pointer to void*)");
 
@@ -225,8 +282,7 @@ namespace Langulus
    ///   @tparam FILLER - value to fill in with                               
    ///   @tparam TO - destination memory type (deducible)                     
    ///   @param to - [out] destination memory                                 
-   template<int FILLER, class TO>
-   LANGULUS(INLINED)
+   template<int FILLER, class TO> LANGULUS(INLINED)
    void FillMemory(TO* to) noexcept {
       static_assert(FILLER or CT::Nullifiable<TO> or CT::Void<TO>,
          "Filling with zeroes requires the type to be reflected as nullifiable, "
@@ -244,8 +300,7 @@ namespace Langulus
    ///   @param to - [out] destination memory                                 
    ///   @param count - number of elements to fill                            
    ///   @attention count becomes bytecount, when TO is void                  
-   template<int FILLER, class TO>
-   LANGULUS(INLINED)
+   template<int FILLER, class TO> LANGULUS(INLINED)
    void FillMemory(TO* to, const Count& count) noexcept {
       static_assert(FILLER or CT::Nullifiable<TO> or CT::Void<TO>,
          "Filling with zeroes requires the type to be reflected as nullifiable, "
@@ -260,8 +315,7 @@ namespace Langulus
    /// Wrapper for memset 0                                                   
    ///   @tparam TO - destination memory type (deducible)                     
    ///   @param to - [out] destination memory                                 
-   template<class TO>
-   LANGULUS(INLINED)
+   template<class TO> LANGULUS(INLINED)
    void ZeroMemory(TO* to) noexcept {
       return FillMemory<0>(to);
    }
@@ -271,8 +325,7 @@ namespace Langulus
    ///   @param to - [out] destination memory                                 
    ///   @param count - number of elements to fill                            
    ///   @attention count becomes bytecount, when TO is void                  
-   template<class TO>
-   LANGULUS(INLINED)
+   template<class TO> LANGULUS(INLINED)
    void ZeroMemory(TO* to, const Count& count) noexcept {
       return FillMemory<0>(to, count);
    }
@@ -282,10 +335,9 @@ namespace Langulus
    ///   @tparam FROM - source memory type (deducible)                        
    ///   @param to - [out] destination memory                                 
    ///   @param from - source of data to move                                 
-   template<class TO, class FROM>
-   LANGULUS(INLINED)
+   template<class TO, class FROM> LANGULUS(INLINED)
    void MoveMemory(TO* to, const FROM* from) noexcept {
-      static_assert(CT::Void<TO> or CT::Sparse<TO> or CT::Inner::POD<TO>,
+      static_assert(CT::Void<TO> or CT::Sparse<TO> or CT::POD<TO>,
          "TO must be either pointer, reflected as POD, or trivial "
          "(You can suppress this error by casting pointer to void*)");
 
@@ -314,10 +366,9 @@ namespace Langulus
    ///   @param from - source of data to move                                 
    ///   @param count - number of elements to move                            
    ///   @attention count becomes bytecount, when TO is void                  
-   template<class TO, class FROM>
-   LANGULUS(INLINED)
+   template<class TO, class FROM> LANGULUS(INLINED)
    void MoveMemory(TO* to, const FROM* from, const Count& count) noexcept {
-      static_assert(CT::Void<TO> or CT::Sparse<TO> or CT::Inner::POD<TO>,
+      static_assert(CT::Void<TO> or CT::Sparse<TO> or CT::POD<TO>,
          "TO must be either pointer, reflected as POD, or trivial "
          "(You can suppress this error by casting pointer to void*)");
 

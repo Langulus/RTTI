@@ -95,7 +95,7 @@ namespace Langulus::CT
    template<class...T>
    concept SparseUnsignedInteger = ((UnsignedInteger<T> and Sparse<T>) and ...);
 
-   /// Any bool concept, custom or not (either sparse or dense)               
+   /// Any bool concept, custom or not, sparse or dense                       
    template<class...T>
    concept Bool = ((BuiltinBool<T> or CustomBool<T>) and ...);
 
@@ -107,7 +107,7 @@ namespace Langulus::CT
    template<class...T>
    concept SparseBool = ((Bool<T> and Sparse<T>) and ...);
 
-   /// Any character concept, custom or not (either sparse or dense)          
+   /// Any character concept, custom or not, sparse or dense                  
    template<class...T>
    concept Character = ((BuiltinCharacter<T> or CustomCharacter<T>) and ...);
 
@@ -213,8 +213,7 @@ namespace Langulus::CT
    concept Vector = (((Typed<Desem<T>>
            and Inner::CountOf<Desem<T>>() > 1
            and sizeof(Desem<T>) == sizeof(TypeOf<Desem<T>>) * Inner::CountOf<Desem<T>>()
-         )
-         or (ExtentOf<Desem<T>> > 1)
+         ) or (ExtentOf<Desem<T>> > 1)
       ) and ...);
 
    template<class...T>
@@ -251,14 +250,15 @@ namespace Langulus
    ///   @return a reference to the underlying type                           
    template<CT::Scalar T> NOD() LANGULUS(INLINED)
    constexpr decltype(auto) FundamentalCast(const T& a) noexcept {
-      if constexpr (CT::Fundamental<T>) {
+      using DT = Decay<Desem<T>>;
+      if constexpr (CT::Fundamental<DT>) {
          // Already fundamental, just forward it                        
          return (a);
       }
-      else if constexpr (CT::Typed<T> or CT::Enum<T>) {
+      else if constexpr (CT::Typed<DT> or CT::Enum<DT>) {
          // Explicitly cast to a reference of the contained type, and   
          // nest down to the fundamentals                               
-         return FundamentalCast(static_cast<const TypeOf<T>&>(DenseCast(a)));
+         return FundamentalCast(static_cast<const TypeOf<DT>&>(DenseCast(a)));
       }
       else LANGULUS_ERROR("Shouldn't happen");
    }
@@ -271,14 +271,15 @@ namespace Langulus
    ///   @return a reference to the underlying type                           
    template<CT::Scalar T> NOD() LANGULUS(INLINED)
    constexpr decltype(auto) FundamentalCast(T& a) noexcept {
-      if constexpr (CT::Fundamental<T>) {
+      using DT = Decay<Desem<T>>;
+      if constexpr (CT::Fundamental<DT>) {
          // Already fundamental, just forward it                        
          return (a);
       }
-      else if constexpr (CT::Typed<T> or CT::Enum<T>) {
+      else if constexpr (CT::Typed<DT> or CT::Enum<DT>) {
          // Explicitly cast to a reference of the contained type, and   
          // nest down to the fundamentals                               
-         return FundamentalCast(static_cast<TypeOf<T>&>(DenseCast(a)));
+         return FundamentalCast(static_cast<TypeOf<DT>&>(DenseCast(a)));
       }
       else LANGULUS_ERROR("Shouldn't happen");
    }
