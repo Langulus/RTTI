@@ -741,14 +741,16 @@ namespace Langulus
       ///   @tparam S - the semantic                                          
       ///   @tparam T... - the types                                          
       template<template<class> class S, class...T>
-      concept HasSemanticConstructor = Complete<T...> and ((Semantic<S<T>>
-          and ::std::constructible_from<T, S<T>&&>) and ...);
+      concept HasSemanticConstructor = Complete<T...> and ((
+            Semantic<S<T>> and ::std::constructible_from<T, S<T>>
+         ) and ...);
 
       /// Check if all TypeOf<S> have semantic constructors for S             
       ///   @tparam S - the semantic and type                                 
       template<class...S>
-      concept HasSemanticConstructorAlt = Complete<TypeOf<S>...> and ((Semantic<S>
-          and ::std::constructible_from<TypeOf<S>, S&&>) and ...);
+      concept HasSemanticConstructorAlt = Complete<TypeOf<S>...> and ((
+            Semantic<S> and ::std::constructible_from<TypeOf<S>, S>
+         ) and ...);
 
       /// Check if all T have a disown-constructor                            
       /// Disowning does a shallow copy without referencing contents,         
@@ -789,8 +791,8 @@ namespace Langulus
       /// Does a move, fully resetting source                                 
       /// T has move-constructor as long as it is std::move_constuctible      
       template<class...T>
-      concept HasMoveConstructor = Complete<T...>
-          and ((HasSemanticConstructor<Langulus::Moved, T>
+      concept HasMoveConstructor = Complete<T...> and ((Sparse<T>
+           or HasSemanticConstructor<Langulus::Moved, T>
            or ::std::move_constructible<T>) and ...);
 
 
@@ -844,9 +846,12 @@ namespace Langulus
 
       /// Check if all T have a move-assigner                                 
       /// Does a move, fully resetting source                                 
-      /// T has a move-assigner as long as std::move_assignable<T> holds      
+      /// T has a move-assigner as long as std::is_move_assignable_v<T> holds 
+      /// @attention you can't have move semantics, if a type has its         
+      ///   destructor deleted - every time you move an instance, the old one 
+      ///   has to be deleted later.                                          
       template<class...T>
-      concept HasMoveAssign = Complete<T...>
+      concept HasMoveAssign = Complete<T...> and ((::std::destructible<T>) and ...)
           and ((HasSemanticAssign<Langulus::Moved, T>
            or ::std::is_move_assignable_v<T>) and ...);
 
@@ -912,9 +917,9 @@ namespace Langulus
 
          if constexpr (not CT::Void<DT>) {
             if constexpr (CT::HasCloneConstructor<DT>)
-               return new (placement) DT(Clone(DenseCast(*value)));
+               return new (placement) DT (Clone(DenseCast(*value)));
             else if constexpr (CT::POD<DT> and ::std::copy_constructible<DT>)
-               return new (placement) DT(DenseCast(*value));
+               return new (placement) DT (DenseCast(*value));
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
@@ -965,12 +970,20 @@ namespace Langulus
    ///   @param lhs - left hand side (what are we assigning to)               
    ///   @param rhs - right hand side (what are we assigning)                 
    ///   @return whatever the assignment operator returns                     
-   template<bool FAKE = false, template<class> class S, CT::NotSemantic T, class MT = Decvq<T>>
+   template<bool FAKE = false, template<class> class S, CT::NotSemantic T>
    requires CT::Semantic<S<T>> LANGULUS(INLINED)
-   constexpr decltype(auto) SemanticAssign(MT& lhs, S<T>&& rhs) {
+   constexpr decltype(auto) SemanticAssign(Decvq<T>& lhs, S<T>&& rhs) {
+      using MT = Decvq<T>;
       using SS = S<T>;
 
-      if constexpr (CT::Reference<MT>) {
+      if constexpr (not CT::Complete<MT>) {
+         // Can't assign to an incomplete type                          
+         if constexpr (FAKE)
+            return Inner::Unsupported {};
+         else
+            LANGULUS_ERROR("Can't SemanticAssign to an incomplete type");
+      }
+      else if constexpr (CT::Reference<MT>) {
          // Can't reassign a reference                                  
          if constexpr (FAKE)
             return Inner::Unsupported {};
@@ -1221,6 +1234,9 @@ namespace Langulus
       /// Check if all T are move-assignable                                  
       /// Does a move, fully resetting source                                 
       /// T is move-assignable as long as std::move_assignable<T> holds       
+      /// @attention you can't have move semantics, if a type has its         
+      ///   destructor deleted - every time you move an instance, the old one 
+      ///   has to be deleted later.                                          
       template<class...T>
       concept MoveAssignable = (SemanticAssignable<Langulus::Moved, T> and ...);
 

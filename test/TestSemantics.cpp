@@ -226,7 +226,6 @@ TEMPLATE_TEST_CASE("Testing non-move-makable types", "[semantics]",
 
 TEMPLATE_TEST_CASE("Testing move-assignable types", "[semantics]",
    ImplicitlyConstructible,
-   NonDestructible,
    Destructible,
    PrivatelyConstructible,
    NonSemanticConstructible,
@@ -254,7 +253,8 @@ TEMPLATE_TEST_CASE("Testing move-assignable types", "[semantics]",
 }
 
 TEMPLATE_TEST_CASE("Testing non-move-assignable types", "[semantics]",
-   IncompleteType
+   IncompleteType,
+   NonDestructible
 ) {
    using T = TestType;
    static_assert(not CT::MoveAssignable<T>);

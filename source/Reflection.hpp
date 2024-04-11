@@ -259,34 +259,34 @@ namespace Langulus::CT
    
    /// Check if all T are abstract (have at least one pure virtual function,  
    /// or are explicitly marked as LANGULUS(ABSTRACT) true). Sparse types are 
-   /// never abstract                                                         
+   /// never abstract!                                                        
    template<class...T>
-   concept Abstract = Complete<T...>
-         and ((::std::is_abstract_v<T> or Decay<T>::CTTI_Abstract
+   concept Abstract = Complete<T...> and ((
+         ::std::is_abstract_v<T> or (Dense<T> and Decay<T>::CTTI_Abstract)
       ) and ...);
 
-   /// Check if any of the types are unallocatable                            
+   /// Check if any of the listed T is unallocatable                          
    /// You can make types unallocatable by the memory manager. This serves    
    /// not only as forcing the type to be either allocated by conventional    
-   /// C++ means, or on the stack, but also optimizes away any memory manager 
-   /// searches, when inserting pointers, if managed memory is enabled.       
-   /// Raw function pointers are unallocatable by default                     
+   /// C++ means (on the heap or the stack), but also optimizes away any      
+   /// memory manager searches, when inserting pointers while managed memory  
+   /// is enabled. Raw function pointers are unallocatable by default         
    template<class...T>
    concept Unallocatable = not Complete<T...> or Function<T...>
-        or ((CT::Dense<T> and Decay<T>::CTTI_Unallocatable) or ...);
+        or ((Dense<T> and Decay<T>::CTTI_Unallocatable) or ...);
 
    /// Check if all of the types are allocatable                              
    template<class...T>
    concept Allocatable = ((not Unallocatable<T>) and ...);
 
-   /// Check if any of the types isn't insertable                             
+   /// Check if any of the listed T is uninsertable                           
    /// An uninsertable type is any type with a true static member             
-   /// T::CTTI_Uninsertable. All types are insertable by default              
+   /// T::CTTI_Uninsertable. All types are insertable by default.             
    /// Useful to mark some intermediate types, that are not supposed to be    
-   /// inserted in containers, like iterators and handles for example         
+   /// inserted in containers, like iterators or handles.                     
    template<class...T>
-   concept Uninsertable = not Complete<T...> or (
-         (CT::Dense<T> and Decay<T>::CTTI_Uninsertable) or ...);
+   concept Uninsertable = not Complete<T...>
+        or ((Dense<T> and Decay<T>::CTTI_Uninsertable) or ...);
 
    /// Check if all of the types are insertable                               
    template<class...T>
