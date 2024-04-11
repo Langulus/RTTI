@@ -97,45 +97,55 @@ namespace Langulus
    namespace CT
    {
 
-      /// Checks if a type is a semantic                                      
+      /// Checks if all T are semantic                                        
       template<class...T>
-      concept Semantic = (DerivedFrom<T, A::Semantic> and ...);
+      concept Semantic = sizeof...(T) > 0
+          and (DerivedFrom<T, A::Semantic> and ...);
 
-      /// Checks if a type is not a semantic                                  
+      /// Checks if all T are NOT semantic                                    
       template<class...T>
-      concept NotSemantic = not Semantic<T...>;
+      concept NotSemantic = sizeof...(T) > 0
+          and ((not Semantic<T>) and ...);
 
-      /// Checks if a type is a shallow semantic                              
+      /// Checks if all T are shallow-semantic                                
       template<class...T>
-      concept ShallowSemantic = (DerivedFrom<T, A::ShallowSemantic> and ...);
+      concept ShallowSemantic = sizeof...(T) > 0
+          and (DerivedFrom<T, A::ShallowSemantic> and ...);
 
-      /// Checks if a type is a deep semantic                                 
+      /// Checks if all T are deep-semantic                                   
       template<class...T>
-      concept DeepSemantic = (DerivedFrom<T, A::DeepSemantic> and ...);
+      concept DeepSemantic = sizeof...(T) > 0
+          and (DerivedFrom<T, A::DeepSemantic> and ...);
 
-      /// Check if a type is a refer semantic                                 
+      /// Check if all T are refer-semantic                                   
       template<class...T>
-      concept Referred = (DerivedFrom<T, A::Referred> and ...);
+      concept Referred = sizeof...(T) > 0
+          and (DerivedFrom<T, A::Referred> and ...);
       
-      /// Check if a type is a shallow-copy semantic                          
+      /// Check if all T are copy-semantic                                    
       template<class...T>
-      concept Copied = (DerivedFrom<T, A::Copied> and ...);
+      concept Copied = sizeof...(T) > 0
+          and (DerivedFrom<T, A::Copied> and ...);
 
-      /// Check if a type is a shallow-move semantic                          
+      /// Check if all T are move-semantic                                    
       template<class...T>
-      concept Moved = (DerivedFrom<T, A::Moved> and ...);
+      concept Moved = sizeof...(T) > 0
+          and (DerivedFrom<T, A::Moved> and ...);
 
-      /// Check if a type is a shallow-abandon-move semantic                  
+      /// Check if all T are abandon-semantic                                 
       template<class...T>
-      concept Abandoned = (DerivedFrom<T, A::Abandoned> and ...);
+      concept Abandoned = sizeof...(T) > 0
+          and (DerivedFrom<T, A::Abandoned> and ...);
 
-      /// Check if a type is shallow-disowned-copy                            
+      /// Check if all T are disown-semantic                                  
       template<class...T>
-      concept Disowned = (DerivedFrom<T, A::Disowned> and ...);
+      concept Disowned = sizeof...(T) > 0
+          and (DerivedFrom<T, A::Disowned> and ...);
 
-      /// Check if a type is clone (deep-copy) semantic                       
+      /// Check if all T are clone-semantic                                   
       template<class...T>
-      concept Cloned = (DerivedFrom<T, A::Cloned> and ...);
+      concept Cloned = sizeof...(T) > 0
+          and (DerivedFrom<T, A::Cloned> and ...);
 
    } // namespace Langulus::CT
 
@@ -153,7 +163,7 @@ namespace Langulus
       LANGULUS(TYPED) T;
 
       Referred() = delete;
-      constexpr Referred(const Referred&) noexcept = default;
+      explicit constexpr Referred(const Referred&) noexcept = default;
       explicit constexpr Referred(Referred&&) noexcept = default;
 
       LANGULUS(INLINED)
@@ -197,12 +207,19 @@ namespace Langulus
             return &mValue;
       }
 
-      /// Implicitly collapse the semantic, when applying it to fundamentals  
+      /// Implicitly collapse the semantic                                    
       /// This way this wrapper is seamlessly integrated with the standard    
-      /// C++20 copy semantics (which are actually in fact refer semantics    
-      /// when you think a bit about it)                                      
+      /// C++20 copy semantics                                                
       LANGULUS(INLINED)
-      constexpr operator const T& () const noexcept {
+      constexpr operator const T& () const& noexcept {
+         return mValue;
+      }
+      LANGULUS(INLINED)
+      constexpr operator const T& () & noexcept {
+         return mValue;
+      }
+      LANGULUS(INLINED)
+      constexpr operator const T& () && noexcept {
          return mValue;
       }
    };
@@ -276,13 +293,10 @@ namespace Langulus
       }
 
       /// Implicitly collapse the semantic, when applying it to POD/Sparse,   
-      /// since Refer == Copy in those cases                                  
+      /// since Refer is isomorphic to Copy in those cases                    
       LANGULUS(INLINED)
-      constexpr operator const T& () const noexcept requires (
-         CT::Inner::POD<T> or CT::Sparse<T>
-         or ::std::is_trivially_copy_constructible_v<T>
-         or ::std::is_aggregate_v<T>
-      ) {
+      constexpr operator const T& () const noexcept
+      requires (CT::POD<T> or CT::Sparse<T>) {
          return mValue;
       }
 
@@ -375,7 +389,7 @@ namespace Langulus
             return &mValue;
       }
 
-      /// Implicitly collapse the semantic, when applying it to fundamentals  
+      /// Implicitly collapse the semantic                                    
       /// This way this wrapper is seamlessly integrated with the standard    
       /// C++20 move-semantics                                                
       LANGULUS(INLINED)
@@ -476,11 +490,11 @@ namespace Langulus
             return &mValue;
       }
 
-      /// Implicitly collapse the semantic, when applying it to fundamentals  
-      /// or aggregates. This way this wrapper is seamlessly integrated with  
-      /// the standard C++20 semantics, by imitating ordinary move semantic   
-      LANGULUS(INLINED) constexpr operator T&& () const noexcept
-      requires (not CT::Inner::Destroyable<T>) {
+      /// Implicitly collapse the semantic                                    
+      /// This way this wrapper is seamlessly integrated with the standard    
+      /// C++20 move-semantics                                                
+      LANGULUS(INLINED)
+      constexpr operator T&& () const noexcept {
          return ::std::forward<T>(mValue);
       }
 
@@ -566,9 +580,9 @@ namespace Langulus
       }
 
       /// Implicitly collapse the semantic, when applying it to PODs,         
-      /// since they never have ownership                                     
+      /// since they never have ownership either way                          
       LANGULUS(INLINED)
-      constexpr operator const T& () const noexcept requires CT::Inner::POD<T> {
+      constexpr operator const T& () const noexcept requires CT::POD<T> {
          return mValue;
       }
 
@@ -650,7 +664,7 @@ namespace Langulus
       /// Implicitly collapse the semantic, when applying it to PODs,         
       /// since they are always cloned upon copy                              
       LANGULUS(INLINED)
-      constexpr operator const T& () const noexcept requires CT::Inner::POD<T> {
+      constexpr operator const T& () const noexcept requires CT::POD<T> {
          return mValue;
       }
 
@@ -711,6 +725,134 @@ namespace Langulus
       const Anyness::Neat* operator -> () const noexcept { return &mValue; }
    };
 
+   
+   namespace CT
+   {
+
+      ///                                                                     
+      ///   Semantic type traits                                              
+      ///                                                                     
+      ///   These concepts are strict requirements, and are true only if the  
+      /// corresponding constructors/assigners are implicitly/explicitly      
+      /// defined. No fallbacks!                                              
+      ///                                                                     
+
+      /// Check if all T have semantic constructors for S                     
+      ///   @tparam S - the semantic                                          
+      ///   @tparam T... - the types                                          
+      template<template<class> class S, class...T>
+      concept HasSemanticConstructor = Complete<T...> and ((Semantic<S<T>>
+          and ::std::constructible_from<T, S<T>&&>) and ...);
+
+      /// Check if all TypeOf<S> have semantic constructors for S             
+      ///   @tparam S - the semantic and type                                 
+      template<class...S>
+      concept HasSemanticConstructorAlt = Complete<TypeOf<S>...> and ((Semantic<S>
+          and ::std::constructible_from<TypeOf<S>, S&&>) and ...);
+
+      /// Check if all T have a disown-constructor                            
+      /// Disowning does a shallow copy without referencing contents,         
+      /// generating a 'view' of the data that is without ownership.          
+      template<class...T>
+      concept HasDisownConstructor =
+         (HasSemanticConstructor<Langulus::Disowned, T> and ...);
+
+      /// Check if all Decay<T> have a clone-constructor                      
+      /// Does a deep copy                                                    
+      template<class...T>
+      concept HasCloneConstructor =
+         (HasSemanticConstructor<Langulus::Cloned, T> and ...);
+
+      /// Check if all T have a abandon-constructor                           
+      /// Does a move, but doesn't fully reset source (optimization)          
+      template<class...T>
+      concept HasAbandonConstructor =
+         (HasSemanticConstructor<Langulus::Abandoned, T> and ...);
+
+      /// Check if all T have a refer-constructor                             
+      /// Refering does a shallow copy while referencing contents, providing  
+      /// ownership.                                                          
+      /// T has refer-constructor as long as it is std::copy_constuctible     
+      template<class...T>
+      concept HasReferConstructor = Complete<T...>
+          and ((HasSemanticConstructor<Langulus::Referred, T>
+           or ::std::copy_constructible<T>) and ...);
+      
+      /// Check if all T have a copy-constructor (don't mistake it for a      
+      /// std::copy_constructible!)                                           
+      /// Does a shallow copy _of the contents_ (like shallow cloning).       
+      template<class...T>
+      concept HasCopyConstructor =
+         (HasSemanticConstructor<Langulus::Copied, T> and ...);
+
+      /// Check if all T have a move-constructor                              
+      /// Does a move, fully resetting source                                 
+      /// T has move-constructor as long as it is std::move_constuctible      
+      template<class...T>
+      concept HasMoveConstructor = Complete<T...>
+          and ((HasSemanticConstructor<Langulus::Moved, T>
+           or ::std::move_constructible<T>) and ...);
+
+
+      /// Check if all T have a semantic-assigner for S                       
+      ///   @tparam S - the semantic                                          
+      ///   @tparam T... - the types                                          
+      template<template<class> class S, class...T>
+      concept HasSemanticAssign = Complete<T...> and ((Semantic<S<T>>
+          and ::std::assignable_from<T&, S<T>&&>) and ...);
+
+      /// Check if all TypeOf<S> has semantic-assigner for S                  
+      ///   @tparam S - the semantic and type                                 
+      template<class...S>
+      concept HasSemanticAssignAlt = Complete<TypeOf<S>...> and ((Semantic<S>
+          and ::std::assignable_from<TypeOf<S>&, S&&>) and ...);
+
+      /// Check if all T have a disown-assigner                               
+      /// Disowning does a shallow copy without referencing contents,         
+      /// generating a 'view' of the data that is without ownership.          
+      template<class...T>
+      concept HasDisownAssign =
+         (HasSemanticAssign<Langulus::Disowned, T> and ...);
+
+      /// Check if all Decay<T> have a clone-assigner                         
+      /// Does a deep copy                                                    
+      template<class...T>
+      concept HasCloneAssign =
+         (HasSemanticAssign<Langulus::Cloned, T> and ...);
+
+      /// Check if all T have an abandon-assigner                             
+      /// Does a move, but doesn't fully reset source (optimization)          
+      template<class...T>
+      concept HasAbandonAssign =
+         (HasSemanticAssign<Langulus::Abandoned, T> and ...);
+
+      /// Check if all T have refer-assigner                                  
+      /// Refering does a shallow copy while referencing contents, providing  
+      /// ownership.                                                          
+      /// T has a refer-assigner as long as std::copy_assignable<T> holds     
+      template<class...T>
+      concept HasReferAssign = Complete<T...>
+          and ((HasSemanticAssign<Langulus::Referred, T>
+           or ::std::is_copy_assignable_v<T>) and ...);
+      
+      /// Check if all T have a copy-assigner (don't mistake it for a         
+      /// std::copy_assignable!)                                              
+      /// Does a shallow copy _of the contents_ (like shallow cloning).       
+      template<class...T>
+      concept HasCopyAssign =
+         (HasSemanticAssign<Langulus::Copied, T> and ...);
+
+      /// Check if all T have a move-assigner                                 
+      /// Does a move, fully resetting source                                 
+      /// T has a move-assigner as long as std::move_assignable<T> holds      
+      template<class...T>
+      concept HasMoveAssign = Complete<T...>
+          and ((HasSemanticAssign<Langulus::Moved, T>
+           or ::std::is_move_assignable_v<T>) and ...);
+
+   } // namespace Langulus::CT
+
+
 
    /// Create an instance of T at the provided memory, using placement new    
    ///   @attention assumes placement pointer is valid                        
@@ -726,7 +868,7 @@ namespace Langulus
       using SS = S<T>;
       LANGULUS_ASSUME(DevAssumes, placement, "Invalid placement pointer");
 
-      if constexpr (CT::Inner::Abstract<T>) {
+      if constexpr (CT::Abstract<T>) {
          // Can't instantiate abstract type                             
          if constexpr (FAKE)
             return Inner::Unsupported {};
@@ -743,8 +885,10 @@ namespace Langulus
       else if constexpr (SS::Move) {
          if constexpr (not SS::Keep) {
             // Abandon                                                  
-            if constexpr (requires { new T (Abandon(*value)); })
-               return new (placement) T (Abandon(*value));
+            if constexpr (CT::HasAbandonConstructor<T>)
+               return new (placement) T (Forward<SS>(value));
+            else if constexpr (CT::POD<T> and CT::HasMoveConstructor<T>)
+               return new (placement) T (Move(*value));
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
@@ -754,8 +898,8 @@ namespace Langulus
          }
          else {
             // Move                                                     
-            if constexpr (requires { new T (Move(*value)); })
-               return new (placement) T (Move(*value));
+            if constexpr (CT::HasMoveConstructor<T>)
+               return new (placement) T (Forward<SS>(value));
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
@@ -766,9 +910,11 @@ namespace Langulus
          // Clone                                                       
          using DT = Decay<T>;
 
-         if constexpr (not CT::Void<Decay<T>>) {
-            if constexpr (requires { new DT(Clone(DenseCast(*value))); })
+         if constexpr (not CT::Void<DT>) {
+            if constexpr (CT::HasCloneConstructor<DT>)
                return new (placement) DT(Clone(DenseCast(*value)));
+            else if constexpr (CT::POD<DT> and ::std::copy_constructible<DT>)
+               return new (placement) DT(DenseCast(*value));
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
@@ -781,8 +927,10 @@ namespace Langulus
       }
       else if constexpr (not SS::Keep) {
          // Disown                                                      
-         if constexpr (requires { new T (Disown(*value)); })
-            return new (placement) T (Disown(*value));
+         if constexpr (CT::HasDisownConstructor<T>)
+            return new (placement) T (Forward<SS>(value));
+         else if constexpr (CT::POD<T> and ::std::copy_constructible<T>)
+            return new (placement) T (*value);
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
@@ -790,8 +938,10 @@ namespace Langulus
       }
       else if constexpr (CT::Copied<SS>) {
          // Copy                                                        
-         if constexpr (requires { new T (Copy(*value)); })
-            return new (placement) T (Copy(*value));
+         if constexpr (CT::HasCopyConstructor<T>)
+            return new (placement) T (Forward<SS>(value));
+         else if constexpr (CT::POD<T> and ::std::copy_constructible<T>)
+            return new (placement) T (*value);
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
@@ -799,8 +949,8 @@ namespace Langulus
       }
       else if constexpr (CT::Referred<SS>) {
          // Refer                                                       
-         if constexpr (requires { new T (Refer(*value)); })
-            return new (placement) T (Refer(*value));
+         if constexpr (CT::HasReferConstructor<T>)
+            return new (placement) T (Forward<SS>(value));
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
@@ -830,8 +980,10 @@ namespace Langulus
       else if constexpr (SS::Move) {
          if constexpr (not SS::Keep) {
             // Abandon                                                  
-            if constexpr (requires(MT a) { a = Abandon(*rhs); })
-               return (lhs = Abandon(*rhs));
+            if constexpr (CT::HasAbandonAssign<T>)
+               return (lhs = Forward<SS>(rhs));
+            else if constexpr (CT::POD<T> and CT::HasMoveAssign<T>)
+               return (lhs = Move(*rhs));
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
@@ -841,8 +993,8 @@ namespace Langulus
          }
          else {
             // Move                                                     
-            if constexpr (requires(MT& a) { a = Move(*rhs); })
-               return (lhs = Move(*rhs));
+            if constexpr (CT::HasMoveAssign<T>)
+               return (lhs = Forward<SS>(rhs));
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
@@ -853,10 +1005,12 @@ namespace Langulus
          // Clone                                                       
          using DT = Decay<T>;
 
-         if constexpr (not CT::Void<Decay<T>>) {
+         if constexpr (not CT::Void<DT>) {
             if constexpr (CT::Mutable<decltype(DenseCast(lhs))>) {
-               if constexpr (requires(DT& a) { a = Clone(DenseCast(*rhs)); })
+               if constexpr (CT::HasCloneAssign<DT>)
                   return (DenseCast(lhs) = Clone(DenseCast(*rhs)));
+               else if constexpr (CT::POD<DT> and ::std::is_copy_assignable_v<DT>)
+                  return (DenseCast(lhs) = DenseCast(*rhs));
                else if constexpr (FAKE)
                   return Inner::Unsupported {};
                else
@@ -874,8 +1028,10 @@ namespace Langulus
       }
       else if constexpr (not SS::Keep) {
          // Disown                                                      
-         if constexpr (requires(MT& a) { a = Disown(*rhs); })
-            return (lhs = Disown(*rhs));
+         if constexpr (CT::HasDisownAssign<T>)
+            return (lhs = Forward<SS>(rhs));
+         else if constexpr (CT::POD<T> and ::std::is_copy_assignable_v<T>)
+            return (lhs = *rhs);
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
@@ -883,8 +1039,10 @@ namespace Langulus
       }
       else if constexpr (CT::Copied<SS>) {
          // Copy                                                        
-         if constexpr (requires(MT& a) { a = Copy(*rhs); })
-            return (lhs = Copy(*rhs));
+         if constexpr (CT::HasCopyAssign<T>)
+            return (lhs = Forward<SS>(rhs));
+         else if constexpr (CT::POD<T> and ::std::is_copy_assignable_v<T>)
+            return (lhs = *rhs);
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
@@ -892,8 +1050,8 @@ namespace Langulus
       }
       else if constexpr (CT::Referred<SS>) {
          // Refer                                                       
-         if constexpr (requires(MT& a) { a = Refer(*rhs); })
-            return (lhs = Refer(*rhs));
+         if constexpr (CT::HasReferAssign<T>)
+            return (lhs = Forward<SS>(rhs));
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
@@ -916,197 +1074,169 @@ namespace Langulus
    template<class T>
    using Desem = Conditional<CT::Semantic<T>, TypeOf<T>, T>;
 
-} // namespace Langulus
-
-namespace Langulus::CT
-{
-   
-   /// Check if T is constructible with each of the provided arguments        
-   ///   @attention that this differs from std::constructible_from, by        
-   ///      attempting each argument separately                               
-   ///   @attention this also includes aggregate type construction, so it     
-   ///      will return true if first member is constructible from first A    
-   template<class T, class...A>
-   concept MakableFrom = ((::std::constructible_from<T, A&&>) and ...);
-
-   /// Check if T is assignable with each of the provided arguments           
-   template<class T, class...A>
-   concept AssignableFrom = ((
-         requires (T t, A&& a) { t = Forward<A>(a); }
-      ) and ...);
-
-   namespace Inner
+   namespace CT
    {
+   
+      /// Check if T is constructible with each of the provided arguments     
+      ///   @attention that this differs from std::constructible_from, by     
+      ///      attempting each argument separately                            
+      ///   @attention this also includes aggregate type construction, so it  
+      ///      will return true if first member is constructible with each A  
+      template<class T, class...A>
+      concept MakableFrom = ((::std::constructible_from<T, A&&>) and ...);
 
-      /// Check if T is semantic-constructible by S                           
+      /// Check if T is assignable with each of the provided arguments        
+      template<class T, class...A>
+      concept AssignableFrom = ((
+            requires (T t, A&& a) { t = Forward<A>(a); }
+         ) and ...);
+
+
+      ///                                                                     
+      ///   Makables                                                          
+      ///                                                                     
+      ///   These concepts are bit looser on requirements, compared to their  
+      /// Has*Constructor counterparts, to allow for fallbacks in places where
+      /// they are required. A type may not explicitly HasAbandonConstructor, 
+      /// and yet be AbandonMakable, because it is still movable, for example.
+      ///                                                                     
+
+      /// Check if all T are semantic-makable by S                            
+      /// T can be semantic-makable even if not semantic-constructible,       
+      /// as long as T and S are compatible with standard C++20 semantics     
+      ///   @tparam S - the semantic                                          
+      ///   @tparam T... - the types                                          
       template<template<class> class S, class...T>
       concept SemanticMakable = Semantic<S<T>...> and (requires {
-             {SemanticNew<true>(nullptr, Fake<S<T>&&>())} -> Supported;
-          } and ...);
+            {SemanticNew<true>(nullptr, Fake<S<T>&&>())} -> Supported;
+         } and ...);
 
+      /// Check if all TypeOf<S> are semantic-makable by S                    
+      /// T can be semantic-makable even if not semantic-constructible,       
+      /// as long as T and S are compatible with standard C++20 semantics     
+      ///   @tparam S - the semantic and type                                 
       template<class...S>
       concept SemanticMakableAlt = Semantic<S...> and (requires {
-             {SemanticNew<true>(nullptr, Fake<S&&>())} -> Supported;
-          } and ...);
+            {SemanticNew<true>(nullptr, Fake<S&&>())} -> Supported;
+         } and ...);
 
-      /// Check if T is semantic-assignable                                   
-      template<template<class> class S, class...T>
-      concept SemanticAssignable = Semantic<S<T>...> and (requires {
-             {SemanticAssign<true>(Fake<T&>(), Fake<S<T>&&>())} -> Supported;
-          } and ...);
-
-      template<class...S>
-      concept SemanticAssignableAlt = Semantic<S...> and (requires {
-             {SemanticAssign<true>(Fake<TypeOf<S>&>(), Fake<S&&>())} -> Supported;
-          } and ...);
-
-
-      /// Check if T is disown-constructible                                  
+      /// Check if all T are disown-makable                                   
+      /// Disowning does a shallow copy without referencing contents,         
+      /// generating a 'view' of the data that is without ownership.          
+      /// If POD, T can be disown-makable even if not disown-constructible,   
+      /// as long as it is std::copy_constuctible                             
       template<class...T>
       concept DisownMakable = (SemanticMakable<Langulus::Disowned, T> and ...);
 
-      /// Check if T is clone-constructible                                   
+      /// Check if all Decay<T> are clone-makable                             
+      /// Does a deep copy                                                    
+      /// If POD, Decay<T> can be clone-makable even if not                   
+      /// clone-constructible, as long as it is std::copy_constuctible        
       template<class...T>
       concept CloneMakable = (SemanticMakable<Langulus::Cloned, T> and ...);
 
-      /// Check if T is abandon-constructible                                 
+      /// Check if all T are abandon-makable                                  
+      /// Does a move, but doesn't fully reset source (optimization)          
+      /// T can be abandon-makable even if not abandon-constructible,         
+      /// as long as it is std::move_constuctible                             
       template<class...T>
       concept AbandonMakable = (SemanticMakable<Langulus::Abandoned, T> and ...);
 
-      /// Check if T is refer-constructible                                   
+      /// Check if all T are refer-makable                                    
+      /// Refering does a shallow copy while referencing contents, providing  
+      /// ownership.                                                          
+      /// T can be refer-makable as long as it is std::copy_constuctible      
       template<class...T>
       concept ReferMakable = (SemanticMakable<Langulus::Referred, T> and ...);
       
-      /// Check if T is copy-constructible                                    
+      /// Check if all T are copy-makable                                     
+      /// Does a shallow copy _of the contents_ (like shallow cloning).       
+      /// If POD, T can be copy-makable even if not copy-constructible, as    
+      /// long as it is std::copy_constuctible                                
       template<class...T>
       concept CopyMakable = (SemanticMakable<Langulus::Copied, T> and ...);
 
-      /// Check if T is move-constructible                                    
+      /// Check if all T are move-makable                                     
+      /// Does a move, fully resetting source                                 
+      /// T is move-makable as long as it is std::move_constuctible           
       template<class...T>
       concept MoveMakable = (SemanticMakable<Langulus::Moved, T> and ...);
 
 
-      /// Check if T is disown-assignable if mutable                          
+      /// Check if all T are semantic-assignable by S                         
+      /// T can be semantic-assignable even if not having an explicit assigner
+      /// as long as T and S are compatible with C++20 semantics              
+      ///   @tparam S - the semantic                                          
+      ///   @tparam T... - the types                                          
+      template<template<class> class S, class...T>
+      concept SemanticAssignable = Semantic<S<T>...> and (requires {
+            {SemanticAssign<true>(Fake<T&>(), Fake<S<T>&&>())} -> Supported;
+         } and ...);
+
+      /// Check if all TypeOf<S> are semantic-assignable by S                 
+      /// T can be semantic-assignable even if not having an explicit assigner
+      /// as long as T and S are compatible with standard C++20 semantics     
+      ///   @tparam S - the semantic and type                                 
+      template<class...S>
+      concept SemanticAssignableAlt = Semantic<S...> and (requires {
+            {SemanticAssign<true>(Fake<TypeOf<S>&>(), Fake<S&&>())} -> Supported;
+         } and ...);
+
+      /// Check if all T are disown-assignable                                
+      /// Disowning does a shallow copy without referencing contents,         
+      /// generating a 'view' of the data that is without ownership.          
+      /// If POD, T can be disown-assignable even if not having an explicit   
+      /// disown-assignment, as long as std::copy_assignable<T> holds         
       template<class...T>
       concept DisownAssignable = (SemanticAssignable<Langulus::Disowned, T> and ...);
 
-      /// Check if T is clone-assignable if mutable                           
+      /// Check if all Decay<T> are clone-assignable                          
+      /// Does a deep copy                                                    
+      /// If POD, Decay<T> can be clone-assignable even if not having an      
+      /// explicit clone-assignment, as long as std::copy_assignable<T> holds 
       template<class...T>
       concept CloneAssignable = (SemanticAssignable<Langulus::Cloned, T> and ...);
 
-      /// Check if T is abandon-assignable if mutable                         
+      /// Check if all T are abandon-assignable                               
+      /// Does a move, but doesn't fully reset source (optimization)          
+      /// T can be abandon-assignable even if not having an explicit          
+      /// abandon-assignment, as long as std::move_assignable<T> holds        
       template<class...T>
       concept AbandonAssignable = (SemanticAssignable<Langulus::Abandoned, T> and ...);
 
-      /// Check if the T is refer-assignable                                  
+      /// Check if all T are refer-assignable                                 
+      /// Refering does a shallow copy while referencing contents, providing  
+      /// ownership.                                                          
+      /// T can be refer-assignable as long as std::copy_assignable<T> holds  
       template<class...T>
       concept ReferAssignable = (SemanticAssignable<Langulus::Referred, T> and ...);
       
-      /// Check if the T is copy-assignable                                   
+      /// Check if all T are copy-assignable                                  
+      /// Does a shallow copy _of the contents_ (like shallow cloning).       
+      /// If POD, T can be copy-assignable even if not having an explicit     
+      /// copy-assigner, as long as std::copy_assignable<T> holds             
       template<class...T>
       concept CopyAssignable = (SemanticAssignable<Langulus::Copied, T> and ...);
 
-      /// Check if the T is move-assignable                                   
+      /// Check if all T are move-assignable                                  
+      /// Does a move, fully resetting source                                 
+      /// T is move-assignable as long as std::move_assignable<T> holds       
       template<class...T>
       concept MoveAssignable = (SemanticAssignable<Langulus::Moved, T> and ...);
 
 
-      /// Check if the T is descriptor-constructible                          
+      /// Check if the T is descriptor-makable                                
       template<class...T>
       concept DescriptorMakable = not Abstract<T...> and not Enum<T...>
           and requires (const Anyness::Neat& a) { (T (Describe {a}), ...); };
 
-      /// Check if the T is noexcept-descriptor-constructible                 
+      /// Check if the T is noexcept-descriptor-makable                       
       template<class...T>
       concept DescriptorMakableNoexcept = DescriptorMakable<T...>
           and (noexcept ( T (Describe {Fake<const Anyness::Neat&>()})) and ...);
 
-   } // namespace Langulus::CT::Inner
+   } // namespace Langulus::CT
 
-
-   /// Check if origin T is semantic-constructible by semantic S              
-   template<template<class> class S, class...T>
-   concept SemanticMakable = Complete<Decay<T>...>
-       and Inner::SemanticMakable<S, Decay<T>...>;
-
-   template<class...S>
-   concept SemanticMakableAlt = Complete<Decay<TypeOf<S>>...>
-       and Inner::SemanticMakableAlt<S...>;
-
-   /// Check if origin T is semantic-assignable by semantic S                 
-   template<template<class> class S, class...T>
-   concept SemanticAssignable = Complete<Decay<T>...>
-       and Inner::SemanticAssignable<S, Decay<T>...>;
-
-   template<class...S>
-   concept SemanticAssignableAlt = Complete<Decay<TypeOf<S>>...>
-       and Inner::SemanticAssignableAlt<S...>;
-
-
-   /// Check if origin T is disown-constructible                              
-   template<class...T>
-   concept DisownMakable = SemanticMakable<Langulus::Disowned, T...>;
-
-   /// Check if origin T is clone-constructible                               
-   template<class...T>
-   concept CloneMakable = SemanticMakable<Langulus::Cloned, T...>;
-
-   /// Check if origin T is abandon-constructible                             
-   template<class...T>
-   concept AbandonMakable = SemanticMakable<Langulus::Abandoned, T...>;
-   
-   /// Check if origin T is refer-constructible                               
-   template<class...T>
-   concept ReferMakable = SemanticMakable<Langulus::Referred, T...>;
-      
-   /// Check if origin T is copy-constructible                                
-   template<class...T>
-   concept CopyMakable = SemanticMakable<Langulus::Copied, T...>;
-
-   /// Check if origin T is move-constructible                                
-   template<class...T>
-   concept MoveMakable = SemanticMakable<Langulus::Moved, T...>;
-
-
-   /// Check if origin T is disown-assignable if mutable                      
-   template<class...T>
-   concept DisownAssignable = SemanticAssignable<Langulus::Disowned, T...>;
-
-   /// Check if origin T is clone-assignable if mutable                       
-   template<class...T>
-   concept CloneAssignable = SemanticAssignable<Langulus::Cloned, T...>;
-
-   /// Check if origin T is abandon-assignable if mutable                     
-   template<class...T>
-   concept AbandonAssignable = SemanticAssignable<Langulus::Abandoned, T...>;
-
-   /// Check if origin T is refer-assignable                                  
-   template<class...T>
-   concept ReferAssignable = SemanticAssignable<Langulus::Referred, T...>;
-   
-   /// Check if origin T is copy-assignable                                   
-   template<class...T>
-   concept CopyAssignable = SemanticAssignable<Langulus::Copied, T...>;
-
-   /// Check if origin T is move-assignable                                   
-   template<class...T>
-   concept MoveAssignable = SemanticAssignable<Langulus::Moved, T...>;
-
-
-   /// Check if the origin T is descriptor-constructible                      
-   template<class...T>
-   concept DescriptorMakable = Complete<Decay<T>...>
-       and Inner::DescriptorMakable<Decay<T>...>;
-
-   /// Check if the origin T is noexcept-descriptor-constructible             
-   template<class...T>
-   concept DescriptorMakableNoexcept = Complete<Decay<T>...>
-       and Inner::DescriptorMakableNoexcept<Decay<T>...>;
-
-} // namespace Langulus::CT
-
-namespace Langulus
-{
 
    /// Downcasts a typed wrapper to the contained element, if cast operator   
    /// to TypeOf<T>& is available                                             

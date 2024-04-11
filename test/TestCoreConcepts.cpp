@@ -1,0 +1,84 @@
+///                                                                           
+/// Langulus::RTTI                                                            
+/// Copyright (c) 2012 Dimo Markov <team@langulus.com>                        
+/// Part of the Langulus framework, see https://langulus.com                  
+///                                                                           
+/// Distributed under GNU General Public License v3+                          
+/// See LICENSE file, or https://www.gnu.org/licenses                         
+///                                                                           
+#include "Common.hpp"
+
+
+//TODO IF_CONSTEXPR()
+//TODO ArgumentOf
+//TODO ReturnOf
+//TODO Deref
+//TODO Deptr
+//TODO Decvq
+//TODO Deext
+//TODO Decay
+
+//TODO CT::Complete
+//TODO CT::Same
+//TODO CT::Similar
+//TODO CT::Exact
+//TODO CT::SameAsOneOf
+//TODO CT::SimilarAsOneOf
+//TODO CT::ExactAsOneOf
+//TODO CT::Unsupported
+//TODO CT::Supported
+//TODO CT::Array
+//TODO CT::Function
+//TODO CT::Sparse
+//TODO CT::Dense
+//TODO CT::Constant
+//TODO CT::Volatile
+//TODO CT::Convoluted
+//TODO CT::Mutable
+//TODO CT::Signed
+//TODO CT::DenseSigned
+//TODO CT::SparseSigned
+//TODO CT::Unsigned
+//TODO CT::DenseUnsigned
+//TODO CT::SparseUnsigned
+//TODO CT::BuiltinBool
+//TODO CT::BuiltinCharacter
+//TODO CT::StringLiteral
+//TODO CT::StringPointer
+//TODO CT::String
+//TODO CT::StdContainer
+//TODO CT::StdContiguousContainer
+//TODO CT::BuiltinInteger
+//TODO CT::BuiltinSignedInteger
+//TODO CT::BuiltinUnsignedInteger
+//TODO CT::BuiltinReal
+//TODO CT::BuiltinNumber
+//TODO CT::DenseBuiltinNumber
+//TODO CT::SparseBuiltinNumber
+//TODO CT::Convertible
+//TODO CT::Sortable
+//TODO CT::Comparable
+//TODO CT::Enum
+//TODO CT::Fundamental
+//TODO CT::Arithmetic
+//TODO CT::Referencable
+//TODO CT::Swappable
+//TODO CT::SwappableNoexcept
+//TODO CT::DerivedFrom
+//TODO CT::Related
+//TODO CT::BinaryCompatible
+//TODO CT::VirtuallyDerivedFrom
+//TODO CT::Reference
+//TODO CT::Slab
+//TODO CT::Decayed
+//TODO CT::NotDecayed
+//TODO CT::Void
+//TODO CT::TypeErased
+//TODO CT::Data
+//TODO CT::DenseData
+//TODO CT::SparseData
+//TODO CT::DataReference
+//TODO CT::Nullptr
+//TODO CT::Conditional
+//TODO CT::ExtentOf
+//TODO CT::DecvqAll
