@@ -20,6 +20,7 @@ namespace Langulus
    /// operations on the byte. These operations counteract integer promotion, 
    /// the result is always truncated back down to a byte.                    
    ///                                                                        
+   #pragma pack(push, 1)
    struct Byte {
       using Type = ::std::uint8_t;
       LANGULUS(TYPED) Type;
@@ -196,20 +197,34 @@ namespace Langulus
          return mValue > rhs.mValue;
       }
    };
+   #pragma pack(pop)
 
    namespace CT
    {
 
+      /// Built-in byte concept                                               
+      template<class...T>
+      concept BuiltinByte = sizeof...(T) > 0 and ((
+            SimilarAsOneOf<Deref<T>, ::Langulus::Byte, ::std::byte>
+         ) and ...);
+
+      /// Custom byte concept (wrapped in another type)                       
+      template<class...T>
+      concept CustomByte = ((Typed<T> and
+            BuiltinByte<TypeOf<T>> and sizeof(T) == sizeof(TypeOf<T>)
+         ) and ...);
+
       /// Byte concept                                                        
       template<class...T>
-      concept Byte = sizeof...(T) > 0
-          and (Similar<::Langulus::Byte, Deref<T>> and ...);
+      concept Byte = ((BuiltinByte<T> or CustomByte<T>) and ...);
 
+      /// Any unsigned character, byte or integer, sized exactly 1 byte       
       template<class...T>
       concept UnsignedInteger8 = sizeof...(T) > 0
-          and (((CT::UnsignedInteger<T> or CT::Character<T> or CT::Byte<T>)
+          and (((UnsignedInteger<T> or Character<T> or Byte<T>)
           and sizeof(Decay<T>) == 1) and ...);
 
+      /// Any signed character, byte or integer, sized exactly 1 byte         
       template<class...T>
       concept Integer8 = sizeof...(T) > 0
           and ((SignedInteger8<T> or UnsignedInteger8<T>) and ...);
@@ -218,7 +233,8 @@ namespace Langulus
       concept IntegerX = sizeof...(T) > 0
           and ((Integer8<T> or Integer16<T> or Integer32<T> or Integer64<T>) and ...);
 
-   }
+   } // namespace Langulus::CT
+
    
    /// Wrapper for memcpy                                                     
    ///   @tparam TO - destination memory type (deducible)                     

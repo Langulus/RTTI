@@ -13,6 +13,7 @@
 #include "../../source/MetaTrait.inl"
 #include "../../source/MetaVerb.inl"
 #include "../../source/Tag.hpp"
+#include "../../source/Arithmetic.hpp"
 
 
 namespace Langulus
