@@ -1,6 +1,8 @@
 add_executable(LangulusRTTITest
 	Main.cpp
 	TestConverters.cpp
+	TestCoreConcepts.cpp
+	TestRTTIConcepts.cpp
 	TestCTTI.cpp
 	TestHashing.cpp
 	TestNameOf.cpp
