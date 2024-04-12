@@ -41,6 +41,12 @@ struct TypePair {
 /// An empty trivial type                                                     
 class ImplicitlyConstructible {};
 
+/// A simple aggregate type                                                   
+struct AggregateType {
+   int m1, m2, m3, m4;
+   bool m5;
+};
+
 /// Explicitly deleted destructor                                             
 class NonDestructible {
    ~NonDestructible() = delete;

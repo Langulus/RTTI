@@ -336,10 +336,11 @@ namespace Langulus::CT
       consteval bool IsPOD() noexcept {
          if constexpr (Complete<T>) {
             if constexpr (not Abstract<T>) {
-               if constexpr (Fundamental<T> or Sparse<T>)
-                  return true;
-               else if constexpr (Dense<T> and requires { T::CTTI_POD; })
+               if constexpr (Dense<T> and requires { T::CTTI_POD; })
                   return T::CTTI_POD;
+               if constexpr (Fundamental<T> or Sparse<T>
+               or (::std::is_trivial_v<T> and ::std::is_standard_layout_v<T>))
+                  return true;
                else
                   return false;
             }
@@ -355,10 +356,10 @@ namespace Langulus::CT
       consteval bool IsNullifiable() noexcept {
          if constexpr (Complete<T>) {
             if constexpr (not Abstract<T>) {
-               if constexpr (Fundamental<T> or Sparse<T>)
-                  return true;
-               else if constexpr (Dense<T> and requires { T::CTTI_Nullifiable; })
+               if constexpr (Dense<T> and requires { T::CTTI_Nullifiable; })
                   return T::CTTI_Nullifiable;
+               else if constexpr (Fundamental<T> or Sparse<T>)
+                  return true;
                else
                   return false;
             }
@@ -391,8 +392,10 @@ namespace Langulus::CT
 
    /// Check if T requires its destructor being called                        
    template<class...T>
-   concept Destroyable = ((not ::std::is_trivially_destructible_v<T>
-                           and ::std::is_destructible_v<T>) and ...);
+   concept Destroyable = Complete<T...> and ((
+          not ::std::is_trivially_destructible_v<T>
+          and ::std::is_destructible_v<T>
+      ) and ...);
 
    /// A POD (Plain Old Data) type is any type with a static member           
    /// T::CTTI_POD set to true. If no such member exists, the type is         

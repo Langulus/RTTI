@@ -190,6 +190,8 @@ public:
    );
 };
 
+/// Doesn't have implicit copy/move, so it is abandon-makable by explicit move
+/// but not abandon-assignable                                                
 class alignas(128) Complex {
 public:
    int member;
@@ -212,7 +214,13 @@ public:
       &Self::sparseMember
    );
 
-   Complex(int stuff) : member(stuff) {}
+   Complex(const Complex& s)
+      : member(s.member) {}
+   Complex(Complex&& s)
+      : member(s.member) {}
+   Complex(int stuff)
+      : member(stuff) {}
+
    ~Complex() {
       if (sparseMember)
          delete sparseMember;
@@ -236,6 +244,18 @@ struct CheckingWhatGetsInherited : ImplicitlyReflectedDataWithTraits {
 };
 
 class ContainsComplex {
+   Complex mData;
+};
+
+/// A complex aggregate type                                                  
+struct AggregateTypeComplex {
+   int m1, m2, m3, m4;
+   bool m5;
+   Complex mData;
+};
+
+class ForcefullyPod {
+   LANGULUS(POD) true;
    Complex mData;
 };
 
