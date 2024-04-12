@@ -489,11 +489,11 @@ namespace Langulus
    namespace CT
    {
 
-      /// Check if a type has an underlying type defined                      
+      /// Check if all T have underlying type defined                         
       template<class...T>
       concept Typed = Inner::Typed<Decay<T>...>;
 
-      /// Check if a type has no underlying type defined                      
+      /// Check if all T has no underlying types defined                      
       template<class...T>
       concept Untyped = ((not Typed<T>) and ...);
 
