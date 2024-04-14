@@ -43,16 +43,16 @@ namespace Langulus
 
       /// An abstract refer semantic                                          
       /// It doesn't copy anything but the container state, and references    
-      /// data. For pointers, the Referred semantic collapses to the Copy     
-      /// semantic                                                            
+      /// data. For pointers and PODs, Referred is isomorphic to Copied       
       struct Referred : ShallowSemantic {
          static constexpr bool Keep = true;
          static constexpr bool Move = false;
       };
       
       /// An abstract shallow-copy semantic                                   
-      /// A shallowc-copy is like a Clone semantic, but doesn't clone past    
-      /// indirection layers                                                  
+      /// A shallow-clone is like a Clone semantic, but doesn't clone past    
+      /// the first indirection layer. For pointers and PODs, Copied is       
+      /// isomorphic to Referred                                              
       struct Copied : ShallowSemantic {
          static constexpr bool Keep = true;
          static constexpr bool Move = false;
@@ -60,7 +60,7 @@ namespace Langulus
 
       /// An abstract move semantic                                           
       /// Moving transfers ownership, and ensures, that the source is reset   
-      /// and left in a safe, consistent state after the move                 
+      /// and left in a safe invariant state.                                 
       struct Moved : ShallowSemantic {
          static constexpr bool Keep = true;
          static constexpr bool Move = true;
@@ -68,8 +68,8 @@ namespace Langulus
 
       /// An abstract abandon-move semantic                                   
       /// Unlike the Move semantic, this doesn't guarantee, that the moved    
-      /// instance is in a consistent and safe state. Instead, it makes sure  
-      /// only that it is safely destructible, to save on some performance.   
+      /// instance is left in a consistent and safe state. Instead, it only   
+      /// makes sure, that it is safely destructible, saving some operations. 
       struct Abandoned : ShallowSemantic {
          static constexpr bool Keep = false;
          static constexpr bool Move = true;
@@ -77,14 +77,15 @@ namespace Langulus
 
       /// An abstract disowned-refer semantic                                 
       /// Similar to Refer semantic, but doesn't actually reference data,     
-      /// producing what's essentially a cheap view over the data (unsafe)    
+      /// producing what's essentially a cheap view over the data.            
       struct Disowned : ShallowSemantic {
          static constexpr bool Keep = false;
          static constexpr bool Move = false;
       };
 
       /// An abstract clone semantic (a.k.a. deep-copy semantic)              
-      /// Copies all elements across all indirection layers                   
+      /// Copies all elements across all indirection layers into newly        
+      /// allocated memory.                                                   
       struct Cloned : DeepSemantic {
          static constexpr bool Keep = true;
          static constexpr bool Move = false;
@@ -172,25 +173,49 @@ namespace Langulus
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
       }
       
-      /// Forward as refered                                                  
-      ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
+      /// Forward as referred                                                 
+      ///   @tparam ALT_T - optional type to forward as                       
+      ///   @return the desired new type with the same refer semantic applied 
       template<class ALT_T = T> LANGULUS(INLINED)
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>,
             "Can't nest semantics");
          static_assert(CT::Similar<T, ALT_T> or CT::DerivedFrom<T, ALT_T>,
             "Can't forward as this type");
-         return Referred<ALT_T> {mValue};
+
+         // Aggregates don't play well with custom semantics, so if     
+         // type is an aggregate, use the standard copy semantics       
+         if constexpr (CT::Aggregate<ALT_T>)
+            return static_cast<const ALT_T&>(mValue);
+         else
+            return Referred<ALT_T> {mValue};
       }
 
       /// Refer something else                                                
+      ///   @param value - the value to refer (can be semantic)               
+      ///   @return the referred value, disregarding previous semantic        
       LANGULUS(INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
          using ALT = Decvq<Deref<decltype(value)>>;
-         if constexpr (CT::Semantic<ALT>)
-            return Referred<TypeOf<ALT>> {*value};
-         else
-            return Referred<ALT> {value};
+
+         if constexpr (CT::Semantic<ALT>) {
+            using ALT_T = TypeOf<ALT>;
+
+            // Aggregates don't play well with custom semantics, so if  
+            // type is an aggregate, use the standard copy semantics    
+            if constexpr (CT::Aggregate<ALT_T>)
+               return *value;
+            else
+               return Referred<TypeOf<ALT>> {*value};
+         }
+         else {
+            // Aggregates don't play well with custom semantics, so if  
+            // type is an aggregate, use the standard copy semantics    
+            if constexpr (CT::Aggregate<ALT>)
+               return value;
+            else
+               return Referred<ALT> {value};
+         }
       }
 
       template<class ALT>
@@ -258,24 +283,48 @@ namespace Langulus
       }
       
       /// Forward as copied                                                   
-      ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
+      ///   @tparam ALT_T - optional type to forward as                       
+      ///   @return the desired new type with the same copy semantic applied  
       template<class ALT_T = T> LANGULUS(INLINED)
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>,
             "Can't nest semantics");
          static_assert(CT::Similar<T, ALT_T> or CT::DerivedFrom<T, ALT_T>,
             "Can't forward as this type");
-         return Copied<ALT_T> {mValue};
+
+         // Aggregates don't play well with custom semantics, so if     
+         // type is an aggregate, use the standard copy semantics       
+         if constexpr (CT::Aggregate<ALT_T>)
+            return static_cast<const ALT_T&>(mValue);
+         else
+            return Copied<ALT_T> {mValue};
       }
 
       /// Copy something else                                                 
+      ///   @param value - the value to copy (can be semantic)                
+      ///   @return the copied value, disregarding previous semantic          
       LANGULUS(INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
          using ALT = Decvq<Deref<decltype(value)>>;
-         if constexpr (CT::Semantic<ALT>)
-            return Copied<TypeOf<ALT>> {*value};
-         else
-            return Copied<ALT> {value};
+
+         if constexpr (CT::Semantic<ALT>) {
+            using ALT_T = TypeOf<ALT>;
+
+            // Aggregates don't play well with custom semantics, so if  
+            // type is an aggregate, use the standard copy semantics    
+            if constexpr (CT::Aggregate<ALT_T>)
+               return *value;
+            else
+               return Copied<TypeOf<ALT>> {*value};
+         }
+         else {
+            // Aggregates don't play well with custom semantics, so if  
+            // type is an aggregate, use the standard copy semantics    
+            if constexpr (CT::Aggregate<ALT>)
+               return value;
+            else
+               return Copied<ALT> {value};
+         }
       }
 
       template<class ALT>
@@ -348,27 +397,47 @@ namespace Langulus
       }
 
       /// Forward as moved                                                    
-      ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
+      ///   @tparam ALT_T - optional type to forward as                       
+      ///   @return the desired new type with the same move semantic applied  
       template<class ALT_T = T> LANGULUS(INLINED)
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>,
             "Can't nest semantics");
          static_assert(CT::Similar<T, ALT_T> or CT::DerivedFrom<T, ALT_T>,
             "Can't forward as this type");
-         return Moved<ALT_T> {::std::forward<ALT_T>(mValue)};
+         
+         // Aggregates don't play well with custom semantics, so if     
+         // type is an aggregate, use the standard move semantics       
+         if constexpr (CT::Aggregate<ALT_T>)
+            return ::std::forward<ALT_T>(mValue);
+         else
+            return Moved<ALT_T> {::std::forward<ALT_T>(mValue)};
       }
 
       /// Move something else                                                 
+      ///   @param value - the value to move (can be semantic)                
+      ///   @return the moved value, disregarding previous semantic           
       LANGULUS(INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
          using ALT = Decvq<Deref<decltype(value)>>;
+
          if constexpr (CT::Semantic<ALT>) {
-            return Moved<TypeOf<ALT>> {
-               ::std::forward<TypeOf<ALT>>(*value)};
+            using ALT_T = TypeOf<ALT>;
+
+            // Aggregates don't play well with custom semantics, so if  
+            // type is an aggregate, use the standard move semantics    
+            if constexpr (CT::Aggregate<ALT_T>)
+               return ::std::forward<ALT_T>(*value);
+            else
+               return Moved<ALT_T> {::std::forward<ALT_T>(*value)};
          }
          else {
-            return Moved<ALT> {
-               ::std::forward<ALT>(value)};
+            // Aggregates don't play well with custom semantics, so if  
+            // type is an aggregate, use the standard move semantics    
+            if constexpr (CT::Aggregate<ALT>)
+               return ::std::forward<ALT>(value);
+            else
+               return Moved<ALT> {::std::forward<ALT>(value)};
          }
       }
 
@@ -444,29 +513,49 @@ namespace Langulus
          : mValue {::std::forward<T>(value)} {
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
       }
-
-      /// Forward as abandoned, never collapse                                
-      ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
+      
+      /// Forward as abandoned                                                
+      ///   @tparam ALT_T - optional type to forward as                       
+      ///   @return the desired new type with the same move semantic applied  
       template<class ALT_T = T> LANGULUS(INLINED)
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>,
             "Can't nest semantics");
          static_assert(CT::Similar<T, ALT_T> or CT::DerivedFrom<T, ALT_T>,
             "Can't forward as this type");
-         return Abandoned<ALT_T> {::std::forward<ALT_T>(mValue)};
+         
+         // Aggregates don't play well with custom semantics, so if     
+         // type is an aggregate, use the standard move semantics       
+         if constexpr (CT::Aggregate<ALT_T>)
+            return ::std::forward<ALT_T>(mValue);
+         else
+            return Abandoned<ALT_T> {::std::forward<ALT_T>(mValue)};
       }
 
       /// Abandon something else                                              
+      ///   @param value - the value to abandon (can be semantic)             
+      ///   @return the abandoned value, disregarding previous semantic       
       LANGULUS(INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
          using ALT = Decvq<Deref<decltype(value)>>;
+
          if constexpr (CT::Semantic<ALT>) {
-            return Abandoned<TypeOf<ALT>> {
-               ::std::forward<TypeOf<ALT>>(*value)};
+            using ALT_T = TypeOf<ALT>;
+
+            // Aggregates don't play well with custom semantics, so if  
+            // type is an aggregate, use the standard move semantics    
+            if constexpr (CT::Aggregate<ALT_T>)
+               return ::std::forward<ALT_T>(*value);
+            else
+               return Abandoned<ALT_T> {::std::forward<ALT_T>(*value)};
          }
          else {
-            return Abandoned<ALT> {
-               ::std::forward<ALT>(value)};
+            // Aggregates don't play well with custom semantics, so if  
+            // type is an aggregate, use the standard move semantics    
+            if constexpr (CT::Aggregate<ALT>)
+               return ::std::forward<ALT>(value);
+            else
+               return Abandoned<ALT> {::std::forward<ALT>(value)};
          }
       }
 
@@ -538,25 +627,50 @@ namespace Langulus
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
       }
 
-      /// Forward as disowned, never collapse                                 
-      ///   @tparam ALT_T - optional type to static_cast to, when forwarding  
+      
+      /// Forward as disowned                                                 
+      ///   @tparam ALT_T - optional type to forward as                       
+      ///   @return the desired new type with the same disown semantic applied
       template<class ALT_T = T> LANGULUS(INLINED)
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>,
             "Can't nest semantics");
          static_assert(CT::Similar<T, ALT_T> or CT::DerivedFrom<T, ALT_T>,
             "Can't forward as this type");
-         return Disowned<ALT_T> {mValue};
+
+         // Aggregates don't play well with custom semantics, so if     
+         // type is an aggregate, use the standard copy semantics       
+         if constexpr (CT::Aggregate<ALT_T>)
+            return static_cast<const ALT_T&>(mValue);
+         else
+            return Disowned<ALT_T> {mValue};
       }
 
       /// Disown something else                                               
+      ///   @param value - the value to disown (can be semantic)              
+      ///   @return the disowned value, disregarding previous semantic        
       LANGULUS(INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
          using ALT = Decvq<Deref<decltype(value)>>;
-         if constexpr (CT::Semantic<ALT>)
-            return Disowned<TypeOf<ALT>> {*value};
-         else
-            return Disowned<ALT> {value};
+
+         if constexpr (CT::Semantic<ALT>) {
+            using ALT_T = TypeOf<ALT>;
+
+            // Aggregates don't play well with custom semantics, so if  
+            // type is an aggregate, use the standard copy semantics    
+            if constexpr (CT::Aggregate<ALT_T>)
+               return *value;
+            else
+               return Disowned<TypeOf<ALT>> {*value};
+         }
+         else {
+            // Aggregates don't play well with custom semantics, so if  
+            // type is an aggregate, use the standard copy semantics    
+            if constexpr (CT::Aggregate<ALT>)
+               return value;
+            else
+               return Disowned<ALT> {value};
+         }
       }
 
       template<class ALT>
@@ -795,13 +909,13 @@ namespace Langulus
       ///   @tparam T... - the types                                          
       template<template<class> class S, class...T>
       concept HasSemanticAssign = Complete<T...> and ((Semantic<S<T>>
-          and ::std::assignable_from<T&, S<T>&&>) and ...);
+          and ::std::assignable_from<T&, S<T>>) and ...);
 
       /// Check if all TypeOf<S> has semantic-assigner for S                  
       ///   @tparam S - the semantic and type                                 
       template<class...S>
       concept HasSemanticAssignAlt = Complete<TypeOf<S>...> and ((Semantic<S>
-          and ::std::assignable_from<TypeOf<S>&, S&&>) and ...);
+          and ::std::assignable_from<TypeOf<S>&, S>) and ...);
 
       /// Check if all T have a disown-assigner                               
       /// Disowning does a shallow copy without referencing contents,         
@@ -851,20 +965,35 @@ namespace Langulus
 
    } // namespace Langulus::CT
 
+   
+   /// Deduce the proper semantic type, based on whether T already has a      
+   /// specified semantic, or is an rvalue (&&) or not                        
+   /// If it is, then we use move semantics; if it isn't - we use refer       
+   /// semantics (which can fallback to copy semantics)                       
+   template<class T>
+   using SemanticOf = Conditional<CT::Semantic<T>, Decay<T>, 
+      Conditional<::std::is_rvalue_reference_v<T> and CT::Mutable<Deref<T>>,
+         Moved<Deref<T>>, Referred<Deref<T>>>>;
+
+   /// Remove the semantic from a type, or just return the type, if not       
+   /// wrapped inside a semantic                                              
+   template<class T>
+   using Desem = Conditional<CT::Semantic<T>, TypeOf<T>, T>;
 
 
    /// Create an instance of T at the provided memory, using placement new    
-   ///   @attention assumes placement pointer is valid                        
-   ///   @attention when S is a deep semantic, like Cloned, this function     
-   ///              assumes that the 'placement' pointer always points to a   
-   ///              dense place, where the dacayed T is cloned in             
+   /// Beware, this is very unsafe, make sure all assumptions are correct     
+   ///   @attention assumes placement pointer is valid and is of type T       
+   ///   @attention when S is a deep semantic like Cloned, this function      
+   ///              assumes that the 'placement' pointer always points to an  
+   ///              instance of type Decay<T>                                 
    ///   @param placement - where to place the new instance                   
-   ///   @param value - the constructor arguments and the semantic            
+   ///   @param value - the constructor argument (semantic or not)            
    ///   @return the instance on the heap                                     
-   template<bool FAKE = false, template<class> class S, CT::NotSemantic T>
-   requires CT::Semantic<S<T>> LANGULUS(INLINED)
-   constexpr auto SemanticNew(void* placement, S<T>&& value) {
-      using SS = S<T>;
+   template<bool FAKE = false> LANGULUS(INLINED)
+   constexpr auto SemanticNew(void* placement, auto&& value) {
+      using S = SemanticOf<decltype(value)>;
+      using T = TypeOf<S>;
       LANGULUS_ASSUME(DevAssumes, placement, "Invalid placement pointer");
 
       if constexpr (CT::Abstract<T>) {
@@ -881,11 +1010,11 @@ namespace Langulus
          else
             LANGULUS_ERROR("Can't SemanticNew at a reference");
       }
-      else if constexpr (SS::Move) {
-         if constexpr (not SS::Keep) {
+      else if constexpr (S::Move) {
+         if constexpr (not S::Keep) {
             // Abandon                                                  
             if constexpr (CT::HasAbandonConstructor<T>)
-               return new (placement) T (Forward<SS>(value));
+               return new (placement) T (S::Nest(value));
             else if constexpr (CT::POD<T>) {
                if constexpr (CT::HasMoveConstructor<T>)
                   return new (placement) T (Move(*value));
@@ -904,7 +1033,7 @@ namespace Langulus
          else {
             // Move                                                     
             if constexpr (CT::HasMoveConstructor<T>)
-               return new (placement) T (Forward<SS>(value));
+               return new (placement) T (S::Nest(value));
             else if constexpr (CT::POD<T>) {
                ::std::memmove(placement, &*value, sizeof(T));
                return static_cast<T*>(placement);
@@ -915,7 +1044,7 @@ namespace Langulus
                LANGULUS_ERROR("Can't move-construct type");
          }
       }
-      else if constexpr (not SS::Shallow) {
+      else if constexpr (not S::Shallow) {
          // Clone                                                       
          using DT = Decay<T>;
 
@@ -940,10 +1069,10 @@ namespace Langulus
          else
             LANGULUS_ERROR("Can't clone-construct a void type");
       }
-      else if constexpr (not SS::Keep) {
+      else if constexpr (not S::Keep) {
          // Disown                                                      
          if constexpr (CT::HasDisownConstructor<T>)
-            return new (placement) T (Forward<SS>(value));
+            return new (placement) T (S::Nest(value));
          else if constexpr (CT::POD<T>) {
             if constexpr (::std::copy_constructible<T>)
                return new (placement) T (*value);
@@ -957,10 +1086,10 @@ namespace Langulus
          else
             LANGULUS_ERROR("Can't disown-construct type");
       }
-      else if constexpr (CT::Copied<SS>) {
+      else if constexpr (CT::Copied<S>) {
          // Copy                                                        
          if constexpr (CT::HasCopyConstructor<T>)
-            return new (placement) T (Forward<SS>(value));
+            return new (placement) T (S::Nest(value));
          else if constexpr (CT::POD<T>) {
             if constexpr (::std::copy_constructible<T>)
                return new (placement) T (*value);
@@ -974,10 +1103,10 @@ namespace Langulus
          else
             LANGULUS_ERROR("Can't copy-construct type");
       }
-      else if constexpr (CT::Referred<SS>) {
+      else if constexpr (CT::Referred<S>) {
          // Refer                                                       
          if constexpr (CT::HasReferConstructor<T>)
-            return new (placement) T (Forward<SS>(value));
+            return new (placement) T (S::Nest(value));
          else if constexpr (CT::POD<T>) {
             ::std::memcpy(placement, &*value, sizeof(T));
             return static_cast<T*>(placement);
@@ -1130,20 +1259,6 @@ namespace Langulus
       }
       else LANGULUS_ERROR("Unsupported shallow semantic");
    }
-
-   /// Deduce the proper semantic type, based on whether T already has a      
-   /// specified semantic, or is an rvalue (&&) or not                        
-   /// If it is, then we use move semantics; if it isn't - we use refer       
-   /// semantics (which can fallback to copy semantics)                       
-   template<class T>
-   using SemanticOf = Conditional<CT::Semantic<T>, Decay<T>, 
-      Conditional<::std::is_rvalue_reference_v<T> and CT::Mutable<Deref<T>>,
-         Moved<Deref<T>>, Referred<Deref<T>>>>;
-
-   /// Remove the semantic from a type, or just return the type, if not       
-   /// wrapped inside a semantic                                              
-   template<class T>
-   using Desem = Conditional<CT::Semantic<T>, TypeOf<T>, T>;
 
    namespace CT
    {

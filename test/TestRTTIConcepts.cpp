@@ -26,18 +26,19 @@ TEMPLATE_TEST_CASE("Testing CT::Defaultable", "[semantics]",
    AggregateType,
    Complex*, ContainsComplex*
 ) {
-   static_assert(CT::Defaultable<TestType>);
-   static_assert(CT::Defaultable<TestType*>);
-   static_assert(CT::Defaultable<const TestType>);
-   static_assert(CT::Defaultable<const TestType*>);
+   using T = TestType;
+   static_assert(CT::Defaultable<T>);
+   static_assert(CT::Defaultable<T*>);
+   static_assert(CT::Defaultable<const T>);
+   static_assert(CT::Defaultable<const T*>);
 
-   auto meta1 = MetaData::Of<TestType>();
+   auto meta1 = MetaData::Of<T>();
    REQUIRE(meta1);
-   REQUIRE(meta1->mDefaultConstructor);
+   REQUIRE(bool(meta1->mDefaultConstructor) == CT::Defaultable<Decay<T>>);
 
-   auto meta2 = MetaData::Of<TestType*>();
+   auto meta2 = MetaData::Of<T*>();
    REQUIRE(meta2);
-   REQUIRE(meta2->mDefaultConstructor);
+   REQUIRE(bool(meta2->mDefaultConstructor) == CT::Defaultable<Decay<T>>);
 }
 
 TEMPLATE_TEST_CASE("Testing not CT::Defaultable", "[semantics]",
@@ -101,18 +102,19 @@ TEMPLATE_TEST_CASE("Testing not CT::Destroyable<T>", "[semantics]",
    bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte,
    Complex*, ContainsComplex*
 ) {
-   static_assert(not CT::Destroyable<TestType>);
-   static_assert(not CT::Destroyable<TestType*>);
+   using T = TestType;
+   static_assert(not CT::Destroyable<T>);
+   static_assert(not CT::Destroyable<T*>);
 
-   if constexpr (CT::Complete<TestType>) {
-      auto meta1 = MetaData::Of<TestType>();
+   if constexpr (CT::Complete<T>) {
+      auto meta1 = MetaData::Of<T>();
       REQUIRE(meta1);
-      REQUIRE_FALSE(meta1->mDestructor);
+      REQUIRE(bool(meta1->mDestructor) == CT::Destroyable<Decay<T>>);
    }
 
-   auto meta2 = MetaData::Of<TestType*>();
+   auto meta2 = MetaData::Of<T*>();
    REQUIRE(meta2);
-   REQUIRE_FALSE(meta2->mDestructor);
+   REQUIRE(bool(meta2->mDestructor) == CT::Destroyable<Decay<T>>);
 }
 
 
