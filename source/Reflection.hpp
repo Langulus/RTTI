@@ -339,7 +339,7 @@ namespace Langulus::CT
                if constexpr (Dense<T> and requires { T::CTTI_POD; })
                   return T::CTTI_POD;
                if constexpr (Fundamental<T> or Sparse<T>
-               or (::std::is_trivial_v<T> and ::std::is_standard_layout_v<T>))
+               or (::std::is_trivial_v<T> and ::std::is_standard_layout_v<T> and::std::is_destructible_v<T>))
                   return true;
                else
                   return false;

@@ -463,6 +463,11 @@ namespace Langulus
          return ::std::forward<T>(mValue);
       }
 
+      LANGULUS(INLINED)
+      constexpr operator T&& () noexcept {
+         return ::std::forward<T>(mValue);
+      }
+
       /// Used by DecayCast                                                   
       LANGULUS(INLINED)
       constexpr T& DecayCast() const noexcept {
@@ -849,16 +854,14 @@ namespace Langulus
       ///   @tparam S - the semantic                                          
       ///   @tparam T... - the types                                          
       template<template<class> class S, class...T>
-      concept HasSemanticConstructor = Complete<T...> and ((
-            Semantic<S<T>> and ::std::constructible_from<T, S<T>>
-         ) and ...);
+      concept HasSemanticConstructor = Complete<T...> and Semantic<S<T>...>
+          and requires (S<T>&&...a) { (T (Forward<S<T>>(a)), ...); };
 
       /// Check if all TypeOf<S> have semantic constructors for S             
       ///   @tparam S - the semantic and type                                 
       template<class...S>
-      concept HasSemanticConstructorAlt = Complete<TypeOf<S>...> and ((
-            Semantic<S> and ::std::constructible_from<TypeOf<S>, S>
-         ) and ...);
+      concept HasSemanticConstructorAlt = Complete<TypeOf<S>...> and Semantic<S...>
+          and requires (S&&...a) { (TypeOf<S> (Forward<S>(a)), ...); };
 
       /// Check if all T have a disown-constructor                            
       /// Disowning does a shallow copy without referencing contents,         
@@ -1019,7 +1022,7 @@ namespace Langulus
                if constexpr (CT::HasMoveConstructor<T>)
                   return new (placement) T (Move(*value));
                else {
-                  ::std::memmove(placement, &*value, sizeof(T));
+                  ::std::memmove(placement, (const void*) &*value, sizeof(T));
                   return static_cast<T*>(placement);
                }
             }
@@ -1035,7 +1038,7 @@ namespace Langulus
             if constexpr (CT::HasMoveConstructor<T>)
                return new (placement) T (S::Nest(value));
             else if constexpr (CT::POD<T>) {
-               ::std::memmove(placement, &*value, sizeof(T));
+               ::std::memmove(placement, (const void*) &*value, sizeof(T));
                return static_cast<T*>(placement);
             }
             else if constexpr (FAKE)
@@ -1055,7 +1058,7 @@ namespace Langulus
                if constexpr (::std::copy_constructible<DT>)
                   return new (placement) DT (DenseCast(*value));
                else {
-                  ::std::memcpy(placement, &*value, sizeof(DT));
+                  ::std::memcpy(placement, (const void*) &*value, sizeof(DT));
                   return static_cast<T*>(placement);
                }
             }
@@ -1077,7 +1080,7 @@ namespace Langulus
             if constexpr (::std::copy_constructible<T>)
                return new (placement) T (*value);
             else {
-               ::std::memcpy(placement, &*value, sizeof(T));
+               ::std::memcpy(placement, (const void*) &*value, sizeof(T));
                return static_cast<T*>(placement);
             }
          }
@@ -1094,7 +1097,7 @@ namespace Langulus
             if constexpr (::std::copy_constructible<T>)
                return new (placement) T (*value);
             else {
-               ::std::memcpy(placement, &*value, sizeof(T));
+               ::std::memcpy(placement, (const void*) &*value, sizeof(T));
                return static_cast<T*>(placement);
             }
          }
@@ -1108,7 +1111,7 @@ namespace Langulus
          if constexpr (CT::HasReferConstructor<T>)
             return new (placement) T (S::Nest(value));
          else if constexpr (CT::POD<T>) {
-            ::std::memcpy(placement, &*value, sizeof(T));
+            ::std::memcpy(placement, (const void*) &*value, sizeof(T));
             return static_cast<T*>(placement);
          }
          else if constexpr (FAKE)
@@ -1150,11 +1153,15 @@ namespace Langulus
             // Abandon                                                  
             if constexpr (CT::HasAbandonAssign<T>)
                return (lhs = Forward<SS>(rhs));
+            else if constexpr (CT::HasReferAssign<T> and CT::HasAbandonConstructor<T>)
+               // This is required because G++ doesn't detect implicit  
+               // abandon-assignment otherwise                          
+               return (lhs = Decvq<T> {Forward<SS>(rhs)});
             else if constexpr (CT::POD<T>) {
                if constexpr (CT::HasMoveAssign<T>)
                   return (lhs = Move(*rhs));
                else {
-                  ::std::memmove(&lhs, &*rhs, sizeof(T));
+                  ::std::memmove((void*) &lhs, (const void*) &*rhs, sizeof(T));
                   return (lhs);
                }
             }
@@ -1170,7 +1177,7 @@ namespace Langulus
             if constexpr (CT::HasMoveAssign<T>)
                return (lhs = Forward<SS>(rhs));
             else if constexpr (CT::POD<T>) {
-               ::std::memmove(&lhs, &*rhs, sizeof(T));
+               ::std::memmove((void*) &lhs, (const void*) &*rhs, sizeof(T));
                return (lhs);
             }
             else if constexpr (FAKE)
@@ -1191,7 +1198,7 @@ namespace Langulus
                   if constexpr (::std::is_copy_assignable_v<DT>)
                      return (DenseCast(lhs) = DenseCast(*rhs));
                   else {
-                     ::std::memcpy(&lhs, &*rhs, sizeof(DT));
+                     ::std::memcpy((void*) &lhs, (const void*) &*rhs, sizeof(DT));
                      return (lhs);
                   }
                }
@@ -1218,7 +1225,7 @@ namespace Langulus
             if constexpr (::std::is_copy_assignable_v<T>)
                return (lhs = *rhs);
             else {
-               ::std::memcpy(&lhs, &*rhs, sizeof(T));
+               ::std::memcpy((void*) &lhs, (const void*) &*rhs, sizeof(T));
                return (lhs);
             }
          }
@@ -1235,7 +1242,7 @@ namespace Langulus
             if constexpr (::std::is_copy_assignable_v<T>)
                return (lhs = *rhs);
             else {
-               ::std::memcpy(&lhs, &*rhs, sizeof(T));
+               ::std::memcpy((void*) &lhs, (const void*) &*rhs, sizeof(T));
                return (lhs);
             }
          }
@@ -1249,7 +1256,7 @@ namespace Langulus
          if constexpr (CT::HasReferAssign<T>)
             return (lhs = Forward<SS>(rhs));
          else if constexpr (CT::POD<T>) {
-            ::std::memcpy(&lhs, &*rhs, sizeof(T));
+            ::std::memcpy((void*) &lhs, (const void*) &*rhs, sizeof(T));
             return (lhs);
          }
          else if constexpr (FAKE)
