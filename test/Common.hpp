@@ -65,7 +65,11 @@ public:
 
 /// Default-constructible, but only privately                                 
 class PrivatelyConstructible {
+   LANGULUS(POD) false;
+private:
    PrivatelyConstructible() = default;
+   PrivatelyConstructible(const PrivatelyConstructible&) = default;
+   PrivatelyConstructible(PrivatelyConstructible&&) = default;
 };
 
 /// Had no explicit semantic constructors and assigners                       

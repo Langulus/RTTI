@@ -79,7 +79,6 @@ TEMPLATE_TEST_CASE("Testing refer-makable types", "[semantics]",
    AggregateType,
    ImplicitlyConstructible,
    Destructible,
-   PrivatelyConstructible,
    NonSemanticConstructible,
    AllSemanticConstructible,
    AllSemanticConstructibleAndAssignable,
@@ -109,7 +108,8 @@ TEMPLATE_TEST_CASE("Testing refer-makable types", "[semantics]",
 
 TEMPLATE_TEST_CASE("Testing non-refer-makable types", "[semantics]",
    IncompleteType,
-   NonDestructible
+   NonDestructible,
+   PrivatelyConstructible
 ) {
    using T = TestType;
    static_assert(not CT::ReferMakable<T>);
@@ -129,7 +129,6 @@ TEMPLATE_TEST_CASE("Testing refer-assignable types", "[semantics]",
    ImplicitlyConstructible,
    NonDestructible,
    Destructible,
-   PrivatelyConstructible,
    NonSemanticConstructible,
    AllSemanticConstructible,
    AllSemanticConstructibleAndAssignable,
@@ -169,7 +168,8 @@ TEMPLATE_TEST_CASE("Testing refer-assignable types", "[semantics]",
 TEMPLATE_TEST_CASE("Testing non-refer-assignable types", "[semantics]",
    IncompleteType,
    Complex,
-   ContainsComplex
+   ContainsComplex,
+   PrivatelyConstructible
 ) {
    using T = TestType;
    static_assert(not CT::ReferAssignable<T>);
@@ -198,7 +198,6 @@ TEMPLATE_TEST_CASE("Testing move-makable types", "[semantics]",
    AggregateType,
    ImplicitlyConstructible,
    Destructible,
-   PrivatelyConstructible,
    NonSemanticConstructible,
    AllSemanticConstructible,
    AllSemanticConstructibleAndAssignable,
@@ -229,7 +228,8 @@ TEMPLATE_TEST_CASE("Testing move-makable types", "[semantics]",
 
 TEMPLATE_TEST_CASE("Testing non-move-makable types", "[semantics]",
    IncompleteType,
-   NonDestructible
+   NonDestructible,
+   PrivatelyConstructible
 ) {
    using T = TestType;
    static_assert(not CT::MoveMakable<T>);
@@ -248,7 +248,6 @@ TEMPLATE_TEST_CASE("Testing move-assignable types", "[semantics]",
    AggregateType,
    ImplicitlyConstructible,
    Destructible,
-   PrivatelyConstructible,
    NonSemanticConstructible,
    AllSemanticConstructible,
    AllSemanticConstructibleAndAssignable,
@@ -289,7 +288,8 @@ TEMPLATE_TEST_CASE("Testing non-move-assignable types", "[semantics]",
    IncompleteType,
    NonDestructible,
    Complex,
-   ContainsComplex
+   ContainsComplex,
+   PrivatelyConstructible
 ) {
    using T = TestType;
    static_assert(not CT::MoveAssignable<T>);
@@ -686,7 +686,6 @@ TEMPLATE_TEST_CASE("Testing non-disown-assignable types", "[semantics]",
 TEMPLATE_TEST_CASE("Testing abandon-makable types", "[semantics]",
    ImplicitlyConstructible,
    Destructible,
-   PrivatelyConstructible,
    NonSemanticConstructible,
    AllSemanticConstructible,
    AllSemanticConstructibleAndAssignable,
@@ -718,7 +717,8 @@ TEMPLATE_TEST_CASE("Testing abandon-makable types", "[semantics]",
 
 TEMPLATE_TEST_CASE("Testing non-abandon-makable types", "[semantics]",
    IncompleteType,
-   NonDestructible
+   NonDestructible,
+   PrivatelyConstructible
 ) {
    using T = TestType;
    static_assert(not CT::AbandonMakable<T>);
@@ -736,7 +736,6 @@ TEMPLATE_TEST_CASE("Testing non-abandon-makable types", "[semantics]",
 TEMPLATE_TEST_CASE("Testing abandon-assignable types", "[semantics]",
    ImplicitlyConstructible,
    Destructible,
-   PrivatelyConstructible,
    NonSemanticConstructible,
    AllSemanticConstructible,
    AllSemanticConstructibleAndAssignable,
@@ -778,7 +777,8 @@ TEMPLATE_TEST_CASE("Testing non-abandon-assignable types", "[semantics]",
    IncompleteType,
    NonDestructible,
    Complex,
-   ContainsComplex
+   ContainsComplex,
+   PrivatelyConstructible
 ) {
    using T = TestType;
    static_assert(not CT::AbandonAssignable<T>);
