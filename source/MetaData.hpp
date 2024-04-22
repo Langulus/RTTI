@@ -330,7 +330,7 @@ namespace Langulus::RTTI
       // Minimal allocation, in bytes                                   
       Size mAllocationPage {};
       // Precomputed counts indexed by MSB (avoids division by stride)  
-      Size mAllocationTable[sizeof(Size) * 8] {};
+      Size mAllocationTable[sizeof(Size) * 8 + 1] {};
       // File extensions used by the origin type, separated by commas   
       Token mFileExtensions {};
       // Suffix for the origin type                                     

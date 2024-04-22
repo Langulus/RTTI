@@ -490,8 +490,8 @@ namespace Langulus
    /// Abandoned value intermediate type, can be used in constructors and     
    /// assignments to provide a guarantee, that the value shall not be used   
    /// after that function, so we can save up on resetting it fully           
-   /// For example, you can construct an Any with an abandoned Any, which is  
-   /// same as move-construction, but the abandoned Any shall have only its   
+   /// For example, you can construct an Many with an abandoned Many, which is
+   /// same as move-construction, but the abandoned Many shall have only its  
    /// mEntry reset, instead of the entire container                          
    ///   @tparam T - the type to abandon                                      
    template<class T>

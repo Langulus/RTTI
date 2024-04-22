@@ -153,6 +153,12 @@ namespace Langulus::RTTI
       constexpr bool operator == (const DMeta&) const noexcept;
       constexpr bool operator |  (const DMeta&) const noexcept;
       constexpr bool operator &  (const DMeta&) const noexcept;
+
+   private:
+      using AMeta::operator Langulus::RTTI::CMeta;
+      using AMeta::operator Langulus::RTTI::DMeta;
+      using AMeta::operator Langulus::RTTI::VMeta;
+      using AMeta::operator Langulus::RTTI::TMeta;
    };
 
          
@@ -171,6 +177,12 @@ namespace Langulus::RTTI
       const MetaVerb& operator *  () const noexcept;
 
       constexpr bool operator == (const VMeta&) const noexcept;
+
+   private:
+      using AMeta::operator Langulus::RTTI::CMeta;
+      using AMeta::operator Langulus::RTTI::DMeta;
+      using AMeta::operator Langulus::RTTI::VMeta;
+      using AMeta::operator Langulus::RTTI::TMeta;
    };
       
 
@@ -189,6 +201,12 @@ namespace Langulus::RTTI
       const MetaTrait& operator *  () const noexcept;
 
       constexpr bool operator == (const TMeta&) const noexcept;
+
+   private:
+      using AMeta::operator Langulus::RTTI::CMeta;
+      using AMeta::operator Langulus::RTTI::DMeta;
+      using AMeta::operator Langulus::RTTI::VMeta;
+      using AMeta::operator Langulus::RTTI::TMeta;
    };
 
 
@@ -207,6 +225,12 @@ namespace Langulus::RTTI
       const MetaConst& operator *  () const noexcept;
 
       constexpr bool operator == (const CMeta&) const noexcept;
+
+   private:
+      using AMeta::operator Langulus::RTTI::CMeta;
+      using AMeta::operator Langulus::RTTI::DMeta;
+      using AMeta::operator Langulus::RTTI::VMeta;
+      using AMeta::operator Langulus::RTTI::TMeta;
    };
 
 } // namespace Langulus::RTTI
