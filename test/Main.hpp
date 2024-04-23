@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <vector>
 
+
 namespace Langulus::Flow
 {
    struct Verb {};
@@ -23,8 +24,10 @@ namespace Langulus::Flow
 
 namespace Langulus::Anyness
 {
+   template<class TYPE>
    struct Block {};
-   class Trait : public Block {};
+
+   class Trait : public Block<> {};
 }
 
 namespace Langulus::Traits
@@ -112,11 +115,11 @@ namespace Verbs
       template<CT::Data T>
       static bool ExecuteIn(T&, Verb&);
 
-      static bool ExecuteDefault(const Anyness::Block&, Verb&) {
+      static bool ExecuteDefault(const Anyness::Block<>&, Verb&) {
          return true;
       }
 
-      static bool ExecuteDefault(Anyness::Block&, Verb&) {
+      static bool ExecuteDefault(Anyness::Block<>&, Verb&) {
          return false;
       }
 
