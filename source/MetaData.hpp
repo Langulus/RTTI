@@ -61,7 +61,7 @@ namespace Langulus::RTTI
 
    /// The class type function, wrapped in a lambda expression                
    /// Returns the typed memory block of the class instance                   
-   using FResolve = Anyness::Block(*)(const void*);
+   using FResolve = Anyness::Block<>(*)(const void*);
 
    /// The hash getter, wrapped in a lambda expression                        
    /// Takes the pointer to the instance for hashing                          

@@ -338,8 +338,10 @@ namespace Langulus::CT
             if constexpr (not Abstract<T>) {
                if constexpr (Dense<T> and requires { T::CTTI_POD; })
                   return T::CTTI_POD;
-               if constexpr (Fundamental<T> or Sparse<T>
-               or (::std::is_trivial_v<T> and ::std::is_standard_layout_v<T> and::std::is_destructible_v<T>))
+               if constexpr (Fundamental<T> or Sparse<T> or (
+               ::std::is_trivial_v<T> and
+               ::std::is_standard_layout_v<T> and
+               ::std::is_destructible_v<T>))
                   return true;
                else
                   return false;
@@ -374,8 +376,8 @@ namespace Langulus::CT
    /// Check if the origin T is resolvable at runtime                         
    template<class...T>
    concept Resolvable = Complete<T...> and requires (T&...a) {
-         { (a.GetType(), ...) }  -> Exact<RTTI::DMeta>;
-         { (a.GetBlock(), ...) } -> Exact<Anyness::Block>;
+         { (a.GetType(),  ...) } -> Exact<RTTI::DMeta>;
+         { (a.GetBlock(), ...) } -> DerivedFrom<A::Block>;
       };
 
    /// Check if T is default-constructible                                    

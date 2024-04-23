@@ -15,8 +15,8 @@ namespace Langulus::RTTI
 {
 
    /// The default verb execution functor                                     
-   using FDefaultVerbMutable  = bool (*)(Anyness::Block&, Flow::Verb&);
-   using FDefaultVerbConstant = bool (*)(const Anyness::Block&, Flow::Verb&);
+   using FDefaultVerbMutable  = bool (*)(Anyness::Block<>&, Flow::Verb&);
+   using FDefaultVerbConstant = bool (*)(const Anyness::Block<>&, Flow::Verb&);
    using FStatelessVerb = bool (*)(Flow::Verb&);
    using AbleList = ::std::unordered_set<DMeta>;
 
