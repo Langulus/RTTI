@@ -294,14 +294,21 @@ namespace Langulus::CT
 
    namespace Inner
    {
-      
-      /// Check if all T are typed, having either CTTI_InnerType or value_type
-      /// as member type declarations                                         
-      template<class...T>
-      concept Typed = Complete<T...> and ((requires {
-            typename T::CTTI_InnerType;
-            not TypeErased<typename T::CTTI_InnerType>;
-         } or requires {typename T::value_type;}) and ...);
+
+      /// Check if T is typed, having either CTTI_InnerType or value_type as  
+      /// member type declarations                                            
+      ///   @attention the inner type must not be 'void', in order for T to   
+      ///      be considered 'typed', as in not 'type-erased'                 
+      template<class T>
+      consteval bool IsTyped() {
+         if constexpr (not Complete<T>)
+            return false;
+         else if constexpr (requires { typename Deref<T>::CTTI_InnerType; })
+            return Data<typename Deref<T>::CTTI_InnerType>;
+         else if constexpr (requires { typename Deref<T>::value_type; })
+            return Data<typename Deref<T>::value_type>;
+         return false;
+      }
 
       /// Convenience function that wraps std::underlying_type_t for enums,   
       /// as well as any array, or anything with CTTI_InnerType that isn't    
@@ -311,12 +318,12 @@ namespace Langulus::CT
       ///   - if T is an enum, return pointer of the underlying type          
       ///   - otherwise just return a decayed T pointer                       
       template<class T>
-      consteval auto GetUnderlyingType() noexcept {
+      consteval auto GetUnderlyingType() {
          if constexpr (Array<T>)
             return (Deref<Deext<T>>*) nullptr;
          else {
             using DT = Decay<T>;
-            if constexpr (Typed<DT>) {
+            if constexpr (IsTyped<DT>()) {
                if constexpr (requires {typename DT::CTTI_InnerType; })
                   return (Deref<typename DT::CTTI_InnerType>*) nullptr;
                else
@@ -333,7 +340,7 @@ namespace Langulus::CT
       ///   @tparam T - the type to check                                     
       ///   @return true if T is a POD type                                   
       template<class T>
-      consteval bool IsPOD() noexcept {
+      consteval bool IsPOD() {
          if constexpr (Complete<T>) {
             if constexpr (not Abstract<T>) {
                if constexpr (Dense<T> and requires { T::CTTI_POD; })
@@ -355,7 +362,7 @@ namespace Langulus::CT
       ///   @tparam T - the type to check                                     
       ///   @return true if T is nullifiable                                  
       template<class T>
-      consteval bool IsNullifiable() noexcept {
+      consteval bool IsNullifiable() {
          if constexpr (Complete<T>) {
             if constexpr (not Abstract<T>) {
                if constexpr (Dense<T> and requires { T::CTTI_Nullifiable; })
@@ -496,7 +503,7 @@ namespace Langulus
 
       /// Check if all T have underlying type defined                         
       template<class...T>
-      concept Typed = Inner::Typed<Decay<T>...>;
+      concept Typed = (Inner::IsTyped<T>() and ...);
 
       /// Check if all T has no underlying types defined                      
       template<class...T>

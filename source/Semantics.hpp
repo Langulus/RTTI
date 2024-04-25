@@ -1300,7 +1300,8 @@ namespace Langulus
       ///   @tparam S - the semantic                                          
       ///   @tparam T... - the types                                          
       template<template<class> class S, class...T>
-      concept SemanticMakable = Semantic<S<T>...> and (requires {
+      concept SemanticMakable = Data<T...> and Semantic<S<T>...> and (
+         requires {
             {SemanticNew<true>(nullptr, Fake<S<T>&&>())} -> Supported;
          } and ...);
 
@@ -1362,7 +1363,8 @@ namespace Langulus
       ///   @tparam S - the semantic                                          
       ///   @tparam T... - the types                                          
       template<template<class> class S, class...T>
-      concept SemanticAssignable = Semantic<S<T>...> and (requires {
+      concept SemanticAssignable = Data<T...> and Semantic<S<T>...> and (
+         requires {
             {SemanticAssign<true>(Fake<T&>(), Fake<S<T>&&>())} -> Supported;
          } and ...);
 
