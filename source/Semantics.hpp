@@ -167,7 +167,7 @@ namespace Langulus
       explicit constexpr Referred(const Referred&) noexcept = default;
       explicit constexpr Referred(Referred&&) noexcept = default;
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       explicit constexpr Referred(const T& value) noexcept
          : mValue {value} {
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
@@ -176,7 +176,7 @@ namespace Langulus
       /// Forward as referred                                                 
       ///   @tparam ALT_T - optional type to forward as                       
       ///   @return the desired new type with the same refer semantic applied 
-      template<class ALT_T = T> LANGULUS(INLINED)
+      template<class ALT_T = T> LANGULUS(ALWAYS_INLINED)
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>,
             "Can't nest semantics");
@@ -194,7 +194,7 @@ namespace Langulus
       /// Refer something else                                                
       ///   @param value - the value to refer (can be semantic)               
       ///   @return the referred value, disregarding previous semantic        
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
          using ALT = Decvq<Deref<decltype(value)>>;
 
@@ -221,10 +221,10 @@ namespace Langulus
       template<class ALT>
       using As = Conditional<CT::Semantic<ALT>, Referred<TypeOf<ALT>>, Referred<ALT>>;
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       const T& operator * () const noexcept { return mValue; }
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       auto operator -> () const noexcept {
          if constexpr (CT::Sparse<T>)
             return mValue;
@@ -235,22 +235,22 @@ namespace Langulus
       /// Implicitly collapse the semantic                                    
       /// This way this wrapper is seamlessly integrated with the standard    
       /// C++20 copy semantics                                                
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       constexpr operator const T& () const& noexcept {
          return mValue;
       }
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       constexpr operator const T& () & noexcept {
          return mValue;
       }
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       constexpr operator const T& () && noexcept {
          return mValue;
       }
    };
    
    /// Refer a value                                                          
-   NOD() LANGULUS(INLINED) 
+   NOD() LANGULUS(ALWAYS_INLINED)
    constexpr auto Refer(auto&& value) noexcept {
       using ALT = Decvq<Deref<decltype(value)>>;
       if constexpr (CT::Semantic<ALT>)
@@ -276,7 +276,7 @@ namespace Langulus
       constexpr Copied(const Copied&) noexcept = default;
       explicit constexpr Copied(Copied&&) noexcept = default;
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       explicit constexpr Copied(const T& value) noexcept
          : mValue {value} {
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
@@ -285,7 +285,7 @@ namespace Langulus
       /// Forward as copied                                                   
       ///   @tparam ALT_T - optional type to forward as                       
       ///   @return the desired new type with the same copy semantic applied  
-      template<class ALT_T = T> LANGULUS(INLINED)
+      template<class ALT_T = T> LANGULUS(ALWAYS_INLINED)
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>,
             "Can't nest semantics");
@@ -303,7 +303,7 @@ namespace Langulus
       /// Copy something else                                                 
       ///   @param value - the value to copy (can be semantic)                
       ///   @return the copied value, disregarding previous semantic          
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
          using ALT = Decvq<Deref<decltype(value)>>;
 
@@ -330,10 +330,10 @@ namespace Langulus
       template<class ALT>
       using As = Conditional<CT::Semantic<ALT>, Copied<TypeOf<ALT>>, Copied<ALT>>;
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       const T& operator * () const noexcept { return mValue; }
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       auto operator -> () const noexcept {
          if constexpr (CT::Sparse<T>)
             return mValue;
@@ -343,21 +343,21 @@ namespace Langulus
 
       /// Implicitly collapse the semantic, when applying it to POD/Sparse,   
       /// since Refer is isomorphic to Copy in those cases                    
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       constexpr operator const T& () const noexcept
       requires (CT::POD<T> or CT::Sparse<T>) {
          return mValue;
       }
 
       /// Used by DecayCast                                                   
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       constexpr const T& DecayCast() const noexcept {
          return mValue;
       }
    };
    
    /// Copy a value                                                           
-   NOD() LANGULUS(INLINED) 
+   NOD() LANGULUS(ALWAYS_INLINED)
    constexpr auto Copy(auto&& value) noexcept {
       using ALT = Decvq<Deref<decltype(value)>>;
       if constexpr (CT::Semantic<ALT>)
@@ -384,22 +384,24 @@ namespace Langulus
          : mValue {::std::forward<T>(r.mValue)} {}
       explicit constexpr Moved(Moved&&) noexcept = default;
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       explicit constexpr Moved(T& value) noexcept
          : mValue {::std::move(value)} {
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
+         //static_assert(CT::Mutable<T>, "T must be mutable, in order to be moved");
       }
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       explicit constexpr Moved(T&& value) noexcept
          : mValue {::std::forward<T>(value)} {
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
+         //static_assert(CT::Mutable<T>, "T must be mutable, in order to be moved");
       }
 
       /// Forward as moved                                                    
       ///   @tparam ALT_T - optional type to forward as                       
       ///   @return the desired new type with the same move semantic applied  
-      template<class ALT_T = T> LANGULUS(INLINED)
+      template<class ALT_T = T> LANGULUS(ALWAYS_INLINED)
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>,
             "Can't nest semantics");
@@ -417,7 +419,7 @@ namespace Langulus
       /// Move something else                                                 
       ///   @param value - the value to move (can be semantic)                
       ///   @return the moved value, disregarding previous semantic           
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
          using ALT = Decvq<Deref<decltype(value)>>;
 
@@ -444,10 +446,10 @@ namespace Langulus
       template<class ALT>
       using As = Conditional<CT::Semantic<ALT>, Moved<TypeOf<ALT>>, Moved<ALT>>;
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       T& operator * () const noexcept { return mValue; }
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       auto operator -> () const noexcept {
          if constexpr (CT::Sparse<T>)
             return mValue;
@@ -458,25 +460,25 @@ namespace Langulus
       /// Implicitly collapse the semantic                                    
       /// This way this wrapper is seamlessly integrated with the standard    
       /// C++20 move-semantics                                                
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       constexpr operator T&& () const noexcept {
          return ::std::forward<T>(mValue);
       }
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       constexpr operator T&& () noexcept {
          return ::std::forward<T>(mValue);
       }
 
       /// Used by DecayCast                                                   
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       constexpr T& DecayCast() const noexcept {
          return mValue;
       }
    };
    
    /// Move a value                                                           
-   NOD() LANGULUS(INLINED)
+   NOD() LANGULUS(ALWAYS_INLINED)
    constexpr auto Move(auto&& value) noexcept {
       using ALT = Decvq<Deref<decltype(value)>>;
       if constexpr (CT::Semantic<ALT>)
@@ -507,22 +509,24 @@ namespace Langulus
          : mValue {::std::forward<T>(r.mValue)} {}
       explicit constexpr Abandoned(Abandoned&&) noexcept = default;
       
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       explicit constexpr Abandoned(T& value) noexcept
          : mValue {::std::move(value)} {
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
+         //static_assert(CT::Mutable<T>, "T must be mutable, in order to be abandoned");
       }
       
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       explicit constexpr Abandoned(T&& value) noexcept
          : mValue {::std::forward<T>(value)} {
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
+         //static_assert(CT::Mutable<T>, "T must be mutable, in order to be abandoned");
       }
       
       /// Forward as abandoned                                                
       ///   @tparam ALT_T - optional type to forward as                       
       ///   @return the desired new type with the same move semantic applied  
-      template<class ALT_T = T> LANGULUS(INLINED)
+      template<class ALT_T = T> LANGULUS(ALWAYS_INLINED)
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>,
             "Can't nest semantics");
@@ -540,7 +544,7 @@ namespace Langulus
       /// Abandon something else                                              
       ///   @param value - the value to abandon (can be semantic)             
       ///   @return the abandoned value, disregarding previous semantic       
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
          using ALT = Decvq<Deref<decltype(value)>>;
 
@@ -567,10 +571,10 @@ namespace Langulus
       template<class ALT>
       using As = Conditional<CT::Semantic<ALT>, Abandoned<TypeOf<ALT>>, Abandoned<ALT>>;
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       T& operator * () const noexcept { return mValue; }
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       auto operator -> () const noexcept {
          if constexpr (CT::Sparse<T>)
             return mValue;
@@ -581,13 +585,13 @@ namespace Langulus
       /// Implicitly collapse the semantic                                    
       /// This way this wrapper is seamlessly integrated with the standard    
       /// C++20 move-semantics                                                
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       constexpr operator T&& () const noexcept {
          return ::std::forward<T>(mValue);
       }
 
       /// Used by DecayCast                                                   
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       constexpr T& DecayCast() const noexcept {
          return mValue;
       }
@@ -596,7 +600,7 @@ namespace Langulus
    /// Abandon a value                                                        
    /// Same as Move, but resets only mandatory data inside source after move  
    /// essentially saving up on a couple of instructions                      
-   NOD() LANGULUS(INLINED)
+   NOD() LANGULUS(ALWAYS_INLINED)
    constexpr auto Abandon(auto&& value) noexcept {
       using ALT = Decvq<Deref<decltype(value)>>;
       if constexpr (CT::Semantic<ALT>) {
@@ -626,7 +630,7 @@ namespace Langulus
       constexpr Disowned(const Disowned&) noexcept = default;
       explicit constexpr Disowned(Disowned&&) noexcept = default;
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       explicit constexpr Disowned(const T& value) noexcept
          : mValue {value} {
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
@@ -636,7 +640,7 @@ namespace Langulus
       /// Forward as disowned                                                 
       ///   @tparam ALT_T - optional type to forward as                       
       ///   @return the desired new type with the same disown semantic applied
-      template<class ALT_T = T> LANGULUS(INLINED)
+      template<class ALT_T = T> LANGULUS(ALWAYS_INLINED)
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>,
             "Can't nest semantics");
@@ -654,7 +658,7 @@ namespace Langulus
       /// Disown something else                                               
       ///   @param value - the value to disown (can be semantic)              
       ///   @return the disowned value, disregarding previous semantic        
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
          using ALT = Decvq<Deref<decltype(value)>>;
 
@@ -681,10 +685,10 @@ namespace Langulus
       template<class ALT>
       using As = Conditional<CT::Semantic<ALT>, Disowned<TypeOf<ALT>>, Disowned<ALT>>;
       
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       const T& operator * () const noexcept { return mValue; }
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       auto operator -> () const noexcept {
          if constexpr (CT::Sparse<T>)
             return mValue;
@@ -694,13 +698,13 @@ namespace Langulus
 
       /// Implicitly collapse the semantic, when applying it to PODs,         
       /// since they never have ownership either way                          
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       constexpr operator const T& () const noexcept requires CT::POD<T> {
          return mValue;
       }
 
       /// Used by DecayCast                                                   
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       constexpr const T& DecayCast() const noexcept {
          return mValue;
       }
@@ -708,7 +712,7 @@ namespace Langulus
    
    /// Disown a value                                                         
    /// Same as a shallow-copy, but never references, saving some instructions 
-   NOD() LANGULUS(INLINED)
+   NOD() LANGULUS(ALWAYS_INLINED)
    constexpr auto Disown(auto&& value) noexcept {
       using ALT = Decvq<Deref<decltype(value)>>;
       if constexpr (CT::Semantic<ALT>)
@@ -734,14 +738,14 @@ namespace Langulus
       constexpr Cloned(const Cloned&) noexcept = default;
       explicit constexpr Cloned(Cloned&&) noexcept = default;
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       explicit constexpr Cloned(const T& value) noexcept
          : mValue {value} {
          static_assert(CT::NotSemantic<T>, "Can't nest semantics");
       }
 
       /// Forward as cloned, bever collapse                                   
-      template<class ALT_T = T> LANGULUS(INLINED)
+      template<class ALT_T = T> LANGULUS(ALWAYS_INLINED)
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NotSemantic<ALT_T>,
             "Can't nest semantics");
@@ -751,7 +755,7 @@ namespace Langulus
       }
 
       /// Clone something else                                                
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
          using ALT = Decvq<Deref<decltype(value)>>;
          if constexpr (CT::Semantic<ALT>)
@@ -763,10 +767,10 @@ namespace Langulus
       template<class ALT>
       using As = Conditional<CT::Semantic<ALT>, Cloned<TypeOf<ALT>>, Cloned<ALT>>;
       
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       const T& operator * () const noexcept { return mValue; }
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       auto operator -> () const noexcept {
          if constexpr (CT::Sparse<T>)
             return mValue;
@@ -775,14 +779,14 @@ namespace Langulus
       }
 
       /// Implicitly collapse the semantic, when applying it to PODs,         
-      /// since they are always cloned upon copy                              
-      LANGULUS(INLINED)
-      constexpr operator const T& () const noexcept requires CT::POD<T> {
+      /// since they are always cloned upon copy, but only if T is dense      
+      LANGULUS(ALWAYS_INLINED)
+      constexpr operator const T& () const noexcept requires (CT::POD<T> and CT::Dense<T>) {
          return mValue;
       }
 
       /// Used by DecayCast                                                   
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       constexpr const T& DecayCast() const noexcept {
          return mValue;
       }
@@ -790,7 +794,7 @@ namespace Langulus
    
    /// Clone a value                                                          
    /// Does a deep-copy                                                       
-   NOD() LANGULUS(INLINED)
+   NOD() LANGULUS(ALWAYS_INLINED)
    constexpr auto Clone(auto&& value) noexcept {
       using ALT = Decvq<Deref<decltype(value)>>;
       if constexpr (CT::Semantic<ALT>)
@@ -812,13 +816,13 @@ namespace Langulus
       constexpr Describe(const Describe&) noexcept = default;
       explicit constexpr Describe(Describe&&) noexcept = default;
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       explicit constexpr Describe(const Anyness::Neat& value) noexcept
          : mValue {value} {}
 
       /// The describe semantic completely ignores nesting, only propagates   
       /// itself                                                              
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
          using ALT = Decvq<Deref<decltype(value)>>;
          if constexpr (CT::Similar<ALT, Describe>)
@@ -831,10 +835,10 @@ namespace Langulus
             LANGULUS_ERROR("Can't nest provided type as a Describe semantic");
       }
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       const Anyness::Neat& operator *  () const noexcept { return  mValue; }
 
-      LANGULUS(INLINED)
+      LANGULUS(ALWAYS_INLINED)
       const Anyness::Neat* operator -> () const noexcept { return &mValue; }
    };
 
@@ -1440,7 +1444,7 @@ namespace Langulus
    /// to TypeOf<T>& is available                                             
    ///   @param what - the instance to decay                                  
    ///   @return a reference to the the inner data                            
-   NOD() LANGULUS(INLINED)
+   NOD() LANGULUS(ALWAYS_INLINED)
    constexpr auto& DecayCast(auto&& what) noexcept {
       using T = decltype(what);
       if constexpr (CT::Typed<T>) {
@@ -1462,7 +1466,7 @@ namespace Langulus
    /// Decay a semantic to the contained instance                             
    ///   @param what - the instance to decay                                  
    ///   @return a reference (preferably) or a copy of the inner data         
-   NOD() LANGULUS(INLINED)
+   NOD() LANGULUS(ALWAYS_INLINED)
    constexpr auto& DesemCast(auto&& what) noexcept {
       using T = decltype(what);
       if constexpr (CT::Semantic<T>)

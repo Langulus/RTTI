@@ -29,35 +29,97 @@ TEST_CASE("Testing SemanticOf", "[semantics]") {
    static_assert(CT::Exact<SemanticOf<Copied<int>&&>, Copied<int>>);
    static_assert(CT::Exact<SemanticOf<const Copied<int>&>, Copied<int>>);
 
+   static_assert(    CT::Copied<Copied<int>>);
+   static_assert(not CT::Copied<Moved<int>>);
+   static_assert(not CT::Copied<Referred<int>>);
+   static_assert(not CT::Copied<Abandoned<int>>);
+   static_assert(not CT::Copied<Disowned<int>>);
+   static_assert(not CT::Copied<Cloned<int>>);
+   static_assert(not CT::Copied<Describe>);
+
    static_assert(CT::Exact<SemanticOf<Referred<int>>, Referred<int>>);
    static_assert(CT::Exact<SemanticOf<Referred<int>&>, Referred<int>>);
    static_assert(CT::Exact<SemanticOf<Referred<int>&&>, Referred<int>>);
    static_assert(CT::Exact<SemanticOf<const Referred<int>&>, Referred<int>>);
+
+   static_assert(    CT::Referred<Referred<int>>);
+   static_assert(not CT::Referred<Moved<int>>);
+   static_assert(not CT::Referred<Copied<int>>);
+   static_assert(not CT::Referred<Abandoned<int>>);
+   static_assert(not CT::Referred<Disowned<int>>);
+   static_assert(not CT::Referred<Cloned<int>>);
+   static_assert(not CT::Referred<Describe>);
 
    static_assert(CT::Exact<SemanticOf<Moved<int>>, Moved<int>>);
    static_assert(CT::Exact<SemanticOf<Moved<int>&>, Moved<int>>);
    static_assert(CT::Exact<SemanticOf<Moved<int>&&>, Moved<int>>);
    static_assert(CT::Exact<SemanticOf<const Moved<int>&>, Moved<int>>);
 
+   static_assert(    CT::Moved<Moved<int>>);
+   static_assert(not CT::Moved<Referred<int>>);
+   static_assert(not CT::Moved<Copied<int>>);
+   static_assert(not CT::Moved<Abandoned<int>>);
+   static_assert(not CT::Moved<Disowned<int>>);
+   static_assert(not CT::Moved<Cloned<int>>);
+   static_assert(not CT::Moved<Describe>);
+
    static_assert(CT::Exact<SemanticOf<Abandoned<int>>, Abandoned<int>>);
    static_assert(CT::Exact<SemanticOf<Abandoned<int>&>, Abandoned<int>>);
    static_assert(CT::Exact<SemanticOf<Abandoned<int>&&>, Abandoned<int>>);
    static_assert(CT::Exact<SemanticOf<const Abandoned<int>&>, Abandoned<int>>);
+
+   static_assert(    CT::Abandoned<Abandoned<int>>);
+   static_assert(not CT::Abandoned<Referred<int>>);
+   static_assert(not CT::Abandoned<Copied<int>>);
+   static_assert(not CT::Abandoned<Moved<int>>);
+   static_assert(not CT::Abandoned<Disowned<int>>);
+   static_assert(not CT::Abandoned<Cloned<int>>);
+   static_assert(not CT::Abandoned<Describe>);
 
    static_assert(CT::Exact<SemanticOf<Disowned<int>>, Disowned<int>>);
    static_assert(CT::Exact<SemanticOf<Disowned<int>&>, Disowned<int>>);
    static_assert(CT::Exact<SemanticOf<Disowned<int>&&>, Disowned<int>>);
    static_assert(CT::Exact<SemanticOf<const Disowned<int>&>, Disowned<int>>);
 
+   static_assert(    CT::Disowned<Disowned<int>>);
+   static_assert(not CT::Disowned<Referred<int>>);
+   static_assert(not CT::Disowned<Copied<int>>);
+   static_assert(not CT::Disowned<Moved<int>>);
+   static_assert(not CT::Disowned<Abandoned<int>>);
+   static_assert(not CT::Disowned<Cloned<int>>);
+   static_assert(not CT::Disowned<Describe>);
+
    static_assert(CT::Exact<SemanticOf<Cloned<int>>, Cloned<int>>);
    static_assert(CT::Exact<SemanticOf<Cloned<int>&>, Cloned<int>>);
    static_assert(CT::Exact<SemanticOf<Cloned<int>&&>, Cloned<int>>);
    static_assert(CT::Exact<SemanticOf<const Cloned<int>&>, Cloned<int>>);
 
+   static_assert(    CT::Cloned<Cloned<int>>);
+   static_assert(not CT::Cloned<Referred<int>>);
+   static_assert(not CT::Cloned<Copied<int>>);
+   static_assert(not CT::Cloned<Moved<int>>);
+   static_assert(not CT::Cloned<Abandoned<int>>);
+   static_assert(not CT::Cloned<Disowned<int>>);
+   static_assert(not CT::Cloned<Describe>);
+
    static_assert(CT::Exact<SemanticOf<Describe>, Describe>);
    static_assert(CT::Exact<SemanticOf<Describe&>, Describe>);
    static_assert(CT::Exact<SemanticOf<Describe&&>, Describe>);
    static_assert(CT::Exact<SemanticOf<const Describe&>, Describe>);
+
+   /*static_assert(    CT::Describe<Describe>);
+   static_assert(not CT::Describe<Referred<int>>);
+   static_assert(not CT::Describe<Copied<int>>);
+   static_assert(not CT::Describe<Moved<int>>);
+   static_assert(not CT::Describe<Abandoned<int>>);
+   static_assert(not CT::Describe<Disowned<int>>);
+   static_assert(not CT::Describe<Cloned<int>>);*/
+
+   const std::string_view anArrayOfStrings[] {
+      "one", "two", "three", "four"
+   };
+   static_assert(CT::Exact<SemanticOf<decltype(anArrayOfStrings)>,   Referred<decltype(anArrayOfStrings)>>);
+   static_assert(CT::Exact<SemanticOf<decltype(anArrayOfStrings)&&>, Referred<decltype(anArrayOfStrings)>>);
 }
 
 ///                                                                           

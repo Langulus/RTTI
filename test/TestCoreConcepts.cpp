@@ -73,7 +73,20 @@
 //TODO CT::Decayed
 //TODO CT::NotDecayed
 //TODO CT::Void
-//TODO CT::TypeErased
+
+///                                                                           
+/// CT::TypeErased                                                            
+///                                                                           
+TEST_CASE("Testing CT::TypeErased", "[concepts]") {
+   static_assert(not CT::TypeErased<bool>);
+   static_assert(    CT::TypeErased<void>);
+   static_assert(    CT::TypeErased<const void>);
+   static_assert(    CT::TypeErased<volatile void>);
+   static_assert(not CT::TypeErased<void*>);
+   static_assert(not CT::TypeErased<bool, void, void*>);
+   static_assert(    CT::TypeErased<void, void, void>);
+}
+
 //TODO CT::Data
 //TODO CT::DenseData
 //TODO CT::SparseData
