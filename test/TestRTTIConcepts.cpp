@@ -19,7 +19,7 @@
 ///                                                                           
 /// CT::Defaultable                                                           
 ///                                                                           
-TEMPLATE_TEST_CASE("Testing CT::Defaultable", "[semantics]",
+TEMPLATE_TEST_CASE("Testing CT::Defaultable", "[concepts]",
    bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte,
    ImplicitlyConstructible,
    Destructible,
@@ -41,7 +41,7 @@ TEMPLATE_TEST_CASE("Testing CT::Defaultable", "[semantics]",
    REQUIRE(bool(meta2->mDefaultConstructor) == CT::Defaultable<Decay<T>>);
 }
 
-TEMPLATE_TEST_CASE("Testing not CT::Defaultable", "[semantics]",
+TEMPLATE_TEST_CASE("Testing not CT::Defaultable", "[concepts]",
    NonDestructible,
    PrivatelyConstructible,
    NonSemanticConstructible,
@@ -72,7 +72,7 @@ TEMPLATE_TEST_CASE("Testing not CT::Defaultable", "[semantics]",
 ///                                                                           
 /// CT::Destroyable                                                           
 ///                                                                           
-TEMPLATE_TEST_CASE("Testing CT::Destroyable<T>", "[semantics]",
+TEMPLATE_TEST_CASE("Testing CT::Destroyable<T>", "[concepts]",
    Destructible,
    Complex,
    ContainsComplex
@@ -89,7 +89,7 @@ TEMPLATE_TEST_CASE("Testing CT::Destroyable<T>", "[semantics]",
    REQUIRE(meta2->mDestructor);
 }
 
-TEMPLATE_TEST_CASE("Testing not CT::Destroyable<T>", "[semantics]",
+TEMPLATE_TEST_CASE("Testing not CT::Destroyable<T>", "[concepts]",
    ImplicitlyConstructible,
    NonDestructible,
    PrivatelyConstructible,
@@ -121,7 +121,7 @@ TEMPLATE_TEST_CASE("Testing not CT::Destroyable<T>", "[semantics]",
 ///                                                                           
 /// CT::POD                                                                   
 ///                                                                           
-TEMPLATE_TEST_CASE("Testing CT::POD<T>", "[semantics]",
+TEMPLATE_TEST_CASE("Testing CT::POD<T>", "[concepts]",
    ImplicitlyConstructible,
    AMeta, TMeta, CMeta, DMeta, VMeta,
    bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte,
@@ -140,7 +140,7 @@ TEMPLATE_TEST_CASE("Testing CT::POD<T>", "[semantics]",
    REQUIRE(meta2->mIsPOD);
 }
 
-TEMPLATE_TEST_CASE("Testing not CT::POD<T>", "[semantics]",
+TEMPLATE_TEST_CASE("Testing not CT::POD<T>", "[concepts]",
    Complex,
    ContainsComplex,
    IncompleteType,
@@ -171,13 +171,71 @@ TEMPLATE_TEST_CASE("Testing not CT::POD<T>", "[semantics]",
 //TODO DispatcherMutable
 //TODO DispatcherConstant
 //TODO Dispatcher
-//TODO TypeOf
-//TODO Typed
-//TODO Untyped
+
+///                                                                           
+/// TypeOf                                                                    
+///                                                                           
+TEST_CASE("Testing TypeOf<T>", "[concepts]") {
+   static_assert(CT::Exact<TypeOf<ImplicitlyReflectedData>, ImplicitlyReflectedData::Named>);
+   static_assert(CT::Exact<TypeOf<ImplicitlyReflectedDataWithTraits>, ImplicitlyReflectedData::Named>);
+   static_assert(CT::Exact<TypeOf<int>, int>);
+   static_assert(CT::Exact<TypeOf<int&>, int>);
+   static_assert(CT::Exact<TypeOf<TypedEnum>, int16_t>);
+   static_assert(CT::Exact<TypeOf<TypeErasedContainer>, void>);
+   static_assert(CT::Exact<TypeOf<std::vector<bool>>, bool>);
+   static_assert(CT::Exact<TypeOf<std::string_view>, char>);
+   static_assert(CT::Exact<TypeOf<std::array<double, 5>>, double>);
+   static_assert(CT::Exact<TypeOf<IncompleteType>, IncompleteType>);
+}
+
+///                                                                           
+/// CT::Typed                                                                 
+///                                                                           
+TEST_CASE("Testing CT::Typed", "[concepts]") {
+   static_assert(not CT::Typed<bool>);
+   static_assert(not CT::Typed<void>);
+   static_assert(not CT::Typed<const void>);
+   static_assert(not CT::Typed<volatile void>);
+   static_assert(not CT::Typed<void*>);
+   static_assert(not CT::Typed<bool, void, void*>);
+   static_assert(not CT::Typed<void, void, void>);
+   static_assert(not CT::Typed<TypedEnum>);
+   static_assert(not CT::Typed<TypeErasedContainer>);
+   static_assert(not CT::Typed<IncompleteType>);
+   static_assert(    CT::Typed<std::vector<bool>>);
+   static_assert(    CT::Typed<std::string_view>);
+   static_assert(    CT::Typed<std::array<double, 5>>);
+   static_assert(    CT::Typed<ImplicitlyReflectedData>);
+   static_assert(    CT::Typed<ImplicitlyReflectedData, ImplicitlyReflectedDataWithTraits>);
+   static_assert(not CT::Typed<ImplicitlyReflectedData, void>);
+}
+
+///                                                                           
+/// CT::Untyped                                                               
+///                                                                           
+TEST_CASE("Testing CT::Untyped", "[concepts]") {
+   static_assert(    CT::Untyped<bool>);
+   static_assert(    CT::Untyped<void>);
+   static_assert(    CT::Untyped<const void>);
+   static_assert(    CT::Untyped<volatile void>);
+   static_assert(    CT::Untyped<void*>);
+   static_assert(    CT::Untyped<bool, void, void*>);
+   static_assert(    CT::Untyped<void, void, void>);
+   static_assert(    CT::Untyped<TypedEnum>);
+   static_assert(    CT::Untyped<TypeErasedContainer>);
+   static_assert(    CT::Untyped<IncompleteType>);
+   static_assert(not CT::Untyped<std::vector<bool>>);
+   static_assert(not CT::Untyped<std::string_view>);
+   static_assert(not CT::Untyped<std::array<double, 5>>);
+   static_assert(not CT::Untyped<ImplicitlyReflectedData>);
+   static_assert(not CT::Untyped<ImplicitlyReflectedData, ImplicitlyReflectedDataWithTraits>);
+   static_assert(not CT::Untyped<ImplicitlyReflectedData, void>);
+}
+
 //TODO SuffixOf
 
 
-TEMPLATE_TEST_CASE("Testing DecayCast (POD)", "[semantics]",
+TEMPLATE_TEST_CASE("Testing DecayCast (POD)", "[concepts]",
    int, Copied<int>, Referred<int>, Disowned<int>, Cloned<int>
 ) {
    const int* value = new int {656};
@@ -186,7 +244,7 @@ TEMPLATE_TEST_CASE("Testing DecayCast (POD)", "[semantics]",
    delete value;
 }
 
-TEMPLATE_TEST_CASE("Testing DecayCast (non POD)", "[semantics]",
+TEMPLATE_TEST_CASE("Testing DecayCast (non POD)", "[concepts]",
    Complex, Copied<Complex>, Referred<Complex>, Disowned<Complex>, Cloned<Complex>
 ) {
    const int* value = new int {656};

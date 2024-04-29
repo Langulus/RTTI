@@ -136,6 +136,7 @@ struct ImplicitlyReflectedData {
 
    enum Named {One, Two, Three};
    LANGULUS_NAMED_VALUES(One, Two, Three);
+   LANGULUS(TYPED) Named;
 
    Named v = One;
 
@@ -264,6 +265,10 @@ class ForcefullyPod {
 
 struct Type {};
 
+struct TypeErasedContainer {
+   LANGULUS(TYPED) void;
+};
+
 namespace N1 {
    struct Type {};
    struct Create {};
@@ -276,3 +281,7 @@ namespace N2 {
 namespace N3 {
    struct type {};
 }
+
+enum class TypedEnum : int16_t {
+   E1, E2, E3
+};

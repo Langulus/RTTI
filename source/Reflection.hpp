@@ -307,14 +307,15 @@ namespace Langulus::CT
             return Data<typename Deref<T>::CTTI_InnerType>;
          else if constexpr (requires { typename Deref<T>::value_type; })
             return Data<typename Deref<T>::value_type>;
-         return false;
+         else
+            return false;
       }
 
       /// Convenience function that wraps std::underlying_type_t for enums,   
       /// as well as any array, or anything with CTTI_InnerType that isn't    
       /// void, or has the value_type member type defined                     
       ///   - if T is an array, returns pointer of the array type             
-      ///   - if T is Typed, return pointer of the type                       
+      ///   - if T has CTTI_InnerType/value_type, return pointer of the type  
       ///   - if T is an enum, return pointer of the underlying type          
       ///   - otherwise just return a decayed T pointer                       
       template<class T>
@@ -323,12 +324,12 @@ namespace Langulus::CT
             return (Deref<Deext<T>>*) nullptr;
          else {
             using DT = Decay<T>;
-            if constexpr (IsTyped<DT>()) {
-               if constexpr (requires {typename DT::CTTI_InnerType; })
-                  return (Deref<typename DT::CTTI_InnerType>*) nullptr;
-               else
-                  return (Deref<typename DT::value_type>*) nullptr;
-            }
+            if constexpr (not Complete<DT>)
+               return (Deref<T>*) nullptr;
+            else if constexpr (requires { typename DT::CTTI_InnerType; })
+               return (Deref<typename DT::CTTI_InnerType>*) nullptr;
+            else if constexpr (requires { typename DT::value_type; })
+               return (Deref<typename DT::value_type>*) nullptr;
             else if constexpr (CT::Enum<DT>)
                return (Deref<::std::underlying_type_t<DT>>*) nullptr;
             else
