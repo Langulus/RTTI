@@ -944,9 +944,9 @@ namespace Langulus::RTTI
       // Wrap the GetBlock method of the type inside a lambda           
       if constexpr (CT::Resolvable<T>) {
          generated.mResolver = 
-            [](const void* at) -> Anyness::Block<> {
+            [](const void* at) {
                auto atT = static_cast<const T*>(at);
-               return atT->GetBlock();
+               return static_cast<Anyness::Block<>>(atT->GetBlock());
             };
       }
 
