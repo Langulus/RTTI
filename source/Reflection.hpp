@@ -301,7 +301,7 @@ namespace Langulus::CT
       ///      be considered 'typed', as in not 'type-erased'                 
       template<class T>
       consteval bool IsTyped() {
-         if constexpr (not Complete<T>)
+         if constexpr (not Complete<Deref<T>>)
             return false;
          else if constexpr (requires { typename Deref<T>::CTTI_InnerType; })
             return Data<typename Deref<T>::CTTI_InnerType>;
