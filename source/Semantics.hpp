@@ -1305,18 +1305,19 @@ namespace Langulus
       ///   @tparam T... - the types                                          
       template<template<class> class S, class...T>
       concept SemanticMakable = Data<T...> and Semantic<S<T>...> and (
-         requires {
-            {SemanticNew<true>(nullptr, Fake<S<T>&&>())} -> Supported;
-         } and ...);
+          requires {
+             {SemanticNew<true>(nullptr, Fake<S<T>&&>())} -> Supported;
+          } and ...);
 
       /// Check if all TypeOf<S> are semantic-makable by S                    
       /// T can be semantic-makable even if not semantic-constructible,       
       /// as long as T and S are compatible with standard C++20 semantics     
       ///   @tparam S - the semantic and type                                 
       template<class...S>
-      concept SemanticMakableAlt = Semantic<S...> and (requires {
-            {SemanticNew<true>(nullptr, Fake<S&&>())} -> Supported;
-         } and ...);
+      concept SemanticMakableAlt = not SameAsOneOf<Describe, S...>
+          and Semantic<S...> and (requires {
+             {SemanticNew<true>(nullptr, Fake<S&&>())} -> Supported;
+          } and ...);
 
       /// Check if all T are disown-makable                                   
       /// Disowning does a shallow copy without referencing contents,         
@@ -1429,7 +1430,8 @@ namespace Langulus
 
       /// Check if the T is descriptor-makable                                
       template<class...T>
-      concept DescriptorMakable = not Abstract<T...> and not Enum<T...>
+      concept DescriptorMakable = Complete<T...> and not Abstract<T...>
+          and not Enum<T...> and not Aggregate<T...>
           and requires (const Anyness::Neat& a) { (T (Describe {a}), ...); };
 
       /// Check if the T is noexcept-descriptor-makable                       

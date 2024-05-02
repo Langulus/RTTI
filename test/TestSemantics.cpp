@@ -873,6 +873,7 @@ TEMPLATE_TEST_CASE("Testing descriptor-makable types", "[semantics]",
    using T = TestType;
    static_assert(    CT::DescriptorMakable<T>);
    static_assert(not CT::DescriptorMakable<T*>);
+   static_assert(not CT::SemanticMakableAlt<Describe>);
 
    auto meta1 = MetaData::Of<T>();
    REQUIRE(meta1);
@@ -901,6 +902,7 @@ TEMPLATE_TEST_CASE("Testing non-descriptor-makable types", "[semantics]",
    using T = TestType;
    static_assert(not CT::DescriptorMakable<T>);
    static_assert(not CT::DescriptorMakable<T*>);
+   static_assert(not CT::SemanticMakableAlt<Describe>);
 
    auto meta = MetaData::Of<Conditional<CT::Complete<T>, T, T*>>();
    REQUIRE(meta);
