@@ -196,6 +196,25 @@ namespace Langulus
       constexpr bool operator > (const Byte& rhs) const noexcept {
          return mValue > rhs.mValue;
       }
+
+      /// Prefix operators                                                    
+      Byte& operator ++ () noexcept {
+         ++mValue;
+         return *this;
+      }
+      Byte& operator -- () noexcept {
+         --mValue;
+         return *this;
+      }
+
+      /// Suffix operators                                                    
+      NOD() Byte operator ++ (int) noexcept {
+         return mValue++;
+      }
+
+      NOD() Byte operator -- (int) noexcept {
+         return mValue--;
+      }
    };
    #pragma pack(pop)
 
