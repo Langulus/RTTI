@@ -28,8 +28,8 @@ namespace Langulus
          ) and ...);
 
       /// Scalar concept - any fundamental or custom number type, regardless  
-      /// if dense or sparse, or wrapped inside a semantic. Bounded arrays of 
-      /// those with ExtentOf == 1 are also considered scalars.               
+      /// if wrapped inside a semantic. Bounded arrays of those with          
+      /// ExtentOf == 1 are also considered scalars.                          
       template<class...T>
       concept Scalar = ((Inner::CountOf<T>() == 1
             and (Byte<Deext<Desem<T>>> or Integer<Deext<Desem<T>>>
@@ -42,7 +42,7 @@ namespace Langulus
    /// Get the count of a counted type                                        
    /// Any type with a static constexpr unsigned MemberCount, or a bounded    
    /// array, are multiplied and counted. Scalars always will give count of 1 
-   /// If multiple types provided, their counts will be summed                
+   /// If multiple types provided, their counts will be summed up             
    template<class T1, class...TN>
    constexpr Count CountOf = CT::Inner::CountOf<T1, TN...>();
 
