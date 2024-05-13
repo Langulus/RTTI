@@ -242,9 +242,9 @@ namespace Langulus
    template<class T1, class...TN>
    using Lossless = Conditional<
          CountOf<decltype(Inner::LosslessNested<T1, TN...>())> == 1,
-         TypeOf<decltype(Inner::LosslessNested<T1, TN...>())>,
-         TypeOf<decltype(Inner::LosslessNested<T1, TN...>())>
-            [CountOf<decltype(Inner::LosslessNested<T1, TN...>())>]
+          TypeOf<decltype(Inner::LosslessNested<T1, TN...>())>,
+          TypeOf<decltype(Inner::LosslessNested<T1, TN...>())>
+               [CountOf<decltype(Inner::LosslessNested<T1, TN...>())>]
       >;
 
 } // namespace Langulus
