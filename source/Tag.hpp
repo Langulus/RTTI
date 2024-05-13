@@ -41,7 +41,7 @@ namespace Langulus::RTTI
    ///                                                                        
    #pragma pack(push, 1)
    template<class DATA, class...TAGS>
-   struct Tag : A::Semantic {
+   struct Tag /*: A::Semantic*/ {
       LANGULUS(TYPED) DATA;
 
       static constexpr bool CTTI_TagTag = true;
