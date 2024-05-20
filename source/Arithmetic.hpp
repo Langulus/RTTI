@@ -59,12 +59,13 @@ namespace Langulus
          // Already fundamental, just forward it                        
          return (a);
       }
-      else if constexpr (CT::Typed<DT> or CT::Enum<DT>) {
+      else if constexpr ((CT::Typed<DT> or CT::Enum<DT>)
+      and requires { static_cast<const TypeOf<DT>&>(DenseCast(a)); }) {
          // Explicitly cast to a reference of the contained type, and   
          // nest down to the fundamentals                               
          return FundamentalCast(static_cast<const TypeOf<DT>&>(DenseCast(a)));
       }
-      else LANGULUS_ERROR("Shouldn't happen");
+      else return a;
    }
    
    /// Casts a scalar to its underlying fundamental type                      
@@ -80,12 +81,13 @@ namespace Langulus
          // Already fundamental, just forward it                        
          return (a);
       }
-      else if constexpr (CT::Typed<DT> or CT::Enum<DT>) {
+      else if constexpr ((CT::Typed<DT> or CT::Enum<DT>)
+      and requires { static_cast<TypeOf<DT>&>(DenseCast(a)); }) {
          // Explicitly cast to a reference of the contained type, and   
          // nest down to the fundamentals                               
          return FundamentalCast(static_cast<TypeOf<DT>&>(DenseCast(a)));
       }
-      else LANGULUS_ERROR("Shouldn't happen");
+      else return a;
    }
     
    /// Returns the extent overlap of two arrays/non arrays                    
