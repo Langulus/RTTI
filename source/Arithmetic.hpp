@@ -14,7 +14,7 @@ namespace Langulus
 {
    namespace CT
    {
-          
+
       /// Check if all the provided types are considered Vector types         
       /// Any type that is Typed and has CountOf that is at least 2, and      
       /// the T's size is exactly equal to sizeof(TypeOf<T>) * CountOf<T>     
@@ -52,7 +52,7 @@ namespace Langulus
    ///   @tparam T - type of the scalar/enum to cast                          
    ///   @param a - the scalar to cast                                        
    ///   @return a reference to the underlying type                           
-   template<CT::Scalar T> NOD() LANGULUS(INLINED)
+   template<CT::Scalar T, bool FAKE = false> NOD() LANGULUS(INLINED)
    constexpr decltype(auto) FundamentalCast(const T& a) noexcept {
       using DT = Decay<Desem<T>>;
       if constexpr (CT::Fundamental<DT>) {
@@ -65,7 +65,10 @@ namespace Langulus
          // nest down to the fundamentals                               
          return FundamentalCast(static_cast<const TypeOf<DT>&>(DenseCast(a)));
       }
-      else return a;
+      else if constexpr (FAKE)
+         return Inner::Unsupported {};
+      else
+         LANGULUS_ERROR("Can't perform FundamentalCast");
    }
    
    /// Casts a scalar to its underlying fundamental type                      
@@ -74,7 +77,7 @@ namespace Langulus
    ///   @tparam T - type of the scalar/enum to cast                          
    ///   @param a - the scalar to cast                                        
    ///   @return a reference to the underlying type                           
-   template<CT::Scalar T> NOD() LANGULUS(INLINED)
+   template<CT::Scalar T, bool FAKE = false> NOD() LANGULUS(INLINED)
    constexpr decltype(auto) FundamentalCast(T& a) noexcept {
       using DT = Decay<Desem<T>>;
       if constexpr (CT::Fundamental<DT>) {
@@ -87,8 +90,21 @@ namespace Langulus
          // nest down to the fundamentals                               
          return FundamentalCast(static_cast<TypeOf<DT>&>(DenseCast(a)));
       }
-      else return a;
+      else if constexpr (FAKE)
+         return Inner::Unsupported {};
+      else
+         LANGULUS_ERROR("Can't perform FundamentalCast");
    }
+
+   namespace CT
+   {
+
+      /// Check if an instance of T can be converted to a fundamental         
+      template<class...T>
+      concept CastsToFundamental = (
+         Supported<decltype(FundamentalCast<T, true>(Fake<T&>()))> and ...);
+
+   } // namespace Langulus::CT
     
    /// Returns the extent overlap of two arrays/non arrays                    
    /// An array to be considered array, it has to have more than one element  
