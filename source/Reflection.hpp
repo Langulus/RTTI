@@ -447,10 +447,6 @@ namespace Langulus::CT
          typename Decay<T>::CTTI_Concrete;
       } and ...);
 
-   /// Get the reflected concrete type                                        
-   template<class T>
-   using ConcreteOf = typename Decay<T>::CTTI_Concrete;
-
    /// A producible type is any type with a member type CTTI_Producer         
    /// If no such member exists, the type is assumed NOT producible by        
    /// default. Producible types can not be created at compile-time, and need 
@@ -466,10 +462,6 @@ namespace Langulus::CT
    concept HasNamedValues = Complete<T...> and (requires {
          (::std::tuple_size_v<decltype(T::CTTI_NamedValues)>) > 0;
       } and ...);
-
-   /// Get the reflected producer type                                        
-   template<class T>
-   using ProducerOf = typename Decay<T>::CTTI_Producer;
 
    /// Check if all T have a mutable dispatcher (have `Do(Verb&)` method)     
    template<class...T>
@@ -493,6 +485,14 @@ namespace Langulus::CT
 
 namespace Langulus
 {
+
+   /// Get the reflected concrete type                                        
+   template<class T>
+   using ConcreteOf = typename Decay<T>::CTTI_Concrete;
+
+   /// Get the reflected producer type                                        
+   template<class T>
+   using ProducerOf = typename Decay<T>::CTTI_Producer;
 
    /// Get internal type of an enum, or anything reflected with the           
    /// LANGULUS(TYPED) member                                                 

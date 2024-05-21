@@ -759,11 +759,11 @@ namespace Langulus::RTTI
 
       // Reflect the concrete type                                      
       if constexpr (CT::Concretizable<T>)
-         generated.mConcreteRetriever = MetaData::Of<CT::ConcreteOf<T>>;
+         generated.mConcreteRetriever = MetaData::Of<ConcreteOf<T>>;
 
       // Reflect the producer type                                      
       if constexpr (CT::Producible<T>)
-         generated.mProducerRetriever = MetaData::Of<CT::ProducerOf<T>>;
+         generated.mProducerRetriever = MetaData::Of<ProducerOf<T>>;
 
       // Wrap the default constructor of the type inside lambda         
       if constexpr (CT::Defaultable<T>) {
