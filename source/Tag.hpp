@@ -41,7 +41,7 @@ namespace Langulus::RTTI
    ///                                                                        
    #pragma pack(push, 1)
    template<class DATA, class...TAGS>
-   struct Tag /*: A::Semantic*/ {
+   struct Tag {
       LANGULUS(TYPED) DATA;
 
       static constexpr bool CTTI_TagTag = true;
@@ -96,6 +96,22 @@ namespace Langulus::RTTI
       constexpr operator DATA const& () const noexcept {
          static_assert(sizeof (Tag) == sizeof (DATA));
          return mData;
+      }
+
+      LANGULUS(INLINED)
+      constexpr decltype(auto) operator & () noexcept {
+         if constexpr (requires { mData.operator & (); })
+            return mData.operator & ();
+         else
+            return &mData;
+      }
+
+      LANGULUS(INLINED)
+      constexpr decltype(auto) operator & () const noexcept {
+         if constexpr (requires { mData.operator & (); })
+            return mData.operator & ();
+         else
+            return &mData;
       }
 
       LANGULUS(INLINED)
