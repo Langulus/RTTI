@@ -18,7 +18,11 @@
 #include <Core/Utilities.hpp>
 #include <tuple>
 
-#define VERBOSE(...) //Logger::Verbose("RTTI: ", __VA_ARGS__)
+#if 0
+   #define VERBOSE(...) Logger::Verbose("RTTI: ", __VA_ARGS__)
+#else
+   #define VERBOSE(...) LANGULUS(NOOP)
+#endif
 
 
 namespace Langulus::RTTI
