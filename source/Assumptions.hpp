@@ -138,13 +138,23 @@ namespace Langulus
       #define LANGULUS_ASSUME(level, condition, message, ...) 
    #endif
 
-   #define LANGULUS_ASSERT(condition, exception, message, ...) \
-      ::Langulus::Assume<0, ::Langulus::Except::exception>((condition)?true:false, message, \
-         nullptr, __VA_ARGS__)
+   #if LANGULUS_COMPILER(CLANG) or LANGULUS_COMPILER(GCC)
+      #define LANGULUS_ASSERT(condition, exception, message, ...) \
+         ::Langulus::Assume<0, ::Langulus::Except::exception>((condition)?true:false, message, \
+            nullptr __VA_OPT__(,) __VA_ARGS__)
 
-   #define LANGULUS_OOPS(exception, message, ...) \
-      ::Langulus::Assume<0, ::Langulus::Except::exception>(false, message, \
-         nullptr, __VA_ARGS__)
+      #define LANGULUS_OOPS(exception, message, ...) \
+         ::Langulus::Assume<0, ::Langulus::Except::exception>(false, message, \
+            nullptr __VA_OPT__(,) __VA_ARGS__)
+   #else
+      #define LANGULUS_ASSERT(condition, exception, message, ...) \
+         ::Langulus::Assume<0, ::Langulus::Except::exception>((condition)?true:false, message, \
+            nullptr, __VA_ARGS__)
+
+      #define LANGULUS_OOPS(exception, message, ...) \
+         ::Langulus::Assume<0, ::Langulus::Except::exception>(false, message, \
+            nullptr, __VA_ARGS__)
+   #endif
 
    #define LANGULUS_THROW(exception, message, ...) \
       ::Langulus::Throw<::Langulus::Except::exception>()
