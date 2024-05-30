@@ -32,30 +32,28 @@ namespace Langulus
    void Assume(
       bool condition, 
       const char* message = "<unknown assumption failure>", 
-      const char* location = "<unknown location>",
+      const char* location = nullptr,
       UNUSED() MORE&&...additional_messages
    ) noexcept (LEVEL > LANGULUS(SAFE)) {
       if constexpr (LEVEL <= LANGULUS(SAFE)) {
          if (not condition) {
-            #if LANGULUS(SAFE)
-               // Log location first, because message might cause       
-               // additional errors                                     
-               Logger::Error("At ", location);
+            // Log location first, because message might cause          
+            // additional errors                                        
+            DEBUGGERY(if(location) Logger::Error("At ", location));
 
-               // Log error message                                     
-               if constexpr (LEVEL == 0)
-                  Logger::Error("Assertion failure: ",
-                     message, Forward<MORE>(additional_messages)...);
-               else if constexpr (LEVEL == UserAssumes)
-                  Logger::Error("User assumption failure: ",
-                     message, Forward<MORE>(additional_messages)...);
-               else if constexpr (LEVEL == DevAssumes)
-                  Logger::Error("Dev assumption failure: ",
-                     message, Forward<MORE>(additional_messages)...);
-               else 
-                  Logger::Error("Assumption level ", LEVEL, " failure: ",
-                     message, Forward<MORE>(additional_messages)...);
-            #endif
+            // Log error message                                        
+            if constexpr (LEVEL == 0)
+               Logger::Error("Assertion failure: ",
+                  message, Forward<MORE>(additional_messages)...);
+            else if constexpr (LEVEL == UserAssumes)
+               Logger::Error("User assumption failure: ",
+                  message, Forward<MORE>(additional_messages)...);
+            else if constexpr (LEVEL == DevAssumes)
+               Logger::Error("Dev assumption failure: ",
+                  message, Forward<MORE>(additional_messages)...);
+            else 
+               Logger::Error("Assumption level ", LEVEL, " failure: ",
+                  message, Forward<MORE>(additional_messages)...);
 
             // Throw                                                    
             Throw<EXCEPTION>(message, location);
@@ -141,10 +139,12 @@ namespace Langulus
    #endif
 
    #define LANGULUS_ASSERT(condition, exception, message, ...) \
-      ::Langulus::Assume<0, ::Langulus::Except::exception>((condition)?true:false)
+      ::Langulus::Assume<0, ::Langulus::Except::exception>((condition)?true:false, message, \
+         nullptr, __VA_ARGS__)
 
    #define LANGULUS_OOPS(exception, message, ...) \
-      ::Langulus::Assume<0, ::Langulus::Except::exception>(false)
+      ::Langulus::Assume<0, ::Langulus::Except::exception>(false, message, \
+         nullptr, __VA_ARGS__)
 
    #define LANGULUS_THROW(exception, message, ...) \
       ::Langulus::Throw<::Langulus::Except::exception>()
