@@ -167,7 +167,7 @@ namespace Langulus::RTTI
       ///   @return a tuple of the desired member pointers                    
       template<auto...HANDLES>
       consteval auto CreateMembersTuple() {
-         return Types<NamedMember<HANDLES>...>{};// ::std::tuple {NamedMember<HANDLES> {}...};
+         return Types<NamedMember<HANDLES>...>{};
       }
 
    }
@@ -242,31 +242,27 @@ namespace Langulus::RTTI
    ///   @return the converter                                                
    template<CT::Decayed FROM, CT::Decayed TO>
    Converter Converter::From(DMeta type) noexcept {
-      static_assert(not CT::Void<TO>, "Can't have converter to void");
+      static_assert(not CT::Void<Decay<TO>, Decay<FROM>>,
+         "Can't have converter to/from void");
 
-      return {
-         type,
+      return { type,
          [](const void* from, void* to) {
-            auto fromT1 = reinterpret_cast<const FROM*>(from);
-            auto fromT2 = const_cast<FROM*>(reinterpret_cast<const FROM*>(from));
-            auto toT    = reinterpret_cast<TO*>(to);
+            auto& fromT = *reinterpret_cast<const FROM*>(from);
+            auto& toT   = *reinterpret_cast<TO*>(to);
 
-            // Conversion is a complete mess across compilers, so all   
-            // these acrobatics are needed to remain consistent         
-            if constexpr (requires { TO {*fromT1}; })
-               new (toT) TO {*fromT1};
-            else if constexpr (requires { TO {*fromT2}; })
-               new (toT) TO {*fromT2};
-            else if constexpr (requires { TO {fromT1->operator TO()}; })
-               new (toT) TO {fromT1->operator TO()};
-            else if constexpr (requires { TO {fromT2->operator TO()}; })
-               new (toT) TO {fromT2->operator TO()};
-            else if constexpr (requires { TO {static_cast<TO>(*fromT1)}; })
-               new (toT) TO {static_cast<TO>(*fromT1)};
-            else if constexpr (requires { TO {static_cast<TO>(*fromT2)}; })
-               new (toT) TO {static_cast<TO>(*fromT2)};
-            else
-               LANGULUS_ERROR("Unhandled conversion route (MSVC bad behavior detection)");
+            if constexpr (requires { TO (static_cast<TO>(fromT)); })
+               new (&toT) TO (static_cast<TO>(fromT));
+            else if constexpr (requires { TO (fromT); })
+               new (&toT) TO (fromT);
+            else if constexpr (requires { toT = static_cast<TO>(fromT); })
+               toT = static_cast<TO>(fromT);
+            else if constexpr (requires { toT = fromT; })
+               toT = fromT;
+            else {
+               LANGULUS_ERROR("Unhandled conversion route (MSVC bad behavior detection) "
+                  "- make sure your cast operators are always const, because MSVC doesn't "
+                  "support them otherwise (and will occasionally ICE)");
+            }
          }
       };
    }
@@ -1050,10 +1046,10 @@ namespace Langulus::RTTI
       if constexpr (Types<TO...>::Empty)
          return;
       else {
-         static_assert((CT::Convertible<FROM, TO> and ...),
+         static_assert(CT::Convertible<FROM, TO...>,
             "Converter reflected, but conversion is not possible - "
-            "implement a public cast operator in FROM, or a public constructor in TO"
-            " - these can be either explicit or not");
+            "implement a public cast operator in FROM, or a public "
+            "constructor in TO - these can be either explicit or not");
 
          const ::std::pair<DMeta, Converter> list[] {
             ::std::pair<DMeta, Converter>(
@@ -1076,8 +1072,8 @@ namespace Langulus::RTTI
       else {
          static_assert((CT::Convertible<FROM, TO> and ...),
             "Converter reflected, but conversion is not possible - "
-            "implement a public cast operator in FROM, or a public constructor in TO"
-            " - these can be either explicit or not");
+            "implement a public cast operator in FROM, or a public "
+            "constructor in TO - these can be either explicit or not");
 
          const ::std::pair<DMeta, Converter> list[] {
             ::std::pair<DMeta, Converter>(

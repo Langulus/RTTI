@@ -46,15 +46,9 @@ namespace Langulus
          return *this;
       }
 
-      /// All conversions are explicit only, to preserve type                 
       LANGULUS(INLINED)
-      constexpr explicit operator const Type& () const noexcept {
-         return mValue;
-      }
-
-      LANGULUS(INLINED)
-      constexpr explicit operator Type& () noexcept {
-         return mValue;
+      constexpr explicit operator Type& () const noexcept {
+         return const_cast<Type&>(mValue);
       }
 
       template<CT::BuiltinNumber T> LANGULUS(INLINED)

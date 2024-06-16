@@ -86,15 +86,9 @@ namespace Langulus::RTTI
       }
 
       LANGULUS(INLINED)
-      constexpr operator DATA& () noexcept {
+      constexpr operator DATA& () const noexcept {
          static_assert(sizeof (Tag) == sizeof (DATA));
-         return mData;
-      }
-
-      LANGULUS(INLINED)
-      constexpr operator DATA const& () const noexcept {
-         static_assert(sizeof (Tag) == sizeof (DATA));
-         return mData;
+         return const_cast<DATA&>(mData);
       }
 
       LANGULUS(INLINED)
