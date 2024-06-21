@@ -10,9 +10,9 @@
 
 /// A freestanding type compatibility check                                   
 /// Purely cosmetic, to avoid typing `template` before member function        
-template<CT::Data T, bool ADVANCED = false> LANGULUS(INLINED)
+template<CT::Data T/*, bool ADVANCED = false*/> LANGULUS(INLINED)
 bool CastsTo(DMeta from) {
-   return from->template CastsTo<T, ADVANCED>();
+   return from->template CastsTo<T, false/*, ADVANCED*/>();
 }
 
 /// A freestanding type compatibility check                                   
