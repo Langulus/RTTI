@@ -1510,13 +1510,13 @@ namespace Langulus::RTTI
    }
 
    /// Check if this type interprets as another without conversion            
-   ///   @tparam ADVANCED - whether or not to do an advanced search in the    
-   ///      opposite inheritance order                                        
    ///	@tparam BINARY_COMPATIBLE - do we require for the other to be        
    ///      binary compatible with this                                       
+   ///   @tparam ADVANCED - whether or not to do an advanced search in the    
+   ///      opposite inheritance order                                        
    ///	@param other - the type to try interpreting as                       
    ///	@return true if this type interprets as other                        
-   template<bool ADVANCED, bool BINARY_COMPATIBLE>
+   template<bool BINARY_COMPATIBLE, bool ADVANCED>
    bool MetaData::CastsTo(DMeta other) const {
       if (Is(other))
          return true;
@@ -1555,17 +1555,17 @@ namespace Langulus::RTTI
    
    /// Check if this type interprets as another without conversion            
    ///   @tparam T - the type to try interpreting as                          
-   ///   @tparam ADVANCED - whether or not to do an advanced search in the    
-   ///      opposite inheritance order                                        
    ///   @tparam BINARY_COMPATIBLE - do we require for the other to be        
    ///      binary compatible with this                                       
+   ///   @tparam ADVANCED - whether or not to do an advanced search in the    
+   ///      opposite inheritance order                                        
    ///   @return true if this type interprets as other                        
-   template<class T, bool ADVANCED, bool BINARY_COMPATIBLE> LANGULUS(INLINED)
+   template<class T, bool BINARY_COMPATIBLE, bool ADVANCED> LANGULUS(INLINED)
    bool MetaData::CastsTo() const {
       if constexpr (CT::Void<T>)
          return false;
       else
-         return CastsTo<ADVANCED, BINARY_COMPATIBLE>(MetaData::Of<T>());
+         return CastsTo<BINARY_COMPATIBLE, ADVANCED>(MetaData::Of<T>());
    }
 
    /// Check if this type interprets as an exact number of another, without   

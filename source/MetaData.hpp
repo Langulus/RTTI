@@ -527,12 +527,12 @@ namespace Langulus::RTTI
       //                                                                
       FCopyConstruct GetConverter(DMeta) const;
 
-      template<bool ADVANCED = false, bool BINARY_COMPATIBLE = false>
+      template<bool BINARY_COMPATIBLE = false, bool ADVANCED = false>
       NOD() bool CastsTo(DMeta) const;
       template<bool BINARY_COMPATIBLE = false>
       NOD() bool CastsTo(DMeta, Count) const;
 
-      template<class, bool ADVANCED = false, bool BINARY_COMPATIBLE = false>
+      template<class, bool BINARY_COMPATIBLE = false, bool ADVANCED = false>
       NOD() bool CastsTo() const;
       template<class, bool BINARY_COMPATIBLE = false>
       NOD() bool CastsTo(Count) const;
