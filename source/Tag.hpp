@@ -55,6 +55,7 @@ namespace Langulus::RTTI
       using DataType = DATA;
       using Tags = Types<TAGS...>;
 
+   public:
       constexpr Tag() = default;
 
       template<CT::NotTagged T>
@@ -68,12 +69,13 @@ namespace Langulus::RTTI
       constexpr Tag(Tag&& other)
          : mData {::std::move(other.mData)} {}
 
-      constexpr Tag& operator = (const Tag& rhs) {
+      LANGULUS(INLINED)
+      constexpr Tag& operator = (const Tag& rhs) requires CT::ReferAssignable<DATA> {
          mData = rhs.mData;
          return *this;
       }
 
-      constexpr Tag& operator = (Tag&& rhs) {
+      constexpr Tag& operator = (Tag&& rhs) requires CT::MoveAssignable<DATA> {
          mData = ::std::move(rhs.mData);
          return *this;
       }
@@ -82,6 +84,13 @@ namespace Langulus::RTTI
       requires CT::AssignableFrom<DATA, T> LANGULUS(INLINED)
       constexpr Tag& operator = (T&& rhs) {
          mData = Forward<T>(rhs);
+         return *this;
+      }
+
+      template<CT::Tagged T>
+      requires CT::AssignableFrom<DATA, TypeOf<T>> LANGULUS(INLINED)
+      constexpr Tag& operator = (T&& rhs) {
+         mData = std::move(rhs.mData);
          return *this;
       }
 
