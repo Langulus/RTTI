@@ -547,32 +547,11 @@ namespace Langulus
       else if constexpr (CT::Same<T, bool>)
          return "b";
       else
-         return "";
+         return "<BAD SUFFIX>";
    }
 
    namespace RTTI
    {
-      namespace Inner
-      {
-
-         template<class T>
-         struct TypeOfMember;
-
-         template<class M, class T>
-         struct TypeOfMember<M T::*> {
-            using Type = M;
-         };
-
-         template<class T>
-         struct OwnerOfMember;
-
-         template<class M, class T>
-         struct OwnerOfMember<M T::*> {
-            using Type = T;
-         };
-
-      } // namespace Langulus::RTTI::Inner
-
 
       /// The main boundary indentifier token                                 
       constexpr Token MainBoundary = "MAIN";
@@ -587,16 +566,40 @@ namespace Langulus
 
       /// Used for member reflections inside data types                       
       ///   @tparam HANDLE - a pointer to a member variable                   
-      template<auto HANDLE>
+      ///   @attention having just `auto HANDLE` as a template argument       
+      ///      should generally be enough, and works as it should on MSVC,    
+      ///      however it doesn't make unique template instantiations on      
+      ///      Clang and causes very nasty bugs. So, we're forced to add      
+      ///      a couple more template parameters, to ensure proper templating 
+      template<auto HANDLE, class OWNER, class TYPE>
       struct NamedMember {
          using Member = decltype(HANDLE);
          static_assert(std::is_member_pointer_v<Member>,
             "Member must be a member pointer");
-         using Owner = typename Inner::OwnerOfMember<Member>::Type;
-         using Type  = typename Inner::TypeOfMember<Member>::Type;
+         using Owner = OWNER;
+         using Type  = TYPE; 
+         static constexpr TYPE OWNER::*Handle = HANDLE;
 
          Token mInfo {};
+
+         constexpr NamedMember() = default;
+         constexpr NamedMember(NamedValue<HANDLE>, TYPE OWNER::*) {}
       };
+
+      template<auto HANDLE, class OWNER, class TYPE>
+      NamedMember(NamedValue<HANDLE>, TYPE OWNER::*) -> NamedMember<HANDLE, OWNER, TYPE>;
+
+      namespace Inner
+      {
+
+         /// Generate constexpr tuple with the members                        
+         ///   @return a tuple of the desired member pointers                 
+         template<auto...HANDLES>
+         consteval auto CreateMembersTuple() {
+            return Types<decltype(NamedMember(NamedValue<HANDLES> {}, HANDLES))...>{};
+         }
+
+      } // namespace Langulus::RTTI::Inner
 
    #if LANGULUS_FEATURE(MANAGED_MEMORY)
       ///                                                                     

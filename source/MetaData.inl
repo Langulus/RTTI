@@ -19,9 +19,11 @@
 #include <tuple>
 
 #if 0
-   #define VERBOSE(...) Logger::Verbose("RTTI: ", __VA_ARGS__)
+   #define VERBOSE(...)      Logger::Verbose(__VA_ARGS__)
+   #define VERBOSE_TAB(...)  const auto tab = Logger::Verbose(__VA_ARGS__, Logger::Tabs{})
 #else
-   #define VERBOSE(...) LANGULUS(NOOP)
+   #define VERBOSE(...)      LANGULUS(NOOP)
+   #define VERBOSE_TAB(...)  LANGULUS(NOOP)
 #endif
 
 
@@ -54,16 +56,16 @@ namespace Langulus::RTTI
    ///                                                                        
 
    /// Generate a member definition                                           
-   ///   @param member - a NamedMember reflection                             
+   ///   @param h - a NamedMember reflection                                  
    ///   @return the generated member descriptor                              
-   template<auto HANDLE>
-   Member::Member(const NamedMember<HANDLE>&) {
-      using THIS = typename NamedMember<HANDLE>::Owner;
-      using DATA = typename NamedMember<HANDLE>::Type;
+   Member::Member(const auto& h) {
+      using HANDLE = Deref<decltype(h)>;
+      using THIS = typename HANDLE::Owner;
+      using DATA = typename HANDLE::Type;
 
       mValueRetriever = [](void* owner) -> void* {
          auto context = reinterpret_cast<THIS*>(owner);
-         return &(context->*HANDLE);
+         return &(context->*HANDLE::Handle);
       };
 
       mCount = ExtentOf<DATA>;
@@ -160,17 +162,6 @@ namespace Langulus::RTTI
       return reinterpret_cast<Byte*>(mValueRetriever(instance));
    }
 
-   namespace Inner
-   {
-
-      /// Generate constexpr tuple with the members                           
-      ///   @return a tuple of the desired member pointers                    
-      template<auto...HANDLES>
-      consteval auto CreateMembersTuple() {
-         return Types<NamedMember<HANDLES>...>{};
-      }
-
-   }
 
    ///                                                                        
    ///   Ability implementation                                               
@@ -750,6 +741,7 @@ namespace Langulus::RTTI
    ///   @param generated - the definition to populate with the information   
    template<CT::Decayed T>
    void MetaData::ReflectOriginType(MetaData& generated) noexcept {
+      VERBOSE_TAB("Reflecting type ", NameOf<T>(), "...");
       static_assert(CT::Complete<T>, "T must be a complete type");
 
       // Reflect deepness                                               
@@ -1010,8 +1002,10 @@ namespace Langulus::RTTI
 
          List::ForEach([&generated]<class M>{
             // Make sure that members don't come from inheritance       
-            if constexpr (CT::Exact<T, typename M::Owner>)
+            if constexpr (CT::Exact<T, typename M::Owner>) {
+               VERBOSE("Adding member: ", NameOf<M>());
                generated.mMembers.emplace_back(M {});
+            }
          });
       }
    }
@@ -1023,6 +1017,7 @@ namespace Langulus::RTTI
       if constexpr (Types<BASE...>::Empty)
          return;
       else {
+         //(VERBOSE("Adding base: ", NameOf<BASE>()), ...);
          (mBases.push_back(Base::From<Decay<T>, BASE>()), ...);
       }
    }
@@ -1759,3 +1754,4 @@ namespace Langulus::RTTI
 } // namespace Langulus::RTTI
 
 #undef VERBOSE
+#undef VERBOSE_TAB

@@ -113,8 +113,7 @@ namespace Langulus::RTTI
       constexpr Member() noexcept = default;
       constexpr Member(const Member&) noexcept = default;
 
-      template<auto HANDLE>
-      Member(const NamedMember<HANDLE>&);
+      Member(const auto&);
 
       Member& operator = (const Member&) noexcept = default;
 
