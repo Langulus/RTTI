@@ -547,7 +547,7 @@ namespace Langulus
       else if constexpr (CT::Same<T, bool>)
          return "b";
       else
-         return "<BAD SUFFIX>";
+         return "";
    }
 
    namespace RTTI
