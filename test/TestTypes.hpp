@@ -22,7 +22,7 @@ namespace Langulus::Anyness
 {
    template<class TYPE>
    struct Block {};
-
+   class Many  : public Block<> {};
    class Trait : public Block<> {};
 }
 
@@ -189,11 +189,11 @@ namespace Verbs
       template<CT::Data T>
       static bool ExecuteIn(T&, Verb&);
 
-      static bool ExecuteDefault(const Anyness::Block<>&, Verb&) {
+      static bool ExecuteDefault(const Anyness::Many&, Verb&) {
          return true;
       }
 
-      static bool ExecuteDefault(Anyness::Block<>&, Verb&) {
+      static bool ExecuteDefault(Anyness::Many&, Verb&) {
          return false;
       }
 
