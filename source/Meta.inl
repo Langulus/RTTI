@@ -9,6 +9,7 @@
 #include "MetaData.hpp"
 #include "MetaTrait.hpp"
 #include "MetaVerb.hpp"
+#include "MetaConst.hpp"
 
 
 namespace Langulus::RTTI

@@ -47,21 +47,22 @@ namespace Langulus::RTTI
       void UnregisterAmbiguous(const Token&, const Lowercase&, AMeta) noexcept;
       NOD() auto GetMeta(const auto&, const Token&, const Token&) const noexcept;
       NOD() const MetaList& GetMetaList(const auto&, const Token&, const Token&) const noexcept;
+
       template<bool REGISTER_AMBIGUOUS = true>
       auto Register(auto, auto&, const Lowercase&, const Token&) IF_UNSAFE(noexcept);
 
    public:
       NOD() LANGULUS_API(RTTI)
-      DMeta RegisterData(const Token&, const Token&) IF_UNSAFE(noexcept);
+      DMeta RegisterData(const Token&, const Token&);
 
       NOD() LANGULUS_API(RTTI)
-      CMeta RegisterConstant(const Token&, const Token&) IF_UNSAFE(noexcept);
+      CMeta RegisterConstant(const Token&, const Token&);
 
       NOD() LANGULUS_API(RTTI)
-      TMeta RegisterTrait(const Token&, const Token&) IF_UNSAFE(noexcept);
+      TMeta RegisterTrait(const Token&, const Token&);
 
       NOD() LANGULUS_API(RTTI)
-      VMeta RegisterVerb(const Token&, const Token&, const Token&, const Token&, const Token&, const Token&) IF_UNSAFE(noexcept);
+      VMeta RegisterVerb(const Token&, const Token&, const Token&, const Token&, const Token&, const Token&);
       
       LANGULUS_API(RTTI)
       void RegisterFileExtension(const Token&, DMeta, const Token&) IF_UNSAFE(noexcept);
@@ -156,17 +157,17 @@ namespace Langulus::RTTI
    }
 
    NOD() LANGULUS(INLINED)
-   DMeta RegisterData(const Token& token, const Token& boundary) IF_UNSAFE(noexcept) {
+   DMeta RegisterData(const Token& token, const Token& boundary) {
       return Instance.RegisterData(token, boundary);
    }
 
    NOD() LANGULUS(INLINED)
-   CMeta RegisterConstant(const Token& token, const Token& boundary) IF_UNSAFE(noexcept) {
+   CMeta RegisterConstant(const Token& token, const Token& boundary) {
       return Instance.RegisterConstant(token, boundary);
    }
 
    NOD() LANGULUS(INLINED)
-   TMeta RegisterTrait(const Token& token, const Token& boundary) IF_UNSAFE(noexcept) {
+   TMeta RegisterTrait(const Token& token, const Token& boundary) {
       return Instance.RegisterTrait(token, boundary);
    }
 
@@ -178,7 +179,7 @@ namespace Langulus::RTTI
       const Token& op,
       const Token& opReverse,
       const Token& boundary
-   ) IF_UNSAFE(noexcept) {
+   ) {
       return Instance.RegisterVerb(cppname, token, tokenReverse, op, opReverse, boundary);
    }
       
