@@ -10,6 +10,7 @@
 #include "Semantics.hpp"
 #include "Fundamental.hpp"
 #include "MetaData.hpp"
+#include "MetaConst.hpp"
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
    #include "RTTI.hpp"
 #else
