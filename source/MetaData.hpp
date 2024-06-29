@@ -86,6 +86,8 @@ namespace Langulus::RTTI
 
    using FDynamicCast = void*(*)(void*);
 
+   using NamedValueList = ::std::vector<CMeta>;
+
 
    ///                                                                        
    ///   Type-erased member variable reflection                               
@@ -167,32 +169,6 @@ namespace Langulus::RTTI
    };
 
 
-   ///                                                                        
-   ///   Meta constant, used to reflect named values for enums                
-   ///                                                                        
-   struct MetaConst : Meta {
-      LANGULUS(NAME) "CMeta";
-      LANGULUS_BASES(Meta);
-
-      static constexpr Token DefaultToken = "NoConst";
-
-      DMeta mValueType {};
-      const void* mPtrToValue {};
-
-   public:
-      MetaConst(const Token& token) : Meta {token} {}
-
-      NOD() constexpr bool Is(CMeta) const noexcept;
-
-   protected:
-      template<CT::Data T>
-      static constexpr Token GetReflectedToken() noexcept;
-   };
-
-   template<auto...>
-   constexpr auto CreateNamedValueTuple();
-
-   using NamedValueList = ::std::vector<CMeta>;
    using AbilityList = ::std::unordered_map<VMeta, Ability>;
    using MutableOverloadList = typename Ability::MutableOverloadList;
    using ConstantOverloadList = typename Ability::ConstantOverloadList;

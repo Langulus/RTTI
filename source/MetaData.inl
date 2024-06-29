@@ -1742,14 +1742,6 @@ namespace Langulus::RTTI
       result.mElementCount = mAllocationTable[msb];
       return result;
    }
-   
-   /// Check if two meta definitions match exactly                            
-   ///   @param other - the type to compare against                           
-   ///   @return true if types match                                          
-   LANGULUS(INLINED)
-   constexpr bool MetaConst::Is(CMeta other) const noexcept {
-      return other and mHash == other->mHash and mToken == other->mToken;
-   }
 
 } // namespace Langulus::RTTI
 

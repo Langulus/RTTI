@@ -28,7 +28,9 @@ namespace Langulus::Anyness
 
 namespace Langulus::Traits
 {
-   class Tag : Anyness::Trait {};
+   class Tag : Anyness::Trait {
+      LANGULUS(TRAIT) "Tag";
+   };
 }
 
 /// An empty trivial type                                                     

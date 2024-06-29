@@ -18,16 +18,15 @@
 namespace Langulus::RTTI
 {
 
-   /// Get the reflected token for a type                                     
-   /// If type wasn't reflected with LANGULUS(NAME), then the original C++    
-   /// name will be used                                                      
+   /// Get the reflected token for a trait                                    
+   /// The type has to be reflected with LANGULUS(TRAIT) "name"               
    ///   @return the token                                                    
    template<CT::Data T>
    consteval Token MetaTrait::GetReflectedToken() noexcept {
       if constexpr (requires { T::CTTI_Trait; })
          return T::CTTI_Trait;
       else
-         return CppNameOf<T>();
+         LANGULUS_ERROR("Type is not a trait definition");
    }
 
    /// Get the meta definition of a void trait                                

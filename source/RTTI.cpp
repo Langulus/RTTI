@@ -9,6 +9,7 @@
 #include "MetaData.inl"
 #include "MetaVerb.inl"
 #include "MetaTrait.inl"
+#include "MetaConst.inl"
 #include "Meta.inl"
 #include "Assumptions.hpp"
 #include <cctype>
@@ -344,10 +345,14 @@ namespace Langulus::RTTI
    ///   @return the newly defined meta data for that token                   
    DMeta Registry::RegisterData(
       const Token& token, const Token& boundary
-   ) IF_UNSAFE(noexcept) {
+   ) {
       auto lc = ToLowercase(token);
       LANGULUS_ASSUME(DevAssumes, not GetMetaData(lc, boundary),
-         "Data already registered");
+         "Data with this name is already registered: ", token);
+
+      LANGULUS_ASSERT(not GetMetaConstant(lc), Meta,
+         "Data name conflicts with constant: ", token);
+
       return Register(new MetaData {token}, mMetaData, lc, boundary);
    }
 
@@ -358,10 +363,18 @@ namespace Langulus::RTTI
    ///   @return the newly defined meta constant for that token               
    CMeta Registry::RegisterConstant(
       const Token& token, const Token& boundary
-   ) IF_UNSAFE(noexcept) {
+   ) {
       auto lc = ToLowercase(token);
       LANGULUS_ASSUME(DevAssumes, not GetMetaConstant(lc, boundary),
-         "Constant already registered");
+         "Constant with this name is already registered: ", token);
+
+      LANGULUS_ASSERT(not GetMetaTrait(lc), Meta,
+         "Constant name conflicts with trait: ", token);
+      LANGULUS_ASSERT(not GetMetaVerb(lc), Meta,
+         "Constant name conflicts with verb: ", token);
+      LANGULUS_ASSERT(not GetMetaData(lc), Meta,
+         "Constant name conflicts with data: ", token);
+
       return Register(new MetaConst {token}, mMetaConstants, lc, boundary);
    }
 
@@ -372,10 +385,16 @@ namespace Langulus::RTTI
    ///   @return the newly defined meta trait for that token                  
    TMeta Registry::RegisterTrait(
       const Token& token, const Token& boundary
-   ) IF_UNSAFE(noexcept) {
+   ) {
       auto lc = ToLowercase(token);
       LANGULUS_ASSUME(DevAssumes, not GetMetaTrait(lc, boundary),
-         "Trait already registered");
+         "Trait with this name is already registered: ", token);
+
+      LANGULUS_ASSERT(not GetMetaConstant(lc), Meta,
+         "Trait name conflicts with constant: ", token);
+      LANGULUS_ASSERT(not GetMetaVerb(lc), Meta,
+         "Trait name conflicts with verb: ", token);
+
       return Register(new MetaTrait {token}, mMetaTraits, lc, boundary);
    }
 
@@ -395,7 +414,7 @@ namespace Langulus::RTTI
       const Token& op,
       const Token& opReverse,
       const Token& boundary
-   ) IF_UNSAFE(noexcept) {
+   ) {
       LANGULUS_ASSUME(DevAssumes, not boundary.empty(),
          "Bad boundary provided");
       const auto cppnamelc = ToLowercase(cppname);
@@ -409,13 +428,30 @@ namespace Langulus::RTTI
       auto lc2 = ToLowercase(tokenReverse);
       LANGULUS_ASSUME(DevAssumes, not GetMetaVerb(lc1, boundary)
                               and not GetMetaVerb(lc2, boundary),
-         "Verb already registered");
+         "Verb already registered with one of the following tokens: ",
+         token, ", ", tokenReverse
+      );
+
+      LANGULUS_ASSERT(not GetMetaConstant(token), Meta,
+         "Verb positive token conflicts with constant: ", token);
+      LANGULUS_ASSERT(not GetMetaTrait(token), Meta,
+         "Verb positive token conflicts with trait: ", token);
+
+      LANGULUS_ASSERT(not GetMetaConstant(tokenReverse), Meta,
+         "Verb negative token conflicts with constant: ", tokenReverse);
+      LANGULUS_ASSERT(not GetMetaTrait(tokenReverse), Meta,
+         "Verb negative token conflicts with trait: ", tokenReverse);
 
       Lowercase op1;
       if (not op.empty()) {
          op1 = IsolateOperator(op);
          LANGULUS_ASSUME(DevAssumes, not GetOperator(op1, boundary),
             "Positive operator already registered");
+
+         LANGULUS_ASSERT(not GetMetaConstant(op1), Meta,
+            "Verb positive operator conflicts with constant: ", op1);
+         LANGULUS_ASSERT(not GetMetaTrait(op1), Meta,
+            "Verb positive operator conflicts with trait: ", op1);
       }
 
       Lowercase op2;
@@ -423,6 +459,11 @@ namespace Langulus::RTTI
          op2 = IsolateOperator(opReverse);
          LANGULUS_ASSUME(DevAssumes, not GetOperator(op2, boundary),
             "Negative operator already registered");
+
+         LANGULUS_ASSERT(not GetMetaConstant(op2), Meta,
+            "Verb positive operator conflicts with constant: ", op2);
+         LANGULUS_ASSERT(not GetMetaTrait(op2), Meta,
+            "Verb positive operator conflicts with trait: ", op2);
       }
 
       const auto meta = Register<false>(
