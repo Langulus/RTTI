@@ -245,9 +245,8 @@ namespace Langulus::RTTI
 
       // Ambiguity if reached, report error and throw                   
       {
-         auto tab = Logger::Error(
-            "Ambiguous symbol: `", keyword,
-            "`; Could be one of: ", Logger::Tabs {}
+         auto tab = Logger::ErrorTab(
+            "Ambiguous symbol: `", keyword, "`; Could be one of: "
          );
          for (auto& meta : origins) {
             Logger::Verbose(Logger::Red, 
