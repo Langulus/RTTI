@@ -63,10 +63,10 @@ struct MyReflectedType : AbstractBase {
    LANGULUS_FILES() "txt,rtf";
 
    // Each type can have its own major version.
-   // This can be used to detect version mismatches at runtime, when linking different builds of modules/libraries
+   // This can be used to detect version mismatches at runtime when linking different builds of modules/libraries
    LANGULUS_VERSION_MAJOR() 1;
    // Each type can have its own minor version
-   // This can be used to warn users of minor changes, whenl linking different builds of modules/libraries
+   // This can be used to warn users of minor changes when linking different builds of modules/libraries
    LANGULUS_VERSION_MINOR() 0;
 
    // Make sure our type is considered Plain Old Data
@@ -88,7 +88,7 @@ struct MyReflectedType : AbstractBase {
    // Reflect a suffix, that can be used when parsing literals
    LANGULUS_SUFFIX() "my";
 
-   // Constrol the minimum number of instances allocated
+   // Control the minimum number of instances allocated
    LANGULUS_ALLOCATION_PAGE() 128;
 
    // MyReflectedType inherits from AbstractBase, and will be reflected as abstract
