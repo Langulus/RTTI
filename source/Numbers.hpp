@@ -7,7 +7,7 @@
 ///                                                                           
 #pragma once
 #include "Reflection.hpp"
-#include "Semantics.hpp"
+#include "Intent.hpp"
 
 
 namespace Langulus::CT
@@ -20,16 +20,16 @@ namespace Langulus::CT
       /// constexpr static member, or constexpr size() method                 
       template<class T>
       consteval Count CountOfInner() noexcept {
-         using DT = Decay<Desem<T>>;
+         using DT = Decay<Deint<T>>;
          if constexpr (requires {{DT::MemberCount} -> Similar<Count>; })
-            return DT::MemberCount * ExtentOf<Desem<T>>;
+            return DT::MemberCount * ExtentOf<Deint<T>>;
          else if constexpr (requires (DT a) {{a.size()} -> Similar<size_t>;}) {
             if constexpr (IsConstexpr([] { return DT {}.size(); }))
-               return DT {}.size() * ExtentOf<Desem<T>>;
+               return DT {}.size() * ExtentOf<Deint<T>>;
             else
-               return ExtentOf<Desem<T>>;
+               return ExtentOf<Deint<T>>;
          }
-         else return ExtentOf<Desem<T>>;
+         else return ExtentOf<Deint<T>>;
       }
 
       template<class T1, class...TN>
