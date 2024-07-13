@@ -20,19 +20,19 @@ namespace Langulus
       /// Additionally, bounded arrays with more than a single element are    
       /// also considered Vector.                                             
       template<class...T>
-      concept Vector = (((Typed<Desem<T>>
+      concept Vector = (((Typed<Deint<T>>
               and Inner::CountOf<T>() > 1
-              and sizeof(Desem<T>) == sizeof(TypeOf<Desem<T>>) * Inner::CountOf<T>()
-            ) or (ExtentOf<Desem<T>> > 1)
+              and sizeof(Deint<T>) == sizeof(TypeOf<Deint<T>>) * Inner::CountOf<T>()
+            ) or (ExtentOf<Deint<T>> > 1)
          ) and ...);
 
       /// Scalar concept - any fundamental or custom number type, regardless  
-      /// if wrapped inside a semantic. Bounded arrays of those with          
+      /// if wrapped inside an intent. Bounded arrays of those with           
       /// ExtentOf == 1 are also considered scalars.                          
       template<class...T>
       concept Scalar = ((Inner::CountOf<T>() == 1
-            and (Byte<Deext<Desem<T>>> or Integer<Deext<Desem<T>>>
-             or  Real<Deext<Desem<T>>> or Character<Deext<Desem<T>>>)
+            and (Byte<Deext<Deint<T>>> or Integer<Deext<Deint<T>>>
+             or  Real<Deext<Deint<T>>> or Character<Deext<Deint<T>>>)
          ) and ...);
 
    } // namespace Langulus::CT
@@ -53,7 +53,7 @@ namespace Langulus
    ///   @return a reference to the underlying type                           
    template<CT::Scalar T, bool FAKE = false> NOD() LANGULUS(INLINED)
    constexpr decltype(auto) FundamentalCast(const T& a) noexcept {
-      using DT = Decay<Desem<T>>;
+      using DT = Decay<Deint<T>>;
       if constexpr (CT::Fundamental<DT>) {
          // Already fundamental, just forward it                        
          return (a);
@@ -78,7 +78,7 @@ namespace Langulus
    ///   @return a reference to the underlying type                           
    template<CT::Scalar T, bool FAKE = false> NOD() LANGULUS(INLINED)
    constexpr decltype(auto) FundamentalCast(T& a) noexcept {
-      using DT = Decay<Desem<T>>;
+      using DT = Decay<Deint<T>>;
       if constexpr (CT::Fundamental<DT>) {
          // Already fundamental, just forward it                        
          return (a);
@@ -115,8 +115,8 @@ namespace Langulus
    ///           1 if both arguments are not arrays                           
    template<class LHS, class RHS>
    consteval Count OverlapExtents() noexcept {
-      constexpr auto lhs = ExtentOf<Desem<LHS>>;
-      constexpr auto rhs = ExtentOf<Desem<RHS>>;
+      constexpr auto lhs = ExtentOf<Deint<LHS>>;
+      constexpr auto rhs = ExtentOf<Deint<RHS>>;
 
       if constexpr (lhs > 1 and rhs > 1)
          return lhs < rhs ? lhs : rhs;
@@ -141,8 +141,8 @@ namespace Langulus
    ///           1 if both arguments are not arrays                           
    template<class LHS, class RHS>
    consteval Count OverlapCounts() noexcept {
-      constexpr auto lhs = CountOf<Desem<LHS>>;
-      constexpr auto rhs = CountOf<Desem<RHS>>;
+      constexpr auto lhs = CountOf<Deint<LHS>>;
+      constexpr auto rhs = CountOf<Deint<RHS>>;
 
       if constexpr (lhs > 1 and rhs > 1)
          return lhs < rhs ? lhs : rhs;
@@ -171,12 +171,12 @@ namespace Langulus
       ///  - if both types are not CT::Fundamental, the first type is always  
       ///    preferred (fallback)                                             
       ///   @attention this will discard any sparseness or other modifiers    
-      ///   @attention this will discard any semantics                        
+      ///   @attention this will shed any intents                             
       template<class T1, class T2>
       consteval auto Lossless() noexcept {
          constexpr auto size = OverlapCounts<T1, T2>();
-         using LHS = Decay<TypeOf<Desem<T1>>>;
-         using RHS = Decay<TypeOf<Desem<T2>>>;
+         using LHS = Decay<TypeOf<Deint<T1>>>;
+         using RHS = Decay<TypeOf<Deint<T2>>>;
 
          if constexpr (CT::Fundamental<LHS, RHS>) {
             // Both types are fundamental                               

@@ -6,7 +6,7 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-#include "Semantics.hpp"
+#include "Intent.hpp"
 
 
 namespace Langulus::CT

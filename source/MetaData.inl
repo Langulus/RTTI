@@ -7,7 +7,7 @@
 ///                                                                           
 #pragma once
 #include "NameOf.hpp"
-#include "Semantics.hpp"
+#include "Intent.hpp"
 #include "Fundamental.hpp"
 #include "MetaData.hpp"
 #include "MetaConst.hpp"
@@ -791,7 +791,7 @@ namespace Langulus::RTTI
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
                auto toT = static_cast<T*>(to);
-               SemanticNew(toT, Copy(*fromT));
+               IntentNew(toT, Copy(*fromT));
             };
       }
             
@@ -801,7 +801,7 @@ namespace Langulus::RTTI
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
                auto toT = static_cast<T*>(to);
-               SemanticNew(toT, Refer(*fromT));
+               IntentNew(toT, Refer(*fromT));
             };
       }
             
@@ -811,7 +811,7 @@ namespace Langulus::RTTI
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
                auto toT = static_cast<T*>(to);
-               SemanticNew(toT, Clone(*fromT));
+               IntentNew(toT, Clone(*fromT));
             };
       }
 
@@ -821,7 +821,7 @@ namespace Langulus::RTTI
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
                auto toT = static_cast<T*>(to);
-               SemanticNew(toT, Disown(*fromT));
+               IntentNew(toT, Disown(*fromT));
             };
       }
 
@@ -831,7 +831,7 @@ namespace Langulus::RTTI
             [](void* from, void* to) {
                auto fromT = static_cast<T*>(from);
                auto toT = static_cast<T*>(to);
-               SemanticNew(toT, Move(*fromT));
+               IntentNew(toT, Move(*fromT));
             };
       }
 
@@ -841,7 +841,7 @@ namespace Langulus::RTTI
             [](void* from, void* to) {
                auto fromT = static_cast<T*>(from);
                auto toT = static_cast<T*>(to);
-               SemanticNew(toT, Abandon(*fromT));
+               IntentNew(toT, Abandon(*fromT));
             };
       }
 
@@ -879,7 +879,7 @@ namespace Langulus::RTTI
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
                auto toT = static_cast<T*>(to);
-               SemanticAssign(*toT, Copy(*fromT));
+               IntentAssign(*toT, Copy(*fromT));
             };
       }
       
@@ -889,7 +889,7 @@ namespace Langulus::RTTI
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
                auto toT = static_cast<T*>(to);
-               SemanticAssign(*toT, Refer(*fromT));
+               IntentAssign(*toT, Refer(*fromT));
             };
       }
 
@@ -899,7 +899,7 @@ namespace Langulus::RTTI
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
                auto toT = static_cast<T*>(to);
-               SemanticAssign(*toT, Disown(*fromT));
+               IntentAssign(*toT, Disown(*fromT));
             };
       }
             
@@ -909,7 +909,7 @@ namespace Langulus::RTTI
             [](const void* from, void* to) {
                auto fromT = static_cast<const T*>(from);
                auto toT = static_cast<T*>(to);
-               SemanticAssign(*toT, Clone(*fromT));
+               IntentAssign(*toT, Clone(*fromT));
             };
       }
 
@@ -919,7 +919,7 @@ namespace Langulus::RTTI
             [](void* from, void* to) {
                auto fromT = static_cast<T*>(from);
                auto toT = static_cast<T*>(to);
-               SemanticAssign(*toT, Move(*fromT));
+               IntentAssign(*toT, Move(*fromT));
             };
       }
 
@@ -929,7 +929,7 @@ namespace Langulus::RTTI
             [](void* from, void* to) {
                auto fromT = static_cast<T*>(from);
                auto toT = static_cast<T*>(to);
-               SemanticAssign(*toT, Abandon(*fromT));
+               IntentAssign(*toT, Abandon(*fromT));
             };
       }
 

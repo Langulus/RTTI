@@ -6,7 +6,7 @@ add_executable(LangulusRTTITest
 	TestCTTI.cpp
 	TestHashing.cpp
 	TestNameOf.cpp
-	TestSemantics.cpp
+	TestIntents.cpp
 	TestSimilarity.cpp
 	$<$<BOOL:${LANGULUS_FEATURE_MANAGED_REFLECTION}>:TestRTTI.cpp>
 )
