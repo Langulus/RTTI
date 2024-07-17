@@ -91,8 +91,8 @@ namespace Langulus::RTTI
 
       IF_LANGULUS_MANAGED_REFLECTION(generated.mLibraryName = RTTI::Boundary);
 
-      VERBOSE("Trait ", Logger::Push, Logger::Purple, generated.mToken,
-         Logger::Pop, Logger::Green, " registered (", generated.mLibraryName, ")");
+      VERBOSE("Trait ", Logger::PushPurple, generated.mToken,
+         Logger::PopGreen, " registered (", generated.mLibraryName, ")");
       return &generated;
    }
 

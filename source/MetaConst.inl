@@ -90,8 +90,8 @@ namespace Langulus::RTTI
       generated.mValueType  = MetaData::Of<decltype(T::Value)>();
       generated.mPtrToValue = &staticInstance;
 
-      VERBOSE("Constant ", Logger::Push, Logger::Yellow, generated.mToken,
-         Logger::Pop, Logger::Green, " registered (", generated.mLibraryName, ")");
+      VERBOSE("Constant ", Logger::PushYellow, generated.mToken,
+         Logger::PopGreen, " registered (", generated.mLibraryName, ")");
       return &generated;
    }
       
