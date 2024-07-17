@@ -456,8 +456,8 @@ namespace Langulus::RTTI
          generated.mAllocationTable[bit] = ::std::max(minElements, elements);
       }
 
-      VERBOSE("Data ", Logger::Push, Logger::Cyan, generated.mToken,
-         Logger::Pop, Logger::Green, " registered (", generated.mLibraryName, ")");
+      VERBOSE("Data ", Logger::PushCyan, generated.mToken,
+         Logger::PopGreen, " registered (", generated.mLibraryName, ")");
       return &generated;
    }
 
@@ -550,8 +550,8 @@ namespace Langulus::RTTI
       generated.mCppName = CppNameOf<T>();
       generated.mIsConstant = CT::Constant<T>;
 
-      VERBOSE("Data ", Logger::Push, Logger::Cyan, generated.mToken,
-         Logger::Pop, Logger::Green, " registered (", generated.mLibraryName, ")");
+      VERBOSE("Data ", Logger::PushCyan, generated.mToken,
+         Logger::PopGreen, " registered (", generated.mLibraryName, ")");
       return &generated;
    }
 
@@ -688,8 +688,8 @@ namespace Langulus::RTTI
 
       ReflectOriginType<T>(generated);
 
-      VERBOSE("Data ", Logger::Push, Logger::Cyan, generated.mToken,
-         Logger::Pop, Logger::Green, " registered (", generated.mLibraryName, ")");
+      VERBOSE("Data ", Logger::PushCyan, generated.mToken,
+         Logger::PopGreen, " registered (", generated.mLibraryName, ")");
       return &generated;
    }
 
@@ -1120,8 +1120,8 @@ namespace Langulus::RTTI
       new (&staticInstance) T {D::Value};
       cmeta.mPtrToValue = &staticInstance;
 
-      VERBOSE("Constant ", Logger::Push, Logger::Yellow, cmeta.mToken,
-         Logger::Pop, Logger::Green, " registered (", cmeta.mLibraryName, ")");
+      VERBOSE("Constant ", Logger::PushYellow, cmeta.mToken,
+         Logger::PopGreen, " registered (", cmeta.mLibraryName, ")");
 
       mNamedValues.emplace_back(&cmeta);
    }

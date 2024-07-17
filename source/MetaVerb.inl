@@ -220,19 +220,19 @@ namespace Langulus::RTTI
 
       if (generated.mOperator.size()) {
          const auto op1 = IsolateOperator(generated.mOperator);
-         VERBOSE("Operator ", Logger::Push, Logger::DarkGreen, op1,
-            Logger::Pop, Logger::Green, " registered (", generated.mLibraryName, ")");
+         VERBOSE("Operator ", Logger::PushDarkGreen, op1,
+            Logger::PopGreen, " registered (", generated.mLibraryName, ")");
       }
 
       if (generated.mOperatorReverse.size() and generated.mOperatorReverse != generated.mOperator) {
          const auto op2 = IsolateOperator(generated.mOperatorReverse);
-         VERBOSE("Operator ", Logger::Push, Logger::DarkGreen, op2,
-            Logger::Pop, Logger::Green, " registered (", generated.mLibraryName, ")");
+         VERBOSE("Operator ", Logger::PushDarkGreen, op2,
+            Logger::PopGreen, " registered (", generated.mLibraryName, ")");
       }
 
-      VERBOSE("Verb ", Logger::Push, Logger::DarkGreen,
+      VERBOSE("Verb ", Logger::PushDarkGreen,
          generated.mToken, "/", generated.mTokenReverse,
-         Logger::Pop, Logger::Green, " registered (", generated.mLibraryName, ")");
+         Logger::PopGreen, " registered (", generated.mLibraryName, ")");
 
       return &generated;
    }

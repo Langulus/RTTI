@@ -520,7 +520,7 @@ namespace Langulus::RTTI
    /// defined within the given boundary token                                
    ///   @param boundary - the boundary token to search for                   
    void Registry::UnloadBoundary(const Token& boundary) {
-      VERBOSE(Logger::Push, Logger::Underline, Logger::Red, 
+      VERBOSE(Logger::PushRed, Logger::Underline, 
          "Unloading library ", boundary, Logger::Pop);
 
       // Unload constants                                               
@@ -531,8 +531,8 @@ namespace Langulus::RTTI
             continue;
          }
 
-         VERBOSE("Constant ", Logger::Push, Logger::Yellow, found->second->mToken,
-            Logger::Pop, Logger::Red, " unregistered (", boundary, ")");
+         VERBOSE("Constant ", Logger::PushYellow, found->second->mToken,
+            Logger::PopRed, " unregistered (", boundary, ")");
 
          UnregisterAmbiguous(boundary, pair->first, found->second.mMeta);
          delete found->second.mMeta;
@@ -550,8 +550,8 @@ namespace Langulus::RTTI
             continue;
          }
 
-         VERBOSE("File ", Logger::Push, Logger::Cyan, pair->first,
-            Logger::Pop, Logger::Red, " unregistered (", boundary, ")");
+         VERBOSE("File ", Logger::PushCyan, pair->first,
+            Logger::PopRed, " unregistered (", boundary, ")");
 
          pair->second.erase(found);
          if (pair->second.empty())
@@ -567,8 +567,8 @@ namespace Langulus::RTTI
             continue;
          }
 
-         VERBOSE("Data ", Logger::Push, Logger::Cyan, found->second->mToken,
-            Logger::Pop, Logger::Red, " unregistered (", boundary, ")");
+         VERBOSE("Data ", Logger::PushCyan, found->second->mToken,
+            Logger::PopRed, " unregistered (", boundary, ")");
 
          UnregisterAmbiguous(boundary, pair->first, found->second.mMeta);
          delete found->second.mMeta;
@@ -586,8 +586,8 @@ namespace Langulus::RTTI
             continue;
          }
 
-         VERBOSE("Trait ", Logger::Push, Logger::Purple, found->second->mToken,
-            Logger::Pop, Logger::Red, " unregistered (", boundary, ")");
+         VERBOSE("Trait ", Logger::PushPurple, found->second->mToken,
+            Logger::PopRed, " unregistered (", boundary, ")");
 
          UnregisterAmbiguous(boundary, pair->first, found->second.mMeta);
          delete found->second.mMeta;
@@ -623,8 +623,8 @@ namespace Langulus::RTTI
 
          if (definition->mOperator.size()) {
             const auto op1 = IsolateOperator(definition->mOperator);
-            VERBOSE("Operator ", Logger::Push, Logger::DarkGreen, op1,
-               Logger::Pop, Logger::Red, " unregistered (", boundary, ")");
+            VERBOSE("Operator ", Logger::PushDarkGreen, op1,
+               Logger::PopRed, " unregistered (", boundary, ")");
             auto foundop1 = mOperators.find(op1);
             if (foundop1 != mOperators.end())
                foundop1->second.erase(boundary);
@@ -633,21 +633,21 @@ namespace Langulus::RTTI
          if (definition->mOperatorReverse.size()
          and definition->mOperatorReverse != definition->mOperator) {
             const auto op2 = IsolateOperator(definition->mOperatorReverse);
-            VERBOSE("Operator ", Logger::Push, Logger::DarkGreen, op2,
-               Logger::Pop, Logger::Red, " unregistered (", boundary, ")");
+            VERBOSE("Operator ", Logger::PushDarkGreen, op2,
+               Logger::PopRed, " unregistered (", boundary, ")");
             auto foundop2 = mOperators.find(op2);
             if (foundop2 != mOperators.end())
                foundop2->second.erase(boundary);
          }
 
          if (definition->mToken != definition->mTokenReverse) {
-            VERBOSE("Verb ", Logger::Push, Logger::DarkGreen,
+            VERBOSE("Verb ", Logger::PushDarkGreen,
                definition->mToken, "/", definition->mTokenReverse,
-               Logger::Pop, Logger::Red, " unregistered (", boundary, ")");
+               Logger::PopRed, " unregistered (", boundary, ")");
          }
          else {
-            VERBOSE("Verb ", Logger::Push, Logger::DarkGreen,
-               definition->mToken, Logger::Pop, Logger::Red,
+            VERBOSE("Verb ", Logger::PushDarkGreen,
+               definition->mToken, Logger::PopRed,
                " unregistered (", boundary, ")");
          }
 
