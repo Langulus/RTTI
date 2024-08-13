@@ -249,8 +249,8 @@ namespace Langulus::RTTI
             "Ambiguous symbol: `", keyword, "`; Could be one of: "
          );
          for (auto& meta : origins) {
-            Logger::Verbose(Logger::Red, 
-               '`', meta->mCppName, "` (", meta.Kind(), ')');
+            Logger::Line('`', Logger::PushDarkYellow,
+               meta->mCppName, Logger::Pop, "` (", meta.Kind(), ')');
          }
       }
       LANGULUS_THROW(Meta, "Ambiguous symbol");
