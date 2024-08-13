@@ -16,8 +16,14 @@ namespace Langulus::RTTI
 {
    namespace Inner
    {
+      /// Types used for pattern matching while isolating typenames           
+      /// These need to be in exactly this namespace to avoid corner cases    
+      struct Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK {};
+      enum { Oddly_Specific_EnumASDOLSAJDPAFHOAF };
 
       /// String length at compile-time                                       
+      ///   @param str - null-terminated string to get the length of          
+      ///   @return the length                                                
       consteval int LengthOf(const char* str) {
          int n = 0;
          while (*(str++)) ++n;
@@ -25,16 +31,23 @@ namespace Langulus::RTTI
       }
 
       /// String match at compile-time                                        
-      consteval bool Match(const char* str1, const char* what) {
-         while (*str1 and *what and *(str1++) == *(what++));
-         return *what == 0;
+      ///   @param lhs - string to test (may not be null-terminated)          
+      ///   @param rhs - string to compare against (must be null-terminated)  
+      ///   @return true if lhs begins with rhs                               
+      consteval bool Match(const char* lhs, const char* rhs) {
+         while (*lhs and *rhs and *(lhs++) == *(rhs++));
+         return *rhs == 0;
       }
 
+      /// Stringifies type T by exploiting the preprocessor                   
+      ///   @attention works only on modern compilers                         
       template<class T>
       consteval auto WrappedTypeName() {
          return LANGULUS_FUNCTION();
       }
 
+      /// Stringifies value T by exploiting the preprocessor                  
+      ///   @attention works only on modern compilers                         
       template<auto T>
       consteval auto WrappedEnumName() {
          return LANGULUS_FUNCTION();
@@ -44,24 +57,23 @@ namespace Langulus::RTTI
       ///   @return the type token                                            
       template<class T>
       consteval Token IsolateTypename() {
-         struct Oddly_Specific_Type {};
          constexpr auto name = WrappedTypeName<T>();
          constexpr auto len = LengthOf(name);
-         constexpr auto helper_name = WrappedTypeName<Oddly_Specific_Type>();
+         constexpr auto helper_name = WrappedTypeName<Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK>();
          constexpr auto helper_len = LengthOf(helper_name);
          static_assert(len > 0);
-         static_assert(helper_len > 19);
+         static_assert(helper_len > 61);
 
          int left = 0;
          while (left < helper_len and left < len and helper_name[left] == name[left]
-         and not Match(helper_name + left, "Oddly_Specific_Type"))
-            left++;
+         and not Match(helper_name + left, "Langulus::RTTI::Inner::Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK"))
+            ++left;
 
          int right = 1;
-         while (right + 19 <= helper_len and right <= len
+         while (right + 61 <= helper_len and right <= len
          and helper_name[helper_len - right] == name[len - right]
-         and not Match(helper_name + (helper_len - right - 19), "Oddly_Specific_Type"))
-            right++;
+         and not Match(helper_name + (helper_len - right - 61), "Langulus::RTTI::Inner::Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK"))
+            ++right;
 
          if (len - right <= left)
             throw "invalid token";
@@ -72,24 +84,23 @@ namespace Langulus::RTTI
       ///   @return the named value token                                     
       template<auto T>
       consteval Token IsolateConstant() {
-         enum { Oddly_Specific_Enum };
          constexpr auto name = WrappedEnumName<T>();
          constexpr auto len = LengthOf(name);
-         constexpr auto helper_name = WrappedEnumName<Oddly_Specific_Enum>();
+         constexpr auto helper_name = WrappedEnumName<Oddly_Specific_EnumASDOLSAJDPAFHOAF>();
          constexpr auto helper_len = LengthOf(helper_name);
          static_assert(len > 0);
-         static_assert(helper_len > 19);
+         static_assert(helper_len > 58);
 
          int left = 0;
          while (left < helper_len and left < len and helper_name[left] == name[left]
-         and not Match(helper_name + left, "Oddly_Specific_Enum"))
-            left++;
+         and not Match(helper_name + left, "Langulus::RTTI::Inner::Oddly_Specific_EnumASDOLSAJDPAFHOAF"))
+            ++left;
 
          int right = 1;
-         while (right + 19 <= helper_len and right <= len
+         while (right + 58 <= helper_len and right <= len
          and helper_name[helper_len - right] == name[len - right]
-         and not Match(helper_name + (helper_len - right - 19), "Oddly_Specific_Enum"))
-            right++;
+         and not Match(helper_name + (helper_len - right - 58), "Langulus::RTTI::Inner::Oddly_Specific_EnumASDOLSAJDPAFHOAF"))
+            ++right;
 
          if (len - right <= left)
             throw "invalid token";
@@ -560,6 +571,7 @@ namespace Langulus
    ///                                                                        
    ///   NameOf that considers the following name reflections, if any,        
    ///   in the specified order:                                              
+   ///      LANGULUS(CONSTANT)                                                
    ///      LANGULUS(POSITIVE_VERB)                                           
    ///      LANGULUS(VERB)                                                    
    ///      LANGULUS(TRAIT)                                                   
@@ -569,7 +581,13 @@ namespace Langulus
    template<CT::Data T>
    consteval Token NameOf() {
       using DT = Decay<T>;
-      if constexpr (requires { DT::CTTI_PositiveVerb; }) {
+      if constexpr (requires { DT::CTTI_Constant; }) {
+         if constexpr (CT::Decayed<Deref<T>>)
+            return DT::CTTI_Constant;
+         else
+            return CustomNameOf<Deref<T>>::Generate();
+      }
+      else if constexpr (requires { DT::CTTI_PositiveVerb; }) {
          if constexpr (CT::Decayed<Deref<T>>)
             return DT::CTTI_PositiveVerb;
          else

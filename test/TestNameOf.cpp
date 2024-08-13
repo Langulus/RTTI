@@ -15,6 +15,49 @@ using VeryComplexTemplatedAlias =
    One::Two::Three::VeryComplexTemplate<
       One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>>;
 
+class A; class B; class C; class D; class E; class F; class G; class H; class I;
+class J; class K; class L; class M; class N; class O; class P; class Q; class R;
+class S; class T; class U; class V; class W; class X; class Y; class Z; class _;
+
+class a; class b; class c; class d; class e; class f; class g; class h; class i;
+class j; class k; class l; class m; class n; class o; class p; class q; class r;
+class s; class t; class u; class v; class w; class x; class y; class z;
+
+
+namespace Langulus::RTTI::Inner
+{
+   template<class T>
+   Token IsolateTypenameAtRuntime() {
+      // Weirdly enough, the letter L caused problems... so here we     
+      // have a non-constexpr equivalent to RTTI::Inner::IsolateTypename
+      // to debug for problems                                          
+      auto matcher = [](const char* lhs, const char* rhs) -> bool {
+         while (*lhs and *rhs and *(lhs++) == *(rhs++));
+         return *rhs == 0;
+      };
+
+      volatile auto name = RTTI::Inner::WrappedTypeName<T>();
+      volatile int len = static_cast<int>(strlen(name));
+      volatile auto helper_name = RTTI::Inner::WrappedTypeName<RTTI::Inner::Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK>();
+      volatile int helper_len = static_cast<int>(strlen(helper_name));
+      REQUIRE(len > 0);
+      REQUIRE(helper_len > 61);
+
+      int left = 0;
+      while (left < helper_len and left < len and helper_name[left] == name[left]
+      and not matcher(helper_name + left, "Langulus::RTTI::Inner::Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK"))
+         ++left;
+
+      int right = 1;
+      while (right + 61 <= helper_len and right <= len
+      and helper_name[helper_len - right] == name[len - right]
+      and not matcher(helper_name + (helper_len - right - 61), "Langulus::RTTI::Inner::Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK"))
+         ++right;
+
+      REQUIRE(len - right > left);
+      return Token(name + left, name + len - right);
+   }
+}
 
 SCENARIO("NameOf", "[nameof]") {
    GIVEN("Type uint16_t") {
@@ -64,6 +107,72 @@ SCENARIO("NameOf", "[nameof]") {
          auto name = NameOf<Pi::Number>();
          REQUIRE(name == "Pi::Number");
       }
+   }
+
+   GIVEN("Single letter classes (corner case)") {
+      #define DEFINE_SINGLE_LETTER_NAMEOF_TEST(WHAT) \
+         WHEN("Taken the name of class " #WHAT) { \
+            auto name = NameOf<::WHAT>(); \
+            Logger::Special("At runtime: ", std::string(RTTI::Inner::IsolateTypenameAtRuntime<::WHAT>())); \
+            Logger::Special("Wrapped:  ",   std::string(RTTI::Inner::WrappedTypeName<::WHAT>())); \
+            Logger::Special("Isolated: ",   std::string(RTTI::Inner::IsolateTypename<::WHAT>())); \
+            REQUIRE(name == #WHAT); \
+         }
+
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(A)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(B)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(C)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(D)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(E)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(F)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(G)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(H)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(I)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(J)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(K)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(L)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(M)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(N)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(O)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(P)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(Q)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(R)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(S)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(T)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(U)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(V)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(W)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(X)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(Y)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(Z)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(_)
+
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(a)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(b)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(c)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(d)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(e)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(f)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(g)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(h)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(i)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(j)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(k)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(l)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(m)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(n)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(o)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(p)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(q)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(r)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(s)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(t)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(u)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(v)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(w)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(x)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(y)
+      DEFINE_SINGLE_LETTER_NAMEOF_TEST(z)
    }
 
    GIVEN("Type IncompleteType") {
