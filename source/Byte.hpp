@@ -249,8 +249,6 @@ namespace Langulus
 
    
    /// Wrapper for memcpy                                                     
-   ///   @tparam TO - destination memory type (deducible)                     
-   ///   @tparam FROM - source memory type (deducible)                        
    ///   @param to - [out] destination memory                                 
    ///   @param from - source of data to copy                                 
    template<class TO, class FROM> LANGULUS(INLINED)
@@ -274,8 +272,6 @@ namespace Langulus
    }
 
    /// Wrapper for memcpy                                                     
-   ///   @tparam TO - destination memory type (deducible)                     
-   ///   @tparam FROM - source memory type (deducible)                        
    ///   @param to - [out] destination memory                                 
    ///   @param from - source of data to copy                                 
    ///   @param count - number of elements to copy                            
@@ -308,7 +304,6 @@ namespace Langulus
    
    /// Wrapper for memset                                                     
    ///   @tparam FILLER - value to fill in with                               
-   ///   @tparam TO - destination memory type (deducible)                     
    ///   @param to - [out] destination memory                                 
    template<int FILLER, class TO> LANGULUS(INLINED)
    void FillMemory(TO* to) noexcept {
@@ -324,7 +319,6 @@ namespace Langulus
    
    /// Wrapper for memset                                                     
    ///   @tparam FILLER - value to fill in with                               
-   ///   @tparam TO - destination memory type (deducible)                     
    ///   @param to - [out] destination memory                                 
    ///   @param count - number of elements to fill                            
    ///   @attention count becomes bytecount, when TO is void                  
@@ -341,7 +335,6 @@ namespace Langulus
    }
 
    /// Wrapper for memset 0                                                   
-   ///   @tparam TO - destination memory type (deducible)                     
    ///   @param to - [out] destination memory                                 
    template<class TO> LANGULUS(INLINED)
    void ZeroMemory(TO* to) noexcept {
@@ -349,7 +342,6 @@ namespace Langulus
    }
       
    /// Wrapper for memset 0                                                   
-   ///   @tparam TO - destination memory type (deducible)                     
    ///   @param to - [out] destination memory                                 
    ///   @param count - number of elements to fill                            
    ///   @attention count becomes bytecount, when TO is void                  
@@ -358,9 +350,39 @@ namespace Langulus
       return FillMemory<0>(to, count);
    }
       
+   /// Wrapper for memset 0, with overlapping memory check                    
+   ///   @param from - [out] source memory                                    
+   ///   @param to - destination memory                                       
+   ///   @param count - number of elements to fill                            
+   ///   @attention count becomes bytecount, when TO is void                  
+   template<class TO> LANGULUS(INLINED)
+   void ZeroMemoryOverlapped(TO* from, const TO* to, const Count& count) noexcept {
+      if (from >= to + count or from + count <= to) {
+         // No overlap                                                  
+         // From: [][][][][][]                                          
+         // To:                 [][][][][][]                            
+         // Zero: [][][][][][]                                          
+         ZeroMemory(from, count);
+      }
+      else {
+         // Zero only the difference                                    
+         if (from > to) {
+            // From:         [][][][][][][][][][][][]                   
+            // To:   [][][][][][][][][][][][]                           
+            // Zero:                         [][][][]                   
+            const auto diff = from - to;
+            ZeroMemory(from + count - diff, diff);
+         }
+         else {
+            // From: [][][][][][][][][][][][]                           
+            // To:           [][][][][][][][][][][][]                   
+            // Zero: [][][][]                                           
+            ZeroMemory(from, to - from);
+         }
+      }
+   }
+      
    /// Wrapper for memmove                                                    
-   ///   @tparam TO - destination memory type (deducible)                     
-   ///   @tparam FROM - source memory type (deducible)                        
    ///   @param to - [out] destination memory                                 
    ///   @param from - source of data to move                                 
    template<class TO, class FROM> LANGULUS(INLINED)
@@ -388,8 +410,6 @@ namespace Langulus
    }
 
    /// Wrapper for memmove                                                    
-   ///   @tparam TO - destination memory type (deducible)                     
-   ///   @tparam FROM - source memory type (deducible)                        
    ///   @param to - [out] destination memory                                 
    ///   @param from - source of data to move                                 
    ///   @param count - number of elements to move                            
