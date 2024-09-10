@@ -14,7 +14,7 @@ if(PROJECT_IS_TOP_LEVEL OR NOT LANGULUS)
 
     # Add Langulus::Core & Logger libraries                                 
     fetch_langulus_module(Core   GIT_TAG 393d95b6ab13fc5846bda8a3044e4ca62f02fd5a)
-    fetch_langulus_module(Logger GIT_TAG e81d90e503ac4a7a35aa44791a363fafc1e2fe26)
+    fetch_langulus_module(Logger GIT_TAG 69626cd4c738195df0929a1cd867317422506e61)
 endif()
 
 # Build and install library                                                 
