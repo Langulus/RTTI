@@ -146,13 +146,12 @@ namespace Langulus::RTTI
 #define LANGULUS_NULLIFIABLE() \
    public: static constexpr bool CTTI_Nullifiable = 
 
-#if LANGULUS_FEATURE(MANAGED_MEMORY)
-   /// You can choose how a given type is pooled, if managed memory is        
-   /// enabled. See RTTI::PoolTactic for options                              
-   ///   @attention the property will propagate to any derived class          
-   #define LANGULUS_POOL_TACTIC() \
-      public: static constexpr ::Langulus::RTTI::PoolTactic CTTI_Pool = 
-#endif
+/// You can choose how a given type is pooled, if managed memory is           
+/// enabled. See RTTI::PoolTactic for options. Used only if                   
+/// LANGULUS_FEATURE(MANAGED_MEMORY) is enabled                               
+///   @attention the property will propagate to any derived class             
+#define LANGULUS_POOL_TACTIC() \
+   public: static constexpr ::Langulus::RTTI::PoolTactic CTTI_Pool = 
 
 /// You can make types concretizable, by using LANGULUS(CONCRETE) Type        
 /// When dynamically creating your abstract objects, the most concrete type   
@@ -601,7 +600,6 @@ namespace Langulus
 
       } // namespace Langulus::RTTI::Inner
 
-   #if LANGULUS_FEATURE(MANAGED_MEMORY)
       ///                                                                     
       /// Different pool tactics you can assign to your data types            
       /// Used primarily for advanced tweaking of a final product             
@@ -624,7 +622,6 @@ namespace Langulus
          // See LANGULUS_RTTI_BOUNDARY for more information on that.    
          Type
       };
-   #endif
 
    } // namespace Langulus::RTTI
 
