@@ -34,7 +34,7 @@ namespace Langulus::RTTI
 
    /// Constructor by descriptor                                              
    /// Takes a pointer for a placement-new expression, and a Neat container   
-   using FDescriptorConstruct = void(*)(void*, const Anyness::Neat&);
+   using FDescriptorConstruct = void(*)(void*, Describe);
 
    /// The copy/disown/clone constructor, wrapped in a lambda expression      
    /// Takes a pointer for a placement-new expression, and a source           

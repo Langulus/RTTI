@@ -46,6 +46,7 @@ namespace Langulus
       struct Referred : ShallowIntent {
          static constexpr bool Keep = true;
          static constexpr bool Move = false;
+         static consteval bool ResetsOnMove() { return false; }
       };
       
       /// An abstract shallow-copy intent                                     
@@ -55,6 +56,7 @@ namespace Langulus
       struct Copied : ShallowIntent {
          static constexpr bool Keep = true;
          static constexpr bool Move = false;
+         static consteval bool ResetsOnMove() { return false; }
       };
 
       /// An abstract move intent                                             
@@ -63,6 +65,7 @@ namespace Langulus
       struct Moved : ShallowIntent {
          static constexpr bool Keep = true;
          static constexpr bool Move = true;
+         static consteval bool ResetsOnMove() { return true; }
       };
 
       /// An abstract abandon-move intent                                     
@@ -72,6 +75,7 @@ namespace Langulus
       struct Abandoned : ShallowIntent {
          static constexpr bool Keep = false;
          static constexpr bool Move = true;
+         static consteval bool ResetsOnMove() { return false; }
       };
 
       /// An abstract disowned-refer intent                                   
@@ -80,6 +84,7 @@ namespace Langulus
       struct Disowned : ShallowIntent {
          static constexpr bool Keep = false;
          static constexpr bool Move = false;
+         static consteval bool ResetsOnMove() { return false; }
       };
 
       /// An abstract clone intent (a.k.a. deep-copy intent)                  
@@ -88,6 +93,7 @@ namespace Langulus
       struct Cloned : DeepIntent {
          static constexpr bool Keep = true;
          static constexpr bool Move = false;
+         static consteval bool ResetsOnMove() { return false; }
       };
 
    } // namespace Langulus::A
@@ -792,10 +798,11 @@ namespace Langulus
 
    ///                                                                        
    /// Descriptor intermediate type, use in constructors to enable descriptor 
-   /// construction. The inner type is always Anyness::Neat                   
+   /// construction. The inner type is always Anyness::Many                   
    struct Describe : A::Intent {
    protected:
-      const Anyness::Neat& mValue;
+      using Many = Anyness::Many;
+      const Many& mValue;
 
    public:
       Describe() = delete;
@@ -803,7 +810,7 @@ namespace Langulus
       explicit constexpr Describe(Describe&&) noexcept = default;
 
       LANGULUS(ALWAYS_INLINED)
-      explicit constexpr Describe(const Anyness::Neat& value) noexcept
+      explicit constexpr Describe(const Many& value) noexcept
          : mValue {value} {}
 
       /// The describe intent completely ignores nesting, only propagates     
@@ -813,19 +820,19 @@ namespace Langulus
          using ALT = Decvq<Deref<decltype(value)>>;
          if constexpr (CT::Similar<ALT, Describe>)
             return Forward<ALT>(value);
-         else if constexpr (CT::Intent<ALT> and CT::Similar<TypeOf<ALT>, Anyness::Neat>)
+         else if constexpr (CT::Intent<ALT> and CT::Similar<TypeOf<ALT>, Many>)
             return Describe {*value};
-         else if constexpr (CT::Similar<ALT, Anyness::Neat>)
+         else if constexpr (CT::Similar<ALT, Many>)
             return Describe {value};
          else
             LANGULUS_ERROR("Can't nest provided type as a Describe semantic");
       }
 
       LANGULUS(ALWAYS_INLINED)
-      const Anyness::Neat& operator *  () const noexcept { return  mValue; }
+      const auto& operator *  () const noexcept { return  mValue; }
 
       LANGULUS(ALWAYS_INLINED)
-      const Anyness::Neat* operator -> () const noexcept { return &mValue; }
+      const auto* operator -> () const noexcept { return &mValue; }
    };
 
    
@@ -1417,12 +1424,12 @@ namespace Langulus
       template<class...T>
       concept DescriptorMakable = Complete<T...> and not Abstract<T...>
           and not Enum<T...> and not Aggregate<T...>
-          and requires (const Anyness::Neat& a) { (T (Describe {a}), ...); };
+          and requires (const Anyness::Many& a) { (T (Describe {a}), ...); };
 
       /// Check if the T is noexcept-descriptor-makable                       
       template<class...T>
       concept DescriptorMakableNoexcept = DescriptorMakable<T...>
-          and (noexcept ( T (Describe {Fake<const Anyness::Neat&>()})) and ...);
+          and (noexcept ( T (Describe {Fake<const Anyness::Many&>()})) and ...);
 
    } // namespace Langulus::CT
 
