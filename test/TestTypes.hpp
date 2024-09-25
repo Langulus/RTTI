@@ -114,7 +114,7 @@ public:
 /// Has no explicit intent assigners, only implicit refer & move              
 class DescriptorConstructible {
 public:
-   DescriptorConstructible(Describe&&) {}
+   DescriptorConstructible(Describe) {}
 };
 
 

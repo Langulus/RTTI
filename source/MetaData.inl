@@ -779,9 +779,9 @@ namespace Langulus::RTTI
       if constexpr (CT::DescriptorMakable<T>) {
          constexpr bool NoExcept = CT::DescriptorMakableNoexcept<T>;
          generated.mDescriptorConstructor = 
-            [](void* at, const Anyness::Neat& neat) noexcept(NoExcept) {
+            [](void* at, Describe descriptor) noexcept(NoExcept) {
                auto atT = static_cast<T*>(at);
-               new (atT) T {Describe(neat)};
+               new (atT) T {descriptor};
             };
       }
 
