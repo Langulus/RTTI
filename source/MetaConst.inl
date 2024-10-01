@@ -37,8 +37,23 @@ namespace Langulus::RTTI
    ///   @tparam T - the type to reflect (will always be decayed)             
    template<CT::Decayed T>
    CMeta MetaConst::Of() {
-      // This check is not standard, but doesn't hurt afaik             
-      static_assert(sizeof(T) > 0, "Can't reflect an incomplete type");
+      static_assert(not CT::Function<T>,
+         "Can't reflect this function signature as a constant");
+      static_assert(CT::Complete<T>,
+         "Can't reflect incomplete constant - "
+         "make sure you have included the corresponding headers "
+         "before the point of reflection. "
+         "This could also be triggered due to an incomplete member in T");
+      static_assert(CT::Reflectable<T>,
+         "Can't reflect constant that was explicitly marked unreflectable");
+      static_assert(not requires { T::CTTI_Trait; },
+         "Can't reflect trait as constant");
+      static_assert(not requires { T::CTTI_Name; },
+         "Can't reflect data as constant");
+      static_assert(not requires { T::CTTI_Verb; }
+      and not requires { T::CTTI_PositiveVerb; }
+      and not requires { T::CTTI_NegativeVerb; },
+         "Can't reflect verb as constant");
 
       constexpr auto token = GetReflectedToken<T>();
       static_assert(token != "", "Invalid constant token is not allowed");

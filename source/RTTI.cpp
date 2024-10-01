@@ -349,6 +349,10 @@ namespace Langulus::RTTI
       LANGULUS_ASSUME(DevAssumes, not GetMetaData(lc, boundary),
          "Data with this name is already registered: ", token);
 
+      LANGULUS_ASSERT(not GetMetaTrait(lc), Meta,
+         "Data name conflicts with trait: ", token);
+      LANGULUS_ASSERT(not GetMetaVerb(lc), Meta,
+         "Data name conflicts with verb: ", token);
       LANGULUS_ASSERT(not GetMetaConstant(lc), Meta,
          "Data name conflicts with constant: ", token);
 
@@ -393,6 +397,8 @@ namespace Langulus::RTTI
          "Trait name conflicts with constant: ", token);
       LANGULUS_ASSERT(not GetMetaVerb(lc), Meta,
          "Trait name conflicts with verb: ", token);
+      LANGULUS_ASSERT(not GetMetaTrait(lc), Meta,
+         "Trait name conflicts with trait: ", token);
 
       return Register(new MetaTrait {token}, mMetaTraits, lc, boundary);
    }
@@ -435,11 +441,15 @@ namespace Langulus::RTTI
          "Verb positive token conflicts with constant: ", token);
       LANGULUS_ASSERT(not GetMetaTrait(token), Meta,
          "Verb positive token conflicts with trait: ", token);
+      LANGULUS_ASSERT(not GetMetaData(token), Meta,
+         "Verb positive token conflicts with data: ", token);
 
       LANGULUS_ASSERT(not GetMetaConstant(tokenReverse), Meta,
          "Verb negative token conflicts with constant: ", tokenReverse);
       LANGULUS_ASSERT(not GetMetaTrait(tokenReverse), Meta,
          "Verb negative token conflicts with trait: ", tokenReverse);
+      LANGULUS_ASSERT(not GetMetaData(tokenReverse), Meta,
+         "Verb negative token conflicts with data: ", tokenReverse);
 
       Lowercase op1;
       if (not op.empty()) {
@@ -451,6 +461,8 @@ namespace Langulus::RTTI
             "Verb positive operator conflicts with constant: ", op1);
          LANGULUS_ASSERT(not GetMetaTrait(op1), Meta,
             "Verb positive operator conflicts with trait: ", op1);
+         LANGULUS_ASSERT(not GetMetaData(op1), Meta,
+            "Verb positive operator conflicts with data: ", op1);
       }
 
       Lowercase op2;
@@ -463,6 +475,8 @@ namespace Langulus::RTTI
             "Verb positive operator conflicts with constant: ", op2);
          LANGULUS_ASSERT(not GetMetaTrait(op2), Meta,
             "Verb positive operator conflicts with trait: ", op2);
+         LANGULUS_ASSERT(not GetMetaData(op2), Meta,
+            "Verb positive operator conflicts with data: ", op2);
       }
 
       const auto meta = Register<false>(

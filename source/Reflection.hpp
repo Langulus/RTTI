@@ -36,14 +36,17 @@ namespace Langulus::RTTI
 /// When verbs are reflected with this, their positive and negative tokens    
 /// shall be the same. If you want them to be different, use POSITIVE and     
 /// NEGATIVE names explicitly instead                                         
+/// Once CTTI_Verb is provided, the type can no longer be reflected as data   
 #define LANGULUS_VERB() \
    public: static constexpr ::Langulus::Token CTTI_Verb = 
 
 /// You can provide a custom token to your trait                              
+/// Once CTTI_Trait is provided, the type can no longer be reflected as data  
 #define LANGULUS_TRAIT() \
    public: static constexpr ::Langulus::Token CTTI_Trait = 
 
 /// You can provide a custom token to your constant                           
+/// Once CTTI_Constant is provided, the type can no longer reflect as data    
 #define LANGULUS_CONSTANT() \
    public: static constexpr ::Langulus::Token CTTI_Constant = 
 
@@ -51,6 +54,7 @@ namespace Langulus::RTTI
 /// This has effect only when reflecting verbs, and if specified, then you    
 /// should also specify the negative verb, too, or get a compile-time error   
 /// If both negative and positive verbs are same, just use LANGULUS_VERB()    
+/// Once CTTI_PositiveVerb is provided, the type can no longer reflect as data
 #define LANGULUS_POSITIVE_VERB() \
    public: static constexpr ::Langulus::Token CTTI_PositiveVerb = 
 
@@ -58,6 +62,7 @@ namespace Langulus::RTTI
 /// This has effect only when reflecting verbs, and if specified, then you    
 /// should also specify the positive verb, too, or get a compile-time error   
 /// If both negative and positive verbs are same, just use LANGULUS_VERB()    
+/// Once CTTI_NegativeVerb is provided, the type can no longer reflect as data
 #define LANGULUS_NEGATIVE_VERB() \
    public: static constexpr ::Langulus::Token CTTI_NegativeVerb = 
 
@@ -171,13 +176,14 @@ namespace Langulus::RTTI
 #define LANGULUS_REFLECTABLE() \
    public: static constexpr bool CTTI_Reflectable =
 
-/// You can make types not insertable to Anyness containers, such as some     
-/// intermediate types, like Block::KnownPointer. These types will produce    
-/// a compile-time error when a push is attempted. All reflected types are    
-/// insertable by default                                                     
+/// You can make types not insertable to Anyness containers by setting to     
+/// void - useful for some intermediate types, like Handle. These types will  
+/// produce a compile-time error when a push is attempted. All reflected types
+/// are insertable by default as themselves. A binary compatible type is used 
+/// for inserting CT::Block, CT::Trait and CT::Verb.                          
 ///   @attention the property will propagate to any derived class             
-#define LANGULUS_UNINSERTABLE() \
-   public: static constexpr bool CTTI_Uninsertable =
+#define LANGULUS_INSERT_AS() \
+   public: using CTTI_InsertAs = 
 
 /// You can make types unallocatable by the memory manager. This serves not   
 /// only as forcing the type to be either allocated by conventional C++ means,
@@ -278,13 +284,13 @@ namespace Langulus::CT
    concept Allocatable = ((not Unallocatable<T>) and ...);
 
    /// Check if any of the listed T is uninsertable                           
-   /// An uninsertable type is any type with a true static member             
-   /// T::CTTI_Uninsertable. All types are insertable by default.             
+   /// An uninsertable type is any type with a member type T::CTTI_InsertAs   
+   /// set to void. All types are insertable as themselves by default.        
    /// Useful to mark some intermediate types, that are not supposed to be    
    /// inserted in containers, like iterators or handles.                     
    template<class...T>
    concept Uninsertable = not Complete<T...>
-        or ((Dense<T> and Decay<T>::CTTI_Uninsertable) or ...);
+        or ((Dense<T> and CT::Void<typename Decay<T>::CTTI_InsertAs>) or ...);
 
    /// Check if all of the types are insertable                               
    template<class...T>
