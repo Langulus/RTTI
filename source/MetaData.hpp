@@ -95,7 +95,7 @@ namespace Langulus::RTTI
    ///                                                                        
    struct Member {
       LANGULUS(UNALLOCATABLE) true;
-      LANGULUS(INSERT_AS)     void;
+      LANGULUS(ACT_AS)        void;
 
       // Type of data                                                   
       // We can't get at reflection time, so we generate a lambda that  
@@ -179,7 +179,7 @@ namespace Langulus::RTTI
    ///                                                                        
    struct Converter {
       LANGULUS(UNALLOCATABLE) true;
-      LANGULUS(INSERT_AS)     void;
+      LANGULUS(ACT_AS)        void;
 
       // The data ID we're converting to                                
       DMeta mType {};
@@ -201,7 +201,7 @@ namespace Langulus::RTTI
    ///                                                                        
    struct Base {
       LANGULUS(UNALLOCATABLE) true;
-      LANGULUS(INSERT_AS)     void;
+      LANGULUS(ACT_AS)        void;
 
       // Type of the base                                               
       DMeta mType;
@@ -291,8 +291,6 @@ namespace Langulus::RTTI
       // True if origin type is marked LANGULUS(DEEP) true              
       // Types marked deep can be iterated through                      
       bool mIsDeep = false;
-      // True if origin type is not insertable into containers          
-      bool mIsUninsertable = false;
       // True if origin type is allocatable (and thus clonable)         
       bool mIsUnallocatable = false;
       // True if origin type is executable (derived from Flow::Verb)    
@@ -444,14 +442,24 @@ namespace Langulus::RTTI
    public:
       template<CT::Void>
       NOD() static consteval DMeta Of();
+
       template<CT::DataReference>
       NOD() static DMeta Of();
-      template<CT::SparseData>
-      NOD() static DMeta Of();
+
+      template<CT::SparseData T>
+      NOD() static DMeta Of() requires CT::InsertableAsSomethingElse<T>;
+      template<CT::SparseData T>
+      NOD() static DMeta Of() requires CT::NotInsertableAsSomethingElse<T>;
+
       template<CT::DenseData T>
-      NOD() static DMeta Of() requires CT::Convoluted<T>;
-      template<CT::Decayed>
-      NOD() static DMeta Of();
+      NOD() static DMeta Of() requires (CT::Convoluted<T> and CT::InsertableAsSomethingElse<T>);
+      template<CT::DenseData T>
+      NOD() static DMeta Of() requires (CT::Convoluted<T> and CT::NotInsertableAsSomethingElse<T>);
+
+      template<CT::Decayed T>
+      NOD() static DMeta Of() requires CT::InsertableAsSomethingElse<T>;
+      template<CT::Decayed T>
+      NOD() static DMeta Of() requires CT::NotInsertableAsSomethingElse<T>;
 
       NOD() DMeta GetMostConcrete() const noexcept;
       NOD() AllocationRequest RequestSize(Count) const noexcept;

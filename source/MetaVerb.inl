@@ -145,8 +145,6 @@ namespace Langulus::RTTI
          "Can't reflect verb that was explicitly marked unreflectable");
       static_assert(not requires { T::CTTI_Constant; },
          "Can't reflect constant as verb");
-      static_assert(not requires { T::CTTI_Name; },
-         "Can't reflect data as verb");
       static_assert(not requires { T::CTTI_Trait; },
          "Can't reflect trait as verb");
 

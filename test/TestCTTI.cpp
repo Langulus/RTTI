@@ -29,7 +29,6 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             #endif
          #endif
          REQUIRE(meta->mConcreteRetriever == nullptr);
-         REQUIRE(meta->mIsUninsertable == false);
          REQUIRE(meta->mAllocationPage == ::std::max(Alignment, Roof2(sizeof(IncompleteType*))));
          REQUIRE(meta->mIsAbstract == false);
          REQUIRE(meta->mSize == sizeof(void*));
@@ -67,7 +66,6 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             #endif
          #endif
          REQUIRE(meta->mConcreteRetriever == nullptr);
-         REQUIRE(meta->mIsUninsertable == false);
          REQUIRE(meta->mAllocationPage == ::std::max(Alignment, Roof2(sizeof(IncompleteType*))));
          REQUIRE(meta->mIsAbstract == false);
          REQUIRE(meta->mSize == sizeof(void*));
@@ -107,7 +105,6 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             #endif
          #endif
          REQUIRE(meta->mConcreteRetriever == nullptr);
-         REQUIRE(meta->mIsUninsertable == false);
          REQUIRE(meta->mAllocationPage == ::std::max(Alignment, Roof2(sizeof(IncompleteType*))));
          REQUIRE(meta->mIsAbstract == false);
          REQUIRE(meta->mSize == sizeof(void*));
@@ -147,7 +144,6 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             #endif
          #endif
          REQUIRE(meta->mConcreteRetriever == nullptr);
-         REQUIRE(meta->mIsUninsertable == false);
          REQUIRE(meta->mAllocationPage == ::std::max(Alignment, Roof2(sizeof(IncompleteType*))));
          REQUIRE(meta->mIsAbstract == false);
          REQUIRE(meta->mSize == sizeof(void*));
@@ -188,7 +184,6 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             #endif
          #endif
          REQUIRE(meta->mConcreteRetriever == nullptr);
-         REQUIRE(meta->mIsUninsertable == false);
          REQUIRE(meta->mAllocationPage == ::std::max(Alignment, Roof2(sizeof(IncompleteType*))));
          REQUIRE(meta->mIsAbstract == false);
          REQUIRE(meta->mSize == sizeof(void*));
@@ -228,7 +223,6 @@ SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]"
             #endif
          #endif
          REQUIRE(meta->mConcreteRetriever == nullptr);
-         REQUIRE(meta->mIsUninsertable == false);
          REQUIRE(meta->mAllocationPage == ::std::max(Alignment, Roof2(sizeof(IncompleteType*))));
          REQUIRE(meta->mIsAbstract == false);
          REQUIRE(meta->mSize == sizeof(void*));
@@ -269,7 +263,6 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
          REQUIRE(meta->mIsNullifiable == false); // not nullifiable due to being abstract
          IF_LANGULUS_MANAGED_MEMORY(REQUIRE(meta->mPoolTactic == PoolTactic::Size));
          REQUIRE(meta->mConcreteRetriever()->Is<ImplicitlyReflectedData>());
-         REQUIRE(meta->mIsUninsertable == true);
          REQUIRE(meta->mAllocationPage == Roof2(250 * sizeof(ImplicitlyReflectedDataWithTraits)));
          REQUIRE(meta->mIsAbstract == true);
          REQUIRE(meta->mSize == sizeof(ImplicitlyReflectedDataWithTraits));
@@ -280,7 +273,7 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
          REQUIRE(meta->mDecvq == MetaData::Of<ImplicitlyReflectedDataWithTraits>());
 
          REQUIRE(meta->mBases.size() == 1);
-         REQUIRE(meta->mBases[0].mType->Is<ImplicitlyReflectedData>());
+         REQUIRE(meta->mBases[0].mType->Is<ConvertibleData>());
          REQUIRE(meta->mBases[0].mImposed == false);
          REQUIRE(meta->mBases[0].mBinaryCompatible == false);
          REQUIRE(meta->mBases[0].mCount == 1);
@@ -295,27 +288,27 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
          REQUIRE(meta->mAbilities.begin()->second.mOverloadsMutable.size() == 1);
          REQUIRE(meta->mAbilities.begin()->second.mOverloadsMutable.contains(Ability::Signature {}));
 
-         REQUIRE(meta->mMembers.size() == 4);
-         REQUIRE(meta->mMembers[0].mCount == 1);
+         REQUIRE(meta->mMembers.size() == 3);
+         /*REQUIRE(meta->mMembers[0].mCount == 1);
          REQUIRE(meta->mMembers[0].mValueRetriever(&instance) == &instance.member);
          REQUIRE(meta->mMembers[0].GetTrait(0) == nullptr);
-         REQUIRE(meta->mMembers[0].GetType()->Is<int>());
+         REQUIRE(meta->mMembers[0].GetType()->Is<int>());*/
 
-         REQUIRE(meta->mMembers[1].mCount == 1);
-         REQUIRE(meta->mMembers[1].mValueRetriever(&instance) == &instance.anotherMember);
-         REQUIRE(meta->mMembers[1].GetTrait(0)->Is<Traits::Tag>());
-         REQUIRE(meta->mMembers[1].GetTrait(1) == nullptr);
-         REQUIRE(meta->mMembers[1].GetType()->Is<bool>());
+         REQUIRE(meta->mMembers[0].mCount == 1);
+         REQUIRE(meta->mMembers[0].mValueRetriever(&instance) == &instance.anotherMember);
+         REQUIRE(meta->mMembers[0].GetTrait(0)->Is<Traits::Tag>());
+         REQUIRE(meta->mMembers[0].GetTrait(1) == nullptr);
+         REQUIRE(meta->mMembers[0].GetType()->Is<bool>());
 
-         REQUIRE(meta->mMembers[2].mCount == 12);
-         REQUIRE(meta->mMembers[2].mValueRetriever(&instance) == instance.anotherMemberArray);
+         REQUIRE(meta->mMembers[1].mCount == 12);
+         REQUIRE(meta->mMembers[1].mValueRetriever(&instance) == instance.anotherMemberArray);
+         REQUIRE(meta->mMembers[1].GetTrait(0) == nullptr);
+         REQUIRE(meta->mMembers[1].GetType()->Is<int>());
+
+         REQUIRE(meta->mMembers[2].mCount == 1);
+         REQUIRE(meta->mMembers[2].mValueRetriever(&instance) == &instance.sparseMember);
          REQUIRE(meta->mMembers[2].GetTrait(0) == nullptr);
          REQUIRE(meta->mMembers[2].GetType()->Is<int>());
-
-         REQUIRE(meta->mMembers[3].mCount == 1);
-         REQUIRE(meta->mMembers[3].mValueRetriever(&instance) == &instance.sparseMember);
-         REQUIRE(meta->mMembers[3].GetTrait(0) == nullptr);
-         REQUIRE(meta->mMembers[3].GetType()->Is<int>());
 
          REQUIRE(meta->mNamedValues.size() == 0);
 
@@ -361,7 +354,6 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
          REQUIRE(meta->mIsNullifiable == false);   // not nullifiable due to being abstract
          IF_LANGULUS_MANAGED_MEMORY(REQUIRE(meta->mPoolTactic == PoolTactic::Size));
          REQUIRE(meta->mConcreteRetriever()->Is<ImplicitlyReflectedData>());
-         REQUIRE(meta->mIsUninsertable == true);
          REQUIRE(meta->mAllocationPage == Roof2(250 * sizeof(ImplicitlyReflectedDataWithTraits)));
          REQUIRE(meta->mIsAbstract == true);
          REQUIRE(meta->mSize == sizeof(ImplicitlyReflectedDataWithTraits));
@@ -372,7 +364,7 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
          REQUIRE(meta->mDecvq == MetaData::Of<CheckingWhatGetsInherited>());
 
          REQUIRE(meta->mBases.size() == 1);
-         REQUIRE(meta->mBases[0].mType->Is<ImplicitlyReflectedData>());
+         REQUIRE(meta->mBases[0].mType->Is<ConvertibleData>());
          REQUIRE(meta->mBases[0].mImposed == false);
          REQUIRE(meta->mBases[0].mBinaryCompatible == false);
          REQUIRE(meta->mBases[0].mCount == 1);
@@ -439,7 +431,6 @@ SCENARIO("A simple type reflected with CTTI traits", "[metadata]") {
             #endif
          #endif
          REQUIRE(meta->mConcreteRetriever == nullptr);
-         REQUIRE(meta->mIsUninsertable == false);
          REQUIRE(meta->mAllocationPage >= Alignment);
          REQUIRE(meta->mIsAbstract == false);
          REQUIRE(meta->mSize == sizeof(ImplicitlyReflectedData));

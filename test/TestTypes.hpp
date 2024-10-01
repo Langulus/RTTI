@@ -219,16 +219,34 @@ struct ImplicitlyReflectedData {
    inline bool operator == (const ImplicitlyReflectedData&) const noexcept = default;
 };
 
-class alignas(128) ImplicitlyReflectedDataWithTraits : public ImplicitlyReflectedData {
-public:
+struct ConvertibleData : ImplicitlyReflectedData {
    int member {664};
-   RTTI::Tag<bool, Traits::Tag> anotherMember {};
-   int anotherMemberArray [12] {};
-   int* sparseMember {};
 
    inline operator int() const noexcept {
       return member;
    }
+
+   ConvertibleData() = default;
+   explicit ConvertibleData(Pi)
+      : member {314} {}
+
+   LANGULUS_BASES(ImplicitlyReflectedData);
+   LANGULUS_CONVERTS_TO(int);
+   LANGULUS_CONVERTS_FROM(Pi);
+   LANGULUS_NAMED_VALUES();
+};
+
+struct CheckingWhatConverterGetsInherited : ConvertibleData {
+   LANGULUS(NAME) "CheckingWhatConverterGetsInherited";
+
+   using ConvertibleData::ConvertibleData;
+};
+
+class alignas(128) ImplicitlyReflectedDataWithTraits : public ConvertibleData {
+public:
+   RTTI::Tag<bool, Traits::Tag> anotherMember {};
+   int anotherMemberArray [12] {};
+   int* sparseMember {};
 
    void Create(Flow::Verb&) const {
       //++member;
@@ -238,9 +256,7 @@ public:
       ++member;
    }
 
-   ImplicitlyReflectedDataWithTraits() = default;
-   explicit ImplicitlyReflectedDataWithTraits(Pi)
-      : member {314} {}
+   using ConvertibleData::ConvertibleData;
 
    LANGULUS(NAME) "MyType";
    LANGULUS(INFO) "Info about MyType";
@@ -252,18 +268,13 @@ public:
    LANGULUS(NULLIFIABLE) true;
    LANGULUS(POOL_TACTIC) PoolTactic::Size;
    LANGULUS(CONCRETE) ImplicitlyReflectedData;
-   LANGULUS(INSERT_AS) void;
    LANGULUS(ALLOCATION_PAGE) 250;
    LANGULUS(ABSTRACT) true;
-   LANGULUS_BASES(ImplicitlyReflectedData);
+   LANGULUS_BASES(ConvertibleData);
    LANGULUS_VERBS(Verbs::Create);
-   LANGULUS_CONVERTS_TO(int);
-   LANGULUS_CONVERTS_FROM(Pi);
-   LANGULUS_NAMED_VALUES();
 
    using Self = ImplicitlyReflectedDataWithTraits;
    LANGULUS_MEMBERS(
-      &Self::member,
       &Self::anotherMember,
       &Self::anotherMemberArray,
       &Self::sparseMember

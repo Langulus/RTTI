@@ -29,10 +29,10 @@ namespace Langulus
          return RTTI::MetaTrait::Of<T>();
       else if constexpr (CT::Decayed<T> and requires { T::CTTI_Constant; })
          return RTTI::MetaConst::Of<T>();
-      else if constexpr (CT::Decayed<T>
-              and (  requires { T::CTTI_Verb; }
-                  or requires { T::CTTI_PositiveVerb; }
-                  or requires { T::CTTI_NegativeVerb; }))
+      else if constexpr (CT::Decayed<T> and (
+         requires { T::CTTI_Verb;         }
+      or requires { T::CTTI_PositiveVerb; }
+      or requires { T::CTTI_NegativeVerb; }))
          return RTTI::MetaVerb::Of<T>();
       else
          return RTTI::MetaData::Of<T>();
