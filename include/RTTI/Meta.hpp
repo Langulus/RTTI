@@ -19,8 +19,8 @@
 namespace Langulus
 {
 
-   /// Get the meta definition of a type, deducing it whether it is data,     
-   /// verb, constant, or trait                                               
+   /// Get the meta definition of a type, deducing whether it's data, verb,   
+   /// constant, or trait                                                     
    ///   @tparam T - type to get meta definition of                           
    ///   @return the meta definition of the provided type                     
    template<class T>
@@ -40,7 +40,7 @@ namespace Langulus
 
    /// Data definition retrieval                                              
    /// Some types, like traits/verbs for example, can be represented both as  
-   /// DMeta and TMeta/VMeta, and this is useful to represent as DMeta only   
+   /// DMeta and TMeta/VMeta, and this is useful to state a clear intent      
    ///   @tparam T - type to get meta data definition of                      
    ///   @return the meta definition of the provided type                     
    template<class T>
@@ -50,9 +50,9 @@ namespace Langulus
 
    /// Trait definition retrieval                                             
    /// Some types, like traits for example, can be represented both as DMeta  
-   /// and TMeta, and this is useful to represent as TMeta only               
+   /// and TMeta, and this is useful to state a clear intent                  
    ///   @tparam T - type to get meta trait definition of                     
-   ///   @return the meta definition of the provided type                     
+   ///   @return the meta definition of the provided trait                    
    template<class T>
    NOD() auto MetaTraitOf() {
       return RTTI::MetaTrait::Of<T>();
@@ -60,19 +60,17 @@ namespace Langulus
 
    /// Verb definition retrieval                                              
    /// Some types, like verbs for example, can be represented both as DMeta   
-   /// and VMeta, and this is useful to represent as VMeta only               
+   /// and VMeta, and this is useful to state a clear intent                  
    ///   @tparam T - type to get meta trait definition of                     
-   ///   @return the meta definition of the provided type                     
+   ///   @return the meta definition of the provided verb                     
    template<class T>
    NOD() auto MetaVerbOf() {
       return RTTI::MetaVerb::Of<T>();
    }
 
    /// Constant definition retrieval                                          
-   /// Some types, like constants for example, can be represented both as     
-   /// DMeta and CMeta, and this is useful to represent as CMeta only         
    ///   @tparam T - type to get meta constant definition of                  
-   ///   @return the meta definition of the provided type                     
+   ///   @return the meta definition of the provided constant                 
    template<class T>
    NOD() auto MetaConstOf() {
       return RTTI::MetaConst::Of<T>();

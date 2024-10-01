@@ -251,9 +251,11 @@ namespace Langulus::RTTI
             else if constexpr (requires { toT = fromT; })
                toT = fromT;
             else {
-               LANGULUS_ERROR("Unhandled conversion route (MSVC bad behavior detection) "
+               LANGULUS_ERROR(
+                  "Unhandled conversion route (MSVC bad behavior detection) "
                   "- make sure your cast operators are always const, because MSVC doesn't "
-                  "support them otherwise (and will occasionally ICE)");
+                  "support them otherwise (and will occasionally put some ICE on top of it)"
+               );
             }
          }
       };
@@ -369,7 +371,8 @@ namespace Langulus::RTTI
       //TODO this should probably be relaxed in the future, but it helps me catch bugs, so...
       static_assert(CT::Reflectable<T>,
          "Can't reflect type that was explicitly marked unreflectable");
-      static_assert(not CT::Array<T>, "Reflecting a bound array is forbidden");
+      static_assert(not CT::Array<T>,
+         "Reflecting a bound array is forbidden");
 
       constexpr auto token = NameOf<T>();
       static_assert(token != "", "Invalid data token is not allowed");
@@ -476,8 +479,6 @@ namespace Langulus::RTTI
       static_assert(not CT::Array<T>,
          "Can't reflect a bounded array type - "
          "either wrap your array in a type, or represent it as a raw pointer");
-      static_assert(not CT::DataReference<T>, 
-         "Can't reflect a reference");
 
       constexpr auto token = NameOf<T>();
       static_assert(token != "",
@@ -558,8 +559,8 @@ namespace Langulus::RTTI
    /// Reflect a fully decayed (origin) type                                  
    ///   @tparam T - the type to reflect                                      
    ///   @return the generated (or retrieved) type definition                 
-   template<CT::DenseData T> LANGULUS(NOINLINE)
-   DMeta MetaData::Of() requires CT::Decayed<T> {
+   template<CT::Decayed T> LANGULUS(NOINLINE)
+   DMeta MetaData::Of() {
       static_assert(not CT::Function<T>,
          "Can't reflect this function signature origin - "
          "make sure you're using a pointer signature");
@@ -573,6 +574,14 @@ namespace Langulus::RTTI
       static_assert(not CT::Array<T>,
          "Can't reflect a bounded array type - "
          "either wrap your array in a type, or represent it as a raw pointer");
+      static_assert(not requires { T::CTTI_Trait; },
+         "Can't reflect trait as data");
+      static_assert(not requires { T::CTTI_Constant; },
+         "Can't reflect constant as data");
+      static_assert(not requires { T::CTTI_Verb; }
+      and not requires { T::CTTI_PositiveVerb; }
+      and not requires { T::CTTI_NegativeVerb; },
+         "Can't reflect verb as data");
 
       constexpr auto token = NameOf<T>();
       static_assert(token != "",
