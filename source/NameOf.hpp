@@ -581,7 +581,7 @@ namespace Langulus
    template<CT::Data T>
    consteval Token NameOf() {
       using DT = Decay<T>;
-      if constexpr (requires { DT::CTTI_Constant; }) {
+      /*if constexpr (requires { DT::CTTI_Constant; }) {
          if constexpr (CT::Decayed<Deref<T>>)
             return DT::CTTI_Constant;
          else
@@ -605,7 +605,7 @@ namespace Langulus
          else
             return CustomNameOf<Deref<T>>::Generate();
       }
-      else if constexpr (requires { DT::CTTI_Name; }) {
+      else*/ if constexpr (requires { DT::CTTI_Name; }) {
          if constexpr (CT::Decayed<Deref<T>>)
             return DT::CTTI_Name;
          else

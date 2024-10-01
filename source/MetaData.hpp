@@ -95,7 +95,7 @@ namespace Langulus::RTTI
    ///                                                                        
    struct Member {
       LANGULUS(UNALLOCATABLE) true;
-      LANGULUS(UNINSERTABLE) true;
+      LANGULUS(INSERT_AS)     void;
 
       // Type of data                                                   
       // We can't get at reflection time, so we generate a lambda that  
@@ -179,7 +179,7 @@ namespace Langulus::RTTI
    ///                                                                        
    struct Converter {
       LANGULUS(UNALLOCATABLE) true;
-      LANGULUS(UNINSERTABLE) true;
+      LANGULUS(INSERT_AS)     void;
 
       // The data ID we're converting to                                
       DMeta mType {};
@@ -201,7 +201,7 @@ namespace Langulus::RTTI
    ///                                                                        
    struct Base {
       LANGULUS(UNALLOCATABLE) true;
-      LANGULUS(UNINSERTABLE) true;
+      LANGULUS(INSERT_AS)     void;
 
       // Type of the base                                               
       DMeta mType;
@@ -450,8 +450,8 @@ namespace Langulus::RTTI
       NOD() static DMeta Of();
       template<CT::DenseData T>
       NOD() static DMeta Of() requires CT::Convoluted<T>;
-      template<CT::DenseData T>
-      NOD() static DMeta Of() requires CT::Decayed<T>;
+      template<CT::Decayed>
+      NOD() static DMeta Of();
 
       NOD() DMeta GetMostConcrete() const noexcept;
       NOD() AllocationRequest RequestSize(Count) const noexcept;

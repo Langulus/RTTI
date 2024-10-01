@@ -134,9 +134,22 @@ namespace Langulus::RTTI
    template<CT::Decayed T> LANGULUS(NOINLINE)
    VMeta MetaVerb::Of() {
       // This check is not standard, but doesn't hurt afaik             
-      static_assert(sizeof(T) > 0,
-         "Can't reflect an incomplete type");
-      
+      static_assert(not CT::Function<T>,
+         "Can't reflect this function signature as a verb");
+      static_assert(CT::Complete<T>,
+         "Can't reflect incomplete verb - "
+         "make sure you have included the corresponding headers "
+         "before the point of reflection. "
+         "This could also be triggered due to an incomplete member in T");
+      static_assert(CT::Reflectable<T>,
+         "Can't reflect verb that was explicitly marked unreflectable");
+      static_assert(not requires { T::CTTI_Constant; },
+         "Can't reflect constant as verb");
+      static_assert(not requires { T::CTTI_Name; },
+         "Can't reflect data as verb");
+      static_assert(not requires { T::CTTI_Trait; },
+         "Can't reflect trait as verb");
+
       constexpr auto verbPos = GetReflectedPositiveVerbToken<T>();
       constexpr auto verbNeg = GetReflectedNegativeVerbToken<T>();
 
