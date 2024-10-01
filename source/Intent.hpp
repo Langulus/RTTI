@@ -23,9 +23,8 @@ namespace Langulus
       ///                                                                     
       struct Intent {
          LANGULUS(ABSTRACT)      true;
-         LANGULUS(INSERT_AS)     void;
+         LANGULUS(ACT_AS)        void;
          LANGULUS(UNALLOCATABLE) true;
-         LANGULUS(REFLECTABLE)   false;
       };
 
       /// An abstract shallow intent                                          

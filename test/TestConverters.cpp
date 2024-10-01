@@ -9,24 +9,24 @@
 
 
 TEMPLATE_TEST_CASE("Reflected from/to converters", "[metadata]",
-   (TypePair<ImplicitlyReflectedDataWithTraits,       int>),
-   (TypePair<ImplicitlyReflectedDataWithTraits, const int>),
-   (TypePair<ImplicitlyReflectedDataWithTraits, const int*>),
-   (TypePair<Pi,       ImplicitlyReflectedDataWithTraits>),
-   (TypePair<Pi, const ImplicitlyReflectedDataWithTraits>),
-   (TypePair<Pi, const ImplicitlyReflectedDataWithTraits*>),
+   (TypePair<ConvertibleData, int       >),
+   (TypePair<ConvertibleData, int const >),
+   (TypePair<ConvertibleData, int const*>),
+   (TypePair<Pi, ConvertibleData>),
+   (TypePair<Pi, ConvertibleData const >),
+   (TypePair<Pi, ConvertibleData const*>),
 
-   (TypePair<CheckingWhatGetsInherited,       int>),
-   (TypePair<CheckingWhatGetsInherited, const int>),
-   (TypePair<CheckingWhatGetsInherited, const int*>),
-   (TypePair<Pi,       CheckingWhatGetsInherited>),
-   (TypePair<Pi, const CheckingWhatGetsInherited>),
-   (TypePair<Pi, const CheckingWhatGetsInherited*>)
+   (TypePair<CheckingWhatConverterGetsInherited, int       >),
+   (TypePair<CheckingWhatConverterGetsInherited, int const >),
+   (TypePair<CheckingWhatConverterGetsInherited, int const*>),
+   (TypePair<Pi, CheckingWhatConverterGetsInherited>),
+   (TypePair<Pi, CheckingWhatConverterGetsInherited const >),
+   (TypePair<Pi, CheckingWhatConverterGetsInherited const*>)
 ) {
    using LHS = typename TestType::LHS;
    using RHS = typename TestType::RHS;
 
-   GIVEN("ImplicitlyReflectedDataWithTraits") {
+   GIVEN("Convertible data") {
       Decay<LHS> lhs;
       Decay<RHS> rhs;
 
