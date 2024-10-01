@@ -349,8 +349,8 @@ namespace Langulus::RTTI
 
 
 
-   /// Reflecting a void type always returns nullptr                          
-   ///   @return nullptr                                                      
+   /// Reflecting a void type always returns an invalid meta                  
+   ///   @return an invalid meta                                              
    template<CT::Void> LANGULUS(INLINED)
    consteval DMeta MetaData::Of() {
       return nullptr;
@@ -367,10 +367,15 @@ namespace Langulus::RTTI
    /// (a generalized reflection routine increases build time significantly)  
    ///   @tparam T - the type to reflect                                      
    template<CT::SparseData T> LANGULUS(NOINLINE)
-   DMeta MetaData::Of() {
-      //TODO this should probably be relaxed in the future, but it helps me catch bugs, so...
-      static_assert(CT::Reflectable<T>,
-         "Can't reflect type that was explicitly marked unreflectable");
+   DMeta MetaData::Of() requires CT::InsertableAsSomethingElse<T> {
+      return Of<Retype<T, InsertableAs<T>>>();
+   }
+
+   /// Reflect a pointer, optimized to reuse origin type properties           
+   /// (a generalized reflection routine increases build time significantly)  
+   ///   @tparam T - the type to reflect                                      
+   template<CT::SparseData T> LANGULUS(NOINLINE)
+   DMeta MetaData::Of() requires CT::NotInsertableAsSomethingElse<T> {
       static_assert(not CT::Array<T>,
          "Reflecting a bound array is forbidden");
 
@@ -468,14 +473,20 @@ namespace Langulus::RTTI
    /// (a generalized reflection routine increases build time significantly)  
    ///   @tparam T - the type to reflect                                      
    template<CT::DenseData T> LANGULUS(NOINLINE)
-   DMeta MetaData::Of() requires CT::Convoluted<T> {
-      static_assert(CT::Complete<T>, 
+   DMeta MetaData::Of() requires (CT::Convoluted<T> and CT::InsertableAsSomethingElse<T>) {
+      return Of<Retype<T, InsertableAs<T>>>();
+   }
+
+   /// Reflect a constant dense type, optimized to reuse origin type          
+   /// (a generalized reflection routine increases build time significantly)  
+   ///   @tparam T - the type to reflect                                      
+   template<CT::DenseData T> LANGULUS(NOINLINE)
+   DMeta MetaData::Of() requires (CT::Convoluted<T> and CT::NotInsertableAsSomethingElse<T>) {
+      static_assert(CT::Complete<T>,
          "Can't reflect incomplete type - "
          "make sure you have included the corresponding headers "
          "before the point of reflection. "
          "This could also be triggered due to an incomplete member in T");
-      static_assert(CT::Reflectable<T>,
-         "Can't reflect type that was explicitly marked unreflectable");
       static_assert(not CT::Array<T>,
          "Can't reflect a bounded array type - "
          "either wrap your array in a type, or represent it as a raw pointer");
@@ -560,7 +571,15 @@ namespace Langulus::RTTI
    ///   @tparam T - the type to reflect                                      
    ///   @return the generated (or retrieved) type definition                 
    template<CT::Decayed T> LANGULUS(NOINLINE)
-   DMeta MetaData::Of() {
+   DMeta MetaData::Of() requires CT::InsertableAsSomethingElse<T> {
+      return Of<InsertableAs<T>>();
+   }
+
+   /// Reflect a fully decayed (origin) type                                  
+   ///   @tparam T - the type to reflect                                      
+   ///   @return the generated (or retrieved) type definition                 
+   template<CT::Decayed T> LANGULUS(NOINLINE)
+   DMeta MetaData::Of() requires CT::NotInsertableAsSomethingElse<T> {
       static_assert(not CT::Function<T>,
          "Can't reflect this function signature origin - "
          "make sure you're using a pointer signature");
@@ -569,18 +588,17 @@ namespace Langulus::RTTI
          "make sure you have included the corresponding headers "
          "before the point of reflection. "
          "This could also be triggered due to an incomplete member in T");
-      static_assert(CT::Reflectable<T>,
-         "Can't reflect type that was explicitly marked unreflectable");
       static_assert(not CT::Array<T>,
          "Can't reflect a bounded array type - "
          "either wrap your array in a type, or represent it as a raw pointer");
+
       static_assert(not requires { T::CTTI_Trait; },
          "Can't reflect trait as data");
       static_assert(not requires { T::CTTI_Constant; },
          "Can't reflect constant as data");
       static_assert(not requires { T::CTTI_Verb; }
-      and not requires { T::CTTI_PositiveVerb; }
-      and not requires { T::CTTI_NegativeVerb; },
+                and not requires { T::CTTI_PositiveVerb; }
+                and not requires { T::CTTI_NegativeVerb; },
          "Can't reflect verb as data");
 
       constexpr auto token = NameOf<T>();
@@ -629,7 +647,6 @@ namespace Langulus::RTTI
       generated.mSize = sizeof(T);
       generated.mAlignment = alignof(T);
       generated.mIsPOD = CT::POD<T>;
-      generated.mIsUninsertable = CT::Uninsertable<T>;
       generated.mIsUnallocatable = CT::Unallocatable<T>;
       generated.mIsExecutable = CT::DerivedFrom<T, Flow::Verb>;
       generated.mSuffix = SuffixOf<T>();
@@ -1075,10 +1092,14 @@ namespace Langulus::RTTI
       if constexpr (Types<FROM...>::Empty)
          return;
       else {
-         static_assert((CT::Convertible<FROM, TO> and ...),
-            "Converter reflected, but conversion is not possible - "
+         static_assert(
+            (CT::Convertible<FROM, TO> and ...),
+            "Converter reflected (maybe inherited from base class), "
+            "but conversion is not possible - "
             "implement a public cast operator in FROM, or a public "
-            "constructor in TO - these can be either explicit or not");
+            "constructor in TO - these can be either explicit or not. "
+            "Alternatively, did you forget to add `use Base::Base` in type body?"
+         );
 
          const ::std::pair<DMeta, Converter> list[] {
             ::std::pair<DMeta, Converter>(

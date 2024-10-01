@@ -19,20 +19,20 @@
 
 
 ///                                                                           
-/// CT::TypeSwap                                                              
+/// Retype                                                                    
 ///                                                                           
-TEST_CASE("Testing TypeSwap", "[type navigation]") {
-   static_assert(CT::Exact<TypeSwap<int, float>, float>);
-   static_assert(CT::Exact<TypeSwap<int[2], float>, float[2]>);
-   static_assert(CT::Exact<TypeSwap<int&, float>, float&>);
-   static_assert(CT::Exact<TypeSwap<int&&, float>, float&&>);
-   static_assert(CT::Exact<TypeSwap<volatile int, float>, volatile float>);
-   static_assert(CT::Exact<TypeSwap<int*, float>, float*>);
-   static_assert(CT::Exact<TypeSwap<int***, float>, float***>);
-   static_assert(CT::Exact<TypeSwap<int***[5], float>, float***[5]>);
-   static_assert(CT::Exact<TypeSwap<const int***[5], float>, const float***[5]>);
-   static_assert(CT::Exact<TypeSwap<int**const*const, float>, float**const*const>);
-   static_assert(CT::Exact<TypeSwap<int const**const*const&, float>, float const**const*const&>);
+TEST_CASE("Testing Retype", "[type navigation]") {
+   static_assert(CT::Exact<Retype<int, float>, float>);
+   static_assert(CT::Exact<Retype<int[2], float>, float[2]>);
+   static_assert(CT::Exact<Retype<int&, float>, float&>);
+   static_assert(CT::Exact<Retype<int&&, float>, float&&>);
+   static_assert(CT::Exact<Retype<volatile int, float>, volatile float>);
+   static_assert(CT::Exact<Retype<int*, float>, float*>);
+   static_assert(CT::Exact<Retype<int***, float>, float***>);
+   static_assert(CT::Exact<Retype<int***[5], float>, float***[5]>);
+   static_assert(CT::Exact<Retype<const int***[5], float>, const float***[5]>);
+   static_assert(CT::Exact<Retype<int**const*const, float>, float**const*const>);
+   static_assert(CT::Exact<Retype<int const**const*const&, float>, float const**const*const&>);
 }
 
 //TODO CT::Complete

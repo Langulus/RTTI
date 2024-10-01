@@ -120,6 +120,9 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
       }
 
       WHEN("Meta is retrieved by reflected file extension") {
+         auto foundnonexistent = RTTI::ResolveFileExtension("whatever");
+         REQUIRE(foundnonexistent.empty());
+
          auto foundtxt = RTTI::ResolveFileExtension("txt");
          REQUIRE(foundtxt.size() == 2);
          REQUIRE(foundtxt.contains(MetaData::Of<ImplicitlyReflectedDataWithTraits>()));
@@ -131,11 +134,10 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
          REQUIRE(foundpdf.contains(MetaData::Of<CheckingWhatGetsInherited>()));
 
          auto foundase = RTTI::ResolveFileExtension("ase");
-         REQUIRE(foundase.size() == 1);
+         REQUIRE(foundase.size() == 3);
          REQUIRE(foundase.contains(MetaData::Of<ImplicitlyReflectedData>()));
-
-         auto foundasenotfound = RTTI::ResolveFileExtension("asenotfound");
-         REQUIRE(foundasenotfound.size() == 0);
+         REQUIRE(foundase.contains(MetaData::Of<ConvertibleData>()));
+         REQUIRE(foundase.contains(MetaData::Of<CheckingWhatConverterGetsInherited>()));
       }
    }
 }
