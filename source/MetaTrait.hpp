@@ -22,11 +22,17 @@ namespace Langulus::RTTI
 
       static constexpr Token DefaultToken = "NoTrait";
 
+      // A sanitized last token (with a lower first letter)             
+      ::std::string mTokenSanitized;
       // Data filter for the trait (optional)                           
       DMeta mDataType {};
 
    public:
-      MetaTrait(const Token& token) : Meta {token} {}
+      MetaTrait(const Token& token)
+         : Meta {token} {
+         mTokenSanitized = ToLastToken(mToken);
+         mTokenSanitized[0] = ::std::tolower(mTokenSanitized[0]);
+      }
 
       template<CT::Void>
       NOD() static consteval TMeta Of();
@@ -36,6 +42,10 @@ namespace Langulus::RTTI
       NOD() bool Is(TMeta) const noexcept;
       template<CT::Data>
       NOD() bool Is() const;
+
+      Token Kind() const noexcept final {
+         return Meta::Trait;
+      }
 
    protected:
       template<CT::Data>
