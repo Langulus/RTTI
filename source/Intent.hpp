@@ -45,7 +45,6 @@ namespace Langulus
       struct Referred : ShallowIntent {
          static constexpr bool Keep = true;
          static constexpr bool Move = false;
-         static consteval bool ResetsOnMove() { return false; }
       };
       
       /// An abstract shallow-copy intent                                     
@@ -55,7 +54,6 @@ namespace Langulus
       struct Copied : ShallowIntent {
          static constexpr bool Keep = true;
          static constexpr bool Move = false;
-         static consteval bool ResetsOnMove() { return false; }
       };
 
       /// An abstract move intent                                             
@@ -64,7 +62,6 @@ namespace Langulus
       struct Moved : ShallowIntent {
          static constexpr bool Keep = true;
          static constexpr bool Move = true;
-         static consteval bool ResetsOnMove() { return true; }
       };
 
       /// An abstract abandon-move intent                                     
@@ -74,7 +71,6 @@ namespace Langulus
       struct Abandoned : ShallowIntent {
          static constexpr bool Keep = false;
          static constexpr bool Move = true;
-         static consteval bool ResetsOnMove() { return false; }
       };
 
       /// An abstract disowned-refer intent                                   
@@ -83,7 +79,6 @@ namespace Langulus
       struct Disowned : ShallowIntent {
          static constexpr bool Keep = false;
          static constexpr bool Move = false;
-         static consteval bool ResetsOnMove() { return false; }
       };
 
       /// An abstract clone intent (a.k.a. deep-copy intent)                  
@@ -92,7 +87,6 @@ namespace Langulus
       struct Cloned : DeepIntent {
          static constexpr bool Keep = true;
          static constexpr bool Move = false;
-         static consteval bool ResetsOnMove() { return false; }
       };
 
    } // namespace Langulus::A
@@ -154,7 +148,17 @@ namespace Langulus
 
    } // namespace Langulus::CT
 
-   
+   template<template<class> class S>
+   consteval bool ResetsOnMove() {
+      static_assert(CT::Intent<S<int>>, "Provided type isn't an intent");
+      return S<int>::Keep and S<int>::Move;
+   }
+   template<CT::Intent S>
+   consteval bool ResetsOnMove() {
+      return S::Keep and S::Move;
+   }
+
+
    ///                                                                        
    /// Referred value intermediate type, use in constructors and assignments  
    /// to refer to data explicitly                                            
