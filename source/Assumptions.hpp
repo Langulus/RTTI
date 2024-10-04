@@ -160,5 +160,10 @@ namespace Langulus
       ::Langulus::Throw<::Langulus::Except::exception>()
 #endif
 
+/// A shorter LANGULUS_ASSERT, with default exception and message             
+#define LANGULUS_CHECK(condition) \
+   ::Langulus::Assume<0>((condition)?true:false, "<no message>", \
+      LANGULUS_LOCATION())
+
 /// Convenience macro for specifying temporary lazyness                       
 #define TODO() LANGULUS_OOPS(ToDo, "Unfinished code")

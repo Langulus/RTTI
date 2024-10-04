@@ -465,34 +465,44 @@ namespace Langulus::RTTI
       return Inner::StatefulNameOfEnum<E>::Name.data();
    }
    
-   /// Same as CppNameOf, but removes all namespaces                          
-   ///   @tparam T - the enum to get the name of                              
-   ///   @return the name                                                     
-   template<auto E>
-   consteval Token LastCppNameOf() {
-      // Find the last ':' symbol, that is not inside <...> scope       
-      Token name = Inner::StatefulNameOfEnum<E>::Name.data();
-      size_t depth = 0;
-      for (auto i = name.size(); i > 0; --i) {
-         switch (name[i - 1]) {
+   /// Get the last, most relevant part of a token that may or may not have   
+   /// namespaces in it. Essentially finds last "::" that isn't enclosed in   
+   /// a template <>, and skip forward to that                                
+   ///   @param token - the token to scan                                     
+   ///   @return the last token                                               
+   NOD() constexpr Token ToLastToken(const Token& token) noexcept {
+      Count depth = 0;
+      for (Offset i = token.size() - 1; i < token.size(); --i) {
+         switch (token[i]) {
          case ':':
-            if (depth == 0) {
-               name.remove_prefix(i);
-               return name;
-            }
+            // If no depth, then we found it                            
+            if (not depth)
+               return token.substr(i + 1, token.size() - i - 1);
             break;
          case '>':
+            // Open template scope                                      
             ++depth;
             break;
          case '<':
-            --depth;
+            // Close template scope                                     
+            if (depth)
+               --depth;
             break;
          default:
             break;
          }
       }
 
-      return name;
+      return token;
+   }
+
+   /// Same as CppNameOf, but removes all namespaces                          
+   ///   @tparam T - the enum to get the name of                              
+   ///   @return the name                                                     
+   template<auto E>
+   consteval Token LastCppNameOf() {
+      const Token name = Inner::StatefulNameOfEnum<E>::Name.data();
+      return ToLastToken(name);
    }
 
 } // namespace Langulus::RTTI
@@ -567,7 +577,6 @@ namespace Langulus
       }
    }
 
-
    ///                                                                        
    ///   NameOf that considers the following name reflections, if any,        
    ///   in the specified order:                                              
@@ -581,31 +590,7 @@ namespace Langulus
    template<CT::Data T>
    consteval Token NameOf() {
       using DT = Decay<T>;
-      /*if constexpr (requires { DT::CTTI_Constant; }) {
-         if constexpr (CT::Decayed<Deref<T>>)
-            return DT::CTTI_Constant;
-         else
-            return CustomNameOf<Deref<T>>::Generate();
-      }
-      else if constexpr (requires { DT::CTTI_PositiveVerb; }) {
-         if constexpr (CT::Decayed<Deref<T>>)
-            return DT::CTTI_PositiveVerb;
-         else
-            return CustomNameOf<Deref<T>>::Generate();
-      }
-      else if constexpr (requires { DT::CTTI_Verb; }) {
-         if constexpr (CT::Decayed<Deref<T>>)
-            return DT::CTTI_Verb;
-         else
-            return CustomNameOf<Deref<T>>::Generate();
-      }
-      else if constexpr (requires { DT::CTTI_Trait; }) {
-         if constexpr (CT::Decayed<Deref<T>>)
-            return DT::CTTI_Trait;
-         else
-            return CustomNameOf<Deref<T>>::Generate();
-      }
-      else*/ if constexpr (requires { DT::CTTI_Name; }) {
+      if constexpr (requires { DT::CTTI_Name; }) {
          if constexpr (CT::Decayed<Deref<T>>)
             return DT::CTTI_Name;
          else

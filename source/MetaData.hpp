@@ -86,8 +86,6 @@ namespace Langulus::RTTI
 
    using FDynamicCast = void*(*)(void*);
 
-   using NamedValueList = ::std::vector<CMeta>;
-
 
    ///                                                                        
    ///   Type-erased member variable reflection                               
@@ -122,12 +120,12 @@ namespace Langulus::RTTI
       NOD() bool operator == (const Member&) const noexcept;
       
       template<CT::Data T>
-      NOD() T const& As(const Byte*) const noexcept;
+      NOD() auto As(const Byte*) const noexcept -> T const&;
       template<CT::Data T>
-      NOD() T& As(Byte*) const noexcept;
+      NOD() auto As(Byte*) const noexcept -> T&;
       
-      NOD() Byte const* Get(Byte const*) const noexcept;
-      NOD() Byte*       Get(Byte*) const noexcept;
+      NOD() auto Get(Byte const*) const noexcept -> Byte const*;
+      NOD() auto Get(Byte*)       const noexcept -> Byte*;
 
       NOD() DMeta GetType() const;
       NOD() TMeta GetTrait(int) const;
@@ -167,11 +165,6 @@ namespace Langulus::RTTI
       template<CT::Dense, CT::Data VERB, CT::Data...A>
       NOD() static Ability From() noexcept;
    };
-
-
-   using AbilityList = ::std::unordered_map<VMeta, Ability>;
-   using MutableOverloadList = typename Ability::MutableOverloadList;
-   using ConstantOverloadList = typename Ability::ConstantOverloadList;
 
 
    ///                                                                        
@@ -246,6 +239,11 @@ namespace Langulus::RTTI
       static_assert(not CT::Complete<PurposefullyIncompleteType>,
          "Your compiler can't reliably detect incomplete types");
 
+      using AbilityList = ::std::unordered_map<VMeta, Ability>;
+      using MutableOverloadList = typename Ability::MutableOverloadList;
+      using ConstantOverloadList = typename Ability::ConstantOverloadList;
+      using NamedValueList = ::std::vector<CMeta>;
+
    public:
       friend struct Member;
 
@@ -258,8 +256,16 @@ namespace Langulus::RTTI
       
       static constexpr Token DefaultToken = "NoData";
 
-      MetaData(const Token& token) : Meta {token} {}
+      MetaData(const Token& token)
+         : Meta {token} {
+         mTokenSanitized = ToLastToken(mToken);
+         mTokenSanitized[0] = ::std::toupper(mTokenSanitized[0]);
+      }
 
+      Token Kind() const noexcept final { return Meta::Data; }
+
+      // A sanitized last token (with a capital first letter)           
+      ::std::string mTokenSanitized;
       // The origin type, with all qualifiers and sparseness removed    
       // Will be nullptr for incomplete types                           
       DMeta mOrigin {};

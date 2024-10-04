@@ -33,6 +33,10 @@ namespace Langulus::RTTI
 
       NOD() constexpr bool Is(CMeta) const noexcept;
 
+      Token Kind() const noexcept final {
+         return Meta::Constant;
+      }
+
    protected:
       template<CT::Data>
       static consteval Token GetReflectedToken() noexcept;

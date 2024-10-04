@@ -31,6 +31,8 @@ namespace Langulus::RTTI
       /// Virtual destructor required for dynamic_cast                        
       virtual ~Meta() = default;
 
+      virtual Token Kind() const noexcept = 0;
+
       /// Custom operator required, to avoid const members                    
       Meta& operator = (const Meta& rhs) noexcept {
          mInfo = rhs.mInfo;
@@ -66,6 +68,12 @@ namespace Langulus::RTTI
          NOD() LANGULUS_API(RTTI)
          Token GetShortestUnambiguousToken() const;
       #endif
+
+      static constexpr Token Data      = "meta data";
+      static constexpr Token Trait     = "meta trait";
+      static constexpr Token Verb      = "meta verb";
+      static constexpr Token Constant  = "meta const";
+      static constexpr Token Unknown   = "unknown";
    };
    
 
