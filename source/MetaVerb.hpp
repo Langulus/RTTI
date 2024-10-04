@@ -68,6 +68,10 @@ namespace Langulus::RTTI
       template<CT::Data>
       NOD() bool Is() const;
 
+      Token Kind() const noexcept final {
+         return Meta::Verb;
+      }
+
    protected:
       template<CT::Data>
       static consteval Token GetReflectedPositiveVerbToken() noexcept;

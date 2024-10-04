@@ -43,37 +43,6 @@ namespace Langulus::RTTI
             delete meta.second.mMeta;
    }
 
-   /// Get the last, most relevant part of a token that may or may not have   
-   /// namespaces in it. Essentially finds last "::" that isn't enclosed in   
-   /// a template <>, and skip forward to that                                
-   ///   @param token - the token to scan                                     
-   ///   @return the last token                                               
-   Token ToLastToken(const Token& token) noexcept {
-      Count depth = 0;
-      for (Offset i = token.size() - 1; i < token.size(); --i) {
-         switch (token[i]) {
-         case ':':
-            // If no depth, then we found it                            
-            if (not depth)
-               return token.substr(i + 1, token.size() - i - 1);
-            break;
-         case '>':
-            // Open template scope                                      
-            ++depth;
-            break;
-         case '<':
-            // Close template scope                                     
-            if (depth)
-               --depth;
-            break;
-         default:
-            break;
-         }
-      }
-
-      return token;
-   }
-
    /// Common way to extract something from the registry                      
    ///   @param where - where to search in                                    
    ///   @param token - the token to search for                               
@@ -194,7 +163,17 @@ namespace Langulus::RTTI
    }
    
    /// Disambiguate a token                                                   
-   ///   @param keyword - the file extension to search for                    
+   /// Works in the following way:                                            
+   ///   1. Checks keyword for an exact match (not case-sensitive)            
+   ///      If such is found, the meta is returned directly                   
+   ///   2. If multiple keywords match partially:                             
+   ///      a. Meta-data and meta-traits are always with higher priority than 
+   ///         meta-verbs and meta-constants.                                 
+   ///      b. A keyword starting with a capital letter is always hinted as   
+   ///         meta-data, instead of meta-trait.                              
+   ///   3. If after all these disambiguation attempts there's still ambiguity
+   ///      throw a Meta exception - the ambiguity has to be manually fixed   
+   ///   @param keyword - the token to search for                             
    ///   @param boundary - the boundary to search in (optional)               
    ///   @return the disambiguated token; throws if not found/ambiguous       
    AMeta Registry::DisambiguateMeta(const Token& keyword, const Token& boundary) const {
@@ -202,7 +181,7 @@ namespace Langulus::RTTI
       LANGULUS_ASSERT(not symbols.empty(), Meta,
          "Keyword not found", ": `", keyword, '`');
       if (symbols.size() == 1) {
-         // No ambiguity, just return the single result                 
+         // No ambiguity, just return the single result (1)             
          return *symbols.begin();
       }
 
@@ -232,26 +211,61 @@ namespace Langulus::RTTI
       LANGULUS_ASSERT(not origins.empty(), Meta,
          "No relevant origins for keyword", ": `", keyword, '`');
 
+      DMeta meta_data;
+      Count meta_data_encountered = 0;
+      TMeta meta_trait;
+      Count meta_trait_encountered = 0;
+
       if (origins.size() == 1) {
-         // Candidate types reduced to a single relevant origin         
+         // Candidate types reduced to a single relevant origin (1)     
          return *origins.begin();
       }
       else for (auto& candidate : origins) {
          // There's a chance, that one of the symbols matches the       
-         // lowercased keyword exactly                                  
+         // lowercased keyword exactly (1)                              
          if (ToLowercase(candidate->mToken) == lowercased)
             return candidate;
+
+         if (candidate.Kind() == Meta::Data) {
+            meta_data = candidate;
+            ++meta_data_encountered;
+         }
+         else if (candidate.Kind() == Meta::Trait) {
+            meta_trait = candidate;
+            ++meta_trait_encountered;
+         }
       }
 
-      // Ambiguity if reached, report error and throw                   
-      {
-         auto tab = Logger::ErrorTab(
-            "Ambiguous symbol: `", keyword, "`; Could be one of: "
-         );
-         for (auto& meta : origins) {
-            Logger::Line('`', Logger::PushDarkYellow,
-               meta->mCppName, Logger::Pop, "` (", meta.Kind(), ')');
+      // If there are data/traits available, discard verbs/consts (2.a) 
+      if (meta_data_encountered and meta_trait_encountered) {
+         // Both data and traits encountered, check first letter (2.b)  
+         if (::std::islower(keyword[0])) {
+            if (meta_trait_encountered == 1)
+               return meta_trait;
          }
+         else {
+            if (meta_data_encountered == 1)
+               return meta_data;
+         }
+      }
+      else if (meta_data_encountered == 1) {
+         // No traits, just meta data                                   
+         // If it's just one, directly return it (2.a)                  
+         return meta_data;
+      }
+      else if (meta_trait_encountered == 1) {
+         // No data, just meta traits                                   
+         // If it's just one, directly return it (2.a)                  
+         return meta_trait;
+      }
+
+      // Unfixable ambiguity reached, report error and throw (3)        
+      const auto tab = Logger::ErrorTab(
+         "Ambiguous symbol: `", keyword, "`; Could be one of: "
+      );
+      for (auto& meta : origins) {
+         Logger::Line('`', Logger::PushDarkYellow,
+            meta->mCppName, Logger::Pop, "` (", meta.Kind(), ')');
       }
       LANGULUS_THROW(Meta, "Ambiguous symbol");
    }
@@ -397,8 +411,8 @@ namespace Langulus::RTTI
          "Trait name conflicts with constant: ", token);
       LANGULUS_ASSERT(not GetMetaVerb(lc), Meta,
          "Trait name conflicts with verb: ", token);
-      LANGULUS_ASSERT(not GetMetaTrait(lc), Meta,
-         "Trait name conflicts with trait: ", token);
+      LANGULUS_ASSERT(not GetMetaData(lc), Meta,
+         "Trait name conflicts with data: ", token);
 
       return Register(new MetaTrait {token}, mMetaTraits, lc, boundary);
    }
@@ -676,7 +690,7 @@ namespace Langulus::RTTI
       }
    }
 
-   /// Get the shortest possible token, that is not ambiguous                 
+   /// Get the shortest possible unambiguous token                            
    ///   @return the token                                                    
    Token Meta::GetShortestUnambiguousToken() const {
       auto& ambiguous = Instance.GetAmbiguousMeta(mToken);
@@ -684,20 +698,42 @@ namespace Langulus::RTTI
          return ToLastToken(mToken);
 
       // Collect all origin types, and work with those                  
+      Count datas = 0;
+      Count traits = 0;
       MetaList origins;
       for (auto& meta : ambiguous) {
          const auto dmeta = meta.As<DMeta>();
-         if (dmeta) {
-            if (dmeta->mOrigin)
-               origins.insert(dmeta->mOrigin);
-            else
-               origins.insert(dmeta);
+         if (dmeta and dmeta->mOrigin) {
+            origins.insert(dmeta->mOrigin);
+            ++datas;
          }
-         else origins.insert(dmeta);
+         else {
+            origins.insert(meta);
+
+            if (dmeta)
+               ++datas;
+            else if (meta.Kind() == Meta::Trait)
+               ++traits;
+         }
       }
 
+      // Some easy to do disambiguations                                
+      // Meta datas/traits always win over verbs/constants              
       if (origins.size() == 1)
          return ToLastToken(mToken);
+      else if ((datas  == 1 and traits == 0 and Kind() == Meta::Data)
+           or  (traits == 1 and datas  == 0 and Kind() == Meta::Trait))
+         return ToLastToken(mToken);
+      else if (datas == 1 and traits == 1) {
+         if (Kind() == Meta::Data) {
+            // Token should be starting with a capital letter           
+            return static_cast<const MetaData*>(this)->mTokenSanitized;
+         }
+         else if (Kind() == Meta::Trait) {
+            // Token should be starting with a lower letter             
+            return static_cast<const MetaTrait*>(this)->mTokenSanitized;
+         }
+      }
 
       // Start including namespaces, until the resulting token has      
       // exactly one match inside the ambiguous list                    
@@ -705,7 +741,7 @@ namespace Langulus::RTTI
       while (start >= mToken.data()) {
          if (*start == ':') {
             const auto candidate = mToken.substr(start - mToken.data() + 1);
-            Count matches {};
+            Count matches = 0;
             for (auto& meta : origins) {
                if (meta->mToken.ends_with(candidate)) {
                   if (++matches > 1)

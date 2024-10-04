@@ -326,25 +326,25 @@ namespace Langulus::RTTI
 
    constexpr Token AMeta::Kind() const noexcept {
       if (not mMeta)
-         return "unknown";
+         return Meta::Unknown;
 
       if (dynamic_cast<const MetaData*>(mMeta))
-         return "meta data";
+         return Meta::Data;
       else if (dynamic_cast<const MetaTrait*>(mMeta))
-         return "meta trait";
+         return Meta::Trait;
       else if (dynamic_cast<const MetaVerb*>(mMeta))
-         return "meta verb";
+         return Meta::Verb;
       else if (dynamic_cast<const MetaConst*>(mMeta))
-         return "meta const";
+         return Meta::Constant;
       else 
-         return "unknown";
+         return Meta::Unknown;
    }
    
    /// Construct an abstract meta definition by setting token and hashing it  
    ///   @param name - token                                                  
    LANGULUS(INLINED)
    Meta::Meta(const Token& name)
-      : mHash {HashOf(name)}
+      : mHash  {HashOf(name)}
       , mToken {name} {}
 
 } // namespace Langulus::RTTI
