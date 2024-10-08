@@ -288,14 +288,27 @@ namespace Langulus::RTTI
 /// Compile-time checks and concepts associated with RTTI                     
 namespace Langulus::CT
 {
-   
+   namespace Inner
+   {
+      template<class T>
+      consteval bool IsAbstract() {
+         using DT = Decay<T>;
+
+         if constexpr (Sparse<T> or not Complete<DT>)
+            return false;
+         else if constexpr (requires { DT::CTTI_Abstract; })
+            return DT::CTTI_Abstract or ::std::is_abstract_v<DT>;
+         else
+            return ::std::is_abstract_v<T>;
+      }
+   }
+
+
    /// Check if all T are abstract (have at least one pure virtual function,  
    /// or are explicitly marked as LANGULUS(ABSTRACT) true). Sparse types are 
    /// never abstract!                                                        
    template<class...T>
-   concept Abstract = Complete<T...> and ((
-         ::std::is_abstract_v<T> or (Dense<T> and Decay<T>::CTTI_Abstract)
-      ) and ...);
+   concept Abstract = (Inner::IsAbstract<T>() and ...);
 
    /// Check if any of the listed T is unallocatable                          
    /// You can make types unallocatable by the memory manager. This serves    

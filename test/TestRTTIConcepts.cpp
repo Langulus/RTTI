@@ -7,7 +7,60 @@
 ///                                                                           
 #include "Common.hpp"
 
-//TODO Abstract
+
+///                                                                           
+/// CT::Abstract                                                              
+///                                                                           
+TEMPLATE_TEST_CASE("Testing CT::Abstract", "[concepts]",
+   PureVirtual,
+   ForcedAbstract
+) {
+   using T = TestType;
+   static_assert(    CT::Abstract<T>);
+   static_assert(not CT::Abstract<T*>);
+   static_assert(    CT::Abstract<const T>);
+   static_assert(not CT::Abstract<const T*>);
+
+   auto meta1 = MetaData::Of<T>();
+   REQUIRE(meta1);
+   REQUIRE(meta1->mIsAbstract);
+
+   auto meta2 = MetaData::Of<T*>();
+   REQUIRE(meta2);
+   REQUIRE(meta2->mIsAbstract);
+}
+
+TEMPLATE_TEST_CASE("Testing not CT::Abstract", "[concepts]",
+   bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte,
+   ImplicitlyConstructible,
+   Destructible,
+   AggregateType,
+   NonDestructible,
+   PrivatelyConstructible,
+   NonIntentConstructible,
+   AllIntentConstructible,
+   AllIntentConstructibleAndAssignable,
+   PartiallyIntentConstructible,
+   DescriptorConstructible,
+   Complex,
+   ContainsComplex,
+   IncompleteType,
+   ForcefullyPod
+) {
+   static_assert(not CT::Abstract<TestType>);
+   static_assert(not CT::Abstract<TestType*>);
+
+   if constexpr (CT::Complete<TestType>) {
+      auto meta1 = MetaData::Of<TestType>();
+      REQUIRE(meta1);
+      REQUIRE(not meta1->mIsAbstract);
+   }
+
+   auto meta2 = MetaData::Of<TestType*>();
+   REQUIRE(meta2);
+   REQUIRE(not meta2->mIsAbstract);
+}
+
 //TODO Unallocatable
 //TODO Allocatable
 //TODO Uninsertable
@@ -51,7 +104,9 @@ TEMPLATE_TEST_CASE("Testing not CT::Defaultable", "[concepts]",
    Complex,
    ContainsComplex,
    IncompleteType,
-   ForcefullyPod
+   ForcefullyPod,
+   PureVirtual,
+   ForcedAbstract
 ) {
    static_assert(not CT::Defaultable<TestType>);
    static_assert(    CT::Defaultable<TestType*>);

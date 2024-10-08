@@ -372,3 +372,18 @@ namespace N3 {
 enum class TypedEnum : int16_t {
    E1, E2, E3
 };
+
+/// Built-in abstract type                                                    
+struct PureVirtual {
+   PureVirtual() = delete;
+   virtual ~PureVirtual() {}
+
+   PureVirtual(void*) {}
+
+   virtual auto PureVirtualMethod() -> Offset = 0;
+};
+
+/// Proper type, reflected as abstract                                        
+struct ForcedAbstract {
+   LANGULUS(ABSTRACT) true;
+};
