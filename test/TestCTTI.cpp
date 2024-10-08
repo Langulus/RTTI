@@ -441,6 +441,56 @@ SCENARIO("A simple type reflected with CTTI traits", "[metadata]") {
          REQUIRE(meta->mConvertersFrom.size() == 0);
       }
    }
+
+   GIVEN("PureVirtual") {
+      WHEN("Reflected") {
+         auto meta = MetaData::Of<PureVirtual>();
+
+         REQUIRE(meta != nullptr);
+         REQUIRE(meta->mToken == "PureVirtual");
+         REQUIRE(meta->mCppName == "PureVirtual");
+         REQUIRE(meta->mInfo == "<no info provided>");
+         REQUIRE(meta->mFileExtensions == "");
+         REQUIRE(meta->mVersionMajor == 1);
+         REQUIRE(meta->mVersionMinor == 0);
+         REQUIRE(meta->mIsDeep == false);
+         REQUIRE(meta->mIsPOD == false);
+         REQUIRE(meta->mIsNullifiable == false);
+         REQUIRE(meta->mConcreteRetriever == nullptr);
+         REQUIRE(meta->mAllocationPage >= Alignment);
+         REQUIRE(meta->mIsAbstract == true);
+         REQUIRE(meta->mSize == sizeof(PureVirtual));
+         REQUIRE(meta->mAlignment == alignof(PureVirtual));
+         REQUIRE(meta->mNamedValues.empty());
+         REQUIRE(meta->mConvertersTo.empty());
+         REQUIRE(meta->mConvertersFrom.empty());
+      }
+   }
+
+   GIVEN("ForcedAbstract") {
+      WHEN("Reflected") {
+         auto meta = MetaData::Of<ForcedAbstract>();
+
+         REQUIRE(meta != nullptr);
+         REQUIRE(meta->mToken == "ForcedAbstract");
+         REQUIRE(meta->mCppName == "ForcedAbstract");
+         REQUIRE(meta->mInfo == "<no info provided>");
+         REQUIRE(meta->mFileExtensions == "");
+         REQUIRE(meta->mVersionMajor == 1);
+         REQUIRE(meta->mVersionMinor == 0);
+         REQUIRE(meta->mIsDeep == false);
+         REQUIRE(meta->mIsPOD == false);
+         REQUIRE(meta->mIsNullifiable == false);
+         REQUIRE(meta->mConcreteRetriever == nullptr);
+         REQUIRE(meta->mAllocationPage >= Alignment);
+         REQUIRE(meta->mIsAbstract == true);
+         REQUIRE(meta->mSize == sizeof(ForcedAbstract));
+         REQUIRE(meta->mAlignment == alignof(ForcedAbstract));
+         REQUIRE(meta->mNamedValues.empty());
+         REQUIRE(meta->mConvertersTo.empty());
+         REQUIRE(meta->mConvertersFrom.empty());
+      }
+   }
 }
 
 SCENARIO("A reflected verb with CTTI traits", "[metaverb]") {
