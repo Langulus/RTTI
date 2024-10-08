@@ -133,7 +133,6 @@ namespace Langulus::RTTI
    ///   @tparam T - the type to reflect (will always be decayed)             
    template<CT::Decayed T> LANGULUS(NOINLINE)
    VMeta MetaVerb::Of() {
-      // This check is not standard, but doesn't hurt afaik             
       static_assert(not CT::Function<T>,
          "Can't reflect this function signature as a verb");
       static_assert(CT::Complete<T>,
