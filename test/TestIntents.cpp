@@ -306,6 +306,7 @@ TEMPLATE_TEST_CASE("Testing non-move-makable types", "[intents]",
 }
 
 TEMPLATE_TEST_CASE("Testing move-assignable types", "[intents]",
+   NonDestructible,
    AggregateType,
    ImplicitlyConstructible,
    Destructible,
@@ -347,7 +348,6 @@ TEMPLATE_TEST_CASE("Testing move-assignable types", "[intents]",
 
 TEMPLATE_TEST_CASE("Testing non-move-assignable types", "[intents]",
    IncompleteType,
-   NonDestructible,
    Complex,
    ContainsComplex,
    PrivatelyConstructible

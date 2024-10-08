@@ -290,6 +290,7 @@ namespace Langulus::CT
 {
    namespace Inner
    {
+
       template<class T>
       consteval bool IsAbstract() {
          using DT = Decay<T>;
@@ -301,7 +302,21 @@ namespace Langulus::CT
          else
             return ::std::is_abstract_v<T>;
       }
-   }
+
+      template<class T>
+      consteval bool IsReflectable() {
+         using DT = Decay<T>;
+
+         if constexpr (not Void<T> and Complete<DT>) {
+            if constexpr (CT::Dense<T> and requires { typename DT::CTTI_ActAs; })
+               return not CT::Void<typename DT::CTTI_ActAs>;
+            else
+               return true;
+         }
+         else return not CT::Void<T> and Complete<T>;
+      }
+
+   } // namespace Langulus::CT::Inner
 
 
    /// Check if all T are abstract (have at least one pure virtual function,  
@@ -330,12 +345,11 @@ namespace Langulus::CT
    /// Useful to mark some intermediate types, that are not supposed to be    
    /// inserted in containers, like iterators or handles.                     
    template<class...T>
-   concept Unreflectable = not Complete<T...>
-        or ((Void<T> or (Dense<T> and CT::Void<typename Decay<T>::CTTI_ActAs>)) or ...);
+   concept Unreflectable = ((not Inner::IsReflectable<T>()) or ...);
 
    /// Check if all of the types are insertable                               
    template<class...T>
-   concept Reflectable = ((not Unreflectable<T>) and ...);
+   concept Reflectable = (Inner::IsReflectable<T>() and ...);
 
    namespace Inner
    {
