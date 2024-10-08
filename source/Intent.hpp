@@ -958,12 +958,11 @@ namespace Langulus
       /// Check if all T have a move-assigner                                 
       /// Does a move, fully resetting source                                 
       /// T has a move-assigner as long as std::assignable_from<T&, T&&> holds
-      /// @attention you can't have move semantics, if a type has its         
-      ///   destructor deleted - every time you move an instance, the old one 
-      ///   has to be deleted later.                                          
+      /// This includes the cases when the type has a default copy-assign to  
+      /// which the compiler falls back to. In that case move-assignment is   
+      /// the same as refer-assignment.                                       
       template<class...T>
       concept HasMoveAssign = Complete<T...>
-          and ((::std::destructible<T>) and ...)
           and ((HasIntentAssign<Langulus::Moved, T>
            or ::std::assignable_from<T&, T&&>) and ...);
 
@@ -1152,14 +1151,16 @@ namespace Langulus
          if constexpr (not SS::Keep) {
             // Abandon                                                  
             if constexpr (CT::HasAbandonAssign<T>)
-               return (lhs = Forward<SS>(rhs));
+               return (lhs = rhs.Forward());
             else if constexpr (CT::HasReferAssign<T> and CT::HasAbandonConstructor<T>)
                // This is required because G++ doesn't detect implicit  
                // abandon-assignment otherwise                          
-               return (lhs = Decvq<T> {Forward<SS>(rhs)});
+               return (lhs = Decvq<T> {rhs.Forward()});
             else if constexpr (CT::POD<T>) {
-               if constexpr (CT::HasMoveAssign<T>)
+               if constexpr (CT::HasIntentAssign<Langulus::Moved, T>)
                   return (lhs = Move(*rhs));
+               else if constexpr (::std::assignable_from<T&, T&&>)
+                  return (lhs = static_cast<T&&>(rhs));
                else {
                   ::std::memmove((void*) &lhs, (const void*) &*rhs, sizeof(T));
                   return (lhs);
@@ -1174,8 +1175,10 @@ namespace Langulus
          }
          else {
             // Move                                                     
-            if constexpr (CT::HasMoveAssign<T>)
-               return (lhs = Forward<SS>(rhs));
+            if constexpr (CT::HasIntentAssign<Langulus::Moved, T>)
+               return (lhs = rhs.Forward());
+            else if constexpr (::std::assignable_from<T&, T&&>)
+               return (lhs = static_cast<T&&>(rhs));
             else if constexpr (CT::POD<T>) {
                ::std::memmove((void*) &lhs, (const void*) &*rhs, sizeof(T));
                return (lhs);
@@ -1220,7 +1223,7 @@ namespace Langulus
       else if constexpr (not SS::Keep) {
          // Disown                                                      
          if constexpr (CT::HasDisownAssign<T>)
-            return (lhs = Forward<SS>(rhs));
+            return (lhs = rhs.Forward());
          else if constexpr (CT::POD<T>) {
             if constexpr (::std::assignable_from<T&, const T&>)
                return (lhs = *rhs);
@@ -1237,7 +1240,7 @@ namespace Langulus
       else if constexpr (CT::Copied<SS>) {
          // Copy                                                        
          if constexpr (CT::HasCopyAssign<T>)
-            return (lhs = Forward<SS>(rhs));
+            return (lhs = rhs.Forward());
          else if constexpr (CT::POD<T>) {
             if constexpr (::std::assignable_from<T&, const T&>)
                return (lhs = *rhs);
@@ -1254,7 +1257,7 @@ namespace Langulus
       else if constexpr (CT::Referred<SS>) {
          // Refer                                                       
          if constexpr (CT::HasReferAssign<T>)
-            return (lhs = Forward<SS>(rhs));
+            return (lhs = rhs.Forward());
          else if constexpr (CT::POD<T>) {
             ::std::memcpy((void*) &lhs, (const void*) &*rhs, sizeof(T));
             return (lhs);
