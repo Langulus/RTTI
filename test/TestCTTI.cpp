@@ -409,87 +409,87 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
 }
 
 SCENARIO("A simple type reflected with CTTI traits", "[metadata]") {
-   GIVEN("ImplicitlyReflectedData") {
-      WHEN("Reflected") {
-         auto meta = MetaData::Of<ImplicitlyReflectedData>();
+   WHEN("ImplicitlyReflectedData reflected") {
+      auto meta = MetaData::Of<ImplicitlyReflectedData>();
 
-         REQUIRE(meta != nullptr);
-         REQUIRE(meta->mToken == "ImplicitlyReflectedData");
-         REQUIRE(meta->mCppName == "ImplicitlyReflectedData");
-         REQUIRE(meta->mInfo == "<no info provided>");
-         REQUIRE(meta->mFileExtensions == "ASE");
-         REQUIRE(meta->mVersionMajor == 1);
-         REQUIRE(meta->mVersionMinor == 0);
-         REQUIRE(meta->mIsDeep == false);
-         REQUIRE(meta->mIsPOD == true);
-         REQUIRE(meta->mIsNullifiable == false);
-         #if LANGULUS_FEATURE(MANAGED_MEMORY)
-            #if LANGULUS(DEBUG)
-               REQUIRE(meta->mPoolTactic == PoolTactic::Type);
-            #else
-               REQUIRE(meta->mPoolTactic == PoolTactic::Default);
-            #endif
+      REQUIRE(meta != nullptr);
+      REQUIRE(meta->mToken == "ImplicitlyReflectedData");
+      REQUIRE(meta->mCppName == "ImplicitlyReflectedData");
+      REQUIRE(meta->mInfo == "<no info provided>");
+      REQUIRE(meta->mFileExtensions == "ASE");
+      REQUIRE(meta->mVersionMajor == 1);
+      REQUIRE(meta->mVersionMinor == 0);
+      REQUIRE(meta->mIsDeep == false);
+      REQUIRE(meta->mIsPOD == true);
+      REQUIRE(meta->mIsNullifiable == false);
+      #if LANGULUS_FEATURE(MANAGED_MEMORY)
+         #if LANGULUS(DEBUG)
+            REQUIRE(meta->mPoolTactic == PoolTactic::Type);
+         #else
+            REQUIRE(meta->mPoolTactic == PoolTactic::Default);
          #endif
-         REQUIRE(meta->mConcreteRetriever == nullptr);
-         REQUIRE(meta->mAllocationPage >= Alignment);
-         REQUIRE(meta->mIsAbstract == false);
-         REQUIRE(meta->mSize == sizeof(ImplicitlyReflectedData));
-         REQUIRE(meta->mAlignment == alignof(ImplicitlyReflectedData));
+      #endif
+      REQUIRE(meta->mConcreteRetriever == nullptr);
+      REQUIRE(meta->mAllocationPage >= Alignment);
+      REQUIRE(meta->mIsAbstract == false);
+      REQUIRE(meta->mSize == sizeof(ImplicitlyReflectedData));
+      REQUIRE(meta->mAlignment == alignof(ImplicitlyReflectedData));
 
-         REQUIRE(meta->mNamedValues.size() == 3);
-         REQUIRE(meta->mConvertersTo.size() == 0);
-         REQUIRE(meta->mConvertersFrom.size() == 0);
-      }
+      REQUIRE(meta->mNamedValues.size() == 3);
+      REQUIRE(meta->mConvertersTo.size() == 0);
+      REQUIRE(meta->mConvertersFrom.size() == 0);
    }
 
-   GIVEN("PureVirtual") {
-      WHEN("Reflected") {
-         auto meta = MetaData::Of<PureVirtual>();
+   WHEN("ForcedAbstract reflected") {
+      auto meta = MetaData::Of<ForcedAbstract>();
 
-         REQUIRE(meta != nullptr);
-         REQUIRE(meta->mToken == "PureVirtual");
-         REQUIRE(meta->mCppName == "PureVirtual");
-         REQUIRE(meta->mInfo == "<no info provided>");
-         REQUIRE(meta->mFileExtensions == "");
-         REQUIRE(meta->mVersionMajor == 1);
-         REQUIRE(meta->mVersionMinor == 0);
-         REQUIRE(meta->mIsDeep == false);
-         REQUIRE(meta->mIsPOD == false);
-         REQUIRE(meta->mIsNullifiable == false);
-         REQUIRE(meta->mConcreteRetriever == nullptr);
-         REQUIRE(meta->mAllocationPage >= Alignment);
-         REQUIRE(meta->mIsAbstract == true);
-         REQUIRE(meta->mSize == sizeof(PureVirtual));
-         REQUIRE(meta->mAlignment == alignof(PureVirtual));
-         REQUIRE(meta->mNamedValues.empty());
-         REQUIRE(meta->mConvertersTo.empty());
-         REQUIRE(meta->mConvertersFrom.empty());
-      }
+      static_assert(not CT::HasIntentAssign<Langulus::Moved, PureVirtual>);
+      static_assert(::std::assignable_from<PureVirtual&, PureVirtual&&>);
+
+      REQUIRE(meta != nullptr);
+      REQUIRE(meta->mToken == "ForcedAbstract");
+      REQUIRE(meta->mCppName == "ForcedAbstract");
+      REQUIRE(meta->mInfo == "<no info provided>");
+      REQUIRE(meta->mFileExtensions == "");
+      REQUIRE(meta->mVersionMajor == 1);
+      REQUIRE(meta->mVersionMinor == 0);
+      REQUIRE(meta->mIsDeep == false);
+      REQUIRE(meta->mIsPOD == false);
+      REQUIRE(meta->mIsNullifiable == false);
+      REQUIRE(meta->mConcreteRetriever == nullptr);
+      REQUIRE(meta->mAllocationPage >= Alignment);
+      REQUIRE(meta->mIsAbstract == true);
+      REQUIRE(meta->mSize == sizeof(ForcedAbstract));
+      REQUIRE(meta->mAlignment == alignof(ForcedAbstract));
+      REQUIRE(meta->mNamedValues.empty());
+      REQUIRE(meta->mConvertersTo.empty());
+      REQUIRE(meta->mConvertersFrom.empty());
    }
 
-   GIVEN("ForcedAbstract") {
-      WHEN("Reflected") {
-         auto meta = MetaData::Of<ForcedAbstract>();
+   WHEN("PureVirtual reflected") {
+      auto meta = MetaData::Of<PureVirtual>();
 
-         REQUIRE(meta != nullptr);
-         REQUIRE(meta->mToken == "ForcedAbstract");
-         REQUIRE(meta->mCppName == "ForcedAbstract");
-         REQUIRE(meta->mInfo == "<no info provided>");
-         REQUIRE(meta->mFileExtensions == "");
-         REQUIRE(meta->mVersionMajor == 1);
-         REQUIRE(meta->mVersionMinor == 0);
-         REQUIRE(meta->mIsDeep == false);
-         REQUIRE(meta->mIsPOD == false);
-         REQUIRE(meta->mIsNullifiable == false);
-         REQUIRE(meta->mConcreteRetriever == nullptr);
-         REQUIRE(meta->mAllocationPage >= Alignment);
-         REQUIRE(meta->mIsAbstract == true);
-         REQUIRE(meta->mSize == sizeof(ForcedAbstract));
-         REQUIRE(meta->mAlignment == alignof(ForcedAbstract));
-         REQUIRE(meta->mNamedValues.empty());
-         REQUIRE(meta->mConvertersTo.empty());
-         REQUIRE(meta->mConvertersFrom.empty());
-      }
+      static_assert(not CT::HasIntentAssign<Langulus::Moved, PureVirtual>);
+      static_assert(::std::assignable_from<PureVirtual&, PureVirtual&&>);
+
+      REQUIRE(meta != nullptr);
+      REQUIRE(meta->mToken == "PureVirtual");
+      REQUIRE(meta->mCppName == "PureVirtual");
+      REQUIRE(meta->mInfo == "<no info provided>");
+      REQUIRE(meta->mFileExtensions == "");
+      REQUIRE(meta->mVersionMajor == 1);
+      REQUIRE(meta->mVersionMinor == 0);
+      REQUIRE(meta->mIsDeep == false);
+      REQUIRE(meta->mIsPOD == false);
+      REQUIRE(meta->mIsNullifiable == false);
+      REQUIRE(meta->mConcreteRetriever == nullptr);
+      REQUIRE(meta->mAllocationPage >= Alignment);
+      REQUIRE(meta->mIsAbstract == true);
+      REQUIRE(meta->mSize == sizeof(PureVirtual));
+      REQUIRE(meta->mAlignment == alignof(PureVirtual));
+      REQUIRE(meta->mNamedValues.empty());
+      REQUIRE(meta->mConvertersTo.empty());
+      REQUIRE(meta->mConvertersFrom.empty());
    }
 }
 
