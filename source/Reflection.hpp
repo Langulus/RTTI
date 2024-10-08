@@ -293,10 +293,9 @@ namespace Langulus::CT
 
       template<class T>
       consteval bool IsAbstract() {
-         using DT = Decay<T>;
-         if constexpr (Complete<DT> and Dense<T>) {
-            if constexpr (requires { DT::CTTI_Abstract; })
-               return ::std::is_abstract_v<T> or DT::CTTI_Abstract;
+         if constexpr (Complete<T> and Dense<T>) {
+            if constexpr (requires { T::CTTI_Abstract; })
+               return ::std::is_abstract_v<T> or T::CTTI_Abstract;
             else
                return ::std::is_abstract_v<T>;
          }
@@ -305,14 +304,13 @@ namespace Langulus::CT
 
       template<class T>
       consteval bool IsReflectable() {
-         using DT = Decay<T>;
-         if constexpr (Complete<DT> and Dense<T>) {
-            if constexpr (requires { typename DT::CTTI_ActAs; })
-               return not CT::Void<typename DT::CTTI_ActAs>;
+         if constexpr (Complete<T> and Dense<T>) {
+            if constexpr (requires { typename T::CTTI_ActAs; })
+               return not CT::Void<typename T::CTTI_ActAs>;
             else
-               return not CT::Void<T>;
+               return Complete<T>;
          }
-         else return Complete<T> and not CT::Void<T>;
+         else return Complete<T>;
       }
 
    } // namespace Langulus::CT::Inner
