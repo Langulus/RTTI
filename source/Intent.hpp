@@ -912,13 +912,13 @@ namespace Langulus
       ///   @tparam T... - the types                                          
       template<template<class> class S, class...T>
       concept HasIntentAssign = Complete<T...> and ((Intent<S<T>>
-          and ::std::assignable_from<T&, S<T>>) and ...);
+          and ::std::assignable_from<T&, S<T>&&>) and ...);
 
       /// Check if all TypeOf<S> has intent-assigner for S                    
       ///   @tparam S - the intent and type                                   
       template<class...S>
       concept HasIntentAssignAlt = Complete<TypeOf<S>...> and ((Intent<S>
-          and ::std::assignable_from<TypeOf<S>&, S>) and ...);
+          and ::std::assignable_from<TypeOf<S>&, S&&>) and ...);
 
       /// Check if all T have a disown-assigner                               
       /// Disowning does a shallow copy without referencing contents,         
@@ -962,7 +962,8 @@ namespace Langulus
       ///   destructor deleted - every time you move an instance, the old one 
       ///   has to be deleted later.                                          
       template<class...T>
-      concept HasMoveAssign = Complete<T...> and ((::std::destructible<T>) and ...)
+      concept HasMoveAssign = Complete<T...>
+          and ((::std::destructible<T>) and ...)
           and ((HasIntentAssign<Langulus::Moved, T>
            or ::std::is_move_assignable_v<T>) and ...);
 
@@ -1122,7 +1123,7 @@ namespace Langulus
    }
 
    /// Assign new value to an instance of T, using the provided intent        
-   ///   @attention when S is a deep intent (like Clone)this function         
+   ///   @attention when S is a deep intent (like Clone) this function        
    ///      will DenseCast 'lhs' and 'rhs', and copy only dense data          
    ///   @param lhs - left hand side (what are we assigning to)               
    ///   @param rhs - right hand side (what are we assigning)                 
