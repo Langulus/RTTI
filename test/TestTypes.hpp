@@ -124,6 +124,10 @@ enum class Pi {
 
 struct IncompleteType;
 
+struct NotReflectableType {
+   LANGULUS(ACT_AS) void;
+};
+
 namespace One::Two::Three {
    struct TypeDeepIntoNamespaces;
 

@@ -215,8 +215,28 @@ TEMPLATE_TEST_CASE("Testing not CT::POD<T>", "[concepts]",
 }
 
 //TODO Nullifiable
-//TODO Unreflectable
-//TODO Reflectable
+
+///                                                                           
+/// CT::Reflectable                                                           
+///                                                                           
+TEST_CASE("Testing CT::Reflectable<T>", "[concepts]") {
+   static_assert(    CT::Reflectable<ImplicitlyReflectedData>);
+   static_assert(    CT::Reflectable<ImplicitlyReflectedDataWithTraits>);
+   static_assert(    CT::Reflectable<ForcedAbstract>);
+   static_assert(    CT::Reflectable<PureVirtual>);
+   static_assert(    CT::Reflectable<int>);
+   static_assert(    CT::Reflectable<int&>);
+   static_assert(    CT::Reflectable<int*>);
+   static_assert(    CT::Reflectable<int**>);
+   static_assert(    CT::Reflectable<TypedEnum>);
+   static_assert(    CT::Reflectable<TypeErasedContainer>);
+   static_assert(    CT::Reflectable<std::vector<bool>>);
+   static_assert(not CT::Reflectable<IncompleteType>);
+   static_assert(not CT::Reflectable<NotReflectableType>);
+   static_assert(    CT::Reflectable<IncompleteType*>);
+   static_assert(    CT::Reflectable<NotReflectableType*>);
+}
+
 //TODO Concretizable
 //TODO ConcreteOf
 //TODO Producible
