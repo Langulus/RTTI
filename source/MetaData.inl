@@ -541,14 +541,14 @@ namespace Langulus::RTTI
       #if LANGULUS_FEATURE(MANAGED_MEMORY)
          generated.mPool = nullptr;
 
-         // If pool tactic is default, turn it Typed if outside MAIN    
-         if (generated.mPoolTactic == PoolTactic::Default) {
+         // If pool tactic is main, turn it Typed if outside MAIN       
+         if (generated.mPoolTactic == PoolTactic::Main) {
             #if LANGULUS_FEATURE(MANAGED_REFLECTION)
                generated.mPoolTactic = RTTI::Boundary != RTTI::MainBoundary
                   ? PoolTactic::Type
-                  : PoolTactic::Default;
+                  : PoolTactic::Main;
             #else
-               generated.mPoolTactic = PoolTactic::Default;
+               generated.mPoolTactic = PoolTactic::Main;
             #endif
          }
       #endif
@@ -674,7 +674,7 @@ namespace Langulus::RTTI
          
          #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          if (RTTI::Boundary != RTTI::MainBoundary
-         and generated.mPoolTactic == PoolTactic::Default)
+         and generated.mPoolTactic == PoolTactic::Main)
             generated.mPoolTactic = PoolTactic::Type;
          #endif
       #endif
