@@ -315,15 +315,7 @@ namespace Langulus::RTTI
       Token mSuffix {};
 
       #if LANGULUS_FEATURE(MANAGED_MEMORY)
-         // The pooling tactic used for the type                        
-         #if LANGULUS(DEBUG)
-            // Use dedicated type pools, so that dumping memory pools   
-            // gives better information about leaks, etc.               
-            PoolTactic mPoolTactic = PoolTactic::Type;
-         #else
-            // Use the default pool chain for better memory/performance 
-            PoolTactic mPoolTactic = PoolTactic::Default;
-         #endif
+         PoolTactic mPoolTactic = PoolTactic::Default;
 
          private:
             // The pool chain for the type                              

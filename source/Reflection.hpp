@@ -679,9 +679,9 @@ namespace Langulus
       /// Pooling works only if managed memory feature is enabled             
       ///                                                                     
       enum class PoolTactic {
-         // Data instances will be pooled in the default pool chain,    
+         // Data instances will be pooled in the main pool chain,       
          // unless data was reflected from a boundary that is not MAIN  
-         Default = 0,
+         Main = 0,
 
          // Data instances will be pooled based on their size           
          // There will be pools dedicated for each allocation page size 
@@ -693,7 +693,13 @@ namespace Langulus
          // This is the default pooling tactic for any meta data that   
          // is not reflected inside the RTTI::MainBoundary boundary.    
          // See LANGULUS_RTTI_BOUNDARY for more information on that.    
-         Type
+         Type,
+
+         #if LANGULUS(DEBUG)
+            Default = Type
+         #else
+            Default = Type // Main 
+         #endif
       };
 
    } // namespace Langulus::RTTI
