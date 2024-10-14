@@ -698,7 +698,7 @@ namespace Langulus
          #if LANGULUS(DEBUG)
             Default = Type
          #else
-            Default = Type // Main 
+            Default = Main
          #endif
       };
 
