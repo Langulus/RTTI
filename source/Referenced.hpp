@@ -20,7 +20,7 @@ namespace Langulus
    /// member mReferences is zeroed.                                          
    ///                                                                        
    class Referenced {
-      mutable Count mReferences = 1;
+      Count mReferences = 1;
 
    public:
       LANGULUS(INLINED)
@@ -46,7 +46,12 @@ namespace Langulus
       }
 
       LANGULUS(INLINED)
-      Count Reference(int x) const IF_UNSAFE(noexcept) {
+      Count GetReferences() const noexcept {
+         return mReferences;
+      }
+
+      LANGULUS(INLINED)
+      Count Reference(int x) IF_UNSAFE(noexcept) {
          LANGULUS_ASSUME(DevAssumes, mReferences or x == 0,
             "Dead instance resurrection/overkill");
          LANGULUS_ASSUME(DevAssumes, x >= 0 or mReferences >= static_cast<Count>(-x),

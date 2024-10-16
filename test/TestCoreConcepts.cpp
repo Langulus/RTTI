@@ -78,7 +78,28 @@ TEST_CASE("Testing Retype", "[type navigation]") {
 //TODO CT::Enum
 //TODO CT::Fundamental
 //TODO CT::Arithmetic
-//TODO CT::Referencable
+
+///                                                                           
+/// CT::Referencable                                                          
+///                                                                           
+TEST_CASE("Testing CT::Referencable", "[concepts]") {
+   static_assert(not CT::Referencable<bool>);
+   static_assert(not CT::Referencable<void>);
+   static_assert(not CT::Referencable<IncompleteType>);
+   static_assert(not CT::Referencable<AggregateType>);
+   static_assert(not CT::Referencable<Complex>);
+   static_assert(    CT::Referencable<      Referenced>);
+   static_assert(    CT::Referencable<const Referenced>);
+
+   static_assert(not CT::Referencable<bool*>);
+   static_assert(not CT::Referencable<void*>);
+   static_assert(not CT::Referencable<IncompleteType*>);
+   static_assert(not CT::Referencable<AggregateType*>);
+   static_assert(not CT::Referencable<Complex*>);
+   static_assert(not CT::Referencable<      Referenced*>);
+   static_assert(not CT::Referencable<const Referenced*>);
+}
+
 //TODO CT::Swappable
 //TODO CT::SwappableNoexcept
 //TODO CT::DerivedFrom

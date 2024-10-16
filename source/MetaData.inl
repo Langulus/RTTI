@@ -874,8 +874,8 @@ namespace Langulus::RTTI
       // Wrap the reference function of the origin type inside a lambda 
       if constexpr (CT::Referencable<T>) {
          generated.mReference = 
-            [](const void* at, int modifier) -> Count {
-               auto atT = static_cast<const T*>(at);
+            [](void* at, int modifier) -> Count {
+               auto atT = static_cast<T*>(at);
                return atT->Reference(modifier);
             };
       }

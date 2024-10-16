@@ -71,7 +71,7 @@ namespace Langulus::RTTI
    /// Takes the pointer to the instance for referencing                      
    /// Returns the number of references after being referenced                
    /// (use 0 modifier to just get references)                                
-   using FReference = Count(*)(const void*, int modifier);
+   using FReference = Count(*)(void*, int modifier);
 
    /// A custom verb dispatcher, wrapped in a lambda expression               
    /// Takes the pointer to the instance that will dispatch, and a verb       
