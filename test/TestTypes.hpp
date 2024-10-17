@@ -378,6 +378,11 @@ enum class TypedEnum : int16_t {
 };
 
 /// Built-in abstract type                                                    
+struct ImpureVirtual {
+   virtual ~ImpureVirtual() {}
+};
+
+/// Built-in abstract type                                                    
 struct PureVirtual {
    PureVirtual() = delete;
    virtual ~PureVirtual() {}
@@ -390,4 +395,8 @@ struct PureVirtual {
 /// Proper type, reflected as abstract                                        
 struct ForcedAbstract {
    LANGULUS(ABSTRACT) true;
+};
+
+struct VirtuallyDerived : virtual ImpureVirtual {
+
 };

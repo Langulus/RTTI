@@ -129,7 +129,10 @@ TEMPLATE_TEST_CASE("Testing not CT::Defaultable", "[concepts]",
 TEMPLATE_TEST_CASE("Testing CT::Destroyable<T>", "[concepts]",
    Destructible,
    Complex,
-   ContainsComplex
+   ContainsComplex,
+   PureVirtual,
+   ImpureVirtual,
+   VirtuallyDerived
 ) {
    static_assert(    CT::Destroyable<TestType>);
    static_assert(not CT::Destroyable<TestType*>);
@@ -154,7 +157,8 @@ TEMPLATE_TEST_CASE("Testing not CT::Destroyable<T>", "[concepts]",
    DescriptorConstructible,
    IncompleteType,
    bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte,
-   Complex*, ContainsComplex*
+   Complex*, ContainsComplex*,
+   ForcedAbstract
 ) {
    using T = TestType;
    static_assert(not CT::Destroyable<T>);
