@@ -76,7 +76,7 @@ namespace Langulus::RTTI
             ++right;
 
          if (len - right <= left)
-            throw "invalid token";
+            return {}; // invalid token
          return Token (name + left, name + len - right);
       }
 
@@ -103,7 +103,7 @@ namespace Langulus::RTTI
             ++right;
 
          if (len - right <= left)
-            throw "invalid token";
+            return {}; // invalid token
          return Token (name + left, name + len - right);
       }
 
@@ -302,7 +302,7 @@ namespace Langulus::RTTI
             output[it++] = '*';
             output[it] = '\0';
             if (it >= output.size())
-               throw "Limit breached";
+               return decltype(output) {}; // limit breached
             return output;
          }
 
@@ -357,8 +357,9 @@ namespace Langulus::RTTI
                output[it-1] = '\0';
             else
                output[it] = '\0';
+
             if (it >= output.size())
-               throw "Limit breached";
+               return decltype(output) {}; // limit breached
             return output;
          }
 
@@ -400,8 +401,9 @@ namespace Langulus::RTTI
             else LANGULUS_ERROR("Bad named value provided");
 
             output[it] = '\0';
+
             if (it >= output.size())
-               throw "Limit breached";
+               return decltype(output) {}; // limit breached
             return output;
          }
 
@@ -550,10 +552,12 @@ namespace Langulus
 
          for (auto i : token)
             tokenPtr[idx++] = i;
+
          tokenPtr[idx++] = '*';
          tokenPtr[idx] = '\0';
+
          if (idx >= tokenPtr.size())
-            throw "Limit breached";
+            return decltype(tokenPtr) {}; // limit breached
          return tokenPtr;
       }
       else {
@@ -570,9 +574,11 @@ namespace Langulus
 
          for (auto i : token)
             constToken[idx++] = i;
+
          constToken[idx] = '\0';
+
          if (idx >= constToken.size())
-            throw "Limit breached";
+            return decltype(constToken) {}; // limit breached
          return constToken;
       }
    }
