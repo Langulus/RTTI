@@ -601,9 +601,8 @@ namespace Langulus::RTTI
                 and not requires { T::CTTI_NegativeVerb; },
          "Can't reflect verb as data");
 
-      constexpr Token token = NameOf<T>();
-      static_assert(not token.empty(),
-         "Invalid data token is not allowed - "
+      constexpr auto token = NameOf<T>();
+      static_assert(token != "", "Invalid data token is not allowed - "
          "you have probably equipped your type with an empty LANGULUS(NAME)");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
