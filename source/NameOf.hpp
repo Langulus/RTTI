@@ -62,17 +62,18 @@ namespace Langulus::RTTI
          constexpr auto helper_name = WrappedTypeName<Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK>();
          constexpr auto helper_len = LengthOf(helper_name);
          static_assert(len > 0);
-         static_assert(helper_len > 61);
+         static_assert(helper_len > 38);
 
          int left = 0;
          while (left < helper_len and left < len and helper_name[left] == name[left]
-         and not Match(helper_name + left, "Langulus::RTTI::Inner::Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK"))
+         and not Match(helper_name + left, "Langulus::RTTI::Inner::Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK") // Most compilers include the namespaces
+         and not Match(helper_name + left, "Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK"))                       // GCC14 decided not to...
             ++left;
 
          int right = 1;
-         while (right + 61 <= helper_len and right <= len
+         while (right + 38 <= helper_len and right <= len
          and helper_name[helper_len - right] == name[len - right]
-         and not Match(helper_name + (helper_len - right - 61), "Langulus::RTTI::Inner::Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK"))
+         and not Match(helper_name + (helper_len - right - 38), "Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK"))
             ++right;
 
          if (len - right <= left)
@@ -89,17 +90,18 @@ namespace Langulus::RTTI
          constexpr auto helper_name = WrappedEnumName<Oddly_Specific_EnumASDOLSAJDPAFHOAF>();
          constexpr auto helper_len = LengthOf(helper_name);
          static_assert(len > 0);
-         static_assert(helper_len > 58);
+         static_assert(helper_len > 35);
 
          int left = 0;
          while (left < helper_len and left < len and helper_name[left] == name[left]
-         and not Match(helper_name + left, "Langulus::RTTI::Inner::Oddly_Specific_EnumASDOLSAJDPAFHOAF"))
+         and not Match(helper_name + left, "Langulus::RTTI::Inner::Oddly_Specific_EnumASDOLSAJDPAFHOAF") // Most compilers include the namespaces
+         and not Match(helper_name + left, "Oddly_Specific_EnumASDOLSAJDPAFHOAF"))                       // GCC14 decided not to...
             ++left;
 
          int right = 1;
-         while (right + 58 <= helper_len and right <= len
+         while (right + 35 <= helper_len and right <= len
          and helper_name[helper_len - right] == name[len - right]
-         and not Match(helper_name + (helper_len - right - 58), "Langulus::RTTI::Inner::Oddly_Specific_EnumASDOLSAJDPAFHOAF"))
+         and not Match(helper_name + (helper_len - right - 35), "Oddly_Specific_EnumASDOLSAJDPAFHOAF"))
             ++right;
 
          if (len - right <= left)
