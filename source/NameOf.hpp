@@ -70,7 +70,7 @@ namespace Langulus::RTTI
          and not Match(helper_name + left, "Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK"))                       // GCC14 decided not to...
             ++left;
 
-         int right = 1;
+         int right = 0;
          while (right + 38 <= helper_len and right <= len
          and helper_name[helper_len - right] == name[len - right]
          and not Match(helper_name + (helper_len - right - 38), "Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK"))
@@ -98,7 +98,7 @@ namespace Langulus::RTTI
          and not Match(helper_name + left, "Oddly_Specific_EnumASDOLSAJDPAFHOAF"))                       // GCC14 decided not to...
             ++left;
 
-         int right = 1;
+         int right = 0;
          while (right + 35 <= helper_len and right <= len
          and helper_name[helper_len - right] == name[len - right]
          and not Match(helper_name + (helper_len - right - 35), "Oddly_Specific_EnumASDOLSAJDPAFHOAF"))
