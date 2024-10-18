@@ -262,7 +262,7 @@ namespace Langulus
          "(you can suppress this error by casting pointer to void*)");
 
       if constexpr (CT::Void<TO>)
-         LANGULUS_ERROR("Bytecount not specified when copying void pointers");
+         static_assert(false, "Bytecount not specified when copying void pointers");
 
       ::std::memcpy(
          static_cast<void*>(to),
@@ -312,7 +312,7 @@ namespace Langulus
          "or be a pointer/fundamental (you can suppress this error by casting to void*)");
 
       if constexpr (CT::Void<TO>)
-         LANGULUS_ERROR("Bytecount not specified when filling void pointer");
+         static_assert(false, "Bytecount not specified when filling void pointer");
       
       ::std::memset(static_cast<void*>(to), FILLER, sizeof(TO));
    }
@@ -396,7 +396,7 @@ namespace Langulus
          "(you can suppress this error by casting pointer to void*)");
 
       if constexpr (CT::Void<TO>)
-         LANGULUS_ERROR("Bytecount not specified when filling void pointer");
+         static_assert(false, "Bytecount not specified when filling void pointer");
 
       ::std::memmove(
          static_cast<void*>(to),
