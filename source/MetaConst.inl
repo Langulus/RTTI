@@ -28,7 +28,7 @@ namespace Langulus::RTTI
       if constexpr (requires { T::CTTI_Constant; })
          return T::CTTI_Constant;
       else
-         LANGULUS_ERROR("Type is not a constant definition");
+         static_assert(false, "Type is not a constant definition");
    }
 
    /// Reflect or return an already reflected type meta const definition      

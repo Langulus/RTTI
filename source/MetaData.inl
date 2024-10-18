@@ -251,7 +251,7 @@ namespace Langulus::RTTI
             else if constexpr (requires { toT = fromT; })
                toT = fromT;
             else {
-               LANGULUS_ERROR(
+               static_assert(false,
                   "Unhandled conversion route (MSVC bad behavior detection) "
                   "- make sure your cast operators are always const, because MSVC doesn't "
                   "support them otherwise (and will occasionally put some ICE on top of it)"
@@ -317,7 +317,7 @@ namespace Langulus::RTTI
                result.mOffset = static_cast<Offset>(offset);
             }
          }
-         else LANGULUS_ERROR("Can't reflect private base");
+         else static_assert(false, "Can't reflect private base");
       }
       else {
          // If not inherited in C++, then always imposed                
@@ -759,7 +759,7 @@ namespace Langulus::RTTI
          generated.SetBases<T>(Bases {});
          generated.SetConvertersTo<T>(Converters {});
       }
-      else LANGULUS_ERROR("Unimplemented fundamental type reflector");
+      else static_assert(false, "Unimplemented fundamental type reflector");
    }
 
    /// Reflect a dense type (members, converters, named values, bases, etc    

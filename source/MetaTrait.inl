@@ -26,7 +26,7 @@ namespace Langulus::RTTI
       if constexpr (requires { T::CTTI_Trait; })
          return T::CTTI_Trait;
       else
-         LANGULUS_ERROR("Type is not a trait definition");
+         static_assert(false, "Type is not a trait definition");
    }
 
    /// Get the meta definition of a void trait                                

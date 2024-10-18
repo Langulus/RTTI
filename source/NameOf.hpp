@@ -398,7 +398,7 @@ namespace Langulus::RTTI
                for (auto c : name)
                   output[it++] = c;
             }
-            else LANGULUS_ERROR("Bad named value provided");
+            else static_assert(false, "Bad named value provided");
 
             output[it] = '\0';
 
