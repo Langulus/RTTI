@@ -26,10 +26,7 @@ namespace Langulus::RTTI
       ///   @return the length                                                
       consteval int LengthOf(const char* str) {
          int n = 0;
-         while (*str) {
-            ++n;
-            ++str;
-         }
+         while (*(str++)) ++n;
          return n;
       }
 
@@ -38,10 +35,7 @@ namespace Langulus::RTTI
       ///   @param rhs - string to compare against (must be null-terminated)  
       ///   @return true if lhs begins with rhs                               
       consteval bool Match(const char* lhs, const char* rhs) {
-         while (*lhs and *rhs and *lhs == *rhs) {
-            ++lhs;
-            ++rhs;
-         }
+         while (*lhs and *rhs and *(lhs++) == *(rhs++));
          return *rhs == 0;
       }
 
@@ -75,7 +69,7 @@ namespace Langulus::RTTI
          and not Match(helper_name + left, "Langulus::RTTI::Inner::Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK"))
             ++left;
 
-         int right = 1;
+         int right = 0;
          while (right + 61 <= helper_len and right <= len
          and helper_name[helper_len - right] == name[len - right]
          and not Match(helper_name + (helper_len - right - 61), "Langulus::RTTI::Inner::Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK"))
@@ -102,7 +96,7 @@ namespace Langulus::RTTI
          and not Match(helper_name + left, "Langulus::RTTI::Inner::Oddly_Specific_EnumASDOLSAJDPAFHOAF"))
             ++left;
 
-         int right = 1;
+         int right = 0;
          while (right + 58 <= helper_len and right <= len
          and helper_name[helper_len - right] == name[len - right]
          and not Match(helper_name + (helper_len - right - 58), "Langulus::RTTI::Inner::Oddly_Specific_EnumASDOLSAJDPAFHOAF"))
