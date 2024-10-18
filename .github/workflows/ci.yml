@@ -57,7 +57,7 @@ jobs:
         name: Prepare Linux for cross-compilation
         run: |
           sudo apt update
-          sudo apt install g++-multilib
+          sudo apt install g++-14-multilib
 
       - if: matrix.cxx == 'g++-14'
         name: Installing G++ 14
