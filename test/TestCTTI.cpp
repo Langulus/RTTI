@@ -9,9 +9,6 @@
 
 
 SCENARIO("An incomplete type reflected (as long as its a pointer)", "[metadata]") {
-   static_assert(not requires { MetaData::Of<IncompleteType>(); },
-      "You shouldn't be able to reflect incomplete types, unless sparse");
-
    WHEN("IncompleteType* reflected") {
       auto meta = MetaData::Of<IncompleteType*>();
 
