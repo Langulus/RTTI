@@ -26,7 +26,10 @@ namespace Langulus::RTTI
       ///   @return the length                                                
       consteval int LengthOf(const char* str) {
          int n = 0;
-         while (*(str++)) ++n;
+         while (*str) {
+            ++n;
+            ++str;
+         }
          return n;
       }
 
@@ -35,7 +38,10 @@ namespace Langulus::RTTI
       ///   @param rhs - string to compare against (must be null-terminated)  
       ///   @return true if lhs begins with rhs                               
       consteval bool Match(const char* lhs, const char* rhs) {
-         while (*lhs and *rhs and *(lhs++) == *(rhs++));
+         while (*lhs and *rhs and *lhs == *rhs) {
+            ++lhs;
+            ++rhs;
+         }
          return *rhs == 0;
       }
 

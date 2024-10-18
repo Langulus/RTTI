@@ -60,250 +60,220 @@ namespace Langulus::RTTI::Inner
 }
 
 SCENARIO("NameOf", "[nameof]") {
-   GIVEN("Type uint16_t") {
-      WHEN("Taken the name of uint16_t") {
-         auto name = NameOf<uint16_t>();
-         REQUIRE(name == "uint16");
-      }
+   WHEN("Taken the name of uint16_t") {
+      auto name = NameOf<uint16_t>();
+      REQUIRE(name == "uint16");
+   }
       
-      WHEN("Taken the name of uint16_t&") {
-         auto name = NameOf<uint16_t&>();
-         REQUIRE(name == "uint16");
-      }
-
-      WHEN("Taken the name of const uint16_t") {
-         auto name = NameOf<const uint16_t>();
-         REQUIRE(name == "const uint16");
-      }
-
-      WHEN("Taken the name of const uint16_t*") {
-         auto name = NameOf<const uint16_t*>();
-         REQUIRE(name == "const uint16*");
-      }
-
-      WHEN("Taken the name of const uint16_t**") {
-         auto name = NameOf<const uint16_t**>();
-         REQUIRE(name == "const uint16**");
-      }
-      
-      WHEN("Taken the name of const uint16_t* const*") {
-         auto name = NameOf<const uint16_t* const *>();
-         REQUIRE(name == "const uint16* const*");
-      }
-      
-      WHEN("Taken the name of const uint16_t* const* const") {
-         auto name = NameOf<const uint16_t* const * const>();
-         REQUIRE(name == "const uint16* const* const");
-      }
-
-      WHEN("Taken the name of uint16*") {
-         auto name = NameOf<uint16_t*>();
-         REQUIRE(name == "uint16*");
-      }
+   WHEN("Taken the name of uint16_t&") {
+      auto name = NameOf<uint16_t&>();
+      REQUIRE(name == "uint16");
    }
 
-   GIVEN("The enum Pi") {
-      WHEN("Taken the name of") {
-         auto name = NameOf<Pi::Number>();
-         REQUIRE(name == "Pi::Number");
-      }
+   WHEN("Taken the name of const uint16_t") {
+      auto name = NameOf<const uint16_t>();
+      REQUIRE(name == "const uint16");
    }
 
-   GIVEN("Single letter classes (corner case)") {
-      #define DEFINE_SINGLE_LETTER_NAMEOF_TEST(WHAT) \
-         WHEN("Taken the name of class " #WHAT) { \
-            auto name = NameOf<::WHAT>(); \
-            Logger::Special("At runtime: ", std::string(RTTI::Inner::IsolateTypenameAtRuntime<::WHAT>())); \
-            Logger::Special("Wrapped:  ",   std::string(RTTI::Inner::WrappedTypeName<::WHAT>())); \
-            Logger::Special("Isolated: ",   std::string(RTTI::Inner::IsolateTypename<::WHAT>())); \
-            REQUIRE(name == #WHAT); \
-         }
-
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(A)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(B)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(C)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(D)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(E)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(F)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(G)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(H)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(I)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(J)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(K)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(L)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(M)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(N)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(O)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(P)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(Q)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(R)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(S)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(T)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(U)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(V)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(W)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(X)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(Y)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(Z)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(_)
-
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(a)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(b)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(c)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(d)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(e)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(f)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(g)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(h)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(i)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(j)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(k)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(l)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(m)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(n)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(o)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(p)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(q)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(r)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(s)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(t)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(u)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(v)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(w)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(x)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(y)
-      DEFINE_SINGLE_LETTER_NAMEOF_TEST(z)
+   WHEN("Taken the name of const uint16_t*") {
+      auto name = NameOf<const uint16_t*>();
+      REQUIRE(name == "const uint16*");
    }
 
-   GIVEN("Type IncompleteType") {
-      WHEN("Taken the name of IncompleteType") {
-         auto name = NameOf<IncompleteType>();
-         REQUIRE(name == "IncompleteType");
+   WHEN("Taken the name of const uint16_t**") {
+      auto name = NameOf<const uint16_t**>();
+      REQUIRE(name == "const uint16**");
+   }
+      
+   WHEN("Taken the name of const uint16_t* const*") {
+      auto name = NameOf<const uint16_t* const *>();
+      REQUIRE(name == "const uint16* const*");
+   }
+      
+   WHEN("Taken the name of const uint16_t* const* const") {
+      auto name = NameOf<const uint16_t* const * const>();
+      REQUIRE(name == "const uint16* const* const");
+   }
+
+   WHEN("Taken the name of uint16*") {
+      auto name = NameOf<uint16_t*>();
+      REQUIRE(name == "uint16*");
+   }
+
+   WHEN("Taken the name of enum Pi") {
+      auto name = NameOf<Pi::Number>();
+      REQUIRE(name == "Pi::Number");
+   }
+
+   #define DEFINE_SINGLE_LETTER_NAMEOF_TEST(WHAT) \
+      WHEN("Taken the name of class " #WHAT " (corner cases)") { \
+         auto name = NameOf<::WHAT>(); \
+         Logger::Special("At runtime: ", std::string(RTTI::Inner::IsolateTypenameAtRuntime<::WHAT>())); \
+         Logger::Special("Wrapped:  ",   std::string(RTTI::Inner::WrappedTypeName<::WHAT>())); \
+         Logger::Special("Isolated: ",   std::string(RTTI::Inner::IsolateTypename<::WHAT>())); \
+         REQUIRE(name == #WHAT); \
       }
 
-      WHEN("Taken the name of IncompleteType*") {
-         auto name = NameOf<IncompleteType*>();
-         REQUIRE(name == "IncompleteType*");
-      }
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(A)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(B)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(C)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(D)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(E)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(F)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(G)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(H)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(I)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(J)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(K)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(L)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(M)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(N)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(O)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(P)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(Q)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(R)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(S)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(T)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(U)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(V)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(W)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(X)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(Y)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(Z)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(_)
 
-      WHEN("Taken the name of const IncompleteType*") {
-         auto name = NameOf<const IncompleteType*>();
-         REQUIRE(name == "const IncompleteType*");
-      }
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(a)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(b)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(c)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(d)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(e)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(f)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(g)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(h)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(i)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(j)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(k)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(l)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(m)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(n)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(o)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(p)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(q)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(r)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(s)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(t)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(u)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(v)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(w)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(x)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(y)
+   DEFINE_SINGLE_LETTER_NAMEOF_TEST(z)
 
-      WHEN("Taken the name of const IncompleteType") {
-         auto name = NameOf<const IncompleteType>();
-         REQUIRE(name == "const IncompleteType");
-      }
+   WHEN("Taken the name of IncompleteType") {
+      auto name = NameOf<IncompleteType>();
+      REQUIRE(name == "IncompleteType");
+   }
+
+   WHEN("Taken the name of IncompleteType*") {
+      auto name = NameOf<IncompleteType*>();
+      REQUIRE(name == "IncompleteType*");
+   }
+
+   WHEN("Taken the name of const IncompleteType*") {
+      auto name = NameOf<const IncompleteType*>();
+      REQUIRE(name == "const IncompleteType*");
+   }
+
+   WHEN("Taken the name of const IncompleteType") {
+      auto name = NameOf<const IncompleteType>();
+      REQUIRE(name == "const IncompleteType");
    }
    
-   GIVEN("Type One::Two::Three::TypeDeepIntoNamespaces") {
-      WHEN("Taken the name of") {
-         auto name = NameOf<One::Two::Three::TypeDeepIntoNamespaces>();
-         REQUIRE(name == "One::Two::Three::TypeDeepIntoNamespaces");
-      }
+   WHEN("Taken the name of One::Two::Three::TypeDeepIntoNamespaces") {
+      auto name = NameOf<One::Two::Three::TypeDeepIntoNamespaces>();
+      REQUIRE(name == "One::Two::Three::TypeDeepIntoNamespaces");
    }
 
-   GIVEN("Type TypeDeepAlias") {
-      WHEN("Taken the name of TypeDeepAlias") {
-         auto name = NameOf<TypeDeepAlias>();
-         REQUIRE(name == "One::Two::Three::TypeDeepIntoNamespaces");
-      }
-
-      WHEN("Taken the name of TypeDeepAlias*") {
-         auto name = NameOf<TypeDeepAlias*>();
-         REQUIRE(name == "One::Two::Three::TypeDeepIntoNamespaces*");
-      }
-
-      WHEN("Taken the name of const TypeDeepAlias*") {
-         auto name = NameOf<const TypeDeepAlias*>();
-         REQUIRE(name == "const One::Two::Three::TypeDeepIntoNamespaces*");
-      }
-
-      WHEN("Taken the name of const TypeDeepAlias*") {
-         auto name = NameOf<const TypeDeepAlias>();
-         REQUIRE(name == "const One::Two::Three::TypeDeepIntoNamespaces");
-      }
+   WHEN("Taken the name of TypeDeepAlias") {
+      auto name = NameOf<TypeDeepAlias>();
+      REQUIRE(name == "One::Two::Three::TypeDeepIntoNamespaces");
    }
 
-   GIVEN("Type One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>") {
-      WHEN("Taken the name of") {
-         auto name = NameOf<One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>>();
-         REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>");
-      }
+   WHEN("Taken the name of TypeDeepAlias*") {
+      auto name = NameOf<TypeDeepAlias*>();
+      REQUIRE(name == "One::Two::Three::TypeDeepIntoNamespaces*");
    }
 
-   GIVEN("Enum One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>::VeryDeeplyTemplatedEnum::YesYouGotThatRight") {
-      WHEN("Taken the name of") {
-         auto name = NameOf<One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>::VeryDeeplyTemplatedEnum::YesYouGotThatRight>();
-         REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>::VeryDeeplyTemplatedEnum::YesYouGotThatRight");
-      }
+   WHEN("Taken the name of const TypeDeepAlias*") {
+      auto name = NameOf<const TypeDeepAlias*>();
+      REQUIRE(name == "const One::Two::Three::TypeDeepIntoNamespaces*");
    }
 
-   GIVEN("Enum One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>::VeryDeeplyTemplatedEnum::YesYouGotThatRight") {
-      WHEN("Taken the name of") {
-         auto name = NameOf<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>::VeryDeeplyTemplatedEnum::YesYouGotThatRight>();
-         REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>::VeryDeeplyTemplatedEnum::YesYouGotThatRight");
-      }
+   WHEN("Taken the name of const TypeDeepAlias*") {
+      auto name = NameOf<const TypeDeepAlias>();
+      REQUIRE(name == "const One::Two::Three::TypeDeepIntoNamespaces");
    }
 
-   GIVEN("Type One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>::Nested<uint16_t>") {
-      WHEN("Taken the name of") {
-         auto name = NameOf<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>::Nested<uint16_t>>();
-         REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>::Nested<uint16>");
-      }
+   WHEN("Taken the name of One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>") {
+      auto name = NameOf<One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>>();
+      REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>");
    }
 
-   GIVEN("Type TemplatedAlias") {
-      WHEN("Taken the name of") {
-         auto name = NameOf<TemplatedAlias>();
-         REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>");
-      }
+   WHEN("Taken the name of Enum One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>::VeryDeeplyTemplatedEnum::YesYouGotThatRight") {
+      auto name = NameOf<One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>::VeryDeeplyTemplatedEnum::YesYouGotThatRight>();
+      REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<char>::VeryDeeplyTemplatedEnum::YesYouGotThatRight");
    }
 
-   GIVEN("Type One::Two::Three::VeryComplexTemplate<TemplatedAlias>") {
-      WHEN("Taken the name of") {
-         auto name = NameOf<One::Two::Three::VeryComplexTemplate<TemplatedAlias>>();
-         REQUIRE(name == "One::Two::Three::VeryComplexTemplate<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>>");
-      }
+   WHEN("Taken the name of Enum One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>::VeryDeeplyTemplatedEnum::YesYouGotThatRight") {
+      auto name = NameOf<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>::VeryDeeplyTemplatedEnum::YesYouGotThatRight>();
+      REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>::VeryDeeplyTemplatedEnum::YesYouGotThatRight");
    }
 
-   GIVEN("Type VeryComplexTemplatedAlias") {
-      WHEN("Taken the name of") {
-         auto name = NameOf<VeryComplexTemplatedAlias>();
-         REQUIRE(name == "One::Two::Three::VeryComplexTemplate<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>>");
-      }
+   WHEN("Taken the name of Type One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>::Nested<uint16_t>") {
+      auto name = NameOf<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16_t>::Nested<uint16_t>>();
+      REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>::Nested<uint16>");
    }
 
-   GIVEN("Types containing many skippable patterns") {
-      WHEN("Taken the name of Langulus::Flow::Construct") {
-         auto name = NameOf<Langulus::Flow::Construct>();
-         REQUIRE(name == "Flow::Construct");
-      }
-
-      WHEN("Taken the name of Langulus::Flow::Constructconst") {
-         auto name = NameOf<Langulus::Flow::Constructconst>();
-         REQUIRE(name == "Flow::Constructconst");
-      }
-
-      WHEN("Taken the name of Langulus::Flow::constConstructconst") {
-         auto name = NameOf<Langulus::Flow::constConstructconst>();
-         REQUIRE(name == "Flow::constConstructconst");
-      }
-
-      WHEN("Taken the name of Langulus::Flow::constconst") {
-         auto name = NameOf<Langulus::Flow::constconst>();
-         REQUIRE(name == "Flow::constconst");
-      }
+   WHEN("Taken the name of TemplatedAlias") {
+      auto name = NameOf<TemplatedAlias>();
+      REQUIRE(name == "One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>");
    }
 
-   GIVEN("Function signature") {
-      using Signature = void(*)(void*);
+   WHEN("Taken the name of Type One::Two::Three::VeryComplexTemplate<TemplatedAlias>") {
+      auto name = NameOf<One::Two::Three::VeryComplexTemplate<TemplatedAlias>>();
+      REQUIRE(name == "One::Two::Three::VeryComplexTemplate<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>>");
+   }
 
-      WHEN("Taken the name of a function signature") {
-         auto name = NameOf<Signature>();
-         REQUIRE(name == "Function<void(void*)>*");
-      }
+   WHEN("Taken the name of VeryComplexTemplatedAlias") {
+      auto name = NameOf<VeryComplexTemplatedAlias>();
+      REQUIRE(name == "One::Two::Three::VeryComplexTemplate<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>>");
+   }
+
+   WHEN("Taken the name of Langulus::Flow::Construct") {
+      auto name = NameOf<Langulus::Flow::Construct>();
+      REQUIRE(name == "Flow::Construct");
+   }
+
+   WHEN("Taken the name of Langulus::Flow::Constructconst") {
+      auto name = NameOf<Langulus::Flow::Constructconst>();
+      REQUIRE(name == "Flow::Constructconst");
+   }
+
+   WHEN("Taken the name of Langulus::Flow::constConstructconst") {
+      auto name = NameOf<Langulus::Flow::constConstructconst>();
+      REQUIRE(name == "Flow::constConstructconst");
+   }
+
+   WHEN("Taken the name of Langulus::Flow::constconst") {
+      auto name = NameOf<Langulus::Flow::constconst>();
+      REQUIRE(name == "Flow::constconst");
+   }
+
+   using Signature = void(*)(void*);
+
+   WHEN("Taken the name of a function signature") {
+      auto name = NameOf<Signature>();
+      REQUIRE(name == "Function<void(void*)>*");
    }
 }
 
