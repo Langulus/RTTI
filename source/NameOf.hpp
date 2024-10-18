@@ -69,7 +69,7 @@ namespace Langulus::RTTI
          and not Match(helper_name + left, "Langulus::RTTI::Inner::Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK"))
             ++left;
 
-         int right = 0;
+         int right = 1;
          while (right + 61 <= helper_len and right <= len
          and helper_name[helper_len - right] == name[len - right]
          and not Match(helper_name + (helper_len - right - 61), "Langulus::RTTI::Inner::Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK"))
@@ -96,7 +96,7 @@ namespace Langulus::RTTI
          and not Match(helper_name + left, "Langulus::RTTI::Inner::Oddly_Specific_EnumASDOLSAJDPAFHOAF"))
             ++left;
 
-         int right = 0;
+         int right = 1;
          while (right + 58 <= helper_len and right <= len
          and helper_name[helper_len - right] == name[len - right]
          and not Match(helper_name + (helper_len - right - 58), "Langulus::RTTI::Inner::Oddly_Specific_EnumASDOLSAJDPAFHOAF"))

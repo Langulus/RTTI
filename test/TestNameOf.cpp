@@ -37,9 +37,13 @@ namespace Langulus::RTTI::Inner
       };
 
       volatile auto name = RTTI::Inner::WrappedTypeName<T>();
+      Logger::Info("IsolateTypenameAtRuntime::name: ", name);
       volatile int len = static_cast<int>(strlen(name));
+      Logger::Info("IsolateTypenameAtRuntime::len: ", len);
       volatile auto helper_name = RTTI::Inner::WrappedTypeName<RTTI::Inner::Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK>();
+      Logger::Info("IsolateTypenameAtRuntime::helper_name: ", helper_name);
       volatile int helper_len = static_cast<int>(strlen(helper_name));
+      Logger::Info("IsolateTypenameAtRuntime::helper_len: ", helper_len);
       REQUIRE(len > 0);
       REQUIRE(helper_len > 61);
 
@@ -47,15 +51,19 @@ namespace Langulus::RTTI::Inner
       while (left < helper_len and left < len and helper_name[left] == name[left]
       and not matcher(helper_name + left, "Langulus::RTTI::Inner::Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK"))
          ++left;
+      Logger::Info("IsolateTypenameAtRuntime::left: ", left);
 
       int right = 1;
       while (right + 61 <= helper_len and right <= len
       and helper_name[helper_len - right] == name[len - right]
       and not matcher(helper_name + (helper_len - right - 61), "Langulus::RTTI::Inner::Oddly_Specific_TypeASFNWEAFNOLAWFNWAFK"))
          ++right;
+      Logger::Info("IsolateTypenameAtRuntime::right: ", right);
 
       REQUIRE(len - right > left);
-      return Token(name + left, name + len - right);
+      auto ret = Token(name + left, name + len - right);
+      Logger::Info("IsolateTypenameAtRuntime::ret: ", ret);
+      return ret;
    }
 }
 
