@@ -828,7 +828,7 @@ namespace Langulus
          else if constexpr (CT::Similar<ALT, Many>)
             return Describe {value};
          else
-            LANGULUS_ERROR("Can't nest provided type as a Describe semantic");
+            static_assert(false, "Can't nest provided type as a Describe semantic");
       }
 
       LANGULUS(ALWAYS_INLINED)
@@ -1003,14 +1003,14 @@ namespace Langulus
          if constexpr (FAKE)
             return Inner::Unsupported {};
          else
-            LANGULUS_ERROR("Can't instantiate abstract type");
+            static_assert(false, "Can't instantiate abstract type");
       }
       else if constexpr (CT::Reference<T>) {
          // Can't instantiate as a reference                            
          if constexpr (FAKE)
             return Inner::Unsupported {};
          else
-            LANGULUS_ERROR("Can't IntentNew at a reference");
+            static_assert(false, "Can't IntentNew at a reference");
       }
       else if constexpr (S::Move) {
          if constexpr (not S::Keep) {
@@ -1028,7 +1028,7 @@ namespace Langulus
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
-               LANGULUS_ERROR(
+               static_assert(false,
                   "Can't abandon-construct destructible type"
                   " - explicit abandon-constructor is required");
          }
@@ -1043,7 +1043,7 @@ namespace Langulus
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
-               LANGULUS_ERROR("Can't move-construct type");
+               static_assert(false, "Can't move-construct type");
          }
       }
       else if constexpr (not S::Shallow) {
@@ -1064,12 +1064,12 @@ namespace Langulus
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
-               LANGULUS_ERROR("Can't clone-construct type");
+               static_assert(false, "Can't clone-construct type");
          }
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
-            LANGULUS_ERROR("Can't clone-construct a void type");
+            static_assert(false, "Can't clone-construct a void type");
       }
       else if constexpr (not S::Keep) {
          // Disown                                                      
@@ -1086,7 +1086,7 @@ namespace Langulus
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
-            LANGULUS_ERROR("Can't disown-construct type");
+            static_assert(false, "Can't disown-construct type");
       }
       else if constexpr (CT::Copied<S>) {
          // Copy                                                        
@@ -1103,7 +1103,7 @@ namespace Langulus
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
-            LANGULUS_ERROR("Can't copy-construct type");
+            static_assert(false, "Can't copy-construct type");
       }
       else if constexpr (CT::Referred<S>) {
          // Refer                                                       
@@ -1116,9 +1116,9 @@ namespace Langulus
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
-            LANGULUS_ERROR("Can't refer-construct type");
+            static_assert(false, "Can't refer-construct type");
       }
-      else LANGULUS_ERROR("Unsupported shallow intent");
+      else static_assert(false, "Unsupported shallow intent");
    }
 
    /// Assign new value to an instance of T, using the provided intent        
@@ -1138,14 +1138,14 @@ namespace Langulus
          if constexpr (FAKE)
             return Inner::Unsupported {};
          else
-            LANGULUS_ERROR("Can't IntentAssign to an incomplete type");
+            static_assert(false, "Can't IntentAssign to an incomplete type");
       }
       else if constexpr (CT::Reference<MT>) {
          // Can't reassign a reference                                  
          if constexpr (FAKE)
             return Inner::Unsupported {};
          else
-            LANGULUS_ERROR("Can't IntentAssign at a reference");
+            static_assert(false, "Can't IntentAssign at a reference");
       }
       else if constexpr (SS::Move) {
          if constexpr (not SS::Keep) {
@@ -1169,7 +1169,7 @@ namespace Langulus
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
-               LANGULUS_ERROR(
+               static_assert(false,
                   "Can't abandon-assign destructible type"
                   " - explicit abandon-assigner is required");
          }
@@ -1186,7 +1186,7 @@ namespace Langulus
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
-               LANGULUS_ERROR("Can't move-assign type");
+               static_assert(false, "Can't move-assign type");
          }
       }
       else if constexpr (not SS::Shallow) {
@@ -1208,17 +1208,17 @@ namespace Langulus
                else if constexpr (FAKE)
                   return Inner::Unsupported {};
                else
-                  LANGULUS_ERROR("Can't clone-assign type");
+                  static_assert(false, "Can't clone-assign type");
             }
             else if constexpr (FAKE)
                return Inner::Unsupported {};
             else
-               LANGULUS_ERROR("Can't clone-assign type - lhs is not mutable");
+               static_assert(false, "Can't clone-assign type - lhs is not mutable");
          }
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
-            LANGULUS_ERROR("Can't clone-assign void or incomplete type");
+            static_assert(false, "Can't clone-assign void or incomplete type");
       }
       else if constexpr (not SS::Keep) {
          // Disown                                                      
@@ -1235,7 +1235,7 @@ namespace Langulus
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
-            LANGULUS_ERROR("Can't disown-assign type");
+            static_assert(false, "Can't disown-assign type");
       }
       else if constexpr (CT::Copied<SS>) {
          // Copy                                                        
@@ -1252,7 +1252,7 @@ namespace Langulus
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
-            LANGULUS_ERROR("Can't copy-assign type");
+            static_assert(false, "Can't copy-assign type");
       }
       else if constexpr (CT::Referred<SS>) {
          // Refer                                                       
@@ -1265,9 +1265,9 @@ namespace Langulus
          else if constexpr (FAKE)
             return Inner::Unsupported {};
          else
-            LANGULUS_ERROR("Can't refer-assign type");
+            static_assert(false, "Can't refer-assign type");
       }
-      else LANGULUS_ERROR("Unsupported shallow intent");
+      else static_assert(false, "Unsupported shallow intent");
    }
 
    namespace CT
@@ -1459,7 +1459,7 @@ namespace Langulus
          else if constexpr (requires { what.operator const TT& (); })
             return what.operator const TT& ();
          else
-            LANGULUS_ERROR("No cast operator available for decaying to inner type");
+            static_assert(false, "No cast operator available for decaying to inner type");
       }
       else return what;
    }

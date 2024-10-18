@@ -511,7 +511,7 @@ namespace Langulus
       else if constexpr (sizeof(Hash) == 16)
          Inner::MurmurHash3_x64_128<TAIL, SEED>(ptr, len, &result);
       else
-         LANGULUS_ERROR("Not implemented");
+         static_assert(false, "Not implemented");
       return result;
    }
 
@@ -640,8 +640,10 @@ namespace Langulus
          return Hash {hasher(head)};
       }
       else {
-         if constexpr (FAKE) return Inner::Unsupported {};
-         else                LANGULUS_ERROR("Can't hash data");
+         if constexpr (FAKE)
+            return Inner::Unsupported {};
+         else
+            static_assert(false, "Can't hash data");
       }
    }
 

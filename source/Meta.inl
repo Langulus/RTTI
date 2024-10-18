@@ -298,7 +298,7 @@ namespace Langulus::RTTI
          return dynamic_cast<const MetaConst*>(mMeta);
       else if constexpr (CT::Exact<T, AMeta>)
          return *this;
-      else LANGULUS_ERROR(
+      else static_assert(false,
          "T is not a definition interchange type, "
          "has to be one of the following: DMeta, TMeta, CMeta, VMeta, AMeta"
       );

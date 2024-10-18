@@ -67,7 +67,7 @@ namespace Langulus
       else if constexpr (FAKE)
          return Inner::Unsupported {};
       else
-         LANGULUS_ERROR("Can't perform FundamentalCast");
+         static_assert(false, "Can't perform FundamentalCast");
    }
    
    /// Casts a scalar to its underlying fundamental type                      
@@ -92,7 +92,7 @@ namespace Langulus
       else if constexpr (FAKE)
          return Inner::Unsupported {};
       else
-         LANGULUS_ERROR("Can't perform FundamentalCast");
+         static_assert(false, "Can't perform FundamentalCast");
    }
 
    namespace CT

@@ -44,7 +44,7 @@ namespace Langulus::RTTI
          return T::CTTI_Verb;
       else if constexpr (requires { T::CTTI_PositiveVerb; }) {
          if constexpr (not requires { T::CTTI_NegativeVerb; }) {
-            LANGULUS_ERROR(
+            static_assert(false,
                "Positive verb defined, but no negative provided - "
                "either define the negative, or use LANGULUS(VERB) "
                "if both tokens are the same");
@@ -63,7 +63,7 @@ namespace Langulus::RTTI
          return T::CTTI_Verb;
       else if constexpr (requires { T::CTTI_NegativeVerb; }) {
          if constexpr (not requires { T::CTTI_PositiveVerb; }) {
-            LANGULUS_ERROR(
+            static_assert(false,
                "Negative verb defined, but no positive provided - "
                "either define the positive, or use LANGULUS(VERB) "
                "if both tokens are the same");
@@ -82,7 +82,7 @@ namespace Langulus::RTTI
          return T::CTTI_Operator;
       else if constexpr (requires { T::CTTI_PositiveOperator; }) {
          if constexpr (not requires { T::CTTI_NegativeOperator; }) {
-            LANGULUS_ERROR(
+            static_assert(false,
                "Positive operator defined, but no negative provided - "
                "either define the negative, or use LANGULUS(OPERATOR) "
                "if both operators are the same");
@@ -101,7 +101,7 @@ namespace Langulus::RTTI
          return T::CTTI_Operator;
       else if constexpr (requires { T::CTTI_NegativeOperator; }) {
          if constexpr (not requires { T::CTTI_PositiveOperator; }) {
-            LANGULUS_ERROR(
+            static_assert(false,
                "Negative operator defined, but no positive provided - "
                "either define the positive, or use LANGULUS(OPERATOR) "
                "if both operators are the same");
