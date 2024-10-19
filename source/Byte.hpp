@@ -445,3 +445,25 @@ namespace Langulus
    }
 
 } // namespace Langulus
+
+
+namespace fmt
+{
+
+   ///                                                                        
+   /// Extend FMT to be capable of logging Byte                               
+   ///                                                                        
+   template<>
+   struct formatter<::Langulus::Byte> {
+      template<class CONTEXT>
+      constexpr auto parse(CONTEXT& ctx) {
+         return ctx.begin();
+      }
+
+      template<class CONTEXT> LANGULUS(INLINED)
+      auto format(::Langulus::Byte const& e, CONTEXT& ctx) const {
+         return fmt::format_to(ctx.out(), "{:02X}", e.mValue);
+      }
+   };
+   
+} // namespace fmt
