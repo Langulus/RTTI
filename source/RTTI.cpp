@@ -212,6 +212,7 @@ namespace Langulus::RTTI
          "No relevant origins for keyword", ": `", keyword, '`');
 
       DMeta meta_data;
+      DMeta meta_data_exact_match;
       Count meta_data_encountered = 0;
       TMeta meta_trait;
       Count meta_trait_encountered = 0;
@@ -224,7 +225,7 @@ namespace Langulus::RTTI
          // There's a chance, that one of the symbols matches the       
          // lowercased keyword exactly (1)                              
          if (ToLowercase(candidate->mToken) == lowercased)
-            return candidate;
+            meta_data_exact_match = candidate;
 
          if (candidate.Kind() == Meta::Data) {
             meta_data = candidate;
@@ -246,12 +247,18 @@ namespace Langulus::RTTI
          else {
             if (meta_data_encountered == 1)
                return meta_data;
+            else if (meta_data_exact_match)
+               return meta_data_exact_match;
          }
       }
       else if (meta_data_encountered == 1) {
          // No traits, just meta data                                   
          // If it's just one, directly return it (2.a)                  
          return meta_data;
+      }
+      else if (meta_data_exact_match) {
+         // If there was an exact match - now's the time to return it   
+         return meta_data_exact_match;
       }
       else if (meta_trait_encountered == 1) {
          // No data, just meta traits                                   
@@ -265,7 +272,7 @@ namespace Langulus::RTTI
       );
       for (auto& meta : origins) {
          Logger::Line('`', Logger::PushDarkYellow,
-            meta->mCppName, Logger::Pop, "` (", meta.Kind(), ')');
+            meta->mToken, Logger::Pop, "` (", meta.Kind(), ')');
       }
       LANGULUS_THROW(Meta, "Ambiguous symbol");
    }
