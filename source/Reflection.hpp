@@ -63,7 +63,7 @@ namespace Langulus::RTTI
 ///      when that base has been reflected using LANGULUS_BASES(...)          
 ///      otherwise a runtime meta conflict exception might happen             
 #define LANGULUS_NAME() \
-   public: static constexpr ::Langulus::Token CTTI_Name = 
+   public: static constexpr auto CTTI_Name = 
 
 /// You can provide a custom token to your verbs, instead of using CppNameOf  
 /// When verbs are reflected with this, their positive and negative tokens    
