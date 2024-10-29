@@ -18,7 +18,7 @@ if(PROJECT_IS_TOP_LEVEL OR NOT LANGULUS)
 endif()
 
 # Build and install library                                                 
-add_library(LangulusRTTI ${LANGULUS_LIBRARY_TYPE}
+add_langulus_library(LangulusRTTI
     $<TARGET_OBJECTS:LangulusLogger>
 	$<$<BOOL:${LANGULUS_FEATURE_MANAGED_REFLECTION}>:source/RTTI.cpp>
 )
