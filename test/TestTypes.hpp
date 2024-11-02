@@ -400,3 +400,46 @@ struct ForcedAbstract {
 struct VirtuallyDerived : virtual ImpureVirtual {
 
 };
+
+
+struct ReferConstructibleButNotAssignable {
+   int m;
+   ReferConstructibleButNotAssignable(Referred<ReferConstructibleButNotAssignable>&& a) : m {a->m} {}
+   ReferConstructibleButNotAssignable& operator = (const ReferConstructibleButNotAssignable&) = delete;
+   ReferConstructibleButNotAssignable& operator = (ReferConstructibleButNotAssignable&&) = delete;
+};
+
+struct CopyConstructibleButNotAssignable {
+   int m;
+   CopyConstructibleButNotAssignable(Copied<CopyConstructibleButNotAssignable>&& a) : m {a->m} {}
+   CopyConstructibleButNotAssignable& operator = (const CopyConstructibleButNotAssignable&) = delete;
+   CopyConstructibleButNotAssignable& operator = (CopyConstructibleButNotAssignable&&) = delete;
+};
+
+struct MoveConstructibleButNotAssignable {
+   int m;
+   MoveConstructibleButNotAssignable(Moved<MoveConstructibleButNotAssignable>&& a) : m {a->m} {}
+   MoveConstructibleButNotAssignable& operator = (const MoveConstructibleButNotAssignable&) = delete;
+   MoveConstructibleButNotAssignable& operator = (MoveConstructibleButNotAssignable&&) = delete;
+};
+
+struct AbandonConstructibleButNotAssignable {
+   int m;
+   AbandonConstructibleButNotAssignable(Abandoned<AbandonConstructibleButNotAssignable>&& a) : m {a->m} {}
+   AbandonConstructibleButNotAssignable& operator = (const AbandonConstructibleButNotAssignable&) = delete;
+   AbandonConstructibleButNotAssignable& operator = (AbandonConstructibleButNotAssignable&&) = delete;
+};
+
+struct DisownConstructibleButNotAssignable {
+   int m;
+   DisownConstructibleButNotAssignable(Disowned<DisownConstructibleButNotAssignable>&& a) : m {a->m} {}
+   DisownConstructibleButNotAssignable& operator = (const DisownConstructibleButNotAssignable&) = delete;
+   DisownConstructibleButNotAssignable& operator = (DisownConstructibleButNotAssignable&&) = delete;
+};
+
+struct CloneConstructibleButNotAssignable {
+   int m;
+   CloneConstructibleButNotAssignable(Cloned<CloneConstructibleButNotAssignable>&& a) : m {a->m} {}
+   CloneConstructibleButNotAssignable& operator = (const CloneConstructibleButNotAssignable&) = delete;
+   CloneConstructibleButNotAssignable& operator = (CloneConstructibleButNotAssignable&&) = delete;
+};

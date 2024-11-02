@@ -146,6 +146,7 @@ TEMPLATE_TEST_CASE("Testing refer-makable types", "[intents]",
    PartiallyIntentConstructible,
    DescriptorConstructible,
    Complex, ContainsComplex,
+   ReferConstructibleButNotAssignable,
    bool, uint32_t, float, char, wchar_t, char8_t, Langulus::Byte,
    AMeta, TMeta, CMeta, DMeta, VMeta,
    ForcefullyPod
@@ -170,7 +171,12 @@ TEMPLATE_TEST_CASE("Testing refer-makable types", "[intents]",
 TEMPLATE_TEST_CASE("Testing non-refer-makable types", "[intents]",
    IncompleteType,
    NonDestructible,
-   PrivatelyConstructible
+   PrivatelyConstructible,
+   CopyConstructibleButNotAssignable,
+   MoveConstructibleButNotAssignable,
+   AbandonConstructibleButNotAssignable,
+   DisownConstructibleButNotAssignable,
+   CloneConstructibleButNotAssignable
 ) {
    using T = TestType;
    static_assert(not CT::ReferMakable<T>);
@@ -230,7 +236,13 @@ TEMPLATE_TEST_CASE("Testing non-refer-assignable types", "[intents]",
    IncompleteType,
    Complex,
    ContainsComplex,
-   PrivatelyConstructible
+   PrivatelyConstructible,
+   ReferConstructibleButNotAssignable,
+   CopyConstructibleButNotAssignable,
+   MoveConstructibleButNotAssignable,
+   AbandonConstructibleButNotAssignable,
+   DisownConstructibleButNotAssignable,
+   CloneConstructibleButNotAssignable
 ) {
    using T = TestType;
    static_assert(not CT::ReferAssignable<T>);
@@ -266,6 +278,7 @@ TEMPLATE_TEST_CASE("Testing move-makable types", "[intents]",
    DescriptorConstructible,
    Complex,
    ContainsComplex,
+   MoveConstructibleButNotAssignable,
    bool, uint32_t, float, char, wchar_t, char8_t, Langulus::Byte,
    AMeta, TMeta, CMeta, DMeta, VMeta,
    ForcefullyPod
@@ -290,7 +303,12 @@ TEMPLATE_TEST_CASE("Testing move-makable types", "[intents]",
 TEMPLATE_TEST_CASE("Testing non-move-makable types", "[intents]",
    IncompleteType,
    NonDestructible,
-   PrivatelyConstructible
+   PrivatelyConstructible,
+   ReferConstructibleButNotAssignable,
+   CopyConstructibleButNotAssignable,
+   AbandonConstructibleButNotAssignable,
+   DisownConstructibleButNotAssignable,
+   CloneConstructibleButNotAssignable
 ) {
    using T = TestType;
    static_assert(not CT::MoveMakable<T>);
@@ -350,7 +368,13 @@ TEMPLATE_TEST_CASE("Testing non-move-assignable types", "[intents]",
    IncompleteType,
    Complex,
    ContainsComplex,
-   PrivatelyConstructible
+   PrivatelyConstructible,
+   ReferConstructibleButNotAssignable,
+   MoveConstructibleButNotAssignable,
+   CopyConstructibleButNotAssignable,
+   AbandonConstructibleButNotAssignable,
+   DisownConstructibleButNotAssignable,
+   CloneConstructibleButNotAssignable
 ) {
    using T = TestType;
    static_assert(not CT::MoveAssignable<T>);
@@ -382,6 +406,7 @@ TEMPLATE_TEST_CASE("Testing copy-makable types", "[intents]",
    AllIntentConstructibleImplicit,
    AllIntentConstructibleAndAssignable,
    PartiallyIntentConstructible,
+   CopyConstructibleButNotAssignable,
    bool, uint32_t, float, char, wchar_t, char8_t, Langulus::Byte,
    AMeta, TMeta, CMeta, DMeta, VMeta,
    ForcefullyPod
@@ -412,7 +437,12 @@ TEMPLATE_TEST_CASE("Testing non-copy-makable types", "[intents]",
    PrivatelyConstructible,
    NonIntentConstructible,
    DescriptorConstructible,
-   AggregateTypeComplex
+   AggregateTypeComplex,
+   ReferConstructibleButNotAssignable,
+   MoveConstructibleButNotAssignable,
+   AbandonConstructibleButNotAssignable,
+   DisownConstructibleButNotAssignable,
+   CloneConstructibleButNotAssignable
 ) {
    using T = TestType;
    static_assert(not CT::CopyMakable<T>);
@@ -474,7 +504,13 @@ TEMPLATE_TEST_CASE("Testing non-copy-assignable types", "[intents]",
    DescriptorConstructible,
    AllIntentConstructible,
    PartiallyIntentConstructible,
-   AggregateTypeComplex
+   AggregateTypeComplex,
+   ReferConstructibleButNotAssignable,
+   MoveConstructibleButNotAssignable,
+   CopyConstructibleButNotAssignable,
+   AbandonConstructibleButNotAssignable,
+   DisownConstructibleButNotAssignable,
+   CloneConstructibleButNotAssignable
 ) {
    using T = TestType;
    static_assert(not CT::CopyAssignable<T>);
@@ -504,6 +540,7 @@ TEMPLATE_TEST_CASE("Testing clone-makable types", "[intents]",
    AllIntentConstructible,
    AllIntentConstructibleAndAssignable,
    PartiallyIntentConstructible,
+   CloneConstructibleButNotAssignable,
    bool, uint32_t, float, char, wchar_t, char8_t, Langulus::Byte,
    AMeta, TMeta, CMeta, DMeta, VMeta,
    ForcefullyPod,
@@ -535,7 +572,12 @@ TEMPLATE_TEST_CASE("Testing non-clone-makable types", "[intents]",
    DescriptorConstructible,
    Complex,
    ContainsComplex,
-   AggregateTypeComplex
+   AggregateTypeComplex,
+   ReferConstructibleButNotAssignable,
+   MoveConstructibleButNotAssignable,
+   CopyConstructibleButNotAssignable,
+   AbandonConstructibleButNotAssignable,
+   DisownConstructibleButNotAssignable
 ) {
    using T = TestType;
    static_assert(not CT::CloneMakable<T>);
@@ -597,7 +639,13 @@ TEMPLATE_TEST_CASE("Testing non-clone-assignable types", "[intents]",
    AllIntentConstructible,
    PartiallyIntentConstructible,
    DescriptorConstructible,
-   AggregateTypeComplex
+   AggregateTypeComplex,
+   ReferConstructibleButNotAssignable,
+   MoveConstructibleButNotAssignable,
+   CopyConstructibleButNotAssignable,
+   AbandonConstructibleButNotAssignable,
+   DisownConstructibleButNotAssignable,
+   CloneConstructibleButNotAssignable
 ) {
    using T = TestType;
    static_assert(not CT::CloneAssignable<T>);
@@ -627,6 +675,7 @@ TEMPLATE_TEST_CASE("Testing disown-makable types", "[intents]",
    AllIntentConstructible,
    AllIntentConstructibleAndAssignable,
    PartiallyIntentConstructible,
+   DisownConstructibleButNotAssignable,
    bool, uint32_t, float, char, wchar_t, char8_t, Langulus::Byte,
    AMeta, TMeta, CMeta, DMeta, VMeta,
    ForcefullyPod,
@@ -658,7 +707,12 @@ TEMPLATE_TEST_CASE("Testing non-disown-makable types", "[intents]",
    DescriptorConstructible,
    Complex,
    ContainsComplex,
-   AggregateTypeComplex
+   AggregateTypeComplex,
+   ReferConstructibleButNotAssignable,
+   MoveConstructibleButNotAssignable,
+   CopyConstructibleButNotAssignable,
+   AbandonConstructibleButNotAssignable,
+   CloneConstructibleButNotAssignable
 ) {
    using T = TestType;
    static_assert(not CT::DisownMakable<T>);
@@ -719,7 +773,13 @@ TEMPLATE_TEST_CASE("Testing non-disown-assignable types", "[intents]",
    Complex,
    ContainsComplex,
    AllIntentConstructible,
-   PartiallyIntentConstructible
+   PartiallyIntentConstructible,
+   ReferConstructibleButNotAssignable,
+   MoveConstructibleButNotAssignable,
+   CopyConstructibleButNotAssignable,
+   AbandonConstructibleButNotAssignable,
+   DisownConstructibleButNotAssignable,
+   CloneConstructibleButNotAssignable
 ) {
    using T = TestType;
    static_assert(not CT::DisownAssignable<T>);
@@ -754,6 +814,7 @@ TEMPLATE_TEST_CASE("Testing abandon-makable types", "[intents]",
    DescriptorConstructible,
    Complex,
    ContainsComplex,
+   AbandonConstructibleButNotAssignable,
    bool, uint32_t, float, char, wchar_t, char8_t, Langulus::Byte,
    AMeta, TMeta, CMeta, DMeta, VMeta,
    AggregateType,
@@ -779,7 +840,12 @@ TEMPLATE_TEST_CASE("Testing abandon-makable types", "[intents]",
 TEMPLATE_TEST_CASE("Testing non-abandon-makable types", "[intents]",
    IncompleteType,
    NonDestructible,
-   PrivatelyConstructible
+   PrivatelyConstructible,
+   ReferConstructibleButNotAssignable,
+   MoveConstructibleButNotAssignable,
+   CopyConstructibleButNotAssignable,
+   DisownConstructibleButNotAssignable,
+   CloneConstructibleButNotAssignable
 ) {
    using T = TestType;
    static_assert(not CT::AbandonMakable<T>);
@@ -839,7 +905,13 @@ TEMPLATE_TEST_CASE("Testing non-abandon-assignable types", "[intents]",
    NonDestructible,
    Complex,
    ContainsComplex,
-   PrivatelyConstructible
+   PrivatelyConstructible,
+   ReferConstructibleButNotAssignable,
+   MoveConstructibleButNotAssignable,
+   CopyConstructibleButNotAssignable,
+   AbandonConstructibleButNotAssignable,
+   DisownConstructibleButNotAssignable,
+   CloneConstructibleButNotAssignable
 ) {
    using T = TestType;
    static_assert(not CT::AbandonAssignable<T>);
