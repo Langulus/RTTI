@@ -35,13 +35,13 @@ namespace Langulus::RTTI
       }
 
       template<CT::Void>
-      NOD() static consteval TMeta Of();
+      static consteval TMeta Of();
       template<CT::Decayed>
-      NOD() static TMeta Of();
+      static TMeta Of();
       
-      NOD() bool Is(TMeta) const noexcept;
+      bool Is(TMeta) const noexcept;
       template<CT::Data>
-      NOD() bool Is() const;
+      bool Is() const;
 
       Token Kind() const noexcept final {
          return Meta::Trait;

@@ -1043,7 +1043,6 @@ namespace Langulus::RTTI
       if constexpr (Types<BASE...>::Empty)
          return;
       else {
-         //(VERBOSE("Adding base: ", NameOf<BASE>()), ...);
          (mBases.push_back(Base::From<Decay<T>, BASE>()), ...);
       }
    }

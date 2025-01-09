@@ -57,52 +57,52 @@ namespace Langulus
          return static_cast<T>(mValue);
       }
 
-      NOD() LANGULUS(INLINED)
+      LANGULUS(INLINED)
       constexpr Byte operator + (const Byte& rhs) const noexcept {
          return mValue + rhs.mValue;
       }
 
-      NOD() LANGULUS(INLINED)
+      LANGULUS(INLINED)
       constexpr Byte operator - (const Byte& rhs) const noexcept {
          return mValue - rhs.mValue;
       }
 
-      NOD() LANGULUS(INLINED)
+      LANGULUS(INLINED)
       constexpr Byte operator * (const Byte& rhs) const noexcept {
          return mValue * rhs.mValue;
       }
 
-      NOD() LANGULUS(INLINED)
+      LANGULUS(INLINED)
       constexpr Byte operator / (const Byte& rhs) const noexcept {
          return mValue / rhs.mValue;
       }
 
-      NOD() LANGULUS(INLINED)
+      LANGULUS(INLINED)
       constexpr Byte operator % (const Byte& rhs) const noexcept {
          return mValue % rhs.mValue;
       }
 
-      NOD() LANGULUS(INLINED)
+      LANGULUS(INLINED)
       constexpr Byte operator << (const Byte& rhs) const noexcept {
          return mValue << rhs.mValue;
       }
 
-      NOD() LANGULUS(INLINED)
+      LANGULUS(INLINED)
       constexpr Byte operator >> (const Byte& rhs) const noexcept {
          return mValue >> rhs.mValue;
       }
 
-      NOD() LANGULUS(INLINED)
+      LANGULUS(INLINED)
       constexpr Byte operator ^ (const Byte& rhs) const noexcept {
          return mValue ^ rhs.mValue;
       }
 
-      NOD() LANGULUS(INLINED)
+      LANGULUS(INLINED)
       constexpr Byte operator & (const Byte& rhs) const noexcept {
          return mValue & rhs.mValue;
       }
 
-      NOD() LANGULUS(INLINED)
+      LANGULUS(INLINED)
       constexpr Byte operator | (const Byte& rhs) const noexcept {
          return mValue | rhs.mValue;
       }
@@ -167,25 +167,25 @@ namespace Langulus
          return *this;
       }
 
-      NOD() LANGULUS(INLINED)
+      LANGULUS(INLINED)
       constexpr bool operator == (const Byte&) const noexcept = default;
 
-      NOD() LANGULUS(INLINED)
+      LANGULUS(INLINED)
       constexpr bool operator <= (const Byte& rhs) const noexcept {
          return mValue <= rhs.mValue;
       }
 
-      NOD() LANGULUS(INLINED)
+      LANGULUS(INLINED)
       constexpr bool operator >= (const Byte& rhs) const noexcept {
          return mValue >= rhs.mValue;
       }
 
-      NOD() LANGULUS(INLINED)
+      LANGULUS(INLINED)
       constexpr bool operator < (const Byte& rhs) const noexcept {
          return mValue < rhs.mValue;
       }
 
-      NOD() LANGULUS(INLINED)
+      LANGULUS(INLINED)
       constexpr bool operator > (const Byte& rhs) const noexcept {
          return mValue > rhs.mValue;
       }
@@ -201,11 +201,11 @@ namespace Langulus
       }
 
       /// Suffix operators                                                    
-      NOD() Byte operator ++ (int) noexcept {
+      Byte operator ++ (int) noexcept {
          return mValue++;
       }
 
-      NOD() Byte operator -- (int) noexcept {
+      Byte operator -- (int) noexcept {
          return mValue--;
       }
    };

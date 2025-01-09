@@ -51,7 +51,7 @@ namespace Langulus
    ///   @tparam T - type of the scalar/enum to cast                          
    ///   @param a - the scalar to cast                                        
    ///   @return a reference to the underlying type                           
-   template<CT::Scalar T, bool FAKE = false> NOD() LANGULUS(INLINED)
+   template<CT::Scalar T, bool FAKE = false> LANGULUS(INLINED)
    constexpr decltype(auto) FundamentalCast(const T& a) noexcept {
       using DT = Decay<Deint<T>>;
       if constexpr (CT::Fundamental<DT>) {
@@ -76,7 +76,7 @@ namespace Langulus
    ///   @tparam T - type of the scalar/enum to cast                          
    ///   @param a - the scalar to cast                                        
    ///   @return a reference to the underlying type                           
-   template<CT::Scalar T, bool FAKE = false> NOD() LANGULUS(INLINED)
+   template<CT::Scalar T, bool FAKE = false> LANGULUS(INLINED)
    constexpr decltype(auto) FundamentalCast(T& a) noexcept {
       using DT = Decay<Deint<T>>;
       if constexpr (CT::Fundamental<DT>) {

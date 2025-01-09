@@ -117,18 +117,18 @@ namespace Langulus::RTTI
 
       Member& operator = (const Member&) noexcept = default;
 
-      NOD() bool operator == (const Member&) const noexcept;
+      bool operator == (const Member&) const noexcept;
       
       template<CT::Data T>
-      NOD() auto As(const Byte*) const noexcept -> T const&;
+      auto As(const Byte*) const noexcept -> T const&;
       template<CT::Data T>
-      NOD() auto As(Byte*) const noexcept -> T&;
+      auto As(Byte*) const noexcept -> T&;
       
-      NOD() auto Get(Byte const*) const noexcept -> Byte const*;
-      NOD() auto Get(Byte*)       const noexcept -> Byte*;
+      auto Get(Byte const*) const noexcept -> Byte const*;
+      auto Get(Byte*)       const noexcept -> Byte*;
 
-      NOD() DMeta GetType() const;
-      NOD() TMeta GetTrait(int) const;
+      DMeta GetType() const;
+      TMeta GetTrait(int) const;
 
    private:
       template<class...T>
@@ -160,10 +160,10 @@ namespace Langulus::RTTI
       ConstantOverloadList mOverloadsConstant {};
       
    public:
-      NOD() bool operator == (const Ability&) const noexcept;
+      bool operator == (const Ability&) const noexcept;
 
       template<CT::Dense, CT::Data VERB, CT::Data...A>
-      NOD() static Ability From() noexcept;
+      static Ability From() noexcept;
    };
 
 
@@ -180,10 +180,10 @@ namespace Langulus::RTTI
       FCopyConstruct mFunction {};
       
    public:
-      NOD() constexpr bool operator == (const Converter&) const noexcept;
+      constexpr bool operator == (const Converter&) const noexcept;
 
       template<CT::Decayed FROM, CT::Decayed TO>
-      NOD() static Converter From(DMeta) noexcept;
+      static Converter From(DMeta) noexcept;
    };
 
    using ConverterMap = ::std::unordered_map<DMeta, Converter>;
@@ -218,10 +218,10 @@ namespace Langulus::RTTI
       FDynamicCast mDynamicCast = nullptr;
 
    public:
-      NOD() bool operator == (const Base&) const noexcept;
+      bool operator == (const Base&) const noexcept;
 
       template<CT::Dense, CT::Dense BASE>
-      NOD() static Base From() IF_UNSAFE(noexcept);
+      static Base From() IF_UNSAFE(noexcept);
    };
 
    using BaseList = ::std::vector<Base>;
@@ -325,7 +325,7 @@ namespace Langulus::RTTI
 
          public:
             template<class T>
-            NOD() T*& GetPool() const noexcept;
+            T*& GetPool() const noexcept;
       #endif
 
       // Default constructor wrapped in a lambda upon reflection        
@@ -420,8 +420,8 @@ namespace Langulus::RTTI
       template<CT::Decayed>
       static void ReflectOriginType(MetaData&) noexcept;
 
-      NOD() const Member* GetMemberInner(TMeta, DMeta, Offset&) const noexcept;
-      NOD() Count GetMemberCountInner(TMeta, DMeta, Offset&) const noexcept;
+      auto GetMemberInner(TMeta, DMeta, Offset&) const noexcept -> const Member*;
+      auto GetMemberCountInner(TMeta, DMeta, Offset&) const noexcept -> Count;
 
       template<class, CT::Dense...Args>
       void SetBases(Types<Args...>) noexcept;
@@ -439,69 +439,69 @@ namespace Langulus::RTTI
 
    public:
       template<CT::Void>
-      NOD() static consteval DMeta Of();
+      static consteval DMeta Of();
 
       template<CT::DataReference>
-      NOD() static DMeta Of();
+      static DMeta Of();
 
       template<CT::SparseData T>
-      NOD() static DMeta Of() requires CT::InsertableAsSomethingElse<T>;
+      static DMeta Of() requires CT::InsertableAsSomethingElse<T>;
       template<CT::SparseData T>
-      NOD() static DMeta Of() requires CT::NotInsertableAsSomethingElse<T>;
+      static DMeta Of() requires CT::NotInsertableAsSomethingElse<T>;
 
       template<CT::DenseData T>
-      NOD() static DMeta Of() requires (CT::Convoluted<T> and CT::InsertableAsSomethingElse<T>);
+      static DMeta Of() requires (CT::Convoluted<T> and CT::InsertableAsSomethingElse<T>);
       template<CT::DenseData T>
-      NOD() static DMeta Of() requires (CT::Convoluted<T> and CT::NotInsertableAsSomethingElse<T>);
+      static DMeta Of() requires (CT::Convoluted<T> and CT::NotInsertableAsSomethingElse<T>);
 
       template<CT::Decayed T>
-      NOD() static DMeta Of() requires CT::InsertableAsSomethingElse<T>;
+      static DMeta Of() requires CT::InsertableAsSomethingElse<T>;
       template<CT::Decayed T>
-      NOD() static DMeta Of() requires CT::NotInsertableAsSomethingElse<T>;
+      static DMeta Of() requires CT::NotInsertableAsSomethingElse<T>;
 
-      NOD() DMeta GetMostConcrete() const noexcept;
-      NOD() AllocationRequest RequestSize(Count) const noexcept;
+      DMeta GetMostConcrete() const noexcept;
+      AllocationRequest RequestSize(Count) const noexcept;
 
       //                                                                
       // Base management                                                
       //                                                                
-      NOD() bool GetBase(DMeta, Offset, Base&) const;
+      bool GetBase(DMeta, Offset, Base&) const;
       template<CT::Data>
-      NOD() bool GetBase(Offset, Base&) const;
+      bool GetBase(Offset, Base&) const;
 
-      NOD() bool HasBase(DMeta) const;
+      bool HasBase(DMeta) const;
       template<CT::Data>
-      NOD() bool HasBase() const;
+      bool HasBase() const;
 
-      NOD() bool HasDerivation(DMeta) const;
+      bool HasDerivation(DMeta) const;
       template<CT::Data>
-      NOD() bool HasDerivation() const;
+      bool HasDerivation() const;
 
       //                                                                
       // Member management                                              
       //                                                                
-      NOD() const Member* GetMember(TMeta, DMeta = {}, Offset = 0) const noexcept;
-      NOD() Count GetMemberCount(TMeta, DMeta = {}, Offset = 0) const noexcept;
-      NOD() Count GetMemberCount() const noexcept;
+      auto GetMember(TMeta, DMeta = {}, Offset = 0) const noexcept -> const Member*;
+      auto GetMemberCount(TMeta, DMeta = {}, Offset = 0) const noexcept -> Count;
+      auto GetMemberCount() const noexcept -> Count;
 
       //                                                                
       // Ability management                                             
       //                                                                
-      NOD() bool IsAbleTo(VMeta) const;
+      bool IsAbleTo(VMeta) const;
       template<CT::Data>
-      NOD() bool IsAbleTo() const;
+      bool IsAbleTo() const;
 
       template<bool MUTABLE>
-      NOD() auto GetAbility(VMeta, DMeta) const;
+      auto GetAbility(VMeta, DMeta) const;
       template<bool MUTABLE, CT::Data V>
-      NOD() auto GetAbility(DMeta) const;
+      auto GetAbility(DMeta) const;
       template<bool MUTABLE, CT::Data V, CT::Data...A>
-      NOD() auto GetAbility() const;
+      auto GetAbility() const;
 
       //                                                                
       // Named value management                                         
       //                                                                
-      NOD() Token GetNamedValueOf(const auto&) const;
+      Token GetNamedValueOf(const auto&) const;
 
       //                                                                
       // Morphisms and comparison                                       
@@ -509,34 +509,34 @@ namespace Langulus::RTTI
       FCopyConstruct GetConverter(DMeta) const;
 
       template<bool BINARY_COMPATIBLE = false, bool ADVANCED = false>
-      NOD() bool CastsTo(DMeta) const;
+      bool CastsTo(DMeta) const;
       template<bool BINARY_COMPATIBLE = false>
-      NOD() bool CastsTo(DMeta, Count) const;
+      bool CastsTo(DMeta, Count) const;
 
       template<class, bool BINARY_COMPATIBLE = false, bool ADVANCED = false>
-      NOD() bool CastsTo() const;
+      bool CastsTo() const;
       template<class, bool BINARY_COMPATIBLE = false>
-      NOD() bool CastsTo(Count) const;
+      bool CastsTo(Count) const;
 
       template<class>
-      NOD() bool IsRelatedTo() const;
-      NOD() bool IsRelatedTo(DMeta) const;
+      bool IsRelatedTo() const;
+      bool IsRelatedTo(DMeta) const;
 
       template<class>
-      NOD() Distance GetDistanceTo() const;
-      NOD() Distance GetDistanceTo(DMeta) const;
+      Distance GetDistanceTo() const;
+      Distance GetDistanceTo(DMeta) const;
 
       template<class, class...>
-      NOD() constexpr bool Is() const;
-      NOD() constexpr bool Is(DMeta) const noexcept;
+      constexpr bool Is() const;
+      constexpr bool Is(DMeta) const noexcept;
 
       template<class, class...>
-      NOD() constexpr bool IsSimilar() const;
-      NOD() constexpr bool IsSimilar(DMeta) const noexcept;
+      constexpr bool IsSimilar() const;
+      constexpr bool IsSimilar(DMeta) const noexcept;
 
       template<class, class...>
-      NOD() constexpr bool IsExact() const;
-      NOD() constexpr bool IsExact(DMeta) const noexcept;
+      constexpr bool IsExact() const;
+      constexpr bool IsExact(DMeta) const noexcept;
    };
 
 } // namespace Langulus::RTTI

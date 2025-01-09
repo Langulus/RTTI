@@ -102,7 +102,40 @@ TEST_CASE("Testing CT::Referencable", "[concepts]") {
 
 //TODO CT::Swappable
 //TODO CT::SwappableNoexcept
-//TODO CT::DerivedFrom
+
+///                                                                           
+/// CT::DerivedFrom                                                           
+///                                                                           
+TEST_CASE("Testing CT::DerivedFrom", "[concepts]") {
+   static_assert(    CT::DerivedFrom<bool, bool>);
+   static_assert(    CT::DerivedFrom<bool, bool, bool, bool, bool, bool>);
+   static_assert(    CT::DerivedFrom<CheckingWhatConverterGetsInherited, ConvertibleData, ImplicitlyReflectedData>);
+   static_assert(    CT::DerivedFrom<VirtuallyDerived, ImpureVirtual>);
+   static_assert(not CT::DerivedFrom<PrivatelyDerived, ImpureVirtual>);
+   static_assert(not CT::DerivedFrom<bool, int>);
+
+   static_assert(    CT::DerivedFrom<bool*, bool*>);
+   static_assert(    CT::DerivedFrom<bool*, bool*, bool*, bool*, bool*, bool*>);
+   static_assert(    CT::DerivedFrom<CheckingWhatConverterGetsInherited*, ConvertibleData*, ImplicitlyReflectedData*>);
+   static_assert(    CT::DerivedFrom<VirtuallyDerived*, ImpureVirtual*>);
+   static_assert(not CT::DerivedFrom<PrivatelyDerived*, ImpureVirtual*>);
+   static_assert(not CT::DerivedFrom<bool*, int*>);
+
+   static_assert(    CT::DerivedFrom<bool*, const bool*&>);
+   static_assert(    CT::DerivedFrom<bool*, bool*, bool const* const, bool*, const bool*&, bool*&>);
+   static_assert(    CT::DerivedFrom<CheckingWhatConverterGetsInherited*, const ConvertibleData*&, const ImplicitlyReflectedData>);
+   static_assert(    CT::DerivedFrom<VirtuallyDerived*, ImpureVirtual&>);
+   static_assert(not CT::DerivedFrom<PrivatelyDerived*, const ImpureVirtual*&>);
+   static_assert(not CT::DerivedFrom<bool*, int* const>);
+
+   static_assert(    CT::DerivedFrom<bool, bool*>);
+   static_assert(    CT::DerivedFrom<bool, bool, bool, bool, bool, bool*>);
+   static_assert(    CT::DerivedFrom<CheckingWhatConverterGetsInherited, ConvertibleData*, ImplicitlyReflectedData>);
+   static_assert(    CT::DerivedFrom<VirtuallyDerived, ImpureVirtual*>);
+   static_assert(not CT::DerivedFrom<PrivatelyDerived, ImpureVirtual*>);
+   static_assert(not CT::DerivedFrom<bool*, int*>);
+}
+
 //TODO CT::Related
 //TODO CT::BinaryCompatible
 //TODO CT::VirtuallyDerivedFrom

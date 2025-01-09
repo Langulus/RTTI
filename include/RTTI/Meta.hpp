@@ -24,7 +24,7 @@ namespace Langulus
    ///   @tparam T - type to get meta definition of                           
    ///   @return the meta definition of the provided type                     
    template<class T>
-   NOD() auto MetaOf() {
+   auto MetaOf() {
       if constexpr (CT::Decayed<T> and requires { T::CTTI_Trait; })
          return RTTI::MetaTrait::Of<T>();
       else if constexpr (CT::Decayed<T> and requires { T::CTTI_Constant; })
@@ -44,7 +44,7 @@ namespace Langulus
    ///   @tparam T - type to get meta data definition of                      
    ///   @return the meta definition of the provided type                     
    template<class T>
-   NOD() auto MetaDataOf() {
+   auto MetaDataOf() {
       return RTTI::MetaData::Of<T>();
    }
 
@@ -54,7 +54,7 @@ namespace Langulus
    ///   @tparam T - type to get meta trait definition of                     
    ///   @return the meta definition of the provided trait                    
    template<class T>
-   NOD() auto MetaTraitOf() {
+   auto MetaTraitOf() {
       return RTTI::MetaTrait::Of<T>();
    }
 
@@ -64,7 +64,7 @@ namespace Langulus
    ///   @tparam T - type to get meta trait definition of                     
    ///   @return the meta definition of the provided verb                     
    template<class T>
-   NOD() auto MetaVerbOf() {
+   auto MetaVerbOf() {
       return RTTI::MetaVerb::Of<T>();
    }
 
@@ -72,7 +72,7 @@ namespace Langulus
    ///   @tparam T - type to get meta constant definition of                  
    ///   @return the meta definition of the provided constant                 
    template<class T>
-   NOD() auto MetaConstOf() {
+   auto MetaConstOf() {
       return RTTI::MetaConst::Of<T>();
    }
 

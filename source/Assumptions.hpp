@@ -28,35 +28,36 @@ namespace Langulus
    ///   @param message - an error message if condition doesn't hold          
    ///   @param location - the location of the error, if any                  
    template<unsigned LEVEL, class EXCEPTION = Except::Assertion, class...MORE>
-   LANGULUS(INLINED) IF_UNSAFE(constexpr)
-   void Assume(
+   LANGULUS(INLINED) constexpr void Assume(
       bool condition, 
       const char* message = "<unknown assumption failure>", 
       const char* location = nullptr,
-      UNUSED() MORE&&...additional_messages
+      [[maybe_unused]] MORE&&...additional_messages
    ) noexcept (LEVEL > LANGULUS(SAFE)) {
       if constexpr (LEVEL <= LANGULUS(SAFE)) {
-         if (not condition) {
-            // Log location first, because message might cause          
-            // additional errors                                        
-            DEBUGGERY(if(location) Logger::Error("At ", location));
+         IF_NOT_CONSTEXPR() {
+            if (not condition) {
+               // Log location first, because message might cause       
+               // additional errors                                     
+               DEBUGGERY(if (location) Logger::Error("At ", location));
 
-            // Log error message                                        
-            if constexpr (LEVEL == 0)
-               Logger::Error("Assertion failure: ",
-                  message, Forward<MORE>(additional_messages)...);
-            else if constexpr (LEVEL == UserAssumes)
-               Logger::Error("User assumption failure: ",
-                  message, Forward<MORE>(additional_messages)...);
-            else if constexpr (LEVEL == DevAssumes)
-               Logger::Error("Dev assumption failure: ",
-                  message, Forward<MORE>(additional_messages)...);
-            else 
-               Logger::Error("Assumption level ", LEVEL, " failure: ",
-                  message, Forward<MORE>(additional_messages)...);
+               // Log error message                                     
+               if constexpr (LEVEL == 0)
+                  Logger::Error("Assertion failure: ",
+                     message, Forward<MORE>(additional_messages)...);
+               else if constexpr (LEVEL == UserAssumes)
+                  Logger::Error("User assumption failure: ",
+                     message, Forward<MORE>(additional_messages)...);
+               else if constexpr (LEVEL == DevAssumes)
+                  Logger::Error("Dev assumption failure: ",
+                     message, Forward<MORE>(additional_messages)...);
+               else
+                  Logger::Error("Assumption level ", LEVEL, " failure: ",
+                     message, Forward<MORE>(additional_messages)...);
 
-            // Throw                                                    
-            Throw<EXCEPTION>(message, location);
+               // Throw                                                 
+               Throw<EXCEPTION>(message, location);
+            }
          }
       }
    }

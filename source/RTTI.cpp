@@ -81,9 +81,9 @@ namespace Langulus::RTTI
    ///   @param token - the token to search for                               
    ///   @param boundary - the boundary to search in (optional)               
    ///   @return the list of associated meta definitions                      
-   const MetaList& Registry::GetMetaList(
+   auto Registry::GetMetaList(
       const auto& where, const Token& token, const Token& boundary
-   ) const noexcept {
+   ) const noexcept -> const MetaList& {
       static const MetaList fallback {};
       const auto lc = ToLowercase(ToLastToken(token));
       const auto foundToken = where.find(lc);
@@ -156,9 +156,9 @@ namespace Langulus::RTTI
    ///   @param token - the token to search for                               
    ///   @param boundary - the boundary to search in (optional)               
    ///   @return the list of associated meta definitions                      
-   const MetaList& Registry::GetAmbiguousMeta(
+   auto Registry::GetAmbiguousMeta(
       const Token& token, const Token& boundary
-   ) const noexcept {
+   ) const noexcept -> const MetaList& {
       return GetMetaList(mMetaAmbiguous, token, boundary);
    }
    
@@ -281,9 +281,9 @@ namespace Langulus::RTTI
    ///   @param token - the file extension to search for                      
    ///   @param boundary - the boundary to search in (optional)               
    ///   @return all meta definitions associated with the file extension      
-   const MetaList& Registry::ResolveFileExtension(
+   auto Registry::ResolveFileExtension(
       const Token& token, const Token& boundary
-   ) const {
+   ) const -> const MetaList& {
       return GetMetaList(mFileDatabase, token, boundary);
    }
    
@@ -451,12 +451,15 @@ namespace Langulus::RTTI
          "Verb already registered for that boundary");
 
       auto lc1 = ToLowercase(token);
-      auto lc2 = ToLowercase(tokenReverse);
-      LANGULUS_ASSUME(DevAssumes, not GetMetaVerb(lc1, boundary)
-                              and not GetMetaVerb(lc2, boundary),
-         "Verb already registered with one of the following tokens: ",
-         token, ", ", tokenReverse
-      );
+      LANGULUS_ASSUME(DevAssumes, not GetMetaVerb(lc1, boundary),
+         "Verb already registered with token: ",token);
+
+      Lowercase lc2;
+      if (not tokenReverse.empty()) {
+         lc2 = ToLowercase(tokenReverse);
+         LANGULUS_ASSUME(DevAssumes, not GetMetaVerb(lc2, boundary),
+            "Verb already registered with token: ", tokenReverse);
+      }
 
       LANGULUS_ASSERT(not GetMetaConstant(token), Meta,
          "Verb positive token conflicts with constant: ", token);
@@ -504,10 +507,15 @@ namespace Langulus::RTTI
          new MetaVerb {token, tokenReverse, op, opReverse},
          mUniqueVerbs, cppnamelc, boundary
       );
-      VERBOSE("Verb ", token, "/", tokenReverse, " registered");
+
+      if (tokenReverse.empty())
+         VERBOSE("Verb ", token, " registered");
+      else
+         VERBOSE("Verb ", token, '/', tokenReverse, " registered");
 
       Register(meta, mMetaVerbs, lc1, boundary);
-      if (lc1 != lc2)
+
+      if (not lc2.empty())
          Register(meta, mMetaVerbs, lc2, boundary);
 
       if (not op1.empty()) {
@@ -515,9 +523,9 @@ namespace Langulus::RTTI
          VERBOSE("Operator ", op1, " registered");
       }
 
-      if (not op2.empty() and op1 != op2) {
+      if (not op2.empty()) {
          Register<false>(meta, mOperators, op2, boundary);
-         VERBOSE("Operator ", op1, " registered");
+         VERBOSE("Operator ", op2, " registered");
       }
 
       return meta;
@@ -642,21 +650,28 @@ namespace Langulus::RTTI
 
          VMeta definition = found->second;
          const auto lc1 = ToLowercase(definition->mToken);
-         const auto lc2 = ToLowercase(definition->mTokenReverse);
          LANGULUS_ASSUME(DevAssumes, definition
-            and definition == GetMetaVerb(lc1, boundary)
-            and definition == GetMetaVerb(lc2, boundary),
+            and definition == GetMetaVerb(lc1, boundary),
             "Bad VMeta definition"
          );
 
          auto foundlc1 = mMetaVerbs.find(lc1);
          if (foundlc1 != mMetaVerbs.end())
             foundlc1->second.erase(boundary);
-         auto foundlc2 = mMetaVerbs.find(lc2);
-         if (foundlc2 != mMetaVerbs.end())
-            foundlc2->second.erase(boundary);
 
-         if (definition->mOperator.size()) {
+         Lowercase lc2;
+         if (not definition->mTokenReverse.empty()) {
+            lc2 = ToLowercase(definition->mTokenReverse);
+            LANGULUS_ASSUME(DevAssumes, definition
+               and definition == GetMetaVerb(lc2, boundary),
+               "Bad VMeta definition"
+            );
+            auto foundlc2 = mMetaVerbs.find(lc2);
+            if (foundlc2 != mMetaVerbs.end())
+               foundlc2->second.erase(boundary);
+         }
+
+         if (not definition->mOperator.empty()) {
             const auto op1 = IsolateOperator(definition->mOperator);
             VERBOSE("Operator ", Logger::PushDarkGreen, op1,
                Logger::PopRed, " unregistered (", boundary, ")");
@@ -665,8 +680,7 @@ namespace Langulus::RTTI
                foundop1->second.erase(boundary);
          }
 
-         if (definition->mOperatorReverse.size()
-         and definition->mOperatorReverse != definition->mOperator) {
+         if (not definition->mOperatorReverse.empty()) {
             const auto op2 = IsolateOperator(definition->mOperatorReverse);
             VERBOSE("Operator ", Logger::PushDarkGreen, op2,
                Logger::PopRed, " unregistered (", boundary, ")");
@@ -675,7 +689,7 @@ namespace Langulus::RTTI
                foundop2->second.erase(boundary);
          }
 
-         if (definition->mToken != definition->mTokenReverse) {
+         if (not definition->mTokenReverse.empty()) {
             VERBOSE("Verb ", Logger::PushDarkGreen,
                definition->mToken, "/", definition->mTokenReverse,
                Logger::PopRed, " unregistered (", boundary, ")");
@@ -687,7 +701,8 @@ namespace Langulus::RTTI
          }
 
          UnregisterAmbiguous(boundary, lc1, definition.mMeta);
-         UnregisterAmbiguous(boundary, lc2, definition.mMeta);
+         if (not lc2.empty())
+            UnregisterAmbiguous(boundary, lc2, definition.mMeta);
          pair->second.erase(found);
          if (pair->second.empty())
             pair = mUniqueVerbs.erase(pair);

@@ -29,9 +29,9 @@ namespace Langulus::RTTI
       MetaConst(const Token& token) : Meta {token} {}
 
       template<CT::Decayed>
-      NOD() static CMeta Of();
+      static CMeta Of();
 
-      NOD() constexpr bool Is(CMeta) const noexcept;
+      constexpr bool Is(CMeta) const noexcept;
 
       Token Kind() const noexcept final {
          return Meta::Constant;

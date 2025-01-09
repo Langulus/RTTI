@@ -65,7 +65,7 @@ namespace Langulus::RTTI
          // definitions when module is unloaded                         
          Token mLibraryName;
 
-         NOD() LANGULUS_API(RTTI)
+         LANGULUS_API(RTTI)
          Token GetShortestUnambiguousToken() const;
       #endif
 
@@ -137,7 +137,7 @@ namespace Langulus::RTTI
       constexpr bool operator |  (const AMeta&) const noexcept;
 
       template<class T>
-      NOD() constexpr T As() const noexcept;
+      constexpr T As() const noexcept;
 
       constexpr Token Kind() const noexcept;
    };
