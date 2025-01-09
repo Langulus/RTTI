@@ -60,7 +60,7 @@ namespace Langulus::RTTI
    template<CT::Data T>
    consteval Token MetaVerb::GetReflectedNegativeVerbToken() noexcept {
       if constexpr (requires { T::CTTI_Verb; })
-         return T::CTTI_Verb;
+         return {};
       else if constexpr (requires { T::CTTI_NegativeVerb; }) {
          if constexpr (not requires { T::CTTI_PositiveVerb; }) {
             static_assert(false,
@@ -71,7 +71,7 @@ namespace Langulus::RTTI
 
          return T::CTTI_NegativeVerb;
       }
-      else return CppNameOf<T>();
+      else return {};
    }
 
    /// Get the reflected positive operator for a verb                         
@@ -98,7 +98,7 @@ namespace Langulus::RTTI
    template<CT::Data T>
    consteval Token MetaVerb::GetReflectedNegativeVerbOperator() noexcept {
       if constexpr (requires { T::CTTI_Operator; })
-         return T::CTTI_Operator;
+         return {};
       else if constexpr (requires { T::CTTI_NegativeOperator; }) {
          if constexpr (not requires { T::CTTI_PositiveOperator; }) {
             static_assert(false,
@@ -149,12 +149,15 @@ namespace Langulus::RTTI
 
       constexpr auto verbPos = GetReflectedPositiveVerbToken<T>();
       constexpr auto verbNeg = GetReflectedNegativeVerbToken<T>();
-
-      static_assert(verbPos != "", "Invalid verb token is not allowed");
-      static_assert(verbNeg != "", "Invalid verb token is not allowed");
+      static_assert(not verbPos.empty(),
+         "Invalid positive verb token is not allowed");
+      static_assert(verbPos != verbNeg,
+         "Verb can't have the same positive and negative tokens");
 
       constexpr auto opPos = GetReflectedPositiveVerbOperator<T>();
       constexpr auto opNeg = GetReflectedNegativeVerbOperator<T>();
+      static_assert(opPos != opNeg or opPos.empty(),
+         "Verb can't have the same positive and negative operators");
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get the definition, type might have been reflected   
@@ -234,15 +237,22 @@ namespace Langulus::RTTI
             Logger::PopGreen, " registered (", generated.mLibraryName, ")");
       }
 
-      if (generated.mOperatorReverse.size() and generated.mOperatorReverse != generated.mOperator) {
+      if (not generated.mOperatorReverse.empty()) {
          const auto op2 = IsolateOperator(generated.mOperatorReverse);
          VERBOSE("Operator ", Logger::PushDarkGreen, op2,
             Logger::PopGreen, " registered (", generated.mLibraryName, ")");
       }
 
-      VERBOSE("Verb ", Logger::PushDarkGreen,
-         generated.mToken, "/", generated.mTokenReverse,
-         Logger::PopGreen, " registered (", generated.mLibraryName, ")");
+      if (generated.mTokenReverse.empty()) {
+         VERBOSE("Verb ", Logger::PushDarkGreen,
+            generated.mToken,
+            Logger::PopGreen, " registered (", generated.mLibraryName, ")");
+      }
+      else {
+         VERBOSE("Verb ", Logger::PushDarkGreen,
+            generated.mToken, "/", generated.mTokenReverse,
+            Logger::PopGreen, " registered (", generated.mLibraryName, ")");
+      }
 
       return &generated;
    }

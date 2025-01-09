@@ -401,6 +401,10 @@ struct VirtuallyDerived : virtual ImpureVirtual {
 
 };
 
+struct PrivatelyDerived : private ImpureVirtual {
+
+};
+
 
 struct ReferConstructibleButNotAssignable {
    int m;

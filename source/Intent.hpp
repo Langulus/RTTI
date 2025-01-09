@@ -188,7 +188,7 @@ namespace Langulus
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NoIntent<ALT_T>,
             "Can't nest intents");
-         static_assert(CT::Similar<T, ALT_T> or CT::DerivedFrom<T, ALT_T>,
+         static_assert(CT::DerivedFrom<T, ALT_T>,
             "Can't forward as this type");
 
          // Aggregates don't play well with intents, so if type is an   
@@ -256,7 +256,7 @@ namespace Langulus
    };
    
    /// Refer a value                                                          
-   NOD() LANGULUS(ALWAYS_INLINED)
+   LANGULUS(ALWAYS_INLINED)
    constexpr auto Refer(auto&& value) noexcept {
       using ALT = Decvq<Deref<decltype(value)>>;
       if constexpr (CT::Intent<ALT>)
@@ -295,7 +295,7 @@ namespace Langulus
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NoIntent<ALT_T>,
             "Can't nest intents");
-         static_assert(CT::Similar<T, ALT_T> or CT::DerivedFrom<T, ALT_T>,
+         static_assert(CT::DerivedFrom<T, ALT_T>,
             "Can't forward as this type");
 
          // Aggregates don't play well with intents, so if type is an   
@@ -361,7 +361,7 @@ namespace Langulus
    };
    
    /// Copy a value                                                           
-   NOD() LANGULUS(ALWAYS_INLINED)
+   LANGULUS(ALWAYS_INLINED)
    constexpr auto Copy(auto&& value) noexcept {
       using ALT = Decvq<Deref<decltype(value)>>;
       if constexpr (CT::Intent<ALT>)
@@ -407,7 +407,7 @@ namespace Langulus
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NoIntent<ALT_T>,
             "Can't nest intents");
-         static_assert(CT::Similar<T, ALT_T> or CT::DerivedFrom<T, ALT_T>,
+         static_assert(CT::DerivedFrom<T, ALT_T>,
             "Can't forward as this type");
          
          // Aggregates don't play well with intents, so if type is an   
@@ -478,7 +478,7 @@ namespace Langulus
    };
    
    /// Move a value                                                           
-   NOD() LANGULUS(ALWAYS_INLINED)
+   LANGULUS(ALWAYS_INLINED)
    constexpr auto Move(auto&& value) noexcept {
       using ALT = Decvq<Deref<decltype(value)>>;
       if constexpr (CT::Intent<ALT>)
@@ -528,7 +528,7 @@ namespace Langulus
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NoIntent<ALT_T>,
             "Can't nest intents");
-         static_assert(CT::Similar<T, ALT_T> or CT::DerivedFrom<T, ALT_T>,
+         static_assert(CT::DerivedFrom<T, ALT_T>,
             "Can't forward as this type");
          
          // Aggregates don't play well with intents, so if type is an   
@@ -596,7 +596,7 @@ namespace Langulus
    /// Abandon a value                                                        
    /// Same as Move, but resets only mandatory data inside source after move  
    /// essentially saving up on a couple of instructions                      
-   NOD() LANGULUS(ALWAYS_INLINED)
+   LANGULUS(ALWAYS_INLINED)
    constexpr auto Abandon(auto&& value) noexcept {
       using ALT = Decvq<Deref<decltype(value)>>;
       if constexpr (CT::Intent<ALT>) {
@@ -640,7 +640,7 @@ namespace Langulus
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NoIntent<ALT_T>,
             "Can't nest intents");
-         static_assert(CT::Similar<T, ALT_T> or CT::DerivedFrom<T, ALT_T>,
+         static_assert(CT::DerivedFrom<T, ALT_T>,
             "Can't forward as this type");
 
          // Aggregates don't play well with intents, so if type is an   
@@ -706,7 +706,7 @@ namespace Langulus
    
    /// Disown a value                                                         
    /// Same as a shallow-copy, but never references, saving some instructions 
-   NOD() LANGULUS(ALWAYS_INLINED)
+   LANGULUS(ALWAYS_INLINED)
    constexpr auto Disown(auto&& value) noexcept {
       using ALT = Decvq<Deref<decltype(value)>>;
       if constexpr (CT::Intent<ALT>)
@@ -743,7 +743,7 @@ namespace Langulus
       constexpr decltype(auto) Forward() const noexcept {
          static_assert(CT::NoIntent<ALT_T>,
             "Can't nest intents");
-         static_assert(CT::Similar<T, ALT_T> or CT::DerivedFrom<T, ALT_T>,
+         static_assert(CT::DerivedFrom<T, ALT_T>,
             "Can't forward as this type");
          return Cloned<ALT_T> {mValue};
       }
@@ -789,7 +789,7 @@ namespace Langulus
    
    /// Clone a value                                                          
    /// Does a deep-copy                                                       
-   NOD() LANGULUS(ALWAYS_INLINED)
+   LANGULUS(ALWAYS_INLINED)
    constexpr auto Clone(auto&& value) noexcept {
       using ALT = Decvq<Deref<decltype(value)>>;
       if constexpr (CT::Intent<ALT>)
@@ -1445,7 +1445,7 @@ namespace Langulus
    /// to TypeOf<T>& is available                                             
    ///   @param what - the instance to decay                                  
    ///   @return a reference to the the inner data                            
-   NOD() LANGULUS(ALWAYS_INLINED)
+   LANGULUS(ALWAYS_INLINED)
    constexpr auto& DecayCast(auto&& what) noexcept {
       using T = decltype(what);
       if constexpr (CT::Typed<T>) {
@@ -1467,7 +1467,7 @@ namespace Langulus
    /// Decay an intent to the contained data                                  
    ///   @param what - the instance to decay                                  
    ///   @return a reference (preferably) or a copy of the inner data         
-   NOD() LANGULUS(ALWAYS_INLINED)
+   LANGULUS(ALWAYS_INLINED)
    constexpr auto& DeintCast(auto&& what) noexcept {
       using T = decltype(what);
       if constexpr (CT::Intent<T>)

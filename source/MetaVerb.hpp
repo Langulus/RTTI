@@ -60,13 +60,13 @@ namespace Langulus::RTTI
          , mOperatorReverse {on} {}
 
       template<CT::Void>
-      NOD() static consteval VMeta Of();
+      static consteval VMeta Of();
       template<CT::Decayed>
-      NOD() static VMeta Of();
+      static VMeta Of();
       
-      NOD() bool Is(VMeta) const noexcept;
+      bool Is(VMeta) const noexcept;
       template<CT::Data>
-      NOD() bool Is() const;
+      bool Is() const;
 
       Token Kind() const noexcept final {
          return Meta::Verb;

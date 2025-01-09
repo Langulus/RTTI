@@ -474,7 +474,7 @@ namespace Langulus::RTTI
    /// a template <>, and skip forward to that                                
    ///   @param token - the token to scan                                     
    ///   @return the last token                                               
-   NOD() constexpr Token ToLastToken(const Token& token) noexcept {
+   constexpr Token ToLastToken(const Token& token) noexcept {
       Count depth = 0;
       for (Offset i = token.size() - 1; i < token.size(); --i) {
          switch (token[i]) {
