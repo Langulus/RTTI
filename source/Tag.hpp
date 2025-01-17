@@ -61,7 +61,7 @@ namespace Langulus::RTTI
       template<CT::NotTagged T>
       requires CT::MakableFrom<DATA, T> LANGULUS(INLINED)
       constexpr Tag(T&& t)
-         : mData {Forward<T>(t)} {}
+         : mData {static_cast<DATA>(t)} {}
 
       constexpr Tag(const Tag& other)
          : mData {other.mData} {}
