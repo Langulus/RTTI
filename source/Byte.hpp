@@ -59,52 +59,52 @@ namespace Langulus
 
       LANGULUS(INLINED)
       constexpr Byte operator + (const Byte& rhs) const noexcept {
-         return mValue + rhs.mValue;
+         return static_cast<Byte>(mValue + rhs.mValue);
       }
 
       LANGULUS(INLINED)
       constexpr Byte operator - (const Byte& rhs) const noexcept {
-         return mValue - rhs.mValue;
+         return static_cast<Byte>(mValue - rhs.mValue);
       }
 
       LANGULUS(INLINED)
       constexpr Byte operator * (const Byte& rhs) const noexcept {
-         return mValue * rhs.mValue;
+         return static_cast<Byte>(mValue * rhs.mValue);
       }
 
       LANGULUS(INLINED)
       constexpr Byte operator / (const Byte& rhs) const noexcept {
-         return mValue / rhs.mValue;
+         return static_cast<Byte>(mValue / rhs.mValue);
       }
 
       LANGULUS(INLINED)
       constexpr Byte operator % (const Byte& rhs) const noexcept {
-         return mValue % rhs.mValue;
+         return static_cast<Byte>(mValue % rhs.mValue);
       }
 
       LANGULUS(INLINED)
       constexpr Byte operator << (const Byte& rhs) const noexcept {
-         return mValue << rhs.mValue;
+         return static_cast<Byte>(mValue << rhs.mValue);
       }
 
       LANGULUS(INLINED)
       constexpr Byte operator >> (const Byte& rhs) const noexcept {
-         return mValue >> rhs.mValue;
+         return static_cast<Byte>(mValue >> rhs.mValue);
       }
 
       LANGULUS(INLINED)
       constexpr Byte operator ^ (const Byte& rhs) const noexcept {
-         return mValue ^ rhs.mValue;
+         return static_cast<Byte>(mValue ^ rhs.mValue);
       }
 
       LANGULUS(INLINED)
       constexpr Byte operator & (const Byte& rhs) const noexcept {
-         return mValue & rhs.mValue;
+         return static_cast<Byte>(mValue & rhs.mValue);
       }
 
       LANGULUS(INLINED)
       constexpr Byte operator | (const Byte& rhs) const noexcept {
-         return mValue | rhs.mValue;
+         return static_cast<Byte>(mValue | rhs.mValue);
       }
 
       LANGULUS(INLINED)
@@ -202,11 +202,11 @@ namespace Langulus
 
       /// Suffix operators                                                    
       Byte operator ++ (int) noexcept {
-         return mValue++;
+         return static_cast<Byte>(mValue++);
       }
 
       Byte operator -- (int) noexcept {
-         return mValue--;
+         return static_cast<Byte>(mValue--);
       }
    };
    #pragma pack(pop)

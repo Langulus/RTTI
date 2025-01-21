@@ -204,7 +204,7 @@ namespace Langulus
       ///   @return the referred value, disregarding previous intent          
       LANGULUS(ALWAYS_INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
-         using ALT = Decvq<Deref<decltype(value)>>;
+         using ALT = Decq<Deref<decltype(value)>>;
 
          // Aggregates don't play well with intents, so if type is an   
          // aggregate, use the standard copy semantics                  
@@ -258,7 +258,7 @@ namespace Langulus
    /// Refer a value                                                          
    LANGULUS(ALWAYS_INLINED)
    constexpr auto Refer(auto&& value) noexcept {
-      using ALT = Decvq<Deref<decltype(value)>>;
+      using ALT = Decq<Deref<decltype(value)>>;
       if constexpr (CT::Intent<ALT>)
          return Referred<TypeOf<ALT>> {*value};
       else
@@ -311,7 +311,7 @@ namespace Langulus
       ///   @return the copied value, disregarding previous intent            
       LANGULUS(ALWAYS_INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
-         using ALT = Decvq<Deref<decltype(value)>>;
+         using ALT = Decq<Deref<decltype(value)>>;
 
          // Aggregates don't play well with intents, so if type is an   
          // aggregate, use the standard copy semantics                  
@@ -363,7 +363,7 @@ namespace Langulus
    /// Copy a value                                                           
    LANGULUS(ALWAYS_INLINED)
    constexpr auto Copy(auto&& value) noexcept {
-      using ALT = Decvq<Deref<decltype(value)>>;
+      using ALT = Decq<Deref<decltype(value)>>;
       if constexpr (CT::Intent<ALT>)
          return Copied<TypeOf<ALT>> {*value};
       else
@@ -423,7 +423,7 @@ namespace Langulus
       ///   @return the moved value, disregarding previous intent             
       LANGULUS(ALWAYS_INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
-         using ALT = Decvq<Deref<decltype(value)>>;
+         using ALT = Decq<Deref<decltype(value)>>;
 
          // Aggregates don't play well with intents, so if type is an   
          // aggregate, use the standard move semantics                  
@@ -480,7 +480,7 @@ namespace Langulus
    /// Move a value                                                           
    LANGULUS(ALWAYS_INLINED)
    constexpr auto Move(auto&& value) noexcept {
-      using ALT = Decvq<Deref<decltype(value)>>;
+      using ALT = Decq<Deref<decltype(value)>>;
       if constexpr (CT::Intent<ALT>)
          return Moved<TypeOf<ALT>> {::std::forward<TypeOf<ALT>>(*value)};
       else
@@ -544,7 +544,7 @@ namespace Langulus
       ///   @return the abandoned value, disregarding previous intent         
       LANGULUS(ALWAYS_INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
-         using ALT = Decvq<Deref<decltype(value)>>;
+         using ALT = Decq<Deref<decltype(value)>>;
 
          // Aggregates don't play well with intents, so if type is an   
          // aggregate, use the standard move semantics                  
@@ -598,7 +598,7 @@ namespace Langulus
    /// essentially saving up on a couple of instructions                      
    LANGULUS(ALWAYS_INLINED)
    constexpr auto Abandon(auto&& value) noexcept {
-      using ALT = Decvq<Deref<decltype(value)>>;
+      using ALT = Decq<Deref<decltype(value)>>;
       if constexpr (CT::Intent<ALT>) {
          return Abandoned<TypeOf<ALT>> {
             ::std::forward<TypeOf<ALT>>(*value)};
@@ -656,7 +656,7 @@ namespace Langulus
       ///   @return the disowned value, disregarding previous intent          
       LANGULUS(ALWAYS_INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
-         using ALT = Decvq<Deref<decltype(value)>>;
+         using ALT = Decq<Deref<decltype(value)>>;
 
          // Aggregates don't play well with intents, so if type is an   
          // aggregate, use the standard copy semantics                  
@@ -708,7 +708,7 @@ namespace Langulus
    /// Same as a shallow-copy, but never references, saving some instructions 
    LANGULUS(ALWAYS_INLINED)
    constexpr auto Disown(auto&& value) noexcept {
-      using ALT = Decvq<Deref<decltype(value)>>;
+      using ALT = Decq<Deref<decltype(value)>>;
       if constexpr (CT::Intent<ALT>)
          return Disowned<TypeOf<ALT>> {*value};
       else
@@ -751,7 +751,7 @@ namespace Langulus
       /// Clone something else                                                
       LANGULUS(ALWAYS_INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
-         using ALT = Decvq<Deref<decltype(value)>>;
+         using ALT = Decq<Deref<decltype(value)>>;
          if constexpr (CT::Intent<ALT>)
             return Cloned<TypeOf<ALT>> {*value};
          else
@@ -791,7 +791,7 @@ namespace Langulus
    /// Does a deep-copy                                                       
    LANGULUS(ALWAYS_INLINED)
    constexpr auto Clone(auto&& value) noexcept {
-      using ALT = Decvq<Deref<decltype(value)>>;
+      using ALT = Decq<Deref<decltype(value)>>;
       if constexpr (CT::Intent<ALT>)
          return Cloned<TypeOf<ALT>> {*value};
       else
@@ -820,7 +820,7 @@ namespace Langulus
       /// itself                                                              
       LANGULUS(ALWAYS_INLINED)
       static constexpr decltype(auto) Nest(auto&& value) noexcept {
-         using ALT = Decvq<Deref<decltype(value)>>;
+         using ALT = Decq<Deref<decltype(value)>>;
          if constexpr (CT::Similar<ALT, Describe>)
             return Forward<ALT>(value);
          else if constexpr (CT::Intent<ALT> and CT::Similar<TypeOf<ALT>, Many>)
@@ -1129,8 +1129,8 @@ namespace Langulus
    ///   @return whatever the assignment operator returns                     
    template<bool FAKE = false, template<class> class S, CT::NoIntent T>
    requires CT::Intent<S<T>> LANGULUS(INLINED)
-   constexpr decltype(auto) IntentAssign(Decvq<T>& lhs, S<T>&& rhs) {
-      using MT = Decvq<T>;
+   constexpr decltype(auto) IntentAssign(Decq<T>& lhs, S<T>&& rhs) {
+      using MT = Decq<T>;
       using SS = S<T>;
 
       if constexpr (not CT::Complete<MT>) {
