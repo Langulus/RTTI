@@ -270,10 +270,10 @@ namespace Langulus::RTTI
       // Will be nullptr for incomplete types                           
       DMeta mOrigin {};
       // The type, when a single pointer is removed                     
-      // It is nullptr, if the type isn't sparse                        
+      // Will be null if no pointers available                          
       DMeta mDeptr {};
       // The type, when a const and volatile qualifiers are removed     
-      // It is nullptr, if the type doesn't have any qualifiers         
+      // Will be `this` if no qualifiers available                      
       DMeta mDecvq {};
       // Default concretization                                         
       // Used as redirection, when requesting the creation of asbtracts 
