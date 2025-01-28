@@ -16,7 +16,7 @@
 #else
    #include <memory>
 #endif
-#include <Core/Utilities.hpp>
+#include <Langulus/Core/Utilities.hpp>
 #include <tuple>
 
 #if 0
