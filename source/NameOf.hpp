@@ -7,7 +7,7 @@
 ///                                                                           
 #pragma once
 #include "Config.hpp"
-#include <Core/Utilities.hpp>
+#include <Langulus/Core/Utilities.hpp>
 #include <string>
 #include <array>
 

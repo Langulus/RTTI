@@ -7,8 +7,8 @@
 ///                                                                           
 #pragma once
 #include "Config.hpp"
-#include <Core/Types.hpp>
-#include <Core/Utilities.hpp>
+#include <Langulus/Core/Types.hpp>
+#include <Langulus/Core/Utilities.hpp>
 #include <vector>
 
 

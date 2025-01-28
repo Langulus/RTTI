@@ -6,9 +6,9 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-#include <Core/Exceptions.hpp>
-#include <Core/Utilities.hpp>
-#include <Logger/Logger.hpp>
+#include <Langulus/Core/Exceptions.hpp>
+#include <Langulus/Core/Utilities.hpp>
+#include <Langulus/Logger/Logger.hpp>
 
 
 #if defined(LANGULUS_EXPORT_ALL) or defined(LANGULUS_EXPORT_RTTI)

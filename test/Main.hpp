@@ -6,7 +6,7 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-#include <RTTI/Meta.hpp>
+#include <Langulus/RTTI/Meta.hpp>
 #include <cstdint>
 #include <cstddef>
 #include <vector>

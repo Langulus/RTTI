@@ -7,7 +7,7 @@
 ///                                                                           
 #pragma once
 #include "Config.hpp"
-#include <Logger/Logger.hpp>
+#include <Langulus/Logger/Logger.hpp>
 
 
 namespace Langulus

@@ -8,7 +8,7 @@
 #pragma once
 #include "Reflection.hpp"
 #include "NameOf.hpp"
-#include <Core/Utilities.hpp>
+#include <Langulus/Core/Utilities.hpp>
 #include <vector>
 
 
