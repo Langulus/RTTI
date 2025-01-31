@@ -114,7 +114,7 @@ namespace Langulus
    ///           the bigger extent, if one of the arguments isn't an array    
    ///           1 if both arguments are not arrays                           
    template<class LHS, class RHS>
-   consteval Count OverlapExtents() noexcept {
+   consteval Count OverlapExtents() {
       constexpr auto lhs = ExtentOf<Deint<LHS>>;
       constexpr auto rhs = ExtentOf<Deint<RHS>>;
 
@@ -140,7 +140,7 @@ namespace Langulus
    ///           the bigger extent, if one of the arguments isn't a vector    
    ///           1 if both arguments are not arrays                           
    template<class LHS, class RHS>
-   consteval Count OverlapCounts() noexcept {
+   consteval Count OverlapCounts() {
       constexpr auto lhs = CountOf<Deint<LHS>>;
       constexpr auto rhs = CountOf<Deint<RHS>>;
 
@@ -173,7 +173,7 @@ namespace Langulus
       ///   @attention this will discard any sparseness or other modifiers    
       ///   @attention this will shed any intents                             
       template<class T1, class T2>
-      consteval auto Lossless() noexcept {
+      consteval auto Lossless() {
          constexpr auto size = OverlapCounts<T1, T2>();
          using LHS = Decay<TypeOf<Deint<T1>>>;
          using RHS = Decay<TypeOf<Deint<T2>>>;
@@ -232,7 +232,7 @@ namespace Langulus
 
       /// Nest the above function for all types in a variadic template        
       template<class T1, class T2, class...TN>
-      consteval auto LosslessNestedInner() noexcept {
+      consteval auto LosslessNestedInner() {
          using T1T2 = decltype(Lossless<T1, T2>());
 
          if constexpr (sizeof...(TN))
@@ -243,7 +243,7 @@ namespace Langulus
 
       /// Nest the above function for all types in a variadic template        
       template<class T1, class...TN>
-      consteval auto LosslessNested() noexcept {
+      consteval auto LosslessNested() {
          if constexpr (sizeof...(TN) == 0)
             return ::std::array<Decay<TypeOf<T1>>, CountOf<T1>> {};
          else
@@ -263,5 +263,77 @@ namespace Langulus
           TypeOf<decltype(Inner::LosslessNested<T1, TN...>())>
                [CountOf<decltype(Inner::LosslessNested<T1, TN...>())>]
       >;
+
+   namespace Inner
+   {
+      template<class T, bool FORCE_SIGNED = false>
+      consteval auto WiderInner() {
+         if constexpr (CT::SignedInteger8<T>)
+            return Types<int16_t> {};
+         else if constexpr (CT::UnsignedInteger8<T>) {
+            if constexpr (FORCE_SIGNED)
+               return Types<int16_t> {};
+            else
+               return Types<uint16_t> {};
+         }
+         else if constexpr (CT::SignedInteger16<T>)
+            return Types<int32_t> {};
+         else if constexpr (CT::UnsignedInteger16<T>) {
+            if constexpr (FORCE_SIGNED)
+               return Types<int32_t> {};
+            else
+               return Types<uint32_t> {};
+         }
+         else if constexpr (CT::SignedInteger32<T>)
+            return Types<int64_t> {};
+         else if constexpr (CT::UnsignedInteger32<T>) {
+            if constexpr (FORCE_SIGNED)
+               return Types<int64_t> {};
+            else
+               return Types<uint64_t> {};
+         }
+         else if constexpr (CT::Integer64<T>)
+            return Types<T> {};
+         else if constexpr (CT::Float<T>)
+            return Types<double> {};
+         else if constexpr (CT::Double<T>)
+            return Types<double> {};
+         else
+           static_assert(false, "Can't find a wider type");
+      }
+
+      template<class T>
+      consteval auto NarrowerInner() {
+         if constexpr (CT::Integer8<T>)
+            return Types<T> {};
+         else if constexpr (CT::SignedInteger16<T>)
+            return Types<int8_t> {};
+         else if constexpr (CT::UnsignedInteger16<T>)
+            return Types<uint8_t> {};
+         else if constexpr (CT::SignedInteger32<T>)
+            return Types<int16_t> {};
+         else if constexpr (CT::UnsignedInteger32<T>)
+            return Types<uint16_t> {};
+         else if constexpr (CT::SignedInteger64<T>)
+            return Types<int32_t> {};
+         else if constexpr (CT::UnsignedInteger64<T>)
+            return Types<uint32_t> {};
+         else if constexpr (CT::Float<T>)
+            return Types<T> {};
+         else if constexpr (CT::Double<T>)
+            return Types<float> {};
+         else
+           static_assert(false, "Can't find a narrower type");
+      }
+   }
+
+   template<class T1, class...TN>
+   using Wider = typename decltype(Inner::WiderInner<Lossless<T1, TN...>>())::First;
+
+   template<class T1, class...TN>
+   using WiderSigned = typename decltype(Inner::WiderInner<Lossless<T1, TN...>, true>())::First;
+
+   template<class T1, class...TN>
+   using Narrower = typename decltype(Inner::NarrowerInner<Lossless<T1, TN...>>())::First;
 
 } // namespace Langulus
