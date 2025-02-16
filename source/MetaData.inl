@@ -6,9 +6,6 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-#include "NameOf.hpp"
-#include "Intent.hpp"
-#include "Fundamental.hpp"
 #include "MetaData.hpp"
 #include "MetaConst.hpp"
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
@@ -16,7 +13,14 @@
 #else
    #include <memory>
 #endif
-#include <Langulus/Core/Utilities.hpp>
+#include "Fundamental.hpp"
+#include "Intent.hpp"
+#include <Langulus/Core/NameOf.hpp>
+#include <Langulus/Core/Assume.hpp>
+#include <Langulus/CT/Nullifiable.hpp>
+#include <Langulus/CT/Allocatable.hpp>
+#include <Langulus/CT/Defaultable.hpp>
+#include <Langulus/CT/Destroyable.hpp>
 #include <tuple>
 
 #if 0

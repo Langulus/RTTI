@@ -11,7 +11,7 @@
 #include "MetaTrait.inl"
 #include "MetaConst.inl"
 #include "Meta.inl"
-#include "Assumptions.hpp"
+#include <Langulus/Core/Assume.hpp>
 #include <cctype>
 
 #if 0

@@ -6,14 +6,14 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-#include "../../../source/Referenced.hpp"
-#include "../../../source/Meta.inl"
-#include "../../../source/MetaData.inl"
-#include "../../../source/MetaTrait.inl"
-#include "../../../source/MetaVerb.inl"
-#include "../../../source/MetaConst.inl"
-#include "../../../source/Tag.hpp"
-#include "../../../source/Arithmetic.hpp"
+#include "../../source/Referenced.hpp"
+#include "../../source/Meta.inl"
+#include "../../source/MetaData.inl"
+#include "../../source/MetaTrait.inl"
+#include "../../source/MetaVerb.inl"
+#include "../../source/MetaConst.inl"
+#include "../../source/Tag.hpp"
+#include "../../source/Intent.hpp"
 
 
 namespace Langulus

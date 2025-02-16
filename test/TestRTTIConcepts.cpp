@@ -313,20 +313,20 @@ TEST_CASE("Testing CT::Untyped", "[concepts]") {
 //TODO SuffixOf
 
 
-TEMPLATE_TEST_CASE("Testing DecayCast (POD)", "[concepts]",
+TEMPLATE_TEST_CASE("Testing TypedCast (POD)", "[concepts]",
    int, Copied<int>, Referred<int>, Disowned<int>, Cloned<int>
 ) {
    const int* value = new int {656};
    const TestType i {*value};
-   static_assert(CT::Exact<decltype(DecayCast(i)), const int&>);
+   static_assert(CT::Exact<decltype(TypedCast(i)), const int&>);
    delete value;
 }
 
-TEMPLATE_TEST_CASE("Testing DecayCast (non POD)", "[concepts]",
+TEMPLATE_TEST_CASE("Testing TypedCast (non POD)", "[concepts]",
    Complex, Copied<Complex>, Referred<Complex>, Disowned<Complex>, Cloned<Complex>
 ) {
    const int* value = new int {656};
    const TestType i {*value};
-   static_assert(CT::Exact<decltype(DecayCast(i)), const Complex&>);
+   static_assert(CT::Exact<decltype(TypedCast(i)), const Complex&>);
    delete value;
 }

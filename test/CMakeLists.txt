@@ -1,5 +1,5 @@
 add_langulus_test(LangulusRTTITest
-	SOURCES		Main.cpp
+	SOURCES		Common.cpp
 				TestConverters.cpp
 				TestCoreConcepts.cpp
 				TestRTTIConcepts.cpp

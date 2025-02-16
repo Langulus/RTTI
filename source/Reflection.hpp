@@ -36,7 +36,7 @@ namespace Langulus::RTTI
 ///      available properties below). This is useful when you can't (or don't 
 ///      want to) modify types directly. Fundamental types are reflected      
 ///      that way.                                                            
-///      You can forbit a type from being reflected by adding                 
+///      You can forbid a type from being reflected by adding                 
 ///      LANGULUS(ACTS_AS) void; in the ReflectionOf definition.              
 ///   2. Define a public member struct RTTI in your type with the desired     
 ///      properties. For example: public: struct RTTI {...};                  
@@ -208,7 +208,9 @@ namespace Langulus::RTTI
 /// intermediate types, like Handle. These types will produce a compile-time  
 /// error when a reflection is attempted. All reflected types are reflectable 
 /// by default as themselves. A binary compatible type is used for inserting  
-/// CT::Block, CT::Trait and CT::Verb.                                        
+/// CT::Block, CT::Trait and CT::Verb. Also used as a compile-time            
+/// optimization - reflecting consumes a lot of the compiler's time, so this  
+/// is useful when reflecting all templated types as a binary-compatible one. 
 ///   @attention the property will propagate to any derived class             
 #define LANGULUS_ACT_AS() \
    public: using CTTI_ActAs = 
@@ -290,18 +292,7 @@ namespace Langulus::CT
 {
    namespace Inner
    {
-
-      template<class T>
-      consteval bool IsAbstract() {
-         if constexpr (Complete<T> and Dense<T>) {
-            if constexpr (requires { T::CTTI_Abstract; })
-               return ::std::is_abstract_v<T> or T::CTTI_Abstract;
-            else
-               return ::std::is_abstract_v<T>;
-         }
-         else return false;
-      }
-
+      
       template<class T>
       consteval bool IsReflectable() {
          if constexpr (Complete<T> and Dense<T>) {
@@ -313,78 +304,6 @@ namespace Langulus::CT
          else return Complete<T>;
       }
 
-   } // namespace Langulus::CT::Inner
-
-
-   /// Check if all T are abstract (have at least one pure virtual function,  
-   /// or are explicitly marked as LANGULUS(ABSTRACT) true). Sparse types are 
-   /// never abstract!                                                        
-   template<class...T>
-   concept Abstract = (Inner::IsAbstract<T>() and ...);
-
-   /// Check if any of the listed T is unallocatable                          
-   /// You can make types unallocatable by the memory manager. This serves    
-   /// not only as forcing the type to be either allocated by conventional    
-   /// C++ means (on the heap or the stack), but also optimizes away any      
-   /// memory manager searches, when inserting pointers while managed memory  
-   /// is enabled. Raw function pointers are unallocatable by default         
-   template<class...T>
-   concept Unallocatable = not Complete<T...> or Function<T...>
-        or ((Dense<T> and Decay<T>::CTTI_Unallocatable) or ...);
-
-   /// Check if all of the types are allocatable                              
-   template<class...T>
-   concept Allocatable = ((not Unallocatable<T>) and ...);
-
-   /// Check if all of the types are reflectable                              
-   template<class...T>
-   concept Reflectable = (Inner::IsReflectable<T>() and ...);
-
-   namespace Inner
-   {
-
-      /// Check if T is typed, having either CTTI_InnerType or value_type as  
-      /// member type declarations                                            
-      ///   @attention the inner type must not be 'void', in order for T to   
-      ///      be considered 'typed', as in not 'type-erased'                 
-      template<class T>
-      consteval bool IsTyped() {
-         if constexpr (not Complete<Deref<T>>)
-            return false;
-         else if constexpr (requires { typename Deref<T>::CTTI_InnerType; })
-            return Data<typename Deref<T>::CTTI_InnerType>;
-         else if constexpr (requires { typename Deref<T>::value_type; })
-            return Data<typename Deref<T>::value_type>;
-         else
-            return false;
-      }
-
-      /// Convenience function that wraps std::underlying_type_t for enums,   
-      /// as well as any array, or anything with CTTI_InnerType that isn't    
-      /// void, or has the value_type member type defined                     
-      ///   - if T is an array, returns pointer of the array type             
-      ///   - if T has CTTI_InnerType/value_type, return pointer of the type  
-      ///   - if T is an enum, return pointer of the underlying type          
-      ///   - otherwise just return a decayed T pointer                       
-      template<class T>
-      consteval auto GetUnderlyingType() {
-         if constexpr (Array<T>)
-            return (Deref<Deext<T>>*) nullptr;
-         else {
-            using DT = Decay<T>;
-            if constexpr (not Complete<DT>)
-               return (Deref<T>*) nullptr;
-            else if constexpr (requires { typename DT::CTTI_InnerType; })
-               return (Deref<typename DT::CTTI_InnerType>*) nullptr;
-            else if constexpr (requires { typename DT::value_type; })
-               return (Deref<typename DT::value_type>*) nullptr;
-            else if constexpr (CT::Enum<DT>)
-               return (Deref<::std::underlying_type_t<DT>>*) nullptr;
-            else
-               return (Deref<T>*) nullptr;
-         }
-      };
-      
       /// Convenience function that returns the type of LANGULUS(ACT_AS)      
       /// Incomplete/lacking types return themselves (as decayed)             
       template<class T>
@@ -406,48 +325,11 @@ namespace Langulus::CT
          else return (Decay<T>*) nullptr;
       };
 
-      /// Check if a type is POD (plain old data)                             
-      ///   @tparam T - the type to check                                     
-      ///   @return true if T is a POD type                                   
-      template<class T>
-      consteval bool IsPOD() {
-         if constexpr (Complete<T>) {
-            if constexpr (not Abstract<T>) {
-               if constexpr (Dense<T> and requires { T::CTTI_POD; })
-                  return T::CTTI_POD;
-               if constexpr (Fundamental<T> or Sparse<T> or (
-               ::std::is_trivial_v<T> and
-               ::std::is_standard_layout_v<T> and
-               ::std::is_destructible_v<T>))
-                  return true;
-               else
-                  return false;
-            }
-            else return false;
-         }
-         else return false;
-      };
-
-      /// Check if a type is nullifiable                                      
-      ///   @tparam T - the type to check                                     
-      ///   @return true if T is nullifiable                                  
-      template<class T>
-      consteval bool IsNullifiable() {
-         if constexpr (Complete<T>) {
-            if constexpr (not Abstract<T>) {
-               if constexpr (Dense<T> and requires { T::CTTI_Nullifiable; })
-                  return T::CTTI_Nullifiable;
-               else if constexpr (Fundamental<T> or Sparse<T>)
-                  return true;
-               else
-                  return false;
-            }
-            else return false;
-         }
-         else return false;
-      };
-
    } // namespace Langulus::CT::Inner
+   
+   /// Check if all of the types are reflectable                              
+   template<class...T>
+   concept Reflectable = (Inner::IsReflectable<T>() and ...);
 
    /// Check if the origin T is resolvable at runtime                         
    template<class...T>
@@ -456,45 +338,6 @@ namespace Langulus::CT
          { (a.GetBlock(), ...) } -> DerivedFrom<A::Block>;
       };
 
-   /// Check if T is default-constructible                                    
-   ///   @attention this includes even fundamentals that are not initialized  
-   template<class...T>
-   concept Defaultable = ((not Abstract<T>) and ...)
-       and requires { (T {}, ...); };
-
-   /// Check if T is noexcept default-constructible                           
-   ///   @attention this includes even fundamentals that are not initialized  
-   template<class...T>
-   concept DefaultableNoexcept = Defaultable<T...>
-       and (noexcept(T {}) and ...);
-
-   /// Check if T requires its destructor being called                        
-   template<class...T>
-   concept Destroyable = Complete<T...> and ((
-          not ::std::is_trivially_destructible_v<T>
-          and ::std::is_destructible_v<T>
-      ) and ...);
-
-   /// A POD (Plain Old Data) type is any type with a static member           
-   /// T::CTTI_POD set to true. If no such member exists, the type is         
-   /// assumed NOT POD by default, unless ::std::is_trivial, which seems to   
-   /// be inconsistent across compilers.                                      
-   /// POD types improve construction, destruction, copying, and cloning      
-   /// by using some batching runtime optimizations                           
-   /// All POD types are also directly serializable to binary                 
-   /// Use "LANGULUS(POD) true;" as member to tag POD types                   
-   template<class...T>
-   concept POD = sizeof...(T) > 0 and (Inner::IsPOD<T>() and ...);
-
-   /// A nullifiable type is any type with a static member                    
-   /// T::CTTI_Nullifiable set to true. If no such member exists, the type    
-   /// is assumed NOT nullifiable by default, unless it is sparse             
-   /// Nullifiable types improve default-construction by using some batching  
-   /// runtime optimizations                                                  
-   /// Use LANGULUS(NULLIFIABLE) true; as member to tag nullifiable types     
-   template<class...T>
-   concept Nullifiable = sizeof...(T) > 0 and (Inner::IsNullifiable<T>() and ...);
-   
    /// A concretizable type is any type with a member type CTTI_Concrete      
    /// If no such member exists, the type is assumed NOT concretizable by     
    /// default. Concretizable types provide a default concretization for      
@@ -552,25 +395,12 @@ namespace Langulus
    template<class T>
    using ProducerOf = typename Decay<T>::CTTI_Producer;
 
-   /// Get internal type of an enum, or anything reflected with the           
-   /// LANGULUS(TYPED) member                                                 
-   template<class T>
-   using TypeOf = Deptr<decltype(CT::Inner::GetUnderlyingType<T>())>;
-
    /// Get the reflected insertable type, see LANGULUS(ACT_AS)                
    template<class T>
    using InsertableAs = Deptr<decltype(CT::Inner::GetInsertableType<T>())>;
 
    namespace CT
    {
-
-      /// Check if all T have underlying type defined                         
-      template<class...T>
-      concept Typed = (Inner::IsTyped<T>() and ...);
-
-      /// Check if all T has no underlying types defined                      
-      template<class...T>
-      concept Untyped = ((not Typed<T>) and ...);
 
       /// Check if the reflected insertable type is a redirection             
       template<class T>
