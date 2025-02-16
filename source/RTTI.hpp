@@ -10,6 +10,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+LANGULUS_EXCEPTION(Meta);
+
 namespace Langulus::RTTI
 {
 

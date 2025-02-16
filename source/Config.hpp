@@ -6,9 +6,7 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-#include <Langulus/Core/Exceptions.hpp>
-#include <Langulus/Core/Utilities.hpp>
-#include <Langulus/Logger/Logger.hpp>
+#include <Langulus/Core/Common.hpp>
 
 
 #if defined(LANGULUS_EXPORT_ALL) or defined(LANGULUS_EXPORT_RTTI)
@@ -16,8 +14,6 @@
 #else
    #define LANGULUS_API_RTTI() LANGULUS_IMPORT()
 #endif
-
-LANGULUS_EXCEPTION(Meta);
 
 /// Make the rest of the code aware, that Langulus::RTTI has been included    
 #define LANGULUS_LIBRARY_RTTI() 1

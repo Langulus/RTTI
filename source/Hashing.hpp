@@ -6,8 +6,8 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-#include "Byte.hpp"
 #include "Meta.hpp"
+#include <Langulus/Core/Byte.hpp>
 #include <iterator>
 #include <algorithm>
 #include <string>
@@ -535,7 +535,7 @@ namespace Langulus
    template<bool FAKE = false, uint32_t SEED = DefaultHashSeed, class T, class... MORE>
    auto HashOf(const T& head, const MORE&... rest) {
       if constexpr (CT::Unsupported<T, MORE...>)
-         return Inner::Unsupported {};
+         return Unsupported {};
       else if constexpr (sizeof...(MORE)) {
          // Combine all data into a single array of hashes, and then    
          // hash that array as a whole                                  
@@ -638,7 +638,7 @@ namespace Langulus
       }
       else {
          if constexpr (FAKE)
-            return Inner::Unsupported {};
+            return Unsupported {};
          else
             static_assert(false, "Can't hash data");
       }

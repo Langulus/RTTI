@@ -5,14 +5,6 @@
 ///                                                                           
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
-#include "Main.hpp"
-
-#define CATCH_CONFIG_RUNNER
-#include <catch2/catch.hpp>
+#include <Langulus/MetaOf.hpp>
 
 LANGULUS_RTTI_BOUNDARY(RTTI::MainBoundary)
-
-int main(int argc, char* argv[]) {
-   Catch::Session session;
-   return session.run(argc, argv);
-}

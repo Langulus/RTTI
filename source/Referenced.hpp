@@ -6,7 +6,7 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-#include "Assumptions.hpp"
+#include <Langulus/Core/Assume.hpp>
 
 
 namespace Langulus
@@ -14,10 +14,7 @@ namespace Langulus
 
    ///                                                                        
    ///   A tiny class used as base to referenced types                        
-   ///                                                                        
    ///   Provides the interface to be considered CT::Referencable             
-   /// The destructor of this type guarantees, that after destruction, the    
-   /// member mReferences is zeroed.                                          
    ///                                                                        
    class Referenced {
       Count mReferences = 1;
