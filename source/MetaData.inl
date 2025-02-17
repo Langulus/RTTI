@@ -31,6 +31,8 @@
    #define VERBOSE_TAB(...)  LANGULUS(NOOP)
 #endif
 
+LANGULUS_EXCEPTION(Meta);
+
 
 namespace Langulus::RTTI
 {
