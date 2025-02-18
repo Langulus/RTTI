@@ -76,6 +76,7 @@ namespace Langulus
       return RTTI::MetaConst::Of<T>();
    }
 
+#if LANGULUS_FEATURE(MANAGED_REFLECTION)
    /// Convenience operators for getting meta definitions from token          
    LANGULUS(INLINED)
    RTTI::DMeta operator ""_dmeta(const char* token, ::std::size_t size) noexcept {
@@ -106,5 +107,6 @@ namespace Langulus
          LANGULUS_THROW(Meta, "Ambiguous meta literal "
             "- use RTTI::GetAmbiguousMeta and process the result yourself");
    }
+#endif
 
 } // namespace Langulus
