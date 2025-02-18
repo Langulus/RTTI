@@ -76,4 +76,35 @@ namespace Langulus
       return RTTI::MetaConst::Of<T>();
    }
 
+   /// Convenience operators for getting meta definitions from token          
+   LANGULUS(INLINED)
+   RTTI::DMeta operator ""_dmeta(const char* token, ::std::size_t size) noexcept {
+      return RTTI::GetMetaData(Token {token, size});
+   }
+
+   LANGULUS(INLINED)
+   RTTI::TMeta operator ""_tmeta(const char* token, ::std::size_t size) noexcept {
+      return RTTI::GetMetaTrait(Token {token, size});
+   }
+
+   LANGULUS(INLINED)
+   RTTI::CMeta operator ""_cmeta(const char* token, ::std::size_t size) noexcept {
+      return RTTI::GetMetaConstant(Token {token, size});
+   }
+
+   LANGULUS(INLINED)
+   RTTI::VMeta operator ""_vmeta(const char* token, ::std::size_t size) noexcept {
+      return RTTI::GetMetaVerb(Token {token, size});
+   }
+
+   LANGULUS(INLINED)
+   RTTI::AMeta operator ""_meta(const char* token, ::std::size_t size) {
+      auto& found = RTTI::GetAmbiguousMeta(Token {token, size});
+      if (found.size() == 1)
+         return *found.begin();
+      else
+         LANGULUS_THROW(Meta, "Ambiguous meta literal "
+            "- use RTTI::GetAmbiguousMeta and process the result yourself");
+   }
+
 } // namespace Langulus
