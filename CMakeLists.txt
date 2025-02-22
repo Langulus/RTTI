@@ -10,7 +10,7 @@ if (PROJECT_IS_TOP_LEVEL OR NOT LANGULUS)
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
     include(LangulusUtilities.cmake)
-    fetch_langulus_module(Logger GIT_TAG cf890c038819c9690def973e772f7192fe388c54)
+    fetch_langulus_module(Logger GIT_TAG 2fa3c59f2ef5f9888954a5c3154201d134d6fc07)
 endif()
 
 # Build and install library                                                 
