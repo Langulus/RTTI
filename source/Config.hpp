@@ -8,6 +8,9 @@
 #pragma once
 #include <Langulus/Core/Common.hpp>
 
+#if LANGULUS_FEATURE(PROFILING)
+   #include <Langulus/Profiler.hpp>
+#endif
 
 #if defined(LANGULUS_EXPORT_ALL) or defined(LANGULUS_EXPORT_RTTI)
    #define LANGULUS_API_RTTI() LANGULUS_EXPORT()
