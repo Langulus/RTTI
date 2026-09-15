@@ -451,7 +451,7 @@ SCENARIO("A simple type reflected with CTTI traits", "[metadata]") {
 SCENARIO("A reflected verb with CTTI traits", "[metaverb]") {
    GIVEN("Create verb with positive/negative tokens, with stateless and contextual default functions") {
       WHEN("Reflected") {
-         Anyness::Many someBlock;
+         Annies::Many someBlock;
          Flow::Verb someVerb;
          auto meta = MetaVerb::Of<Verbs::Create>();
 

@@ -461,12 +461,12 @@ namespace Langulus
       template<class...T>
       concept DescriptorMakable = Complete<T...> and not Abstract<T...>
           and not Enum<T...> and not Aggregate<T...>
-          and requires (const Anyness::Many& a) { (T (Describe {a}), ...); };
+          and requires (const Annies::Many& a) { (T (Describe {a}), ...); };
 
       /// Check if the T is noexcept-descriptor-makable                       
       template<class...T>
       concept DescriptorMakableNoexcept = DescriptorMakable<T...>
-          and (noexcept ( T (Describe {Fake<const Anyness::Many&>()})) and ...);
+          and (noexcept ( T (Describe {Fake<const Annies::Many&>()})) and ...);
 
    } // namespace Langulus::CT
 

@@ -5,7 +5,7 @@ It is used in [Langulus libraries and plug-ins](https://github.com/Langulus).
 By itself, the library is nothing more than a consistent protocol for reflecting types.
 It becomes slightly more powerful, when built with the `LANGULUS_FEATURE_MANAGED_REFLECTION` option (enabled by default). 
 This allows for a centralized location where type definitions are stored, and allows for faster type comparisons and runtime modification of meta data, like registering/unregistering new stuff after a shared library is loaded in.
-The real power of `Langulus::RTTI` comes from the use of [`Langulus::Anyness`](https://github.com/Langulus/Anyness) containers, that are specially tailored to take full use of the reflection, allowing for highly optimized type-erasure.
+The real power of `Langulus::RTTI` comes from the use of [`Langulus::Annies`](https://github.com/Langulus/Annies) containers, that are specially tailored to take full use of the reflection, allowing for highly optimized type-erasure.
 
 # Getting the library
 If you have CMake 3.28+, the easiest way to get this library is to use `FetchContent` in your `CMakeLists.txt`, like so:

@@ -13,7 +13,7 @@ if (PROJECT_IS_TOP_LEVEL OR NOT LANGULUS)
    include(LangulusUtilities.cmake)
    fetch_langulus_module(Logger GIT_TAG wip)
    if(LANGULUS_OPTION_PROFILING)
-      fetch_langulus_module(Profiler GIT_TAG wip)
+      fetch_langulus_module(Percist GIT_TAG wip)
    endif()
 endif()
 
@@ -21,12 +21,12 @@ endif()
 add_langulus_library(LangulusRTTI
    SOURCES  $<$<BOOL:${LANGULUS_OPTION_LOGGING}>:$<TARGET_OBJECTS:LangulusLogger>>
             $<$<BOOL:${LANGULUS_OPTION_MANAGED_REFLECTION}>:source/RTTI.cpp>
-            $<$<BOOL:${LANGULUS_OPTION_PROFILING}>:$<TARGET_OBJECTS:LangulusProfiler>>
+            $<$<BOOL:${LANGULUS_OPTION_PROFILING}>:$<TARGET_OBJECTS:LangulusPercist>>
 )
 
 target_include_directories(LangulusRTTI
    PUBLIC   $<$<BOOL:${LANGULUS_OPTION_LOGGING}>:$<TARGET_PROPERTY:LangulusLogger,INTERFACE_INCLUDE_DIRECTORIES>>
-            $<$<BOOL:${LANGULUS_OPTION_PROFILING}>:$<TARGET_PROPERTY:LangulusProfiler,INTERFACE_INCLUDE_DIRECTORIES>>
+            $<$<BOOL:${LANGULUS_OPTION_PROFILING}>:$<TARGET_PROPERTY:LangulusPercist,INTERFACE_INCLUDE_DIRECTORIES>>
             include
 )
 
@@ -39,7 +39,7 @@ target_compile_definitions(LangulusRTTI
    PRIVATE  LANGULUS_EXPORT_ALL
 )
 
-if(LANGULUS_TESTING)
+if(LANGULUS_OPTION_TESTING)
    enable_testing()
    add_subdirectory(test)
 endif()

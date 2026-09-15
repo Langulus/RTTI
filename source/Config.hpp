@@ -9,7 +9,7 @@
 #include <Langulus/Core/Common.hpp>
 
 #if LANGULUS_FEATURE(PROFILING)
-   #include <Langulus/Profiler.hpp>
+   #include <Langulus/Percist.hpp>
 #endif
 
 #if defined(LANGULUS_EXPORT_ALL) or defined(LANGULUS_EXPORT_RTTI)

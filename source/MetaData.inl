@@ -810,7 +810,7 @@ namespace Langulus::RTTI
       if constexpr (CT::DescriptorMakable<T>) {
          constexpr bool NoExcept = CT::DescriptorMakableNoexcept<T>;
          generated.mDescriptorConstructor = 
-            [](void* at, const Anyness::Many& descriptor) noexcept(NoExcept) {
+            [](void* at, const Annies::Many& descriptor) noexcept(NoExcept) {
                auto atT = static_cast<T*>(at);
                new (atT) T {Describe(descriptor)};
             };
@@ -969,7 +969,7 @@ namespace Langulus::RTTI
          generated.mResolver = 
             [](const void* at) {
                auto atT = static_cast<const T*>(at);
-               return static_cast<Anyness::Block<>>(atT->GetBlock());
+               return static_cast<Annies::Block<>>(atT->GetBlock());
             };
       }
 

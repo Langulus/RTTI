@@ -34,7 +34,7 @@ namespace Langulus::RTTI
 
    /// Constructor by descriptor                                              
    /// Takes a pointer for a placement-new expression, and a Neat container   
-   using FDescriptorConstruct = void(*)(void*, const Anyness::Many&);
+   using FDescriptorConstruct = void(*)(void*, const Annies::Many&);
 
    /// The copy/disown/clone constructor, wrapped in a lambda expression      
    /// Takes a pointer for a placement-new expression, and a source           
@@ -60,7 +60,7 @@ namespace Langulus::RTTI
 
    /// The class type function, wrapped in a lambda expression                
    /// Returns the typed memory block of the class instance                   
-   using FResolve = Anyness::Block<>(*)(const void*);
+   using FResolve = Annies::Block<>(*)(const void*);
 
    /// The hash getter, wrapped in a lambda expression                        
    /// Takes the pointer to the instance for hashing                          

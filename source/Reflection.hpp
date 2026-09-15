@@ -165,7 +165,7 @@ namespace Langulus::RTTI
 
 /// You can mark types as deep by using LANGULUS(DEEP) true / false inside    
 /// class, but to fit into CT::Deep concept, your type must also inherit, and 
-/// be the same size as an Anyness::Block                                     
+/// be the same size as an Annies::Block                                     
 ///   @attention the property will propagate to any derived class             
 #define LANGULUS_DEEP() \
    public: static constexpr bool CTTI_Deep = 

@@ -29,7 +29,7 @@ namespace Langulus::Flow
    class constconst {};
 }
 
-namespace Langulus::Anyness
+namespace Langulus::Annies
 {
    template<class TYPE>
    struct Block {};
@@ -39,7 +39,7 @@ namespace Langulus::Anyness
 
 namespace Langulus::Traits
 {
-   class Tag : Anyness::Trait {
+   class Tag : Annies::Trait {
       LANGULUS(TRAIT) "Tag";
    };
 }
@@ -206,11 +206,11 @@ namespace Verbs
       template<CT::Data T>
       static bool ExecuteIn(T&, Verb&);
 
-      static bool ExecuteDefault(const Anyness::Many&, Verb&) {
+      static bool ExecuteDefault(const Annies::Many&, Verb&) {
          return true;
       }
 
-      static bool ExecuteDefault(Anyness::Many&, Verb&) {
+      static bool ExecuteDefault(Annies::Many&, Verb&) {
          return false;
       }
 
