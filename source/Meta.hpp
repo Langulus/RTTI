@@ -8,6 +8,7 @@
 #pragma once
 #include "Reflection.hpp"
 #include <Langulus/NameOf.hpp>
+#include <Langulus/HashOf.hpp>
 #include <Langulus/Logger.hpp>
 #include <vector>
 
@@ -56,9 +57,9 @@ namespace Langulus::RTTI
       // Original name of the type                                      
       Token mCppName;
       // Major version                                                  
-      Count mVersionMajor = 1;
+      size_t mVersionMajor = 1;
       // Minor version                                                  
-      Count mVersionMinor = 0;
+      size_t mVersionMinor = 0;
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // The shared library that defined the module, used to unload  

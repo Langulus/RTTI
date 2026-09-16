@@ -7,13 +7,15 @@
 ///                                                                           
 #pragma once
 #include <Langulus/Core.hpp>
-#include <Langulus/Types.hpp>
-#include <Langulus/Common.hpp>
+#include <Langulus/Utils/Types.hpp>
 #include <Langulus/CT/Derived.hpp>
+#include <Langulus/CT/Executable.hpp>
+#include <string_view>
 
 
 namespace Langulus::RTTI
 {
+   using Token = ::std::string_view;
    struct DMeta;
    struct TMeta;
    struct VMeta;
@@ -405,18 +407,18 @@ namespace Langulus
       /// Check if the reflected insertable type is a redirection             
       template<class T>
       concept InsertableAsSomethingElse = Reflectable<T>
-          and not CT::Exact<Decay<T>, InsertableAs<T>>;
+          and not Exact<Decay<T>, InsertableAs<T>>;
 
       template<class T>
       concept NotInsertableAsSomethingElse = Reflectable<T>
-          and CT::Exact<Decay<T>, InsertableAs<T>>;
+          and Exact<Decay<T>, InsertableAs<T>>;
 
    } // namespace namespace CT
 
    /// A type naming convention for standard number types, as well as         
    /// anything reflected with LANGULUS(SUFFIX)                               
    ///   @return the suffix depending on the template argument                
-   template<CT::Dense T>
+   /*template<CT::Dense T>
    consteval Token SuffixOf() {
       if constexpr (requires { T::CTTI_Suffix; })
          return T::CTTI_Suffix;
@@ -450,13 +452,13 @@ namespace Langulus
          return "b";
       else
          return "";
-   }
+   }*/
 
    namespace RTTI
    {
 
       /// The main boundary indentifier token                                 
-      constexpr Token MainBoundary = "MAIN";
+      //constexpr Token MainBoundary = "MAIN";
 
       /// Used for named constants reflections inside data types              
       ///   @tparam T - type of the constant                                  
