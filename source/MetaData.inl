@@ -15,8 +15,8 @@
 #endif
 #include "Fundamental.hpp"
 #include "Intent.hpp"
-#include <Langulus/Core/NameOf.hpp>
-#include <Langulus/Core/Assume.hpp>
+#include <Langulus/NameOf.hpp>
+#include <Langulus/Assume.hpp>
 #include <Langulus/CT/Nullifiable.hpp>
 #include <Langulus/CT/Allocatable.hpp>
 #include <Langulus/CT/Defaultable.hpp>

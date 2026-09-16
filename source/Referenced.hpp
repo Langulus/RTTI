@@ -6,7 +6,7 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-#include <Langulus/Core/Assume.hpp>
+#include <Langulus/Assume.hpp>
 
 
 namespace Langulus

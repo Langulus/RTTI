@@ -6,10 +6,10 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-#include "Config.hpp"
-#include <Langulus/Core/Types.hpp>
-#include <Langulus/Core/Utilities.hpp>
-#include <vector>
+#include <Langulus/Core.hpp>
+#include <Langulus/Types.hpp>
+#include <Langulus/Common.hpp>
+#include <Langulus/CT/Derived.hpp>
 
 
 namespace Langulus::RTTI
@@ -332,11 +332,11 @@ namespace Langulus::CT
    concept Reflectable = (Inner::IsReflectable<T>() and ...);
 
    /// Check if the origin T is resolvable at runtime                         
-   template<class...T>
+   /*template<class...T>
    concept Resolvable = Complete<T...> and requires (T&...a) {
          { (a.GetType(),  ...) } -> Exact<RTTI::DMeta>;
          { (a.GetBlock(), ...) } -> DerivedFrom<A::Block>;
-      };
+      };*/
 
    /// A concretizable type is any type with a member type CTTI_Concrete      
    /// If no such member exists, the type is assumed NOT concretizable by     
@@ -535,21 +535,3 @@ namespace Langulus
    } // namespace Langulus::RTTI
 
 } // namespace Langulus
-
-#if LANGULUS_FEATURE(MANAGED_REFLECTION)
-   /// The Langulus::RTTI::Boundary symbol is intentionally left undefined,   
-   /// so that it is mandatory for you to define it inside your executables   
-   /// or mods. It's a simple compile-time string, that is attached upon data 
-   /// reflection, so that RTTI can track from which library a type was       
-   /// reflected, and thus unregister it when shared object is unloaded.      
-   /// The boundary also affects pooling tactics, because if boundary is not  
-   /// equal exactly to RTTI::MainBoundary, pooling will be PoolTactic::Type  
-   /// by default, so that allocation that happen from external libraries can 
-   /// be easily tracked                                                      
-   #define LANGULUS_RTTI_BOUNDARY(a) \
-      namespace Langulus::RTTI { \
-         Token Boundary = a; \
-      }
-#else
-   #define LANGULUS_RTTI_BOUNDARY(a)
-#endif

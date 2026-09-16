@@ -32,6 +32,7 @@ target_include_directories(LangulusRTTI
 
 target_link_libraries(LangulusRTTI
    PUBLIC   LangulusCore
+            LangulusCT
             $<$<BOOL:${LANGULUS_OPTION_LOGGING}>:fmt>
 )
 
