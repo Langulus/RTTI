@@ -10,14 +10,14 @@
 
 /// A freestanding type compatibility check                                   
 /// Purely cosmetic, to avoid typing `template` before member function        
-template<CT::Data T> LANGULUS(INLINED)
+template<CT::NotVoid T> LANGULUS(INLINED)
 bool CastsTo(DMeta from) {
    return from->template CastsTo<T, false>();
 }
 
 /// A freestanding type compatibility check                                   
 /// Purely cosmetic, to avoid typing `template` before member function        
-template<CT::Data T> LANGULUS(INLINED)
+template<CT::NotVoid T> LANGULUS(INLINED)
 bool CastsTo(DMeta from, Count count) {
    return from->template CastsTo<T>(count);
 }
