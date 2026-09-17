@@ -7,7 +7,7 @@
 ///                                                                           
 #pragma once
 #include "Meta.hpp"
-#include <Langulus/Byte.hpp>
+#include <Langulus/Utils/Byte.hpp>
 #include <iterator>
 #include <algorithm>
 #include <string>
