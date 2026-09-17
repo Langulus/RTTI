@@ -19,13 +19,13 @@ endif()
 
 # Build and install library                                                 
 add_langulus_library(LangulusRTTI
-   SOURCES  $<$<BOOL:${LANGULUS_OPTION_LOGGING}>:$<TARGET_OBJECTS:LangulusLogger>>
+   SOURCES  $<TARGET_OBJECTS:LangulusLogger>
             $<$<BOOL:${LANGULUS_OPTION_MANAGED_REFLECTION}>:source/RTTI.cpp>
             $<$<BOOL:${LANGULUS_OPTION_PROFILING}>:$<TARGET_OBJECTS:LangulusPercist>>
 )
 
 target_include_directories(LangulusRTTI
-   PUBLIC   $<$<BOOL:${LANGULUS_OPTION_LOGGING}>:$<TARGET_PROPERTY:LangulusLogger,INTERFACE_INCLUDE_DIRECTORIES>>
+   PUBLIC   $<TARGET_PROPERTY:LangulusLogger,INTERFACE_INCLUDE_DIRECTORIES>
             $<$<BOOL:${LANGULUS_OPTION_PROFILING}>:$<TARGET_PROPERTY:LangulusPercist,INTERFACE_INCLUDE_DIRECTORIES>>
             include
 )

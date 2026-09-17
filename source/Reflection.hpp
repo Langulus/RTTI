@@ -262,24 +262,24 @@ namespace Langulus::RTTI
 /// Reflect a list of bases                                                   
 ///   @attention the list of bases will be propagated to any derived class    
 #define LANGULUS_BASES(...) \
-   public: using CTTI_Bases = decltype(::Langulus::CreateTypeList<__VA_ARGS__>())
+   public: using CTTI_Bases = Types<__VA_ARGS__>
 
 /// Reflect a list of verbs                                                   
 ///   @attention the list of verbs will be propagated to any derived class    
 #define LANGULUS_VERBS(...) \
-   public: using CTTI_Verbs = decltype(::Langulus::CreateTypeList<__VA_ARGS__>())
+   public: using CTTI_Verbs = Types<__VA_ARGS__>
 
 /// Reflect a list of possible conversions to list of possible types          
 /// These will be automatically used by Verbs::Interpret if available         
 ///   @attention the list of conversions will be propagated to derived classes
 #define LANGULUS_CONVERTS_TO(...) \
-   public: using CTTI_ConvertTo = decltype(::Langulus::CreateTypeList<__VA_ARGS__>())
+   public: using CTTI_ConvertTo = Types<__VA_ARGS__>
 
 /// Reflect a list of possible conversions from a list of possible types      
 /// These will be automatically used by Verbs::Interpret if available         
 ///   @attention the list of conversions will be propagated to derived classes
 #define LANGULUS_CONVERTS_FROM(...) \
-   public: using CTTI_ConvertFrom = decltype(::Langulus::CreateTypeList<__VA_ARGS__>())
+   public: using CTTI_ConvertFrom = Types<__VA_ARGS__>
 
 /// You can make types CT::Typed and retrieve their inner type using TypeOf   
 /// by adding LANGULUS(TYPED) <inner type>; as a member. You disable it by    

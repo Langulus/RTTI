@@ -6,6 +6,7 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
+#include "Export.hpp"
 #include "Reflection.hpp"
 #include <Langulus/NameOf.hpp>
 #include <Langulus/HashOf.hpp>
@@ -66,8 +67,7 @@ namespace Langulus::RTTI
          // definitions when module is unloaded                         
          Token mLibraryName;
 
-         LANGULUS_API(RTTI)
-         Token GetShortestUnambiguousToken() const;
+         LANGULUS_API(RTTI) Token GetShortestUnambiguousToken() const;
       #endif
 
       static constexpr Token Data      = "meta data";

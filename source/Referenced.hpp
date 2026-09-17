@@ -1,28 +1,42 @@
 ///                                                                           
-/// Langulus::RTTI                                                            
+/// Langulus::Core                                                            
 /// Copyright (c) 2012 Dimo Markov <team@langulus.com>                        
 /// Part of the Langulus framework, see https://langulus.com                  
 ///                                                                           
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
+#include <Langulus/Core.hpp>
 #include <Langulus/Assume.hpp>
 
 
+namespace Langulus::CTTI
+{
+   /// Can be used in two ways to satisfy CT::Referenced<T>:                  
+   /// @attention T has to posses the referencing interface for this to work. 
+   ///  - easiest way to achieve this is to simply inherit Referenced.        
+   /// 1. Specialize for T/concept                                            
+   /// 2. Add a public `using CTTI_Referenced = Yes<>;` in T                  
+   template<class T>
+   struct Referenced;
+}
+
+LANGULUS_CTTI_CONCEPT_DECVQ(Referenced);
+
 namespace Langulus
 {
-
    ///                                                                        
-   ///   A tiny class used as base to referenced types                        
-   ///   Provides the interface to be considered CT::Referencable             
+   /// Base types off this one, to make them CT::Referenced and provide the   
+   /// required interface for it                                              
    ///                                                                        
    class Referenced {
-      Count mReferences = 1;
+      mutable int mReferences = 1;
 
    public:
-      LANGULUS(INLINED)
-      ~Referenced() {
-         LANGULUS_ASSUME(DevAssumes, mReferences <= 1,
+      using CTTI_Referenced = Yup;
+
+      constexpr ~Referenced() {
+         LglsAssumeDev(mReferences <= 1,
             "Leftover references (", mReferences,") on instance destruction. "
             "When inheriting from Referenced, you're supposed to "
             "implement either an appropriate destructor (or surrounding logic) "
@@ -30,32 +44,26 @@ namespace Langulus
             "this destructor gets called. This is necessary to make sure "
             "that no leaks happen."
          );
-
-         #if LANGULUS(SAFE)
-            if (mReferences == 1) {
-               Logger::Warning(
-                  "Referenced object destroyed before last "
-                  "reference was removed - was it on the stack? "
-                  "You can breakpoint here to find out: ", LANGULUS_LOCATION()
-               );
-            }
-         #endif
+         LglsAssumeDevWarn(mReferences != 1,
+            "Referenced object destroyed before last "
+            "reference was removed - was it on the stack?"
+         );
       }
 
-      LANGULUS(INLINED)
-      Count GetReferences() const noexcept {
+      constexpr int GetReferences() const noexcept {
          return mReferences;
       }
 
-      LANGULUS(INLINED)
-      Count Reference(int x) IF_UNSAFE(noexcept) {
-         LANGULUS_ASSUME(DevAssumes, mReferences or x == 0,
-            "Dead instance resurrection/overkill");
-         LANGULUS_ASSUME(DevAssumes, x >= 0 or mReferences >= static_cast<Count>(-x),
-            "Live instance overkill");
+      constexpr int Reference(int x) const assumptious {
+         LglsAssumeDev(mReferences or x == 0,
+            "Dead instance resurrection/overkill: adding ",
+            x, " references to ", mReferences);
+         LglsAssumeDev(x >= 0 or mReferences >= -x,
+            "Live instance overkill: adding ",
+            x, " references to ", mReferences);
+         
          mReferences += x;
          return mReferences;
       }
    };
-
-} // namespace Langulus
+}
