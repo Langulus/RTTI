@@ -28,6 +28,7 @@
 #include <Langulus/CT/Suffix.hpp>
 #include <Langulus/CT/Serializer.hpp>
 #include <Langulus/CT/Executable.hpp>
+#include <Langulus/CT/Tags.hpp>
 #include <Langulus/IntentOf.hpp>
 
 #include "DefinitionData.hpp"
@@ -129,7 +130,7 @@ namespace Langulus::RTTI
          "Can't reflect volatile type, use Devq before reflection");
       static_assert(not CT::Reference<T>,
          "Can't reflect reference type, use Deref before reflection");
-      static_assert(not CT::DefineTag<T>,
+      static_assert(RTTI::NameOfTag<T>() == "",
          "Can't reflect tag as data");
       static_assert(not CT::DefineVerb<T>,
          "Can't reflect constant as data");
@@ -527,7 +528,7 @@ namespace Langulus::RTTI
          "Can't reflect volatile type, use Devq before reflection");
       static_assert(not CT::Reference<T>,
          "Can't reflect reference type, use Deref before reflection");
-      static_assert(not CT::DefineTag<T>,
+      static_assert(RTTI::NameOfTag<T>() == "",
          "Can't reflect tag as data");
       static_assert(not CT::DefineVerb<T>,
          "Can't reflect constant as data");
@@ -1169,7 +1170,7 @@ namespace Langulus::RTTI
          // Reflect the trait tag                                       
          m.type = Reflect<AS>;
          ForEach(TAGS{}, [&m]<class T>{
-            static_assert(CT::DefineTag<T>, "T is not a tag definition");
+            static_assert(RTTI::NameOfTag<T>() != "", "T is not a tag definition");
             m.tags.insert(DefinitionTag::Reflect<T>());
          });
       }

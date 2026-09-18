@@ -31,9 +31,9 @@ namespace Langulus::Flow
 
 namespace Langulus::Annies
 {
-   template<class TYPE>
+   template<class TYPE = void>
    struct Block {};
-   class Many  : public Block<> {};
+   struct Many  : public Block<> {};
    class Trait : public Block<> {};
 }
 
@@ -400,7 +400,7 @@ struct PureVirtual {
 
    PureVirtual(void*) {}
 
-   virtual auto PureVirtualMethod() -> Offset = 0;
+   virtual auto PureVirtualMethod() -> size_t = 0;
 };
 
 /// Proper type, reflected as abstract                                        

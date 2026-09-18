@@ -134,10 +134,6 @@ namespace Langulus::RTTI
       using FUnpack        = FAccessMember;
       using FTypeRetriever = DefinitionData const* (*)();
       
-   protected:
-      template<class T>
-      void FillMorphisms();
-
       /// Type-erased member variable reflection                              
       struct Member {
          using CTTI_ReflectAs = void;
@@ -185,7 +181,11 @@ namespace Langulus::RTTI
          // A serializer if supported, also takes in a context.         
          FSerialize serialize = nullptr;
       };
-      
+
+   protected:
+      template<class T>
+      void FillMorphisms();
+
       using MemberList   = ::std::vector<Member>;
       using VerbList     = ::std::unordered_map<DefinitionVerb const*, FDispatch>;
       using BaseList     = ::std::vector<Base>;

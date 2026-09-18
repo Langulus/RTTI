@@ -43,7 +43,7 @@ namespace Langulus::RTTI
          "Can't reflect verb that was explicitly marked unreflectable");
       static_assert(CT::DefineVerb<T>,
          "Type is not reflected as a verb definition");
-      static_assert(not CT::DefineTag<T>,
+      static_assert(RTTI::NameOfTag<T>() == "",
          "Can't reflect a tag as a verb");
       static_assert(not ::std::is_function_v<T>,
          "Can't reflect this function signature as a verb");

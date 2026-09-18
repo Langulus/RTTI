@@ -18,7 +18,7 @@ bool CastsTo(DMeta from) {
 /// A freestanding type compatibility check                                   
 /// Purely cosmetic, to avoid typing `template` before member function        
 template<CT::NotVoid T> LANGULUS(INLINED)
-bool CastsTo(DMeta from, Count count) {
+bool CastsTo(DMeta from, size_t count) {
    return from->template CastsTo<T>(count);
 }
 

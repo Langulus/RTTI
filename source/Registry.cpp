@@ -991,7 +991,7 @@ namespace Langulus::RTTI
       while (start >= mToken.data()) {
          if (*start == ':') {
             const auto candidate = mToken.substr(start - mToken.data() + 1);
-            Count matches = 0;
+            size_t matches = 0;
             for (auto& meta : origins) {
                if (meta->mToken.ends_with(candidate)) {
                   if (++matches > 1)

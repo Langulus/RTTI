@@ -32,9 +32,10 @@ namespace Langulus::RTTI::Inner
    #pragma pack(push, 1)
    template<unsigned BYTESIZE>
    struct MetaPacked {
-      using CTTI_Abstract  = Yes<>;
-      using CTTI_POD       = Yes<>;
-      using CTTI_Nullable  = Yes<>;
+      using CTTI_Abstract  = Yup;
+      using CTTI_POD       = Yup;
+      using CTTI_Nullable  = Yup;
+      using CTTI_Meta      = Yup;
 
    protected:
       friend class RTTI::Registry;
@@ -86,10 +87,6 @@ namespace Langulus::RTTI::Inner
       }
    };
    #pragma pack(pop)
-   
-   /*static_assert(sizeof(MetaPacked<1>) == 1);
-   static_assert(sizeof(MetaPacked<2>) == 2);
-   static_assert(sizeof(MetaPacked<3>) == 3);*/
 #endif
 
 
@@ -99,9 +96,10 @@ namespace Langulus::RTTI::Inner
    ///   @tparam T the type of the meta (data/tag/verb/const)                 
    template<class T>
    struct MetaNaked {
-      using CTTI_Abstract = Yes<>;
-      using CTTI_POD      = Yes<>;
-      using CTTI_Nullable = Yes<>;
+      using CTTI_Abstract  = Yup;
+      using CTTI_POD       = Yup;
+      using CTTI_Nullable  = Yup;
+      using CTTI_Meta      = Yup;
 
    protected:
       const T* mDefinition = nullptr;
