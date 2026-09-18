@@ -6,9 +6,7 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-#include "DefinitionData.hpp"
-#include "Langulus/Typenav.hpp"
-//#include "Langulus/CT/Integer.hpp"
+#include <Langulus/Typenav.hpp>
 #include <Langulus/CT/Abstract.hpp>
 #include <Langulus/CT/ReflectAs.hpp>
 #include <Langulus/CT/DefineTag.hpp>
@@ -31,6 +29,8 @@
 #include <Langulus/CT/Serializer.hpp>
 #include <Langulus/CT/Executable.hpp>
 #include <Langulus/IntentOf.hpp>
+
+#include "DefinitionData.hpp"
 
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
    #include "Registry.hpp"
@@ -205,12 +205,8 @@ namespace Langulus::RTTI
       definition.mNullable   = CT::Nullable<T> and not CT::Abstract<T>;
       definition.mAbstract   = CT::Abstract<T>;
       definition.mExecutable = CT::Executable<T>;
-
-      if constexpr (CT::Suffix<T>)
-         definition.mSuffixOf = SuffixOf<T>();
-
-      if constexpr (CT::Files<T>)
-         definition.mFilesOf = FilesOf<T>();
+      definition.mSuffixOf   = SuffixOf<T>();
+      definition.mFilesOf    = FilesOf<T>();
 
       // Reflect the concrete type                                      
       if constexpr (CT::Concretizable<T>) {
@@ -417,12 +413,12 @@ namespace Langulus::RTTI
       }
 
       // Reflect the minimal allocation in bytes                        
-      definition.mMinimalAllocation = CT::GetMinAlloc<T>();
+      definition.mMinimalAllocation = MinAllocOf<T>();
 
       #if LANGULUS_FEATURE(MANAGED_MEMORY)
          // Reflect pooling properties                                  
-         definition.mMinimalPoolSize = CT::GetMinPool<T>();
-         definition.mPoolTactic = CT::GetPoolTactic<T>();
+         definition.mMinimalPoolSize = MinPoolOf<T>();
+         definition.mPoolTactic      = PoolTacticOf<T>();
 
          // Make sure that types registered from an external shared     
          // library are _always_ pooled by type, so that we're able to  
@@ -430,13 +426,13 @@ namespace Langulus::RTTI
          // shared library is unloaded                                  
          /// @attention this has to be inlined, always                  
          #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            if (Boundary)
+            if (LglsBoundary() != LglsMainBoundary())
                definition.mPoolTactic = PoolTactic::Type;
          #endif
       #endif
       
       // Calculate the allocation table                                 
-      auto minElements = CT::GetMinAlloc<T>() / sizeof(T);
+      auto minElements = MinAllocOf<T>() / sizeof(T);
       definition.ReflectOrigin(minElements, sizeof(T));
 
       using BASES = BasesOf<T>;
@@ -594,7 +590,7 @@ namespace Langulus::RTTI
          // shared library is unloaded                                  
          /// @attention this has to be inlined, always                  
          #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            if (Boundary)
+            if (LglsBoundary() != LglsMainBoundary())
                definition.mPoolTactic = PoolTactic::Type;
          #endif
       #endif
@@ -826,12 +822,12 @@ namespace Langulus::RTTI
 
 
       // Reflect the minimal allocation in bytes                        
-      definition.mMinimalAllocation = CT::GetMinAlloc<T>();
+      definition.mMinimalAllocation  = MinAllocOf<T>();
 
       #if LANGULUS_FEATURE(MANAGED_MEMORY)
          // Reflect pooling properties                                  
-         definition.mPoolTactic = CT::GetPoolTactic<T>();
-         definition.mMinimalPoolSize = CT::GetMinPool<T>();
+         definition.mPoolTactic      = PoolTacticOf<T>();
+         definition.mMinimalPoolSize = MinPoolOf<T>();
 
          // Make sure that types registered from an external shared     
          // library are always pooled by type, so that we're able to    
@@ -839,13 +835,13 @@ namespace Langulus::RTTI
          // shared library is unloaded                                  
          /// @attention this has to be inlined, always                  
          #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            if (Boundary)
+            if (LglsBoundary() != LglsMainBoundary())
                definition.mPoolTactic = PoolTactic::Type;
          #endif
       #endif
       
       // Calculate the allocation table                                 
-      auto minElements = CT::GetMinAlloc<T>() / sizeof(T);
+      auto minElements = MinAllocOf<T>() / sizeof(T);
       definition.ReflectStandardSparse(CT::Mutable<T>, CT::Complete<Decay<T>>, CT::Complete<DenserT>, minElements);
       definition.FillMorphisms<DecvqAll<T>>();
 
@@ -1071,12 +1067,12 @@ namespace Langulus::RTTI
          = Inner::CustomSparseCompareEqual<PointerIntEquivalent>;         
 
       // Reflect the minimal allocation in bytes                        
-      definition.mMinimalAllocation = CT::GetMinAlloc<T>();
+      definition.mMinimalAllocation  = MinAllocOf<T>();
 
       #if LANGULUS_FEATURE(MANAGED_MEMORY)
          // Reflect pooling properties                                  
-         definition.mPoolTactic = CT::GetPoolTactic<T>();
-         definition.mMinimalPoolSize = CT::GetMinPool<T>();
+         definition.mPoolTactic      = PoolTacticOf<T>();
+         definition.mMinimalPoolSize = MinPoolOf<T>();
 
          // Make sure that types registered from an external shared     
          // library are always pooled by type, so that we're able to    
@@ -1084,13 +1080,13 @@ namespace Langulus::RTTI
          // shared library is unloaded                                  
          /// @attention this has to be inlined, always                  
          #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            if (Boundary)
+            if (LglsBoundary() != LglsMainBoundary())
                definition.mPoolTactic = PoolTactic::Type;
          #endif
       #endif
       
       // Calculate the allocation table                                 
-      auto minElements = CT::GetMinAlloc<T>() / sizeof(T);
+      auto minElements = MinAllocOf<T>() / sizeof(T);
       definition.ReflectCustomSparse(CT::Mutable<T>, CT::Complete<Decay<T>>, minElements, sizeof(T));
       definition.FillMorphisms<DecvqAll<T>>();
 

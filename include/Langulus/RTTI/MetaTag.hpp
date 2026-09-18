@@ -39,8 +39,8 @@ namespace Langulus::RTTI
          auto GetInfo()          const noexcept -> Token;
          auto GetCppName()       const noexcept -> Token;
          auto GetHash()          const noexcept -> Hash;
-         auto GetVersionMajor()  const noexcept -> uint;
-         auto GetVersionMinor()  const noexcept -> uint;
+         auto GetVersionMajor()  const noexcept -> unsigned;
+         auto GetVersionMinor()  const noexcept -> unsigned;
          auto GetBoundaries()    const noexcept -> Definition::BoundarySet const&;
 
          IF_SAFE(explicit operator bool() const noexcept);

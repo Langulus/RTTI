@@ -28,7 +28,7 @@ namespace Langulus::RTTI
       /// general it is likely to avoid an indirection altogether at the      
       /// cost of a bitwise operation, making it a bit more cache-friendly,   
       /// and worth experimenting with                                        
-      template<uint S>
+      template<unsigned S>
       struct Structured;
 
       /// Encodes most frequently used properties                             
@@ -88,7 +88,7 @@ namespace Langulus::RTTI
       ///   @tparam ID_SIZE the size reserved for unique ID                   
       ///   @tparam PT_SIZE the size reserved for properties                  
       #pragma pack(push, 1)
-      template<uint ID_SIZE, uint PT_SIZE>
+      template<unsigned ID_SIZE, unsigned PT_SIZE>
       struct MetaDataStructured_XY : MetaPacked<ID_SIZE>, Structured<PT_SIZE> {
       protected:
          using Structured<PT_SIZE>::sparse;
@@ -132,8 +132,8 @@ namespace Langulus::RTTI
          auto GetFiles()              const noexcept -> Token;
          auto GetSuffix()             const noexcept -> Token;
          auto GetBoundaries()         const noexcept -> Definition::BoundarySet const&;
-         auto GetVersionMajor()       const noexcept -> uint;
-         auto GetVersionMinor()       const noexcept -> uint;
+         auto GetVersionMajor()       const noexcept -> unsigned;
+         auto GetVersionMinor()       const noexcept -> unsigned;
          auto GetMinAllocation()      const noexcept -> pot_t;
          auto GetAllocationTable()    const noexcept -> size_t const*;
 
@@ -299,12 +299,10 @@ namespace Langulus::RTTI
 #if LANGULUS_FEATURE(LOGGING)
 namespace fmt
 {
-   using uint = ::Langulus::uint;
-
    ///                                                                        
    /// Extend FMT to be capable of logging data types                         
    #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-   template<uint ID_SIZE, uint PT_SIZE>
+   template<unsigned ID_SIZE, unsigned PT_SIZE>
    struct formatter<::Langulus::RTTI::Inner::MetaDataStructured_XY<ID_SIZE, PT_SIZE>> {
       using M = ::Langulus::RTTI::Inner::MetaDataStructured_XY<ID_SIZE, PT_SIZE>;
 

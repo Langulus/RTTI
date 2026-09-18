@@ -13,19 +13,10 @@
 
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
    #include <unordered_set>
+   #include "Boundary.hpp"
 #endif
 
 #define LANGULUS_META_VERBOSITY_MASTER_SWITCH() 0
-
-#if defined(LANGULUS_EXPORT_ALL) or defined(LANGULUS_EXPORT_RTTI)
-   #define LANGULUS_API_RTTI() LANGULUS_EXPORT()
-#else
-   #define LANGULUS_API_RTTI() LANGULUS_IMPORT()
-#endif
-
-/// Make the rest of the code aware, that Langulus::RTTI has been included    
-#define LANGULUS_LIBRARY_RTTI() 1
-
 
 namespace Langulus::RTTI
 {
@@ -150,9 +141,9 @@ namespace Langulus::RTTI::Inner
       ::std::string mInfoOf;
 
       // Major version                                                  
-      unsigned mVersionMajor IF_SAFE(= 1);
+      unsigned mVersionMajor;
       // Minor version                                                  
-      unsigned mVersionMinor IF_SAFE(= 0);
+      unsigned mVersionMinor;
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Precomputed lowercase nameof                                
@@ -186,24 +177,18 @@ namespace Langulus::RTTI::Inner
       template<class T> LANGULUS(ALWAYS_INLINED)
       void ReflectCommon() {
          // Reflected version                                           
-         using V = decltype(VersionOf<T>());
-         mVersionMajor = V::Major;
-         mVersionMinor = V::Minor;
+         auto v = VersionOf<T>();
+         mVersionMajor = v.Major;
+         mVersionMinor = v.Minor;
          
          // Save the boundary at time of reflection, but don't even     
          // bother if it is the main one                                
          #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            auto local_boundary = RTTI::GetBoundaryOf(&ReflectCommon<T>);
-            if (Boundary) {
-               LglsAssert(Token{Boundary} != "MAIN",
-                  "Boundary named `MAIN` is reserved - pick another name");
-               mBoundaries.insert(Boundary);
-            }
+            mBoundaries.insert(LglsBoundary());
          #endif
 
          // Reflected info                                              
-         if constexpr (CT::Info<T>)
-            mInfoOf = InfoOf<T>();
+         mInfoOf = InfoOf<T>();
       }
 
       /// Check whether the definition is in the current boundary, or has     
@@ -212,7 +197,7 @@ namespace Langulus::RTTI::Inner
       LANGULUS(ALWAYS_INLINED)
       bool IsInRelevantBoundary() const noexcept {
          #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-            return mBoundaries.empty() or mBoundaries.contains(Boundary);
+            return mBoundaries.contains(LglsBoundary());
          #else
             return true;
          #endif

@@ -11,7 +11,7 @@
    #error "This file shouldn't be included if MANAGED_REFLECTION feature is disabled"
 #endif
 
-#define TEMPLATE() template<uint ID_SIZE, uint PT_SIZE>
+#define TEMPLATE() template<unsigned ID_SIZE, unsigned PT_SIZE>
 #define ME() MetaDataStructured_XY<ID_SIZE, PT_SIZE>
 
 
@@ -228,7 +228,7 @@ namespace Langulus::RTTI::Inner
 
    /// Get the major version                                                  
    TEMPLATE()
-   auto ME()::GetVersionMajor() const noexcept -> uint {
+   auto ME()::GetVersionMajor() const noexcept -> unsigned {
       const auto id = Base::GetID();
       if (id)
          return Registry::GetMetaDataByID(id, sparse, constant)->mVersionMajor;
@@ -237,7 +237,7 @@ namespace Langulus::RTTI::Inner
 
    /// Get the minor version                                                  
    TEMPLATE()
-   auto ME()::GetVersionMinor() const noexcept -> uint {
+   auto ME()::GetVersionMinor() const noexcept -> unsigned {
       const auto id = Base::GetID();
       if (id)
          return Registry::GetMetaDataByID(id, sparse, constant)->mVersionMinor;

@@ -65,7 +65,7 @@ namespace Langulus::RTTI::Inner
    }
 
    /// Get the major version                                                  
-   inline auto MetaConstPacked_16::GetVersionMajor() const noexcept -> uint {
+   inline auto MetaConstPacked_16::GetVersionMajor() const noexcept -> unsigned {
       const auto id = Base::GetID();
       if (id)
          return Registry::GetMetaConstByID(id)->mVersionMajor;
@@ -73,7 +73,7 @@ namespace Langulus::RTTI::Inner
    }
 
    /// Get the minor version                                                  
-   inline auto MetaConstPacked_16::GetVersionMinor() const noexcept -> uint {
+   inline auto MetaConstPacked_16::GetVersionMinor() const noexcept -> unsigned {
       const auto id = Base::GetID();
       if (id)
          return Registry::GetMetaConstByID(id)->mVersionMinor;

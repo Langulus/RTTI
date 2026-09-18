@@ -6,11 +6,11 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-#include "Definition.hpp"
-#include "Langulus/Typenav.hpp"
+#include <Langulus/Typenav.hpp>
 #include <Langulus/CT/Comparable.hpp>
 #include <Langulus/CT/DefineTag.hpp>
 #include <Langulus/Utils/Pot.hpp>
+#include "Definition.hpp"
 #include <unordered_set>
 #include <unordered_map>
 
@@ -38,10 +38,10 @@ namespace Langulus::RTTI
    ///                                                                        
    class DefinitionData final : public Inner::Definition {
    protected:
-                           friend class Registry;
-                           friend class Definition;
-                           friend struct Inner::MetaDataNaked;
-      template<uint, uint> friend struct Inner::MetaDataStructured_XY;
+      friend class Registry;
+      friend class Definition;
+      friend struct Inner::MetaDataNaked;
+      template<unsigned, unsigned> friend struct Inner::MetaDataStructured_XY;
 
       // The origin type, with all qualifiers and sparseness removed.   
       // Will be null for incomplete types.                             

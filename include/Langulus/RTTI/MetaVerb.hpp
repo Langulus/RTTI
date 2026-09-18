@@ -26,7 +26,7 @@ namespace Langulus::RTTI
       
       /// Packing strategy that can't exceed 2^(8*ID_SIZE)-2 possible verbs   
       #pragma pack(push, 1)
-      template<uint ID_SIZE>
+      template<unsigned ID_SIZE>
       struct MetaVerbStructured_X8 : MetaPacked<ID_SIZE> {
       private:
          union {
@@ -57,8 +57,8 @@ namespace Langulus::RTTI
          auto GetCppName()          const noexcept -> Token;
          auto GetInfo()             const noexcept -> Token;
          auto GetHash()             const noexcept -> Hash;
-         auto GetVersionMajor()     const noexcept -> uint;
-         auto GetVersionMinor()     const noexcept -> uint;
+         auto GetVersionMajor()     const noexcept -> unsigned;
+         auto GetVersionMinor()     const noexcept -> unsigned;
          auto GetBoundaries()       const noexcept -> Definition::BoundarySet const&;
 
          auto GetPositiveName()     const noexcept -> Token;
@@ -114,7 +114,7 @@ namespace fmt
    ///                                                                        
    /// Extend FMT to be capable of logging verb types                         
    #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-   template<uint ID_SIZE>
+   template<unsigned ID_SIZE>
    struct formatter<::Langulus::RTTI::Inner::MetaVerbStructured_X8<ID_SIZE>> {
       using M = ::Langulus::RTTI::Inner::MetaVerbStructured_X8<ID_SIZE>;
 

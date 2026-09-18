@@ -77,16 +77,11 @@ namespace Langulus::RTTI
       // Save the boundary at time of reflection, but don't even        
       // bother if it is the main one                                   
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         if (Boundary) {
-            LglsAssert(Token{Boundary} != "MAIN",
-               "Boundary named `MAIN` is reserved - pick another name");
-            definition.mBoundaries.insert(Boundary);
-         }
+         definition.mBoundaries.insert(LglsBoundary());
       #endif
 
       // Reflected info                                                 
-      if constexpr (CT::InfoValue<E>)
-         definition.mInfoOf = InfoOf<E>();
+      definition.mInfoOf = InfoOf<E>();
       
       // Refer to a heap copy of the data                               
       using T = decltype(E);
@@ -117,7 +112,10 @@ namespace Langulus::RTTI
    }
 
    inline DefinitionConst::~DefinitionConst() {
-      VERBOSE(Logger::Red, "Destroying constant definition: ", Logger::Yellow, mNameOf);
+      VERBOSE(
+         Logger::Red, "Destroying constant definition: ",
+         Logger::Yellow, mNameOf
+      );
       if (mData) mDestroyConstant(mData);
    }
 }

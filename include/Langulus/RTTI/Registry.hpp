@@ -26,15 +26,14 @@ namespace Langulus::RTTI
    ///                                                                        
    /// Available only if managed reflection feature is enabled                
    class Registry {
-   //protected:
-                           friend class DefinitionVerb;
-                           friend class DefinitionData;
-                           friend class DefinitionTag;
-                           friend class DefinitionConst;
-                           friend struct Inner::MetaTagPacked_16;
-                           friend struct Inner::MetaConstPacked_16;
-      template<uint, uint> friend struct Inner::MetaDataStructured_XY;
-      template<uint>       friend struct Inner::MetaVerbStructured_X8;
+      friend class DefinitionVerb;
+      friend class DefinitionData;
+      friend class DefinitionTag;
+      friend class DefinitionConst;
+      friend struct Inner::MetaTagPacked_16;
+      friend struct Inner::MetaConstPacked_16;
+      template<unsigned, unsigned> friend struct Inner::MetaDataStructured_XY;
+      template<unsigned>           friend struct Inner::MetaVerbStructured_X8;
 
       LANGULUS_API(RTTI)
       static auto RegisterData(Token const& cppname, Token const& token) -> DefinitionData&;
@@ -75,9 +74,6 @@ namespace Langulus::RTTI
       static auto GetMetaConstByID(size_t) assumptious-> DefinitionConst const*;
 
    public:
-      /*LANGULUS_API(RTTI)
-      ~Registry();*/
-
       LANGULUS_API(RTTI)
       static auto GetMetaDataByToken (Token const&) assumptious -> DefinitionData const*;
       LANGULUS_API(RTTI)

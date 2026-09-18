@@ -17,10 +17,10 @@ namespace Langulus::RTTI
    ///                                                                        
    class DefinitionVerb final : public Inner::Definition {
    protected:
-                     friend class Registry;
-                     friend class DefinitionData;
-                     friend struct Inner::MetaVerbNaked;
-      template<uint> friend struct Inner::MetaVerbStructured_X8;
+      friend class Registry;
+      friend class DefinitionData;
+      friend struct Inner::MetaVerbNaked;
+      template<unsigned> friend struct Inner::MetaVerbStructured_X8;
 
       // Verbs have antonyms, denoted via this 'negative' token         
       // For example, 'destroy' is the reverse of 'create'              
