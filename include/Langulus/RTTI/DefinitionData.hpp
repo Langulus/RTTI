@@ -19,7 +19,7 @@
 #endif
 
 
-namespace Langulus::Anyness
+namespace Langulus::Annies
 {
    struct Many;
    struct Any;
@@ -123,10 +123,10 @@ namespace Langulus::RTTI
       using FUnary         = void (*)(void* self);
       using FBinary        = void (*)(void* from, void* to);
       using FSerialize     = size_t (*)(void const* from, void* to, void* context);
-      using FDescribe      = void (*)(void* self, const Anyness::Many& describe);
+      using FDescribe      = void (*)(void* self, const Annies::Many& describe);
       using FCompare       = Compared (*)(const void* lhs, const void* rhs);
       using FCompareEqual  = bool (*)(const void* lhs, const void* rhs);
-      using FResolve       = Anyness::HandleDisowned (*)(void* self);
+      using FResolve       = Annies::HandleDisowned (*)(void* self);
       using FHash          = Hash (*)(void* self);
       using FReference     = int (*)(void* self, int modifier);
       using FDispatch      = bool (*)(void* self, Flow::Verb& verb);

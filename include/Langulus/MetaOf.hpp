@@ -24,7 +24,7 @@ namespace Langulus
    template<class T>
    auto MetaOf() {
       using DT = Decay<T>;
-      if constexpr (RTTI::NameOfTag<DT>() != "")
+      if constexpr (CT::DefineTag<DT>)
          return RTTI::TMeta {RTTI::DefinitionTag::Reflect<DT>()};
       else if constexpr (CT::DefineVerb<DT>)
          return RTTI::VMeta {RTTI::DefinitionVerb::Reflect<DT>()};

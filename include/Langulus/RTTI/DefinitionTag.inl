@@ -41,7 +41,7 @@ namespace Langulus::RTTI
          "This could also be triggered due to an incomplete member in T");
       static_assert(CT::Reflectable<T>,
          "Can't reflect tag that was explicitly marked unreflectable");
-      static_assert(RTTI::NameOfTag<T>() != "",
+      static_assert(CT::DefineTag<T>,
          "Type is not reflected as a tag definition");
       static_assert(not CT::DefineVerb<T>,
          "Can't reflect a verb as a tag");
