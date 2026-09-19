@@ -28,7 +28,8 @@
 #include <Langulus/CT/Suffix.hpp>
 #include <Langulus/CT/Serializer.hpp>
 #include <Langulus/CT/Executable.hpp>
-#include <Langulus/CT/Tags.hpp>
+#include <Langulus/CT/Tagged.hpp>
+#include <Langulus/CT/Able.hpp>
 #include <Langulus/IntentOf.hpp>
 
 #include "DefinitionData.hpp"
@@ -219,7 +220,7 @@ namespace Langulus::RTTI
 
       // Reflect the producer type                                      
       if constexpr (CT::Producible<T>) {
-         using P = CT::ReflectedAs<ProducerOf<T>>;
+         using P = CT::ReflectedAs<typename ProducersOf<T>::First>; //TODO support more than one producer in the future?
          definition.mCurrentBoundary.mProducer = Reflect<P>;
       }
 
@@ -446,7 +447,7 @@ namespace Langulus::RTTI
          });
       }
 
-      using VERBS = VerbsOf<T>;
+      using VERBS = AbilitiesOf<T>;
       if constexpr (not CT::Void<VERBS>) {
          // Set reflected abilities                                     
          ForEach(VERBS{}, [&definition]<class V>{
@@ -596,7 +597,7 @@ namespace Langulus::RTTI
          #endif
       #endif
 
-      using VERBS = VerbsOf<T>;
+      using VERBS = AbilitiesOf<T>;
       if constexpr (not CT::Void<VERBS>) {
          // Set reflected abilities                                     
          // These can be different for constant/mutable types           

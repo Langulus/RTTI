@@ -56,7 +56,7 @@ namespace Langulus::RTTI
          if (meta and meta->IsInRelevantBoundary())
             return meta;
 
-         const auto token = NameOfTag<T>();
+         const auto token = NameOfTag<T>;
          DefinitionTag& definition = meta
             ? const_cast<DefinitionTag&>(*meta)
             : Registry::RegisterTag(cppname, token);
@@ -72,7 +72,7 @@ namespace Langulus::RTTI
          const auto cppname = CppNameOf<T>();
          DefinitionTag& definition = s_definition.emplace(cppname);
 
-         definition.mNameOf = Inner::ToLowercase(NameOfTag<T>());
+         definition.mNameOf = Inner::ToLowercase(NameOfTag<T>);
          LglsAssert(not definition.mNameOf.empty(),
             "Invalid tag token is not allowed - "
             "you have equipped your type (or its base) with an empty CTTI_DefineTag. "
