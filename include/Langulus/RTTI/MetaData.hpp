@@ -177,7 +177,7 @@ namespace Langulus::RTTI
          auto GetComparer()           const noexcept -> DefinitionData::FCompare;
          auto GetComparerEqual()      const noexcept -> DefinitionData::FCompareEqual;
          auto GetHasher()             const noexcept -> DefinitionData::FHash;
-         auto GetDispatcher()         const noexcept -> DefinitionData::FDispatch;
+         //auto GetDispatcher()         const noexcept -> DefinitionData::FDispatch;
          
          auto GetDeptr(size_t = 1)    const -> MetaDataStructured_XY;
          auto GetOrigin()             const -> MetaDataStructured_XY;
@@ -268,7 +268,7 @@ namespace Langulus::RTTI
          auto GetComparer()           const noexcept -> DefinitionData::FCompare;
          auto GetComparerEqual()      const noexcept -> DefinitionData::FCompareEqual;
          auto GetHasher()             const noexcept -> DefinitionData::FHash;
-         auto GetDispatcher()         const noexcept -> DefinitionData::FDispatch;
+         //auto GetDispatcher()         const noexcept -> DefinitionData::FDispatch;
 
          auto GetDeptr(size_t = 1)    const -> MetaDataNaked;
          auto GetOrigin()             const -> MetaDataNaked;

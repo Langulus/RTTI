@@ -296,10 +296,10 @@ namespace Langulus::RTTI::Inner
    }
 
    /// Get the reflected dispatcher                                           
-   inline auto MetaDataNaked::GetDispatcher()
+   /*inline auto MetaDataNaked::GetDispatcher()
    const noexcept -> DefinitionData::FDispatch {
       return mDefinition ? mDefinition->mCurrentBoundary.mDispatcher : nullptr;
-   }
+   }*/
 
    /// Remove a layer of indirection                                          
    ///   @attention will return invalid meta if type is incomplete            

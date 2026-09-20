@@ -34,7 +34,7 @@ namespace Langulus::RTTI::Inner
          nullable   = d->mNullable;
          referenced = d->mCurrentBoundary.mReferencer != nullptr;
          resolvable = d->mCurrentBoundary.mResolver != nullptr;
-         dispatcher = d->mCurrentBoundary.mDispatcher != nullptr;
+         //dispatcher = d->mCurrentBoundary.mDispatcher != nullptr;
 
          if constexpr (PT_SIZE > 1) {
             if (d->mSize < (1 << sizeof(Structured<PT_SIZE>::size) * 8))
@@ -65,7 +65,7 @@ namespace Langulus::RTTI::Inner
          nullable   = d->mNullable;
          referenced = d->mCurrentBoundary.mReferencer != nullptr;
          resolvable = d->mCurrentBoundary.mResolver != nullptr;
-         dispatcher = d->mCurrentBoundary.mDispatcher != nullptr;
+         //dispatcher = d->mCurrentBoundary.mDispatcher != nullptr;
 
          if constexpr (PT_SIZE > 1) {
             if (d->mSize < (1 << sizeof(Structured<PT_SIZE>::size) * 8))
@@ -596,13 +596,13 @@ namespace Langulus::RTTI::Inner
    }
 
    /// Get the reflected dispatcher                                           
-   TEMPLATE()
+   /*TEMPLATE()
    auto ME()::GetDispatcher() const noexcept -> DefinitionData::FDispatch {
       const auto id = Base::GetID();
       if (id)
          return Registry::GetMetaDataByID(id, sparse, constant)->mCurrentBoundary.mDispatcher;
       return {};
-   }
+   }*/
 
    /// Remove a layer of indirection                                          
    ///   @attention will return invalid meta if type is incomplete            

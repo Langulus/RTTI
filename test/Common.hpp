@@ -174,7 +174,7 @@ namespace Verbs
 
       /// Check if the verb is available in a type, and with given arguments  
       ///   @return true if verb is available in T with arguments A...        
-      template<CT::NotVoid T, CT::NotVoid... A>
+      /*template<CT::NotVoid T, CT::NotVoid... A>
       static constexpr bool AvailableFor() noexcept {
          if constexpr (sizeof...(A) == 0)
             return requires (T & t, Verb & v) { t.Create(v); };
@@ -204,7 +204,7 @@ namespace Verbs
       }
 
       template<CT::NotVoid T>
-      static bool ExecuteIn(T&, Verb&);
+      static bool ExecuteIn(T&, Verb&);*/
 
       static bool ExecuteDefault(const Annies::Many&, Verb&) {
          return true;

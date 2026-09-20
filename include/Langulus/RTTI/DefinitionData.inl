@@ -447,7 +447,7 @@ namespace Langulus::RTTI
          });
       }
 
-      using VERBS = AbilitiesOf<T>;
+      using VERBS = GatherAbilitiesOf<T>;
       if constexpr (not CT::Void<VERBS>) {
          // Set reflected abilities                                     
          ForEach(VERBS{}, [&definition]<class V>{
@@ -597,7 +597,7 @@ namespace Langulus::RTTI
          #endif
       #endif
 
-      using VERBS = AbilitiesOf<T>;
+      using VERBS = GatherAbilitiesOf<T>;
       if constexpr (not CT::Void<VERBS>) {
          // Set reflected abilities                                     
          // These can be different for constant/mutable types           
