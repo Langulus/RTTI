@@ -462,7 +462,7 @@ namespace Langulus::RTTI
                DefinitionVerb::Reflect<V>());
             definition.mCurrentBoundary.mVerbs.emplace(
                verb_definition,
-               [](void* self, Flow::Verb& verb) -> bool {
+               [](void* self, Annies::Verb& verb) -> bool {
                   auto in = static_cast<T*>(self);
                   return V::template In<T>::Execute(*in, verb);
                }
@@ -613,7 +613,7 @@ namespace Langulus::RTTI
                DefinitionVerb::Reflect<V>());
             definition.mCurrentBoundary.mVerbs.emplace(
                verb_definition,
-               [](void* self, Flow::Verb& verb) -> bool {
+               [](void* self, Annies::Verb& verb) -> bool {
                   auto in = static_cast<T*>(self);
                   return V::template In<T>::Execute(*in, verb);
                }

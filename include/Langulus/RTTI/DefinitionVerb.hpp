@@ -51,7 +51,7 @@ namespace Langulus::RTTI
       // unloaded, we simply pick a pointer from another. Once the verb 
       // is reflected from the MainBoundary, the maps are cleared and   
       // only the main code is used, because it is most persistent.     
-      using FContextless = bool (*)(Flow::Verb&);
+      using FContextless = bool (*)(Annies::Verb&);
 
       struct BoundaryDependent {
          // Reflected stateless verb, if available                      

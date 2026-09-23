@@ -24,10 +24,6 @@ namespace Langulus::Annies
    struct Many;
    struct Any;
    struct HandleDisowned;
-}
-
-namespace Langulus::Flow
-{
    struct Verb;
 }
 
@@ -129,7 +125,7 @@ namespace Langulus::RTTI
       using FResolve       = Annies::HandleDisowned (*)(void* self);
       using FHash          = Hash (*)(void* self);
       using FReference     = int (*)(void* self, int modifier);
-      using FDispatch      = bool (*)(void* self, Flow::Verb& verb);
+      using FDispatch      = bool (*)(void* self, Annies::Verb& verb);
       using FAccessMember  = void* (*)(void* owner);
       using FUnpack        = FAccessMember;
       using FTypeRetriever = DefinitionData const* (*)();
