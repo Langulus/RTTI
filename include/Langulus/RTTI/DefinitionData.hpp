@@ -24,7 +24,9 @@ namespace Langulus::Annies
    struct Many;
    struct Any;
    struct HandleDisowned;
-   struct Verb;
+   template<class> 
+   struct TVerb;
+   using Verb = TVerb<void>;
 }
 
 namespace Langulus::RTTI
