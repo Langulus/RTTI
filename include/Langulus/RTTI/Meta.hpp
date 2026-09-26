@@ -135,7 +135,11 @@ namespace Langulus::RTTI::Inner
       constexpr bool operator == (const MetaNaked& rhs) const noexcept {
          return mDefinition == rhs.mDefinition;
       }
-      
+
+      auto GetDefinition() const noexcept -> T const* {
+         return mDefinition;
+      }
+
       /// Get the name of the type, the result of NameOf                      
       auto GetName() const noexcept -> Token {
          if (mDefinition)

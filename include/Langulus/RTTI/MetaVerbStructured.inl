@@ -51,6 +51,15 @@ namespace Langulus::RTTI::Inner
       return Base::operator == (rhs);
    }
    
+   /// Get the verb definition                                                
+   template<unsigned ID_SIZE>
+   auto MetaVerbStructured_X8<ID_SIZE>::GetDefinition() const noexcept -> DefinitionVerb const* {
+      const auto id = Base::GetID();
+      if (id)
+         return Registry::GetMetaVerbByID(id);
+      return {};
+   }
+
    /// Get the C++ name of the verb                                           
    template<unsigned ID_SIZE>
    auto MetaVerbStructured_X8<ID_SIZE>::GetCppName() const noexcept -> Token {
