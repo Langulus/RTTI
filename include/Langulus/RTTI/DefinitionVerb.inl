@@ -56,10 +56,10 @@ namespace Langulus::RTTI
          if (meta and meta->IsInRelevantBoundary())
             return meta;
          
-         const auto verbPos = NameOfVerb<T>();
-         const auto verbNeg = NameOfVerbReverse<T>();
-         const auto opPos   = OperatorOfVerb<T>();
-         const auto opNeg   = OperatorOfVerbReverse<T>();
+         const auto verbPos = PositiveNameOfVerb<T>;
+         const auto verbNeg = NegativeNameOfVerb<T>;
+         const auto opPos   = PositiveOperatorOfVerb<T>;
+         const auto opNeg   = NegativeOperatorOfVerb<T>;
          DefinitionVerb& definition = meta
             ? const_cast<DefinitionVerb&>(*meta)
             : Registry::RegisterVerb(cppname, verbPos, verbNeg, opPos, opNeg);

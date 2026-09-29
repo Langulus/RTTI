@@ -476,9 +476,9 @@ namespace Langulus::RTTI
       using CONSTANTS = NamedValuesOf<T>;
       if constexpr (not CT::Void<CONSTANTS>) {
          // Reflecting named values                                     
-         CONSTANTS::ForEach([&definition]<auto C>{
+         ForEach(CONSTANTS{}, [&definition]<class C>{
             definition.mNamedValues.push_back(
-               DefinitionConst::Reflect<C>()
+               DefinitionConst::Reflect<T, C>()
             );
          });
       }

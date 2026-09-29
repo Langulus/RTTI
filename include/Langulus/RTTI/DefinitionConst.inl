@@ -32,17 +32,23 @@ namespace Langulus::RTTI
    ///      save on a lot of compiler resources:                              
    ///      https://stackoverflow.com/questions/8130602                       
    ///   @tparam E the constant to reflect                                    
-   template<auto E>
+   template<class OWNER, class NAMED_VALUE>
    auto DefinitionConst::Reflect() -> DefinitionConst const* {
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get an already existing definition - the const might 
          // have been reflected previously in another shared library    
-         const auto cppname = CppNameOf<E>();
+         const auto cppname = CppNameOf<NAMED_VALUE::Constant>();
          DefinitionConst const* meta = Registry::GetMetaConstByCppName(cppname);
          if (meta and meta->IsInRelevantBoundary())
             return meta;
 
-         const auto token = NameOf<E, false>();
+         std::string token {static_cast<Token>(NameOf<OWNER>())};
+         token += "::";
+         if constexpr (NAMED_VALUE::Token != "")
+            token += NAMED_VALUE::Token;
+         else
+            token += LastCppNameOf<NAMED_VALUE::Constant>();
+
          DefinitionConst& definition = meta
             ? const_cast<DefinitionConst&>(*meta)
             : Registry::RegisterConst(cppname, token);
@@ -55,24 +61,25 @@ namespace Langulus::RTTI
          if (s_definition.has_value())
             return &s_definition.value();
 
-         const auto cppname = CppNameOf<E>();
+         const auto cppname = CppNameOf<NAMED_VALUE::Constant>();
          DefinitionConst& definition = s_definition.emplace(cppname);
 
-         definition.mNameOf = Inner::NormalizeAtRuntime(NameOf<E, false>());
-         LglsAssert(not definition.mNameOf.empty(),
-            "Invalid constant token is not allowed - "
-            "you have equipped your constant with an empty CTTI::NamedValue. "
-            "The constant in question is: ", cppname
-         );
-         definition.mNameOf[0] = ToUppercase(definition.mNameOf[0]);
+         std::string token = NameOf<OWNER>();
+         token += "::";
+         if constexpr (NAMED_VALUE::Token != "")
+            token += NAMED_VALUE::Token;
+         else
+            token += LastCppNameOf<NAMED_VALUE::Constant>();
       #endif
-
 
       //                                                                
       // If this is reached, then constant is not defined yet           
-      // Reflected version                                              
-      definition.mVersionMajor = VersionOf<E>().Major;
-      definition.mVersionMinor = VersionOf<E>().Minor;
+      definition.mNameOf = token;
+      definition.mNameOf[0] = ToUppercase(definition.mNameOf[0]);
+
+      // Version follows the owning type                                
+      definition.mVersionMajor = VersionOf<OWNER>().Major;
+      definition.mVersionMinor = VersionOf<OWNER>().Minor;
 
       // Save the boundary at time of reflection, but don't even        
       // bother if it is the main one                                   
@@ -81,19 +88,16 @@ namespace Langulus::RTTI
       #endif
 
       // Reflected info                                                 
-      definition.mInfoOf = InfoOf<E>();
+      definition.mInfoOf = NAMED_VALUE::Info;
       
       // Refer to a heap copy of the data                               
-      using T = decltype(E);
-      definition.mType = DefinitionData::Reflect<T>();
-      if (not definition.mData) {
-         definition.mData = new T {E};
-         LglsAssert(definition.mData, "Insufficient memory on reflection");
-         definition.mDestroyConstant = [](const void* p) {
-            auto pt = static_cast<const T*>(p);
-            delete pt;
-         };
-      }
+      definition.mType = DefinitionData::Reflect<OWNER>();
+
+      // With this function, you can fill your own memory with an       
+      // instance of the constant.                                      
+      definition.mFillConstant = [](void* p) {
+         new (p) OWNER {NAMED_VALUE::Constant};
+      };
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          VERBOSE(
@@ -109,14 +113,6 @@ namespace Langulus::RTTI
       #endif
       
       return &definition;
-   }
-
-   inline DefinitionConst::~DefinitionConst() {
-      VERBOSE(
-         Logger::Red, "Destroying constant definition: ",
-         Logger::Yellow, mNameOf
-      );
-      if (mData) mDestroyConstant(mData);
    }
 }
 
