@@ -464,7 +464,7 @@ namespace Langulus::RTTI
                verb_definition,
                [](void* self, Annies::Verb& verb) -> bool {
                   auto in = static_cast<T*>(self);
-                  return V::template In<T>::Execute(*in, verb);
+                  return Langulus::InvokeAbility(*in, reinterpret_cast<V&>(verb));
                }
             );
             verb_definition->mAble.insert(&definition);
@@ -615,7 +615,7 @@ namespace Langulus::RTTI
                verb_definition,
                [](void* self, Annies::Verb& verb) -> bool {
                   auto in = static_cast<T*>(self);
-                  return V::template In<T>::Execute(*in, verb);
+                  return Langulus::InvokeAbility(*in, reinterpret_cast<V&>(verb));
                }
             );
             verb_definition->mAble.insert(&definition);
