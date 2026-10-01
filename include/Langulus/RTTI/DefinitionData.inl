@@ -125,7 +125,7 @@ namespace Langulus::RTTI
          "make sure you have included the corresponding headers "
          "before the point of reflection. "
          "This could also be triggered due to an incomplete member in T");
-      static_assert(not CT::Array<T>,
+      static_assert(not std::is_bounded_array_v<T>,
          "Reflecting a bounded array is forbidden to avoid bloat");
       static_assert(not CT::Volatile<T>,
          "Can't reflect volatile type, use Devq before reflection");
@@ -523,7 +523,7 @@ namespace Langulus::RTTI
          "make sure you have included the corresponding headers "
          "before the point of reflection. "
          "This could also be triggered due to an incomplete member in T");
-      static_assert(not CT::Array<T>,
+      static_assert(not std::is_bounded_array_v<T>,
          "Reflecting a bounded array is forbidden to avoid bloat");
       static_assert(not CT::Volatile<T>,
          "Can't reflect volatile type, use Devq before reflection");
@@ -871,7 +871,7 @@ namespace Langulus::RTTI
    ///   @tparam T the type to reflect                                        
    template<class T> requires CT::CustomPointer<T>
    auto DefinitionData::Reflect() -> DefinitionData const* {
-      static_assert(not CT::Array<T>,
+      static_assert(not std::is_bounded_array_v<T>,
          "Reflecting a bounded array is forbidden to avoid bloat");
       static_assert(not CT::Volatile<T>,
          "Can't reflect volatile type, use Devq before reflection");
