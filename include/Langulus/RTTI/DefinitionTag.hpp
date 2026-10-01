@@ -28,7 +28,7 @@ namespace Langulus::RTTI
       template<CT::Decayed>
       static auto Reflect() -> DefinitionTag const*;
 
-      DefinitionTag(const Token& cppname) noexcept
+      DefinitionTag(Token const& cppname) noexcept
          : Definition {cppname} {}
 
       ~DefinitionTag();

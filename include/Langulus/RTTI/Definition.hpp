@@ -67,7 +67,7 @@ namespace Langulus::RTTI::Inner
    ///   @attention assumes token is ASCII                                    
    ///   @param token the token to lowercase                                  
    ///   @return the lowercase string                                         
-   constexpr Lowercase ToLowercase(const Token& token) assumptious {
+   constexpr Lowercase ToLowercase(Token const& token) assumptious {
       LglsAssumeDev(IsASCII(token), "Token must be ASCII");
       Lowercase lc {token};
       for (char& c : lc)
@@ -80,7 +80,7 @@ namespace Langulus::RTTI::Inner
    ///   @attention assumes token is ASCII                                    
    ///   @param token the operator                                            
    ///   @return the isolated operator token                                  
-   constexpr Token StripSpaces(const Token& token) assumptious {
+   constexpr Token StripSpaces(Token const& token) assumptious {
       auto l = token.data();
       auto r = token.data() + token.size();
       while (l < r and     *l <= 32)   ++l;
@@ -93,7 +93,7 @@ namespace Langulus::RTTI::Inner
    /// a template <>, and skip forward to that                                
    ///   @param token the token to scan                                       
    ///   @return the last token                                               
-   constexpr Token ToLastToken(const Token& token) noexcept {
+   constexpr Token ToLastToken(Token const& token) noexcept {
       size_t depth = 0;
       for (size_t i = token.size() - 1; i < token.size(); --i) {
          switch (token[i]) {
@@ -165,7 +165,7 @@ namespace Langulus::RTTI::Inner
 
       /// Construct an abstract definition                                    
       ///   @param cppname the C++ name of the definition                     
-      Definition(const Token& cppname)
+      Definition(Token const& cppname)
          : mHash      {HashOf(cppname)}
          , mCppNameOf {cppname} {}
 

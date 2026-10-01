@@ -76,7 +76,7 @@ namespace Langulus::RTTI
       template<CT::Decayed>
       static auto Reflect() -> DefinitionVerb const*;
       
-      DefinitionVerb(const Token& cppname) noexcept
+      DefinitionVerb(Token const& cppname) noexcept
          : Definition {cppname} {}
 
       ~DefinitionVerb();

@@ -33,7 +33,7 @@ namespace Langulus::RTTI
       template<class OWNER, class NAMED_VALUE>
       static auto Reflect() -> DefinitionConst const*;
       
-      DefinitionConst(const Token& cppname) noexcept
+      DefinitionConst(Token const& cppname) noexcept
          : Definition {cppname} {}
    };
 }

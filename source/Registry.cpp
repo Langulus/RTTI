@@ -80,7 +80,7 @@ namespace Langulus::RTTI
    /// Get an existing data definition by its CppNameOf                       
    ///   @param token the C++ name of the data definition                     
    ///   @return the definition, or nullptr if not found                      
-   auto Registry::GetMetaDataByCppName(const Token& token)
+   auto Registry::GetMetaDataByCppName(Token const& token)
    noexcept -> DefinitionData const* {
       const auto foundToken = mMetaDataByCppName.find(token);
       if (foundToken == mMetaDataByCppName.end())
@@ -92,7 +92,7 @@ namespace Langulus::RTTI
    ///   @attention assumes token doesn't contain spaces                      
    ///   @param token the reflected token of the data definition              
    ///   @return the definition, or nullptr if not found                      
-   auto Registry::GetMetaDataByToken(const Token& token)
+   auto Registry::GetMetaDataByToken(Token const& token)
    assumptious -> DefinitionData const* {
       LglsAssumeUser(not token.contains(' '), "Token shouldn't contain spaces");
       const auto foundToken = mMetaDataByToken.find(Inner::ToLowercase(token));
@@ -104,7 +104,7 @@ namespace Langulus::RTTI
    /// Get an existing constant definition by its CppNameOf                   
    ///   @param token the C++ name of the constant definition                 
    ///   @return the definition, or nullptr if not found                      
-   auto Registry::GetMetaConstByCppName(const Token& token)
+   auto Registry::GetMetaConstByCppName(Token const& token)
    noexcept -> DefinitionConst const* {
       const auto foundToken = mMetaConstantsByCppName.find(token);
       if (foundToken == mMetaConstantsByCppName.end())
@@ -116,7 +116,7 @@ namespace Langulus::RTTI
    ///   @attention assumes token doesn't contain spaces                      
    ///   @param token the reflected token of the constant definition          
    ///   @return the definition, or nullptr if not found                      
-   auto Registry::GetMetaConstByToken(const Token& token)
+   auto Registry::GetMetaConstByToken(Token const& token)
    assumptious -> DefinitionConst const* {
       LglsAssumeUser(not token.contains(' '), "Token shouldn't contain spaces");
       const auto foundToken = mMetaConstantsByToken.find(Inner::ToLowercase(token));
@@ -128,7 +128,7 @@ namespace Langulus::RTTI
    /// Get an existing tag definition by its CppNameOf                        
    ///   @param token the C++ name of the tag definition                      
    ///   @return the definition, or nullptr if not found                      
-   auto Registry::GetMetaTagByCppName(const Token& token)
+   auto Registry::GetMetaTagByCppName(Token const& token)
    noexcept -> DefinitionTag const* {
       const auto foundToken = mMetaTagsByCppName.find(token);
       if (foundToken == mMetaTagsByCppName.end())
@@ -140,7 +140,7 @@ namespace Langulus::RTTI
    ///   @attention assumes token doesn't contain spaces                      
    ///   @param token the reflected token of the tag definition               
    ///   @return the definition, or nullptr if not found                      
-   auto Registry::GetMetaTagByToken(const Token& token)
+   auto Registry::GetMetaTagByToken(Token const& token)
    assumptious -> DefinitionTag const* {
       LglsAssumeUser(not token.contains(' '), "Token shouldn't contain spaces");
       const auto foundToken = mMetaTagsByToken.find(Inner::ToLowercase(token));
@@ -152,7 +152,7 @@ namespace Langulus::RTTI
    /// Get an existing verb definition by its CppNameOf                       
    ///   @param token the C++ name of the verb definition                     
    ///   @return the definition, or nullptr if not found                      
-   auto Registry::GetMetaVerbByCppName(const Token& token)
+   auto Registry::GetMetaVerbByCppName(Token const& token)
    noexcept -> DefinitionVerb const* {
       const auto foundToken = mMetaVerbsByCppName.find(token);
       if (foundToken == mMetaVerbsByCppName.end())
@@ -166,7 +166,7 @@ namespace Langulus::RTTI
    ///   @param token the reflected token of the verb definition              
    ///      you can search by positive, as well as negative token             
    ///   @return the definition, or nullptr if not found                      
-   auto Registry::GetMetaVerbByToken(const Token& token)
+   auto Registry::GetMetaVerbByToken(Token const& token)
    assumptious -> DefinitionVerb const* {
       LglsAssumeUser(not token.contains(' '), "Token shouldn't contain spaces");
       const auto foundToken = mMetaVerbsByToken.find(Inner::ToLowercase(token));
@@ -236,7 +236,7 @@ namespace Langulus::RTTI
    ///   @attention assumes token doesn't contain spaces                      
    ///   @param token the token to search for                                 
    ///   @return the set of associated meta definitions                       
-   auto Registry::GetAmbiguousMeta(const Token& token)
+   auto Registry::GetAmbiguousMeta(Token const& token)
    assumptious -> const MetaSet& {
       LglsAssumeUser(not token.contains(' '), "Token shouldn't contain spaces");
       static const MetaSet fallback {};
@@ -258,7 +258,7 @@ namespace Langulus::RTTI
    ///      throw an exception - the ambiguity has to be manually fixed       
    ///   @param keyword the token to search for                               
    ///   @return the disambiguated token; throws if not found/ambiguous       
-   auto Registry::DisambiguateMeta(const Token& keyword)
+   auto Registry::DisambiguateMeta(Token const& keyword)
    -> Inner::Definition const* {
       auto& symbols = GetAmbiguousMeta(keyword);
       LglsAssert(not symbols.empty(), "Keyword not found", ": `", keyword, '`');
@@ -376,7 +376,7 @@ namespace Langulus::RTTI
    ///   @attention assumes token doesn't contain spaces                      
    ///   @param token the file extension to search for                        
    ///   @return all meta definitions associated with the file extension      
-   auto Registry::ResolveFileExtension(const Token& token)
+   auto Registry::ResolveFileExtension(Token const& token)
    assumptious -> const MetaSet& {
       LglsAssumeUser(not token.contains(' '), "Token shouldn't contain spaces");
       static const MetaSet fallback {};
@@ -391,7 +391,7 @@ namespace Langulus::RTTI
    ///   @param cppname the C++ type name to register                         
    ///   @param token_messy the custom token used in scripting                
    ///   @return the newly defined meta data for that name                    
-   auto Registry::RegisterData(const Token& cppname, const Token& token_messy) -> DefinitionData& {
+   auto Registry::RegisterData(Token const& cppname, Token const& token_messy) -> DefinitionData& {
       const ::std::string cppname_s {cppname};
       LglsAssumeDev(not mMetaDataByCppName.contains(cppname_s),
          "Data with this name is already registered: ", cppname);
@@ -459,7 +459,7 @@ namespace Langulus::RTTI
    ///   @param cppname the C++ type name to register                         
    ///   @param token_messy the custom token used in scripting                
    ///   @return the newly defined meta constant for that token               
-   auto Registry::RegisterConst(const Token& cppname, const Token& token_messy) -> DefinitionConst& {
+   auto Registry::RegisterConst(Token const& cppname, Token const& token_messy) -> DefinitionConst& {
       const ::std::string cppname_s {cppname};
       LglsAssumeDev(not mMetaConstantsByCppName.contains(cppname_s),
          "Constant with this name is already registered: ", cppname);
@@ -520,7 +520,7 @@ namespace Langulus::RTTI
    ///   @param cppname the C++ type name to register                         
    ///   @param token_messy the custom token used in scripting                
    ///   @return the newly defined meta trait for that token                  
-   auto Registry::RegisterTag(const Token& cppname, const Token& token_messy) -> DefinitionTag& {
+   auto Registry::RegisterTag(Token const& cppname, Token const& token_messy) -> DefinitionTag& {
       const ::std::string cppname_s {cppname};
       LglsAssumeDev(not mMetaTagsByCppName.contains(cppname_s),
          "Tag with this name is already registered: ", cppname);
@@ -712,7 +712,7 @@ namespace Langulus::RTTI
    /// Register file extension                                                
    ///   @param token the file extension token to reserve                     
    ///   @param type the data to associate file with                          
-   void Registry::RegisterFileExtension(const Token& token, DefinitionData* type)
+   void Registry::RegisterFileExtension(Token const& token, DefinitionData* type)
    assumptious {
       LglsAssumeDev(not token.empty(), "Bad file extension");
       LglsAssumeDevAndOptimize(type, "Bad meta data for file extension: ", token);
@@ -728,7 +728,7 @@ namespace Langulus::RTTI
    /// Runs through all definitions and destroys all of those, that were      
    /// defined only within the given boundary token                           
    ///   @param boundary the boundary token to search for                     
-   void Registry::UnloadBoundary(const Token& boundary) {
+   void Registry::UnloadBoundary(Token const& boundary) {
       LglsAssumeDev(not boundary.empty(), "Can't unload main boundary");
       VERBOSE_SCOPED(Logger::Red, Logger::Underline, 
          "Unloading boundary ", boundary);
@@ -970,7 +970,7 @@ namespace Langulus::RTTI
          return ToLastToken(mToken);
       
       if ((datas  == 1 and traits == 0 and Kind() == Meta::Data)
-      or  (traits == 1 and datas  == 0 and Kind() == Meta::Trait))
+      or  (traits == 1 and datas  == 0 and Kind() == Meta::Tag))
          return ToLastToken(mToken);
       
       if (datas == 1 and traits == 1) {
@@ -979,7 +979,7 @@ namespace Langulus::RTTI
             return static_cast<const MetaData*>(this)->mTokenSanitized;
          }
 
-         if (Kind() == Meta::Trait) {
+         if (Kind() == Meta::Tag) {
             // Token should be starting with a lower letter             
             return static_cast<const MetaTrait*>(this)->mTokenSanitized;
          }

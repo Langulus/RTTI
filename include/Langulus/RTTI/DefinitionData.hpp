@@ -313,7 +313,7 @@ namespace Langulus::RTTI
       template<class T> requires CT::CustomPointer<T>
       static auto Reflect() -> DefinitionData const*;
       
-      DefinitionData(const Token& cppname) noexcept
+      DefinitionData(Token const& cppname) noexcept
          : Definition {cppname} {}
       
       ~DefinitionData();

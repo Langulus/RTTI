@@ -34,12 +34,12 @@ namespace Langulus::Annies
    template<class TYPE = void>
    struct Block {};
    struct Many  : public Block<> {};
-   class Trait : public Block<> {};
+   class Tag : public Block<> {};
 }
 
 namespace Langulus::Traits
 {
-   class Tag : Annies::Trait {
+   class Tag : Annies::Tag {
       LANGULUS(TRAIT) "Tag";
    };
 }

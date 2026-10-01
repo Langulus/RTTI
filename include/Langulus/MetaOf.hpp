@@ -102,22 +102,22 @@ namespace Langulus
    
    /// ... as well as getting them manually                                   
    LANGULUS(INLINED)
-   RTTI::DMeta MetaDataOf(const Token& token) noexcept {
+   RTTI::DMeta MetaDataOf(Token const& token) noexcept {
       return RTTI::Registry::GetMetaDataByToken(token);
    }
 
    LANGULUS(INLINED)
-   RTTI::TMeta MetaTagOf(const Token& token) noexcept {
+   RTTI::TMeta MetaTagOf(Token const& token) noexcept {
       return RTTI::Registry::GetMetaTagByToken(token);
    }
 
    LANGULUS(INLINED)
-   RTTI::VMeta MetaVerbOf(const Token& token) noexcept {
+   RTTI::VMeta MetaVerbOf(Token const& token) noexcept {
       return RTTI::Registry::GetMetaVerbByToken(token);
    }
 
    LANGULUS(INLINED)
-   RTTI::CMeta MetaConstOf(const Token& token) noexcept {
+   RTTI::CMeta MetaConstOf(Token const& token) noexcept {
       return RTTI::Registry::GetMetaConstByToken(token);
    }
 #endif
