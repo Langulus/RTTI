@@ -308,9 +308,10 @@ namespace Langulus::RTTI::Inner
          return *this;
 
       if (mDefinition) {
-         MetaDataNaked result =
+         auto result = MetaDataNaked {
             mDefinition->mDeptr <= reinterpret_cast<DefinitionData*>(intptr_t{1})
-            ? nullptr : mDefinition->mDeptr;
+            ? nullptr : mDefinition->mDeptr
+         };
          return result.GetDeptr(count - 1);
       }
       return {};

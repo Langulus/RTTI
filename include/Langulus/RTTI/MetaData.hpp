@@ -111,6 +111,7 @@ namespace Langulus::RTTI
          constexpr MetaDataStructured_XY(MetaDataStructured_XY const&) noexcept = default;
          constexpr MetaDataStructured_XY(MetaDataStructured_XY&&) noexcept = default;
          constexpr MetaDataStructured_XY(nullptr_t) noexcept;
+         constexpr MetaDataStructured_XY(Inner::Definition const*) noexcept;
          constexpr MetaDataStructured_XY(DefinitionData const*) noexcept;
 
          constexpr MetaDataStructured_XY& operator = (MetaDataStructured_XY const&) noexcept = default;

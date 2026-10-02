@@ -26,6 +26,7 @@ namespace Langulus::RTTI
          constexpr MetaTagPacked_16(MetaTagPacked_16 const&) noexcept = default;
          constexpr MetaTagPacked_16(MetaTagPacked_16&&) noexcept = default;
          constexpr MetaTagPacked_16(nullptr_t) noexcept;
+         constexpr MetaTagPacked_16(Inner::Definition const*) noexcept;
          constexpr MetaTagPacked_16(DefinitionTag const*) noexcept;
 
          constexpr MetaTagPacked_16& operator = (MetaTagPacked_16 const&) noexcept = default;

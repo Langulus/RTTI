@@ -106,13 +106,15 @@ namespace Langulus::RTTI::Inner
 
    public:
       constexpr MetaNaked() noexcept = default;
-      constexpr MetaNaked(const MetaNaked&) noexcept = default;
+      constexpr MetaNaked(MetaNaked const&) noexcept = default;
       constexpr MetaNaked(MetaNaked&&) noexcept = default;
       constexpr MetaNaked(nullptr_t) noexcept {}
-      constexpr MetaNaked(const T* d) noexcept
+      constexpr MetaNaked(T const* d) noexcept
          : mDefinition {d} {}
+      constexpr MetaNaked(Inner::Definition const* d) noexcept
+         : mDefinition {dynamic_cast<T const*>(d)} {}
 
-      constexpr MetaNaked& operator = (const MetaNaked&) noexcept = default;
+      constexpr MetaNaked& operator = (MetaNaked const&) noexcept = default;
       constexpr MetaNaked& operator = (MetaNaked&&) noexcept = default;
       constexpr MetaNaked& operator = (nullptr_t) noexcept {
          mDefinition = nullptr;

@@ -24,6 +24,11 @@ namespace Langulus::RTTI::Inner
 
    /// ID from definition                                                     
    TEMPLATE()
+   constexpr ME()::MetaDataStructured_XY(Inner::Definition const* d) noexcept
+      : MetaDataStructured_XY {dynamic_cast<DefinitionData const*>(d)} {}
+
+   /// ID from definition                                                     
+   TEMPLATE()
    constexpr ME()::MetaDataStructured_XY(DefinitionData const* d) noexcept
       : Base {d ? d->mID : 0} {
       if (d) {

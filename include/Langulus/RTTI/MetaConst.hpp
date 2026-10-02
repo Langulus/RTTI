@@ -32,6 +32,7 @@ namespace Langulus::RTTI
          constexpr MetaConstPacked_16(MetaConstPacked_16 const&) noexcept = default;
          constexpr MetaConstPacked_16(MetaConstPacked_16&&) noexcept = default;
          constexpr MetaConstPacked_16(nullptr_t) noexcept;
+         constexpr MetaConstPacked_16(Inner::Definition const*) noexcept;
          constexpr MetaConstPacked_16(DefinitionConst const*) noexcept;
 
          constexpr MetaConstPacked_16& operator = (MetaConstPacked_16 const&) noexcept = default;

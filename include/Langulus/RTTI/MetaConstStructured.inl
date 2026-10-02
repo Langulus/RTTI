@@ -17,6 +17,9 @@ namespace Langulus::RTTI::Inner
    constexpr MetaConstPacked_16::MetaConstPacked_16(nullptr_t) noexcept
       : Base {0} {}
 
+   constexpr MetaConstPacked_16::MetaConstPacked_16(Inner::Definition const* d) noexcept
+      : MetaConstPacked_16 {dynamic_cast<DefinitionConst const*>(d)} {}
+
    constexpr MetaConstPacked_16::MetaConstPacked_16(DefinitionConst const* d) noexcept
       : Base {d ? d->mID : 0} {}
 

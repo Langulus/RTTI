@@ -19,6 +19,10 @@ namespace Langulus::RTTI::Inner
       : Base {0} {}
 
    template<unsigned ID_SIZE>
+   constexpr MetaVerbStructured_X8<ID_SIZE>::MetaVerbStructured_X8(Inner::Definition const* d) noexcept
+      : MetaVerbStructured_X8 {dynamic_cast<DefinitionVerb const*>(d)} {}
+
+   template<unsigned ID_SIZE>
    constexpr MetaVerbStructured_X8<ID_SIZE>::MetaVerbStructured_X8(DefinitionVerb const* d) noexcept
       : Base {d ? d->mID : 0} {
       if (d) {
