@@ -253,23 +253,23 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
       REQUIRE(meta->mMembers.size() == 3);
       /*REQUIRE(meta->mMembers[0].mCount == 1);
       REQUIRE(meta->mMembers[0].mValueRetriever(&instance) == &instance.member);
-      REQUIRE(meta->mMembers[0].GetTrait(0) == nullptr);
+      REQUIRE(meta->mMembers[0].GetTag(0) == nullptr);
       REQUIRE(meta->mMembers[0].GetType()->Is<int>());*/
 
       REQUIRE(meta->mMembers[0].mCount == 1);
       REQUIRE(meta->mMembers[0].mValueRetriever(&instance) == &instance.anotherMember);
-      REQUIRE(meta->mMembers[0].GetTrait(0)->Is<Traits::Tag>());
-      REQUIRE(meta->mMembers[0].GetTrait(1) == nullptr);
+      REQUIRE(meta->mMembers[0].GetTag(0)->Is<Traits::Tag>());
+      REQUIRE(meta->mMembers[0].GetTag(1) == nullptr);
       REQUIRE(meta->mMembers[0].GetType()->Is<bool>());
 
       REQUIRE(meta->mMembers[1].mCount == 12);
       REQUIRE(meta->mMembers[1].mValueRetriever(&instance) == instance.anotherMemberArray);
-      REQUIRE(meta->mMembers[1].GetTrait(0) == nullptr);
+      REQUIRE(meta->mMembers[1].GetTag(0) == nullptr);
       REQUIRE(meta->mMembers[1].GetType()->Is<int>());
 
       REQUIRE(meta->mMembers[2].mCount == 1);
       REQUIRE(meta->mMembers[2].mValueRetriever(&instance) == &instance.sparseMember);
-      REQUIRE(meta->mMembers[2].GetTrait(0) == nullptr);
+      REQUIRE(meta->mMembers[2].GetTag(0) == nullptr);
       REQUIRE(meta->mMembers[2].GetType()->Is<int>());
 
       REQUIRE(meta->mNamedValues.size() == 0);
