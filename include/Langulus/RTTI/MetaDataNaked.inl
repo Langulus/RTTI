@@ -34,6 +34,10 @@ namespace Langulus::RTTI::Inner
          );
    }
 
+   inline bool MetaDataNaked::IsExact(const MetaDataNaked& other) const noexcept {
+      return mDefinition == other.mDefinition;
+   }
+
    /// Get the size of the type                                               
    inline auto MetaDataNaked::GetSize() const noexcept -> size_t {
       return mDefinition ? mDefinition->mSize : 0;

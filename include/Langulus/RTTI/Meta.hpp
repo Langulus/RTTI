@@ -130,10 +130,6 @@ namespace Langulus::RTTI::Inner
          return mDefinition != nullptr;
       }
 
-      constexpr bool IsExact(const MetaNaked& rhs) const noexcept {
-         return mDefinition == rhs.mDefinition;
-      }
-
       constexpr bool operator == (const MetaNaked& rhs) const noexcept {
          return mDefinition == rhs.mDefinition;
       }

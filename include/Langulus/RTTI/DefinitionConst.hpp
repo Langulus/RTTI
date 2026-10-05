@@ -27,6 +27,7 @@ namespace Langulus::RTTI
 
    public:
       using CTTI_ReflectAs = void;
+      using FFiller        = void (*)(void* destination);
 
       static constexpr Token InvalidName = "novalue";
 

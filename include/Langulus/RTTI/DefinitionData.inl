@@ -1121,7 +1121,7 @@ namespace Langulus::RTTI
    void DefinitionData::FillMorphisms() {
       ForEach(GatherMorphismsFrom<T>{}, [this]<class TO_RAW>{
          using TO = CT::ReflectedAs<TO_RAW>;
-
+         static_assert(CT::NotVoid<TO>, "Can't convert to a type marked void: " + NameOf<TO_RAW>());
          auto destination_type = const_cast<DefinitionData*>(Reflect<TO>());
          Morphism morphism;
 
@@ -1134,7 +1134,7 @@ namespace Langulus::RTTI
          }
          
          if constexpr (CT::Serializer<TO>) {
-            // Destination type can act as a serializer, too         
+            // Destination type can act as a serializer, too            
             using S = CTTI::Serializer<TO>;
             morphism.serialize = [](void const* from, void* to, void* context) -> size_t {
                auto fromT = static_cast<ConstAll<T*>>(from);

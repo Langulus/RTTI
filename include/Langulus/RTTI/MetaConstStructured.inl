@@ -83,6 +83,22 @@ namespace Langulus::RTTI::Inner
       return 0;
    }
 
+   /// Get the type of the constant                                           
+   inline auto MetaConstPacked_16::GetType() const noexcept -> DMeta {
+      const auto id = Base::GetID();
+      if (id)
+         return Registry::GetMetaConstByID(id)->mType;
+      return {};
+   }
+
+   /// Get the filler function                                                
+   inline auto MetaConstPacked_16::GetFiller() const noexcept -> DefinitionConst::FFiller {
+      const auto id = Base::GetID();
+      if (id)
+         return Registry::GetMetaConstByID(id)->mFillConstant;
+      return nullptr;
+   }
+
 #if LANGULUS(SAFE)
    inline MetaConstPacked_16::operator bool() const noexcept {
       if (Base::operator bool()) {

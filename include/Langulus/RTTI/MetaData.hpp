@@ -221,6 +221,7 @@ namespace Langulus::RTTI
 
          bool Is(const MetaDataNaked&) const noexcept;
          bool IsSame(const MetaDataNaked&) const noexcept;
+         bool IsExact(const MetaDataNaked&) const noexcept;
 
          auto GetSize()               const noexcept -> size_t;
          auto GetAlignment()          const noexcept -> pot_t;

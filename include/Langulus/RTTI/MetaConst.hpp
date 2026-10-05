@@ -49,6 +49,9 @@ namespace Langulus::RTTI
          auto GetBoundaries()    const noexcept -> Definition::BoundarySet const&;
 
          IF_SAFE(explicit operator bool() const noexcept);
+
+         auto GetType()   const noexcept -> DMeta;
+         auto GetFiller() const noexcept -> DefinitionConst::FFiller;
       };
       #pragma pack(pop)
       
@@ -62,6 +65,13 @@ namespace Langulus::RTTI
          using MetaNaked::MetaNaked;
          using MetaNaked::operator =;
          using MetaNaked::operator bool;
+
+         auto GetType() const noexcept -> DMeta {
+            return mDefinition ? mDefinition->mType : DMeta{};
+         }
+         auto GetFiller() const noexcept -> DefinitionConst::FFiller {
+            return mDefinition ? mDefinition->mFillConstant : nullptr;
+         }
       };
    }
 }

@@ -258,9 +258,9 @@ SCENARIO("NameOf", "[nameof]") {
       REQUIRE(name == "One::Two::Three::VeryComplexTemplate<One::Two::Three::TemplatedTypeDeepIntoNamespaces<uint16>>");
    }
 
-   WHEN("Taken the name of Langulus::Flow::Construct") {
-      auto name = NameOf<Langulus::Flow::Construct>();
-      REQUIRE(name == "Flow::Construct");
+   WHEN("Taken the name of Langulus::Flow::Recipe") {
+      auto name = NameOf<Langulus::Flow::Recipe>();
+      REQUIRE(name == "Flow::Recipe");
    }
 
    WHEN("Taken the name of Langulus::Flow::Constructconst") {
