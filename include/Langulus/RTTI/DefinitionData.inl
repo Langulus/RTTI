@@ -1192,8 +1192,10 @@ namespace Langulus::RTTI
       static_assert(not Akin<T, BASE>,
          "Can't have base of the same type as the derived");
       static_assert(NameOf<T, false>() != NameOf<BASE, false>(),
-         "T and BASE have the same NameOf, possibly due to inheritance. "
-         "Specify a different CTTI::Named<T> or T::CTTI_Named for each!");
+         "T and BASE have the same NameOf (\"" + NameOf<T, false>() + 
+         "\"), possibly due to inheritance. Specify a different "
+         "CTTI::Named<" + CppNameOf<T>() + "> or " + CppNameOf<T>() + 
+         "::CTTI_Named for each!");
 
       Base result;
       result.type = Reflect<BASE>();

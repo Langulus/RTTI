@@ -21,6 +21,7 @@ namespace Langulus::RTTI
 
    using MetaSet = ::std::unordered_set<Inner::Definition const*>;
 
+
    ///                                                                        
    ///   The RTTI registry                                                    
    ///                                                                        
@@ -46,10 +47,8 @@ namespace Langulus::RTTI
       LANGULUS_API(RTTI)
       static auto RegisterVerb(
          Token const& cppname,
-         Token const& token,
-         Token const& tokenRev,
-         Token const& op,
-         Token const& opRev
+         Token const& token, Token const& tokenRev,
+         Token const& op,    Token const& opRev
       ) -> DefinitionVerb&;
       
       LANGULUS_API(RTTI)
