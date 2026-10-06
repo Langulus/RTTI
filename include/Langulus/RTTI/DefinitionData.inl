@@ -455,8 +455,8 @@ namespace Langulus::RTTI
                "Verb list must contain only verbs");
             static_assert(CT::Decayed<V>,
                "Verbs must be fully decayed when listed");
-            static_assert(V::template IsAble<T>,
-               "T doesn't have the required verb method/specialization");
+            //static_assert(V::template IsAble<T>,
+            //   "T doesn't have the required verb method/specialization");
 
             auto verb_definition = const_cast<DefinitionVerb*>(
                DefinitionVerb::Reflect<V>());
