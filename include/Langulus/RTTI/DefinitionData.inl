@@ -44,11 +44,8 @@
 #include "DefinitionConst.hpp"
 #include "DefinitionTag.hpp"
 
-#if 0 or LANGULUS_META_VERBOSITY_MASTER_SWITCH()
-   #include <Langulus/Logger/EnableVerbose.hpp>
-#else
-   #include <Langulus/Logger/NoVerbose.hpp>
-#endif
+#define LglsVerboseEnabled 0 or LANGULUS_META_VERBOSITY_MASTER_SWITCH()
+#include <Langulus/Logger/ToggleVerbose.hpp>
 
 
 namespace Langulus::RTTI
@@ -455,8 +452,6 @@ namespace Langulus::RTTI
                "Verb list must contain only verbs");
             static_assert(CT::Decayed<V>,
                "Verbs must be fully decayed when listed");
-            //static_assert(V::template IsAble<T>,
-            //   "T doesn't have the required verb method/specialization");
 
             auto verb_definition = const_cast<DefinitionVerb*>(
                DefinitionVerb::Reflect<V>());
@@ -494,13 +489,13 @@ namespace Langulus::RTTI
       }
       
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         LglsVerbose(
+         LglsVerbose(Info, 
             Logger::Cyan, "Data ", definition.mNameOf,
             " (ID: ", definition.mID, ") ", Logger::Green,
             "registered from ", (Boundary?Boundary:"MAIN")
          );
       #else
-         LglsVerbose(
+         LglsVerbose(Info, 
             Logger::Cyan, "Data ", definition.mNameOf,
             Logger::Green, " reflected"
          );
@@ -606,8 +601,6 @@ namespace Langulus::RTTI
                "Verb list must contain only verbs");
             static_assert(CT::Decayed<V>,
                "Verbs must be fully decayed when listed");
-            static_assert(V::template IsAble<T>,
-               "T doesn't have the required verb method/specialization");
 
             auto verb_definition = const_cast<DefinitionVerb*>(
                DefinitionVerb::Reflect<V>());
@@ -623,13 +616,13 @@ namespace Langulus::RTTI
       }
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         LglsVerbose(
+         LglsVerbose(Info, 
             Logger::Cyan, "Data ", definition.mNameOf,
             " (ID: ", definition.mID, ") ", Logger::Green,
             "registered from ", (Boundary?Boundary:"MAIN")
          );
       #else
-         LglsVerbose(
+         LglsVerbose(Info, 
             Logger::Cyan, "Data ", definition.mNameOf,
             Logger::Green, " reflected"
          );
@@ -848,13 +841,13 @@ namespace Langulus::RTTI
       definition.FillMorphisms<DecvqAll<T>>();
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         LglsVerbose(
+         LglsVerbose(Info, 
             Logger::Cyan, "Data ", definition.mNameOf,
             " (ID: ", definition.mID, ") ", Logger::Green,
             "registered from ", (Boundary?Boundary:"MAIN")
          );
       #else
-         LglsVerbose(
+         LglsVerbose(Info, 
             Logger::Cyan, "Data ", definition.mNameOf,
             Logger::Green, " reflected"
          );
@@ -1093,13 +1086,13 @@ namespace Langulus::RTTI
       definition.FillMorphisms<DecvqAll<T>>();
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
-         LglsVerbose(
+         LglsVerbose(Info, 
             Logger::Cyan, "Data ", definition.mNameOf,
             " (ID: ", definition.mID, ") ", Logger::Green,
             "registered from ", (Boundary?Boundary:"MAIN")
          );
       #else
-         LglsVerbose(
+         LglsVerbose(Info, 
             Logger::Cyan, "Data ", definition.mNameOf,
             Logger::Green, " reflected"
          );
@@ -1109,7 +1102,10 @@ namespace Langulus::RTTI
    }
    
    inline DefinitionData::~DefinitionData() {
-      LglsVerbose(Logger::Red, "Destroying data definition: ", Logger::Cyan, mNameOf);
+      LglsVerbose(Info, 
+         Logger::Red, "Destroying data definition: ", 
+         Logger::Cyan, mNameOf
+      );
    }
    
    /// Set reflected morphisms                                                
