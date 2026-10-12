@@ -1152,26 +1152,26 @@ namespace Langulus::RTTI
       static_assert(CT::NotConvoluted<THIS>, "Can't have qualifiers here");
       using DATA = typename HANDLE::Type;
 
+      using AS = CT::ReflectedAs<Deext<DATA>>;
+      static_assert(CT::NotVoid<AS>, "Member " + HANDLE::Name + 
+         " reflects as void, instead of " + NameOf<DATA>());
+
       Member m;
+      m.type = Reflect<AS>;
       m.extent = ExtentOf<DATA>;
       m.member = [](void* owner) -> void* {
          auto context = static_cast<THIS*>(owner);
          return &(context->*HANDLE::Handle);
       };
       m.name = HANDLE::Name;
-      m.name = m.name.substr(m.name.find_last_of(':') + 1);
+      m.name = RTTI::FindLastToken(m.name);
 
-      using AS = CT::ReflectedAs<Deext<DATA>>;
+      // Reflect tags                                                   
       using TAGS = TagsOf<DATA>;
-      if constexpr (not CT::Void<TAGS>) {
-         // Reflect the trait tag                                       
-         m.type = Reflect<AS>;
-         ForEach(TAGS{}, [&m]<class T>{
-            static_assert(CT::DefineTag<T>, "T is not a tag definition");
-            m.tags.insert(DefinitionTag::Reflect<T>());
-         });
-      }
-      else m.type = Reflect<AS>;
+      ForEach(TAGS{}, [&m]<class T>{
+         static_assert(CT::DefineTag<T>, NameOf<T>() + " is not a tag definition");
+         m.tags.insert(DefinitionTag::Reflect<T>());
+      });
       return m;
    }
    

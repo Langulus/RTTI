@@ -801,6 +801,77 @@ namespace Langulus::RTTI::Inner
       return {nullptr, nullptr};
    }
 
+   /// Get a reflected base linked to this meta data definition.              
+   /// Traverses the whole inheritance tree, so can return distant bases.     
+   ///   @param type the type of base to search for, nullptr for any          
+   ///   @param nth use this to get bases by index                            
+   ///   @param base [in/out] base info ends up here if found                 
+   ///   @return true if a base is available                                  
+   TEMPLATE()
+   bool ME()::GetBase(MetaDataStructured_XY type, size_t nth, DefinitionData::Base& base) const {
+      auto origin = GetOrigin();
+      if (not origin or not type)
+         return false;
+
+      size_t scanned = 0;
+      for (auto& b : origin.GetBases()) {
+         // Check base                                                  
+         if (type.IsExact(b.type)) {
+            if (scanned == nth) {
+               base = b;
+               return true;
+            }
+            else ++scanned;
+         }
+
+         // Dig deeper                                                  
+         DefinitionData::Base local;
+         size_t index = 0;
+         while (DMeta(b.type).GetBase(type, index, local)) {
+            if (scanned == nth) {
+               local.binaryCompatible = b.binaryCompatible and local.binaryCompatible;
+               base = local;
+               return true;
+            }
+            else ++scanned;
+            
+            ++index;
+         }
+      }
+
+      return false;
+   }
+
+   /// Check if this type interprets as another without conversion            
+   ///	@param other the type to try interpreting as                         
+   ///	@param count the number of contiguous instances we want casting into 
+   ///	@param binary_compatible do we require for the other to be           
+   ///      binary compatible with this                                       
+   ///   @param advanced whether or not to do an advanced search in the       
+   ///      opposite inheritance order                                        
+   ///	@return true if this type interprets as other[count]                 
+   TEMPLATE()
+   bool ME()::CastsTo(MetaDataStructured_XY other, size_t count, bool binary_compatible, bool advanced) const {
+      LglsAssumeUser(count >= 1, "Invalid count");
+      if (Is(other) and count == 1)
+         return true;
+
+      if (IsSparse() and other.IsSparse() and advanced and count == 1) {
+         // We're allowed to dynamic_cast in reverse                    
+      }
+
+      // The base we're searching for can never be binary-compatible    
+      if (binary_compatible and count * other.GetSize() != GetSize())
+         return false;
+
+      DefinitionData::Base found;
+      if (GetBase(other, 0, found))
+         return not binary_compatible or found.binaryCompatible;
+
+      // At this point we're pretty sure that types are incompatible    
+      return false;
+   }
+
 #if LANGULUS(SAFE)
    TEMPLATE() ME()::operator bool() const noexcept {
       if (Base::operator bool()) {

@@ -197,6 +197,9 @@ namespace Langulus::RTTI
          //auto GetMorphismsFrom()      const noexcept -> DefinitionData::MorphismList const&;
          auto GetMorphism(MetaDataStructured_XY) const noexcept -> DefinitionData::Morphism;
 
+         bool GetBase(MetaDataStructured_XY type, size_t nth, DefinitionData::Base& base) const;
+         bool CastsTo(MetaDataStructured_XY other, size_t count = 1, bool binary_compatible = false, bool advanced = false) const;
+
          IF_SAFE(LglsNoSideEffects explicit operator bool() const noexcept);
       };
       #pragma pack(pop)
@@ -288,6 +291,9 @@ namespace Langulus::RTTI
          auto GetMorphismsTo()        const noexcept -> DefinitionData::MorphismList const&;
          //auto GetMorphismsFrom()      const noexcept -> DefinitionData::MorphismList const&;
          auto GetMorphism(MetaDataNaked) const noexcept -> DefinitionData::Morphism;
+
+         bool GetBase(MetaDataNaked type, size_t nth, DefinitionData::Base& base) const;
+         bool CastsTo(MetaDataNaked other, size_t count = 1, bool binary_compatible = false, bool advanced = false) const;
       };
    }
 }

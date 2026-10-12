@@ -157,7 +157,7 @@ namespace Langulus::RTTI
 
          // Type of the base.                                           
          DefinitionData const* type IF_SAFE(= nullptr);
-         // Usually true when base completely fills the derived type.   
+         // True when base completely fills the derived type.           
          bool binaryCompatible = false;
          // Get a pointer to the base inside an instance.               
          // If nullptr, then base is imposed. Imposed bases are not     
