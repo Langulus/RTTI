@@ -47,7 +47,9 @@ namespace Langulus
    ///   @return the definition                                               
    template<class T>
    RTTI::DMeta MetaDataOf() {
-      return RTTI::DefinitionData::Reflect<CT::ReflectedAs<ShedDeref<T>>>();
+      using AS = CT::ReflectedAs<ShedDeref<T>>;
+      static_assert(not ::std::is_void_v<AS>, CppNameOf<T>() + " was marked as not reflectable");
+      return RTTI::DefinitionData::Reflect<AS>();
    }
 
    /// Tag definition retrieval.                                              

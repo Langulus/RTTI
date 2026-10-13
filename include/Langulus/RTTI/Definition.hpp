@@ -204,7 +204,7 @@ namespace Langulus::RTTI::Inner
       }
 
    public:
-      using CTTI_ReflectAs = void;
+      using CTTI_ReflectAs = void; //TODO should remain so, only the pointer should be reflectable
 
       Definition() = delete;
       virtual ~Definition() = default;

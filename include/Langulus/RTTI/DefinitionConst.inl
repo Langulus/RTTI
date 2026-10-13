@@ -42,6 +42,7 @@ namespace Langulus::RTTI
          if (meta and meta->IsInRelevantBoundary())
             return meta;
 
+         //TODO move the name forming to IsolateConstant??
          std::string token {static_cast<Token>(NameOf<OWNER>())};
          token += "::";
          if constexpr (NAMED_VALUE::Token != "")
@@ -64,7 +65,8 @@ namespace Langulus::RTTI
          const auto cppname = CppNameOf<NAMED_VALUE::Constant>();
          DefinitionConst& definition = s_definition.emplace(cppname);
 
-         std::string token = NameOf<OWNER>();
+         //TODO move the name forming to IsolateConstant??
+         std::string token {static_cast<Token>(NameOf<OWNER>())};
          token += "::";
          if constexpr (NAMED_VALUE::Token != "")
             token += NAMED_VALUE::Token;
