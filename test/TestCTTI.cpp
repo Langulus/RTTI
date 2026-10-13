@@ -258,7 +258,7 @@ SCENARIO("A complex type reflected with CTTI traits", "[metadata]") {
 
       REQUIRE(meta->mMembers[0].mCount == 1);
       REQUIRE(meta->mMembers[0].mValueRetriever(&instance) == &instance.anotherMember);
-      REQUIRE(meta->mMembers[0].GetTag(0)->Is<Traits::Tag>());
+      REQUIRE(meta->mMembers[0].GetTag(0)->Is<Tags::Tag>());
       REQUIRE(meta->mMembers[0].GetTag(1) == nullptr);
       REQUIRE(meta->mMembers[0].GetType()->Is<bool>());
 

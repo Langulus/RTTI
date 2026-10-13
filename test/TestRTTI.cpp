@@ -24,7 +24,7 @@ SCENARIO("Comparing different meta types with one another", "[meta]") {
       REQUIRE(a_vmeta);
       REQUIRE(vmeta == a_vmeta);
 
-      const auto tmeta = MetaTraitOf<Traits::Tag>();
+      const auto tmeta = MetaTraitOf<Tags::Tag>();
       REQUIRE(tmeta);
 
       const AMeta a_tmeta = tmeta;

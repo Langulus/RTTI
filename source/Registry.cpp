@@ -50,7 +50,7 @@ namespace Langulus::RTTI
       MetaMap<DefinitionConst const*> mMetaConstantsByToken;
       Indexed<DefinitionConst const*> mMetaConstantsByID;
    
-      // Database for meta trait definitions                            
+      // Database for meta tag definitions                            
       MetaMap<::std::unique_ptr<DefinitionTag>> mMetaTagsByCppName;
       MetaMap<DefinitionTag const*>   mMetaTagsByToken;
       Indexed<DefinitionTag const*>   mMetaTagsByID;
@@ -519,7 +519,7 @@ namespace Langulus::RTTI
    ///   @attention assumes token is not yet registered                       
    ///   @param cppname the C++ type name to register                         
    ///   @param token_messy the custom token used in scripting                
-   ///   @return the newly defined meta trait for that token                  
+   ///   @return the newly defined meta tag for that token                  
    auto Registry::RegisterTag(Token const& cppname, Token const& token_messy) -> DefinitionTag& {
       const ::std::string cppname_s {cppname};
       LglsAssumeDev(not mMetaTagsByCppName.contains(cppname_s),

@@ -31,7 +31,7 @@ namespace Langulus::RTTI
    ///      relevant instantiations of this function as extern template, to   
    ///      save on a lot of compiler resources:                              
    ///      https://stackoverflow.com/questions/8130602                       
-   ///   @tparam T the decayed trait to reflect                               
+   ///   @tparam T the decayed tag to reflect                               
    template<CT::Decayed T>
    auto DefinitionTag::Reflect() -> DefinitionTag const* {
       static_assert(CT::Complete<T>,

@@ -37,7 +37,7 @@ namespace Langulus::Annies
    class Tag : public Block<> {};
 }
 
-namespace Langulus::Traits
+namespace Langulus::Tags
 {
    class Tag : Annies::Tag {
       LANGULUS(TRAIT) "Tag";
@@ -259,7 +259,7 @@ struct CheckingWhatConverterGetsInherited : ConvertibleData {
 
 class alignas(128) ImplicitlyReflectedDataWithTraits : public ConvertibleData {
 public:
-   RTTI::Tag<bool, Traits::Tag> anotherMember {};
+   RTTI::Tag<bool, Tags::Tag> anotherMember {};
    int anotherMemberArray [12] {};
    int* sparseMember {};
 
