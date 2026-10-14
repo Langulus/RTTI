@@ -709,9 +709,10 @@ namespace Langulus::RTTI
       definition.mAlign     = alignof(T);
       definition.mConst     = CT::Constant<T>;
 
-      if constexpr (CT::Complete<Decay<T>>) {
-         definition.mDeep = CT::Deep<T>;
-         definition.mExecutable = CT::Executable<T>;
+      using ORIGIN = CT::ReflectedAs<Decay<T>>;
+      if constexpr (CT::Complete<ORIGIN>) {
+         definition.mDeep = CT::Deep<ORIGIN>;
+         definition.mExecutable = CT::Executable<ORIGIN>;
       }
       else {
          definition.mDeep = false;
@@ -719,8 +720,8 @@ namespace Langulus::RTTI
       }
 
       // Reflect the origin type                                        
-      if constexpr (CT::Complete<Decay<T>>)
-         definition.mOrigin = Reflect<CT::ReflectedAs<Decay<T>>>();
+      if constexpr (CT::Complete<ORIGIN>)
+         definition.mOrigin = Reflect<ORIGIN>();
 
       // Reflect the dequalified types and generate/propagate IDs       
       using DTOnce = Decvq<T>;
@@ -742,14 +743,14 @@ namespace Langulus::RTTI
          definition.mDecvqAll  = &definition;
       }
 
-      using DenserT = Deref<Deptr<T>>;
+      using DenserT = CT::ReflectedAs<Deref<Deptr<T>>>; //Deref<Deptr<T>>;
       if constexpr (CT::Complete<DenserT>) {
          // Reflect the denser type                                     
-         definition.mDeptr = Reflect<CT::ReflectedAs<DenserT>>();
+         definition.mDeptr = Reflect<DenserT>();
          auto deptr = const_cast<DefinitionData*>(definition.mDeptr);
          LglsAssumeDev(deptr->mConst == CT::Constant<DenserT>,
             "Deptr didn't preserve mutability, reflecting ", NameOf<DenserT>(),
-            " (reflected as ", NameOf<CT::ReflectedAs<DenserT>>(),
+            " (reflected as ", NameOf<DenserT>(),
             ") as ", deptr->mNameOf
          );
 
@@ -837,7 +838,7 @@ namespace Langulus::RTTI
       
       // Calculate the allocation table                                 
       auto minElements = MinAllocOf<T>() / sizeof(T);
-      definition.ReflectStandardSparse(CT::Mutable<T>, CT::Complete<Decay<T>>, CT::Complete<DenserT>, minElements);
+      definition.ReflectStandardSparse(CT::Mutable<T>, CT::Complete<ORIGIN>, CT::Complete<DenserT>, minElements);
       definition.FillMorphisms<DecvqAll<T>>();
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
@@ -919,9 +920,10 @@ namespace Langulus::RTTI
       definition.mAlign     = alignof(T);
       definition.mConst     = CT::Constant<T>;
 
-      if constexpr (CT::Complete<Decay<T>>) {
-         definition.mDeep = CT::Deep<T>;
-         definition.mExecutable = CT::Executable<T>;
+      using ORIGIN = CT::ReflectedAs<Decay<T>>;
+      if constexpr (CT::Complete<ORIGIN>) {
+         definition.mDeep = CT::Deep<ORIGIN>;
+         definition.mExecutable = CT::Executable<ORIGIN>;
       }
       else {
          definition.mDeep = false;
@@ -929,8 +931,8 @@ namespace Langulus::RTTI
       }
 
       // Reflect the origin type                                        
-      if constexpr (CT::Complete<Decay<T>>)
-         definition.mOrigin = Reflect<CT::ReflectedAs<Decay<T>>>();
+      if constexpr (CT::Complete<ORIGIN>)
+         definition.mOrigin = Reflect<ORIGIN>();
 
       // Reflect the dequalified types and generate/propagate IDs       
       using DTOnce = Decvq<T>;
@@ -1082,7 +1084,7 @@ namespace Langulus::RTTI
       
       // Calculate the allocation table                                 
       auto minElements = MinAllocOf<T>() / sizeof(T);
-      definition.ReflectCustomSparse(CT::Mutable<T>, CT::Complete<Decay<T>>, minElements, sizeof(T));
+      definition.ReflectCustomSparse(CT::Mutable<T>, CT::Complete<ORIGIN>, minElements, sizeof(T));
       definition.FillMorphisms<DecvqAll<T>>();
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
