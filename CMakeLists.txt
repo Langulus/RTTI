@@ -22,12 +22,12 @@ add_langulus_library(LangulusRTTI
    SOURCES  $<TARGET_OBJECTS:LangulusLogger>
             $<$<BOOL:${LANGULUS_OPTION_MANAGED_REFLECTION}>:source/Registry.cpp>
             source/DefinitionData.cpp
-            $<$<BOOL:${LANGULUS_OPTION_PROFILING}>:$<TARGET_OBJECTS:LangulusPercist>>
+            $<TARGET_OBJECTS:LangulusPercist>
 )
 
 target_include_directories(LangulusRTTI
    PUBLIC   $<TARGET_PROPERTY:LangulusLogger,INTERFACE_INCLUDE_DIRECTORIES>
-            $<$<BOOL:${LANGULUS_OPTION_PROFILING}>:$<TARGET_PROPERTY:LangulusPercist,INTERFACE_INCLUDE_DIRECTORIES>>
+            $<TARGET_PROPERTY:LangulusPercist,INTERFACE_INCLUDE_DIRECTORIES>
             include
 )
 

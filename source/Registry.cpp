@@ -71,7 +71,7 @@ namespace Langulus::RTTI
       ///   @param where where to search in                                   
       ///   @param id the id to search for                                    
       ///   @return the found element, or nullptr if not found                
-      auto GetMetaByID(const auto& where, size_t id) assumptious {
+      auto GetMetaByID(auto const& where, size_t id) assumptious {
          LglsAssumeDevAndOptimize(id != 0, "Invalid ID");
          return where[id-1];
       }
@@ -320,9 +320,9 @@ namespace Langulus::RTTI
          }
       }
 
-      // If there are data/traits available, discard verbs/consts (2.a) 
+      // If there are data/tags available, discard verbs/consts (2.a) 
       if (meta_data_encountered and meta_tag_encountered) {
-         // Both data and traits encountered, check first letter (2.b)  
+         // Both data and tags encountered, check first letter (2.b)  
          if (IsLowercase(keyword[0])) {
             if (meta_tag_encountered == 1)
                return meta_tag;
@@ -336,7 +336,7 @@ namespace Langulus::RTTI
          }
       }
       else if (meta_data_encountered == 1) {
-         // No traits, just meta data                                   
+         // No tags, just meta data                                   
          // If it's just one, directly return it (2.a)                  
          return meta_data;
       }
@@ -345,7 +345,7 @@ namespace Langulus::RTTI
          return meta_data_exact_match;
       }
       else if (meta_tag_encountered == 1) {
-         // No data, just meta traits                                   
+         // No data, just meta tags                                   
          // If it's just one, directly return it (2.a)                  
          return meta_tag;
       }
@@ -946,7 +946,7 @@ namespace Langulus::RTTI
 
       // Collect all origin types, and work with those                  
       int datas = 0;
-      int traits = 0;
+      int tags = 0;
       MetaList origins;
       for (auto meta : ambiguous) {
          auto dmeta = dynamic_cast<DefinitionData const*>(meta);
@@ -960,7 +960,7 @@ namespace Langulus::RTTI
             if (dmeta)
                ++datas;
             else if (dynamic_cast<DefinitionTag const*>(meta))
-               ++traits;
+               ++tags;
          }
       }
 
@@ -969,11 +969,11 @@ namespace Langulus::RTTI
       if (origins.size() == 1)
          return ToLastToken(mToken);
       
-      if ((datas  == 1 and traits == 0 and Kind() == Meta::Data)
-      or  (traits == 1 and datas  == 0 and Kind() == Meta::Tag))
+      if ((datas  == 1 and tags == 0 and Kind() == Meta::Data)
+      or  (tags == 1 and datas  == 0 and Kind() == Meta::Tag))
          return ToLastToken(mToken);
       
-      if (datas == 1 and traits == 1) {
+      if (datas == 1 and tags == 1) {
          if (Kind() == Meta::Data) {
             // Token should be starting with a capital letter           
             return static_cast<const MetaData*>(this)->mTokenSanitized;
