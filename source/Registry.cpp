@@ -33,7 +33,6 @@ namespace Langulus::RTTI
       // Definitions indexed by lowercase reflected name                
       template<class T>
       using MetaMap = ::std::unordered_map<Token, T>;
-      //using MetaSet  = ::std::unordered_set<Inner::Definition const*>;
    
       // Definitions indexed by ID                                      
       template<class T>
@@ -939,15 +938,15 @@ namespace Langulus::RTTI
 
    /// Get the shortest possible unambiguous token                            
    ///   @return the token                                                    
-   /*Token Inner::Definition::GetShortestUnambiguousToken() const {
-      auto& ambiguous = Instance.GetAmbiguousMeta(mToken);
+   auto Registry::GetShortestUnambiguousToken(Inner::Definition const* of) -> Token {//TODO this is probably trash
+      auto& ambiguous = GetAmbiguousMeta(of->mNameOf);
       if (ambiguous.size() == 1)
-         return Inner::ToLastToken(mToken);
+         return Inner::ToLastToken(of->mNameOf);
 
       // Collect all origin types, and work with those                  
       int datas = 0;
       int tags = 0;
-      MetaList origins;
+      MetaSet origins;
       for (auto meta : ambiguous) {
          auto dmeta = dynamic_cast<DefinitionData const*>(meta);
          if (dmeta and dmeta->mOrigin) {
@@ -967,33 +966,22 @@ namespace Langulus::RTTI
       // Some easy to do disambiguations                                
       // Meta datas/tags always win over verbs/constants                
       if (origins.size() == 1)
-         return ToLastToken(mToken);
+         return Inner::ToLastToken(of->mNameOf);
       
-      if ((datas  == 1 and tags == 0 and Kind() == Meta::Data)
-      or  (tags == 1 and datas  == 0 and Kind() == Meta::Tag))
-         return ToLastToken(mToken);
-      
-      if (datas == 1 and tags == 1) {
-         if (Kind() == Meta::Data) {
-            // Token should be starting with a capital letter           
-            return static_cast<const MetaData*>(this)->mTokenSanitized;
-         }
-
-         if (Kind() == Meta::Tag) {
-            // Token should be starting with a lower letter             
-            return static_cast<const MetaTrait*>(this)->mTokenSanitized;
-         }
-      }
+      if ((datas == 1 and tags  == 0 and dynamic_cast<DefinitionData const*>(of))
+      or  (tags  == 1 and datas == 0 and dynamic_cast<DefinitionTag  const*>(of))
+      or  (datas == 1 and tags  == 1))
+         return Inner::ToLastToken(of->mNameOf);
 
       // Start including namespaces, until the resulting token has      
       // exactly one match inside the ambiguous list                    
-      auto start = ToLastToken(mToken).data() - 3;
-      while (start >= mToken.data()) {
+      auto start = Inner::ToLastToken(of->mNameOf).data() - 3;
+      while (start >= of->mNameOf.data()) {
          if (*start == ':') {
-            const auto candidate = mToken.substr(start - mToken.data() + 1);
+            const auto candidate = of->mNameOf.substr(start - of->mNameOf.data() + 1);
             size_t matches = 0;
             for (auto& meta : origins) {
-               if (meta->mToken.ends_with(candidate)) {
+               if (meta->mNameOf.ends_with(candidate)) {
                   if (++matches > 1)
                      break;
                }
@@ -1011,8 +999,8 @@ namespace Langulus::RTTI
       }
 
       // Full token returned as fallback                                
-      return mToken;
-   }*/
+      return of->mNameOf;
+   }
 }
 
 #undef VERBOSE//TODO see above

@@ -252,7 +252,7 @@ struct ConvertibleData : ImplicitlyReflectedData {
 };
 
 struct CheckingWhatConverterGetsInherited : ConvertibleData {
-   LANGULUS(NAME) "CheckingWhatConverterGetsInherited";
+   using CTTI_Named = Yes<"CheckingWhatConverterGetsInherited">;
 
    using ConvertibleData::ConvertibleData;
 };
@@ -273,7 +273,7 @@ public:
 
    using ConvertibleData::ConvertibleData;
 
-   LANGULUS(NAME) "MyType";
+   using CTTI_Named = Yes<"MyType";
    LANGULUS(INFO) "Info about MyType";
    LANGULUS(FILES) "txt, pdf";
    LANGULUS(VERSION_MAJOR) 2;
@@ -305,7 +305,7 @@ public:
    int anotherMemberArray [12] {};
    int* sparseMember {};
 
-   LANGULUS(NAME) "ComplexType";
+   using CTTI_Named = Yes<"ComplexType";
    LANGULUS(INFO) "Info about ComplexType";
    LANGULUS(VERSION_MAJOR) 2;
    LANGULUS(VERSION_MINOR) 1;
@@ -336,7 +336,7 @@ public:
 struct AnotherTypeWithSimilarilyNamedValues {
    enum Named {One = 501, Two, Three};
    LANGULUS_NAMED_VALUES(One, Two, Three);
-   LANGULUS(NAME) "YetAnotherNamedType";
+   using CTTI_Named = Yes<"YetAnotherNamedType";
 
    int v = One;
 
@@ -344,7 +344,7 @@ struct AnotherTypeWithSimilarilyNamedValues {
 };
 
 struct CheckingWhatGetsInherited : ImplicitlyReflectedDataWithTraits {
-   LANGULUS(NAME) "CheckingWhatGetsInherited";
+   using CTTI_Named = Yes<"CheckingWhatGetsInherited";
 
    using ImplicitlyReflectedDataWithTraits::ImplicitlyReflectedDataWithTraits;
 };

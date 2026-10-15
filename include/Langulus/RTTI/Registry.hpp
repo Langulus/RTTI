@@ -90,5 +90,8 @@ namespace Langulus::RTTI
       static auto ResolveFileExtension(Token const&) assumptious -> const MetaSet&;
       LANGULUS_API(RTTI)
       static void UnloadBoundary(Token const&);
+
+      LANGULUS_API(RTTI)
+      static auto GetShortestUnambiguousToken(Inner::Definition const*) -> Token;
    };
 }
