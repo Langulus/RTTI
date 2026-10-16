@@ -92,6 +92,6 @@ namespace Langulus::RTTI
       static void UnloadBoundary(Token const&);
 
       LANGULUS_API(RTTI)
-      static auto GetShortestUnambiguousToken(Inner::Definition const*) -> Token;
+      static auto GetShortestUnambiguousToken(Inner::Definition const*) -> std::string;
    };
 }

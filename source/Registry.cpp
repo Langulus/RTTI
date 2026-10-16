@@ -938,10 +938,10 @@ namespace Langulus::RTTI
 
    /// Get the shortest possible unambiguous token                            
    ///   @return the token                                                    
-   auto Registry::GetShortestUnambiguousToken(Inner::Definition const* of) -> Token {//TODO this is probably trash
+   auto Registry::GetShortestUnambiguousToken(Inner::Definition const* of) -> std::string {//TODO this is probably trash
       auto& ambiguous = GetAmbiguousMeta(of->mNameOf);
       if (ambiguous.size() == 1)
-         return Inner::ToLastToken(of->mNameOf);
+         return std::string {Inner::ToLastToken(of->mNameOf)};
 
       // Collect all origin types, and work with those                  
       int datas = 0;
@@ -966,12 +966,12 @@ namespace Langulus::RTTI
       // Some easy to do disambiguations                                
       // Meta datas/tags always win over verbs/constants                
       if (origins.size() == 1)
-         return Inner::ToLastToken(of->mNameOf);
+         return std::string {Inner::ToLastToken(of->mNameOf)};
       
       if ((datas == 1 and tags  == 0 and dynamic_cast<DefinitionData const*>(of))
       or  (tags  == 1 and datas == 0 and dynamic_cast<DefinitionTag  const*>(of))
       or  (datas == 1 and tags  == 1))
-         return Inner::ToLastToken(of->mNameOf);
+         return std::string {Inner::ToLastToken(of->mNameOf)};
 
       // Start including namespaces, until the resulting token has      
       // exactly one match inside the ambiguous list                    
@@ -989,7 +989,7 @@ namespace Langulus::RTTI
 
             if (matches == 1) {
                // Match found                                           
-               return candidate;
+               return std::string {candidate};
             }
 
             start -= 2;
