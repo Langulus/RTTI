@@ -1001,6 +1001,10 @@ namespace Langulus::RTTI
       // Full token returned as fallback                                
       return of->mNameOf;
    }
+
+   auto Inner::Definition::GetShortestUnambiguousToken() const noexcept -> ::std::string {
+      return Registry::GetShortestUnambiguousToken(this);
+   }
 }
 
 #undef VERBOSE//TODO see above

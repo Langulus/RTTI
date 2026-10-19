@@ -144,7 +144,7 @@ namespace Langulus::RTTI::Inner
             return mDefinition->mNameOf;
          return T::InvalidName;
       }
-   
+
       /// Get the info of the type, the result of InfoOf                      
       auto GetInfo() const noexcept -> Token {
          if (mDefinition)
@@ -174,6 +174,13 @@ namespace Langulus::RTTI::Inner
 
          static const Definition::BoundarySet fallback;
          return fallback;
+      }
+
+      /// Get the name of the type, the result of NameOf                      
+      auto GetShortestUnambiguousToken() const noexcept -> ::std::string {
+         if (mDefinition)
+            return mDefinition->GetShortestUnambiguousToken();
+         return T::InvalidName;
       }
    #endif
 

@@ -138,6 +138,10 @@ namespace Langulus::RTTI
          auto GetMinAllocation()      const noexcept -> pot_t;
          auto GetAllocationTable()    const noexcept -> size_t const*;
 
+         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+            auto GetShortestUnambiguousToken() const noexcept -> ::std::string;
+         #endif
+
          #if LANGULUS_FEATURE(MANAGED_MEMORY)
             auto GetMinPoolsize()     const noexcept -> pot_t;
             auto GetPoolTactic()      const noexcept -> PoolTactic;

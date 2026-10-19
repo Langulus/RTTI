@@ -208,5 +208,10 @@ namespace Langulus::RTTI::Inner
 
       Definition() = delete;
       virtual ~Definition() = default;
+
+      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         LANGULUS_API(RTTI)
+         auto GetShortestUnambiguousToken() const noexcept -> ::std::string;
+      #endif
    };
 }

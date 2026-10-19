@@ -267,6 +267,17 @@ namespace Langulus::RTTI::Inner
       return {};
    }
 
+   #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+   /// Get the name of the type, the result of NameOf                         
+   TEMPLATE()
+   auto ME()::GetShortestUnambiguousToken() const noexcept -> ::std::string {
+      const auto id = Base::GetID();
+      if (id)
+         return Registry::GetMetaDataByID(id, sparse, constant)->GetShortestUnambiguousToken();
+      return ::std::string {DefinitionData::InvalidName};
+   }
+   #endif
+
    #if LANGULUS_FEATURE(MANAGED_MEMORY)
       /// Get the reflected allocation page                                   
       TEMPLATE()
