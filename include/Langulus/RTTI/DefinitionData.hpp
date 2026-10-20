@@ -23,7 +23,7 @@ namespace Langulus::Annies
 {
    struct Many;
    struct Any;
-   struct HandleDisowned;
+   //struct HandleDisowned;
    template<class> 
    struct TVerb;
    using Verb = TVerb<void>;
@@ -31,6 +31,9 @@ namespace Langulus::Annies
 
 namespace Langulus::RTTI
 {
+   /// A rudimentary non-owning data block                                    
+   struct Block;
+
    ///                                                                        
    /// A data definition                                                      
    ///                                                                        
@@ -124,7 +127,7 @@ namespace Langulus::RTTI
       using FDescribe      = void (*)(void* self, const Annies::Many& describe);
       using FCompare       = Compared (*)(const void* lhs, const void* rhs);
       using FCompareEqual  = bool (*)(const void* lhs, const void* rhs);
-      using FResolve       = Annies::HandleDisowned (*)(void* self);
+      using FResolve       = Block /*Annies::HandleDisowned*/ (*)(void* self);
       using FHash          = Hash (*)(void* self);
       using FReference     = int (*)(void* self, int modifier);
       using FDispatch      = bool (*)(void* self, Annies::Verb& verb);
