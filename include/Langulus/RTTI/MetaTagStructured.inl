@@ -87,6 +87,14 @@ namespace Langulus::RTTI::Inner
       return 0;
    }
 
+   /// Get the definition                                                     
+   inline auto MetaTagPacked_16::GetDefinition() const noexcept -> DefinitionTag const* {
+      const auto id = Base::GetID();
+      if (id)
+         return Registry::GetMetaTagByID(id);
+      return nullptr;
+   }
+
 #if LANGULUS(SAFE)
    inline MetaTagPacked_16::operator bool() const noexcept {
       if (Base::operator bool()) {

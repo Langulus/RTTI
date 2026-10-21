@@ -43,6 +43,7 @@ namespace Langulus::RTTI
          auto GetVersionMajor()  const noexcept -> unsigned;
          auto GetVersionMinor()  const noexcept -> unsigned;
          auto GetBoundaries()    const noexcept -> Definition::BoundarySet const&;
+         auto GetDefinition()    const noexcept -> DefinitionTag const*;
 
          IF_SAFE(explicit operator bool() const noexcept);
       };

@@ -13,7 +13,8 @@
    #error "This file shouldn't be included if MANAGED_REFLECTION is disabled"
 #endif
 
-namespace Langulus::RTTI::Inner
+
+namespace Langulus::RTTI
 {
    /// Helper function that returns a pointer to a function that is           
    /// guaranteed to be defined in the current translation unit & module.     
@@ -37,5 +38,5 @@ namespace Langulus::RTTI::Inner
 
 /// Get the name of the shared object/executable that contains the pointer    
 /// at runtime. OS-dependent.                                                 
-#define LglsBoundary() ::Langulus::RTTI::Inner::GetBoundaryOf(::Langulus::RTTI::Inner::GetBoundaryIdentity())
-#define LglsMainBoundary() ::Langulus::RTTI::Inner::GetMainBoundary()
+#define LglsBoundary() ::Langulus::RTTI::GetBoundaryOf(::Langulus::RTTI::GetBoundaryIdentity())
+#define LglsMainBoundary() ::Langulus::RTTI::GetMainBoundary()

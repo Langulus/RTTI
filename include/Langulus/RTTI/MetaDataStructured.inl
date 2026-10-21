@@ -6,6 +6,7 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
+#include "MetaTag.hpp"
 
 #if not LANGULUS_FEATURE(MANAGED_REFLECTION)
    #error "This file shouldn't be included if MANAGED_REFLECTION feature is disabled"
@@ -851,6 +852,45 @@ namespace Langulus::RTTI::Inner
       }
 
       return false;
+   }
+
+   /// Get a reflected member by tag, type, and/or offset (inner)             
+   ///   @param tag filter by tag, or nullptr if tag is irrelevant            
+   ///   @param type filter by data type, or nullptr if irrelevant            
+   ///   @param offset considers only matches after that many matches         
+   ///   @return the member interface if found, or nullptr if not             
+   TEMPLATE()
+   auto ME()::GetMember(TMeta tag, DMeta type, size_t& offset) const noexcept -> DefinitionData::Member const* {
+      if (not GetOrigin())
+         return nullptr;
+
+      // Search in all bases first                                      
+      for (auto& base : GetBases()) {
+         const auto found = DMeta(base.type).GetMember(tag, type, offset);
+         if (found)
+            return found;
+      }
+
+      // Then locally                                                   
+      for (auto& member : GetMembers()) {
+         // Eliminate by type                                           
+         if (type and not DMeta(member.type()).IsSame(type))
+            continue;
+
+         // Eliminate by tag                                            
+         if (tag and not member.tags.contains(tag.GetDefinition()))
+            continue;
+
+         // Match found                                                 
+         if (0 == offset)
+            return &member;
+
+         // Offset not reached yet                                      
+         --offset;
+      }
+
+      // Nothing was found                                              
+      return nullptr;
    }
 
    /// Check if this type interprets as another without conversion            

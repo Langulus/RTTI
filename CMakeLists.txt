@@ -20,7 +20,7 @@ endif()
 # Build and install library                                                 
 add_langulus_library(LangulusRTTI
    SOURCES  $<TARGET_OBJECTS:LangulusLogger>
-            $<$<BOOL:${LANGULUS_OPTION_MANAGED_REFLECTION}>:source/Registry.cpp>
+            $<$<BOOL:${LANGULUS_OPTION_MANAGED_REFLECTION}>:source/Registry.cpp source/Boundary.cpp>
             source/DefinitionData.cpp
             $<TARGET_OBJECTS:LangulusPercist>
 )

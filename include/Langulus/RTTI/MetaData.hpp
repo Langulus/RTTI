@@ -202,6 +202,7 @@ namespace Langulus::RTTI
          auto GetMorphism(MetaDataStructured_XY) const noexcept -> DefinitionData::Morphism;
 
          bool GetBase(MetaDataStructured_XY type, size_t nth, DefinitionData::Base& base) const;
+         auto GetMember(TMeta trait, DMeta type, size_t& offset) const noexcept -> DefinitionData::Member const*;
          bool CastsTo(MetaDataStructured_XY other, size_t count = 1, bool binary_compatible = false, bool advanced = false) const;
 
          IF_SAFE(LglsNoSideEffects explicit operator bool() const noexcept);

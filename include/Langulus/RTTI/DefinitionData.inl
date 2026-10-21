@@ -15,7 +15,7 @@
 #include <Langulus/CT/Destroyable.hpp>
 #include <Langulus/CT/Deep.hpp>
 #include <Langulus/CT/Referenced.hpp>
-#include <Langulus/CT/Resolvable.hpp>
+#include <Langulus/CT/Downcastable.hpp>
 #include <Langulus/CT/Nullable.hpp>
 #include <Langulus/CT/POD.hpp>
 #include <Langulus/CT/Concrete.hpp>
@@ -402,12 +402,12 @@ namespace Langulus::RTTI
             };
       }
 
-      if constexpr (CT::Resolvable<T>) {
+      if constexpr (CT::Downcastable<T>) {
          // Generate a resolving function                               
          definition.mCurrentBoundary.mResolver =
             [](void* at) {
                auto atT = static_cast<T*>(at);
-               return atT->GetResolved();
+               return atT->Downcast();
             };
       }
 
