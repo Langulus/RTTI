@@ -39,4 +39,4 @@ namespace Langulus::RTTI
    };
 }
 
-#include "DefinitionConst.inl"
+//#include "DefinitionConst.inl"

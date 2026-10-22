@@ -101,9 +101,9 @@ namespace Langulus::RTTI
       return &definition;
    }
 
-   inline DefinitionTag::~DefinitionTag() {
+   /*inline DefinitionTag::~DefinitionTag() {
       VERBOSE(Logger::Red, "Destroying tag definition: ", Logger::Purple, mNameOf);
-   }
+   }*/
 }
 
 #undef VERBOSE

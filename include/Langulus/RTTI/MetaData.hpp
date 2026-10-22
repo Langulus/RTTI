@@ -196,6 +196,7 @@ namespace Langulus::RTTI
          auto GetBases()              const noexcept -> DefinitionData::BaseList const&;
          auto GetVerbs()              const noexcept -> DefinitionData::VerbList const&;
          auto GetMembers()            const noexcept -> DefinitionData::MemberList const&;
+         auto GetMethods()            const noexcept -> DefinitionData::MethodList const&;
          auto GetNamedValues()        const noexcept -> DefinitionData::ValuesList const&;
          auto GetMorphismsTo()        const noexcept -> DefinitionData::MorphismList const&;
          //auto GetMorphismsFrom()      const noexcept -> DefinitionData::MorphismList const&;
@@ -203,6 +204,7 @@ namespace Langulus::RTTI
 
          bool GetBase(MetaDataStructured_XY type, size_t nth, DefinitionData::Base& base) const;
          auto GetMember(TMeta trait, DMeta type, size_t& offset) const noexcept -> DefinitionData::Member const*;
+         auto GetMethod(Token name) const noexcept -> DefinitionData::Method const*;
          bool CastsTo(MetaDataStructured_XY other, size_t count = 1, bool binary_compatible = false, bool advanced = false) const;
 
          IF_SAFE(LglsNoSideEffects explicit operator bool() const noexcept);
@@ -292,12 +294,15 @@ namespace Langulus::RTTI
          auto GetBases()              const noexcept -> DefinitionData::BaseList const&;
          auto GetVerbs()              const noexcept -> DefinitionData::VerbList const&;
          auto GetMembers()            const noexcept -> DefinitionData::MemberList const&;
+         auto GetMethods()            const noexcept -> DefinitionData::MethodList const&;
          auto GetNamedValues()        const noexcept -> DefinitionData::ValuesList const&;
          auto GetMorphismsTo()        const noexcept -> DefinitionData::MorphismList const&;
          //auto GetMorphismsFrom()      const noexcept -> DefinitionData::MorphismList const&;
          auto GetMorphism(MetaDataNaked) const noexcept -> DefinitionData::Morphism;
 
          bool GetBase(MetaDataNaked type, size_t nth, DefinitionData::Base& base) const;
+         auto GetMember(TMeta trait, DMeta type, size_t& offset) const noexcept -> DefinitionData::Member const*;
+         auto GetMethod(Token name) const noexcept -> DefinitionData::Method const*;
          bool CastsTo(MetaDataNaked other, size_t count = 1, bool binary_compatible = false, bool advanced = false) const;
       };
    }

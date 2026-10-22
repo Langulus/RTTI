@@ -131,9 +131,11 @@ namespace Langulus::RTTI
       using FHash          = Hash (*)(void* self);
       using FReference     = int (*)(void* self, int modifier);
       using FDispatch      = bool (*)(void* self, Annies::Verb& verb);
+      using FDispatchUnary = bool (*)(Annies::Verb& verb);
       using FAccessMember  = void* (*)(void* owner);
       using FUnpack        = FAccessMember;
       using FTypeRetriever = DefinitionData const* (*)();
+      using FMethod        = void (*)(void* self, const Annies::Many& args, Annies::Many& outs);
       
       /// Type-erased member variable reflection                              
       struct Member {
@@ -152,6 +154,24 @@ namespace Langulus::RTTI
 
          template<class HANDLE>
          static auto From() -> Member;
+      };
+      
+      /// Type-erased method reflection                                       
+      struct Method {
+         using CTTI_ReflectAs = void;
+
+         // Type of the returned data. Nullptr means void.              
+         DefinitionTag const* return_type = nullptr;
+         // List of argument types                                      
+         ::std::vector<DefinitionTag const*> argument_types;
+
+         // Invoke the method in a specific instance.                   
+         FMethod method IF_SAFE(= nullptr);
+         // Name of the method.                                         
+         ::std::string name;
+
+         template<class HANDLE>
+         static auto From() -> Method;
       };
       
       /// Used to reflect a base                                              
@@ -183,12 +203,21 @@ namespace Langulus::RTTI
          FSerialize serialize = nullptr;
       };
 
+      /// Used to reflect an ability                                          
+      struct Ability {
+         using CTTI_ReflectAs = void;
+
+         FDispatch binary = nullptr;
+         FDispatchUnary unary = nullptr;
+      };
+
    protected:
       template<class T>
       void FillMorphisms();
 
       using MemberList   = ::std::vector<Member>;
-      using VerbList     = ::std::unordered_map<DefinitionVerb const*, FDispatch>;
+      using MethodList   = ::std::vector<Method>;
+      using VerbList     = ::std::unordered_map<DefinitionVerb const*, Ability>;
       using BaseList     = ::std::vector<Base>;
       using MorphismList = ::std::unordered_map<DefinitionData const*, Morphism>;
       using ValuesList   = ::std::vector<DefinitionConst const*>;
@@ -269,6 +298,9 @@ namespace Langulus::RTTI
          // List of reflected members                                   
          MemberList mMembers;
          
+         // List of reflected methods                                   
+         MethodList mMethods;
+         
          // List of reflected abilities                                 
          VerbList mVerbs;
 
@@ -319,8 +351,8 @@ namespace Langulus::RTTI
       DefinitionData(Token const& cppname) noexcept
          : Definition {cppname} {}
       
-      ~DefinitionData();
+      //~DefinitionData();
    };
 }
 
-#include "DefinitionData.inl"
+//#include "DefinitionData.inl"

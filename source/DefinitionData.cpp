@@ -5,7 +5,8 @@
 ///                                                                           
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
-#include <Langulus/RTTI/DefinitionData.inl>
+#include <Langulus/RTTI/DefinitionData.hpp>
+#include <Langulus/RTTI/Registry.hpp>
 
 
 namespace Langulus::RTTI

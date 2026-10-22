@@ -453,15 +453,35 @@ namespace Langulus::RTTI
             static_assert(CT::Decayed<V>,
                "Verbs must be fully decayed when listed");
 
+            constexpr bool has_binary_routine = CT::AbleBinary<T, V>;
+            constexpr bool has_unary_routine  = CT::AbleUnary<T, V>;
+            static_assert(has_binary_routine or has_unary_routine,
+               "Implementation lacks both binary and unary routine. "
+               "At least one should be provided"
+            );
+
             auto verb_definition = const_cast<DefinitionVerb*>(
-               DefinitionVerb::Reflect<V>());
-            definition.mCurrentBoundary.mVerbs.emplace(
-               verb_definition,
-               [](void* self, Annies::Verb& verb) -> bool {
+               DefinitionVerb::Reflect<V>()
+            );
+
+            Ability ab;
+
+            if constexpr (has_binary_routine) {
+               // Reflect binary ability                                
+               ab.binary = [](void* self, Annies::Verb& verb) -> bool {
                   auto in = static_cast<T*>(self);
                   return Langulus::InvokeAbility(*in, reinterpret_cast<V&>(verb));
-               }
-            );
+               };
+            }
+
+            if constexpr (has_unary_routine) {
+               // Reflect unary ability                                 
+               ab.unary = [](Annies::Verb& verb) -> bool {
+                  return Langulus::InvokeAbilityUnary<T>(reinterpret_cast<V&>(verb));
+               };
+            }
+
+            definition.mCurrentBoundary.mVerbs.emplace(verb_definition, ab);
             verb_definition->mAble.insert(&definition);
          });
       }
@@ -602,15 +622,35 @@ namespace Langulus::RTTI
             static_assert(CT::Decayed<V>,
                "Verbs must be fully decayed when listed");
 
+            constexpr bool has_binary_routine = CT::AbleBinary<T, V>;
+            constexpr bool has_unary_routine  = CT::AbleUnary<T, V>;
+            static_assert(has_binary_routine or has_unary_routine,
+               "Implementation lacks both binary and unary routine. "
+               "At least one should be provided"
+            );
+
             auto verb_definition = const_cast<DefinitionVerb*>(
-               DefinitionVerb::Reflect<V>());
-            definition.mCurrentBoundary.mVerbs.emplace(
-               verb_definition,
-               [](void* self, Annies::Verb& verb) -> bool {
+               DefinitionVerb::Reflect<V>()
+            );
+
+            Ability ab;
+
+            if constexpr (has_binary_routine) {
+               // Reflect binary ability                                
+               ab.binary = [](void* self, Annies::Verb& verb) -> bool {
                   auto in = static_cast<T*>(self);
                   return Langulus::InvokeAbility(*in, reinterpret_cast<V&>(verb));
-               }
-            );
+               };
+            }
+
+            if constexpr (has_unary_routine) {
+               // Reflect unary ability                                 
+               ab.unary = [](Annies::Verb& verb) -> bool {
+                  return Langulus::InvokeAbilityUnary<T>(reinterpret_cast<V&>(verb));
+               };
+            }
+
+            definition.mCurrentBoundary.mVerbs.emplace(verb_definition, ab);
             verb_definition->mAble.insert(&definition);
          });
       }
@@ -1103,12 +1143,12 @@ namespace Langulus::RTTI
       return &definition;
    }
    
-   inline DefinitionData::~DefinitionData() {
+   /*inline DefinitionData::~DefinitionData() {
       LglsVerbose(Info, 
          Logger::Red, "Destroying data definition: ", 
          Logger::Cyan, mNameOf
       );
-   }
+   }*/
    
    /// Set reflected morphisms                                                
    /// @attention morphisms assume that source is initialized,                
@@ -1174,6 +1214,41 @@ namespace Langulus::RTTI
          static_assert(CT::DefineTag<T>, NameOf<T>() + " is not a tag definition");
          m.tags.insert(DefinitionTag::Reflect<T>());
       });
+      return m;
+   }
+   
+   /// Generate a method definition                                           
+   ///   @return the generated method descriptor                              
+   template<class HANDLE>
+   auto DefinitionData::Method::From() -> Method {
+      using THIS = typename HANDLE::Owner;
+      using RETN = typename HANDLE::Return;
+      using ARGS = typename HANDLE::Arguments;
+
+      Method m;
+
+      using R_AS = CT::ReflectedAs<RETN>;
+      if constexpr (CT::Complete<R_AS>)
+         m.return_type = Reflect<R_AS>();
+
+      ForEach(ARGS{}, [&m]<class A> {
+         using A_AS = CT::ReflectedAs<A>;
+         static_assert(CT::Complete<A_AS>);
+         m.argument_types.emplace_back(Reflect<A_AS>());
+      });
+         
+      m.method = [](void* owner, Annies::Many const& args, Annies::Many& outs) {
+         auto context = static_cast<THIS*>(owner);
+         [&args,&outs]<class...A, size_t...I>(
+            Types<A...>, ::std::integer_sequence<size_t, I...>&&
+         ) {
+            outs = (context->*HANDLE::Handle)(
+               args.AsAt<Annies::Any>(I).template As<A>()...
+            );
+         } (ARGS{}, ::std::make_integer_sequence<size_t, ARGS::Count>{});
+      };
+
+      m.name = HANDLE::Name; //TODO demangle?
       return m;
    }
    

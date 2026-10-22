@@ -854,7 +854,7 @@ namespace Langulus::RTTI::Inner
       return false;
    }
 
-   /// Get a reflected member by tag, type, and/or offset (inner)             
+   /// Get a reflected member by tag, type, and/or offset                     
    ///   @param tag filter by tag, or nullptr if tag is irrelevant            
    ///   @param type filter by data type, or nullptr if irrelevant            
    ///   @param offset considers only matches after that many matches         
@@ -887,6 +887,32 @@ namespace Langulus::RTTI::Inner
 
          // Offset not reached yet                                      
          --offset;
+      }
+
+      // Nothing was found                                              
+      return nullptr;
+   }
+
+   /// Get a reflected method by name                                         
+   ///   @param name name of the method                                       
+   ///   @return the method interface if found, or nullptr if not             
+   TEMPLATE()
+   auto ME()::GetMethod(Token name) const noexcept -> DefinitionData::Method const* {
+      /*if (not GetOrigin())
+         return nullptr;
+
+      // Search in all bases first                                      
+      for (auto& base : GetBases()) {
+         const auto found = DMeta(base.type).GetMember(tag, type, offset);
+         if (found)
+            return found;
+      }*/
+
+      // Then locally                                                   
+      for (auto& method : GetMethods()) {
+         // Eliminate by type                                           
+         if (method.name == name)
+            return &method;
       }
 
       // Nothing was found                                              

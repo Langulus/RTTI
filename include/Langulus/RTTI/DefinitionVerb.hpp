@@ -7,6 +7,7 @@
 ///                                                                           
 #pragma once
 #include "Definition.hpp"
+#include <Langulus/CT/DefineVerb.hpp>
 #include <unordered_set>
 
 
@@ -79,8 +80,8 @@ namespace Langulus::RTTI
       DefinitionVerb(Token const& cppname) noexcept
          : Definition {cppname} {}
 
-      ~DefinitionVerb();
+      //~DefinitionVerb();
    };
 }
 
-#include "DefinitionVerb.inl"
+//#include "DefinitionVerb.inl"

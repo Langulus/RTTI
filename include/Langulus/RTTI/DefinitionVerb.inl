@@ -9,7 +9,6 @@
 #include "DefinitionVerb.hpp"
 #include <Langulus/CT/ReflectAs.hpp>
 #include <Langulus/CT/DefineTag.hpp>
-#include <Langulus/CT/DefineVerb.hpp>
 
 #if not LANGULUS_FEATURE(MANAGED_REFLECTION)
    #include <optional>
@@ -175,9 +174,9 @@ namespace Langulus::RTTI
       return &definition;
    }
 
-   inline DefinitionVerb::~DefinitionVerb() {
+   /*inline DefinitionVerb::~DefinitionVerb() {
       VERBOSE(Logger::Red, "Destroying verb definition: ", Logger::DarkGreen, mNameOf);
-   }
+   }*/
 }
 
 #undef VERBOSE
