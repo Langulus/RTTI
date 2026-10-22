@@ -108,20 +108,81 @@ namespace Langulus::RTTI
    }
    
    
+   /// Reflect an incomplete type                                             
+   ///   @attention only a named spot for the meta data is reserved, but      
+   ///      definition remains incomplete, and any attempt at extracting      
+   ///      incomplete information will result in an exception. The definition
+   ///      is populated, once any of the other Reflect routines are called   
+   ///      from any translation unit, which has the relevant headers.        
+   ///   @tparam T the type to reflect                                        
+   template<class T> requires (not CT::Complete<T>)
+   auto DefinitionData::Reflect() -> DefinitionData const* {
+      static_assert(not std::is_bounded_array_v<T>,
+         "Reflecting a bounded array is forbidden to avoid bloat");
+      static_assert(not CT::Volatile<T>,
+         "Can't reflect volatile type, use Devq before reflection");
+      static_assert(not CT::Reference<T>,
+         "Can't reflect reference type, use Deref before reflection");
+      static_assert(not ::std::is_function_v<T>,
+         "Can't reflect this function signature - "
+         "make sure you're using a pointer to it instead");
+
+      constexpr auto cppname = CppNameOf<T>();
+
+      #if LANGULUS_COMPILER(MSVC)
+         static_assert(not cppname.starts_with("`anonymous-namespace'"),
+            "Reflecting types inside anonymous namespaces is disallowed. "
+            "You would expect that the C++ standard demands, "
+            "that these namespaces have unique names generated, however that's not the case. "
+            "Instead, they will all end up in the same `anonymous-namespace', and result in very "
+            "subtle and infuriating bugs when types with the same name are reflected from multiple translation units."
+         );
+      #elif LANGULUS_COMPILER(CLANG)
+         static_assert(not cppname.starts_with("(anonymous namespace)"),
+            "Reflecting types inside anonymous namespaces is disallowed. "
+            "You would expect that the C++ standard demands, "
+            "that these namespaces have unique names generated, however that's not the case. "
+            "Instead, they will all end up in the same (anonymous namespace), and result in very "
+            "subtle and infuriating bugs when types with the same name are reflected from multiple translation units."
+         );
+      #endif
+
+      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         // Try to get an already existing definition - the data might  
+         // have been reflected previously in another translation unit  
+         DefinitionData const* meta = Registry::GetMetaDataByCppName(cppname);
+         if (meta)
+            return meta;
+
+         DefinitionData& definition = Registry::RegisterIncompleteData(cppname);
+         return &definition;
+      #else
+         // There's no centralized registry when MANAGED_REFLECTION is  
+         // disabled, so there's nothing we can do with incomplete      
+         // types.                                                      
+         static_assert(false,
+            "Reflecting incomplete types is not supported "
+            "when MANAGED_REFLECTION is disabled"
+         );
+      #endif
+   }
+
    /// Reflect or return an already reflected data                            
    ///   @attention when making a shared library and reflecting your types    
    ///      at library initialization, it is recommended you mark all other   
    ///      relevant instantiations of this function as extern template, to   
    ///      save on a lot of compiler resources:                              
    ///      https://stackoverflow.com/questions/8130602                       
+   ///      This will also guarentee, that given type will be reflected in    
+   ///      the desired boundary.                                             
    ///   @tparam T the type to reflect                                        
-   template<class T> requires (CT::Dense<T> and not ::std::is_const_v<T>)
+   template<class T> requires (CT::Dense<T> and CT::Complete<T> and not ::std::is_const_v<T>)
    auto DefinitionData::Reflect() -> DefinitionData const* {
-      static_assert(CT::Complete<T>,
+      /*static_assert(CT::Complete<T>,
          "Can't reflect incomplete type - "
          "make sure you have included the corresponding headers "
          "before the point of reflection. "
-         "This could also be triggered due to an incomplete member in T");
+         "This could also be triggered due to an incomplete member in T");*/
       static_assert(not std::is_bounded_array_v<T>,
          "Reflecting a bounded array is forbidden to avoid bloat");
       static_assert(not CT::Volatile<T>,
@@ -531,13 +592,13 @@ namespace Langulus::RTTI
    ///      save on a lot of compiler resources:                              
    ///      https://stackoverflow.com/questions/8130602                       
    ///   @tparam T the type to reflect                                        
-   template<class T> requires (CT::Dense<T> and ::std::is_const_v<T>)
+   template<class T> requires (CT::Dense<T> and CT::Complete<T> and ::std::is_const_v<T>)
    auto DefinitionData::Reflect() -> DefinitionData const* {
-      static_assert(CT::Complete<T>,
+      /*static_assert(CT::Complete<T>,
          "Can't reflect incomplete type - "
          "make sure you have included the corresponding headers "
          "before the point of reflection. "
-         "This could also be triggered due to an incomplete member in T");
+         "This could also be triggered due to an incomplete member in T");*/
       static_assert(not std::is_bounded_array_v<T>,
          "Reflecting a bounded array is forbidden to avoid bloat");
       static_assert(not CT::Volatile<T>,
@@ -1236,14 +1297,21 @@ namespace Langulus::RTTI
          static_assert(CT::Complete<A_AS>);
          m.argument_types.emplace_back(Reflect<A_AS>());
       });
-         
-      m.method = [](void* owner, Annies::Many const& args, Annies::Many& outs) {
+
+      // This is capable of calling any reflected method, but this   
+      // is _very slow_. Arguments need to be wrapped inside a       
+      // TMany<void*> in order to read back and properly forward.    
+      // The output goes to a preallocated (by you) void*.           
+      // Needless to say, it takes a lot of preparation and lof of   
+      // of overhead to invoke this... but it's generic.             
+      // I mean... whaddya expect?                                   
+      m.invoke = [](void* owner, void const* const* in, void* out) {
          auto context = static_cast<THIS*>(owner);
-         [&args,&outs]<class...A, size_t...I>(
+         [&in,&out]<class...A, size_t...I>(
             Types<A...>, ::std::integer_sequence<size_t, I...>&&
          ) {
-            outs = (context->*HANDLE::Handle)(
-               args.AsAt<Annies::Any>(I).template As<A>()...
+            *static_cast<RETN*>(out) = (context->*HANDLE::Handle)(
+               *static_cast<A const*>(in[I])...
             );
          } (ARGS{}, ::std::make_integer_sequence<size_t, ARGS::Count>{});
       };

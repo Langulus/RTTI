@@ -31,7 +31,7 @@ namespace Langulus::Annies
 
 namespace Langulus::RTTI
 {
-   /// A rudimentary non-owning data block                                    
+   /// A rudimentary non-owning data block. Very danger, much wow.            
    struct Block;
 
    ///                                                                        
@@ -45,12 +45,10 @@ namespace Langulus::RTTI
       template<unsigned, unsigned> friend struct Inner::MetaDataStructured_XY;
 
       // The origin type, with all qualifiers and sparseness removed.   
-      // Will be null for incomplete types.                             
       DefinitionData const* mOrigin = nullptr;
       
       // The type, when a single level of indirection is removed.       
-      // Will be null if data is dense. Will be exactly 1 if sparse,    
-      // but pointing to an incomplete type.                            
+      // Will be null if data is dense.                                 
       DefinitionData const* mDeptr = nullptr;
       // The pointer specification of a sparse type.                    
       PointerSpecification mPointerSpecification;
@@ -119,8 +117,9 @@ namespace Langulus::RTTI
       //    These function pointers will be different for different     
       // libraries. We just collect them all. If a shared object is     
       // unloaded, we simply pick a pointer from another. Once the data 
-      // is reflected from the MainBoundary, the maps are cleared and   
-      // only the main code is used, because it is most persistent.     
+      // is reflected from the MainBoundary (if ever), the maps are     
+      // cleared and only the main code is used, because it is most     
+      // persistent and unaffected by unloading shared libraries.       
       using FUnary         = void (*)(void* self);
       using FBinary        = void (*)(void* from, void* to);
       using FSerialize     = size_t (*)(void const* from, void* to, void* context);
@@ -135,7 +134,7 @@ namespace Langulus::RTTI
       using FAccessMember  = void* (*)(void* owner);
       using FUnpack        = FAccessMember;
       using FTypeRetriever = DefinitionData const* (*)();
-      using FMethod        = void (*)(void* self, const Annies::Many& args, Annies::Many& outs);
+      using FMethod        = void (*)(void* self, void const* const* in, void* out);
       
       /// Type-erased member variable reflection                              
       struct Member {
@@ -164,9 +163,8 @@ namespace Langulus::RTTI
          DefinitionTag const* return_type = nullptr;
          // List of argument types                                      
          ::std::vector<DefinitionTag const*> argument_types;
-
-         // Invoke the method in a specific instance.                   
-         FMethod method IF_SAFE(= nullptr);
+         // Any method, wrapped in a call                               
+         FMethod invoke = nullptr;
          // Name of the method.                                         
          ::std::string name;
 
@@ -339,10 +337,14 @@ namespace Langulus::RTTI
 
       static constexpr Token InvalidName = "nodata";
 
-      template<class T> requires (CT::Dense<T> and not ::std::is_const_v<T>)
+      template<class T> requires (not CT::Complete<T>)
       static auto Reflect() -> DefinitionData const*;
-      template<class T> requires (CT::Dense<T> and ::std::is_const_v<T>)
+
+      template<class T> requires (CT::Dense<T> and CT::Complete<T> and not ::std::is_const_v<T>)
       static auto Reflect() -> DefinitionData const*;
+      template<class T> requires (CT::Dense<T> and CT::Complete<T> and ::std::is_const_v<T>)
+      static auto Reflect() -> DefinitionData const*;
+
       template<class T> requires ::std::is_pointer_v<T>
       static auto Reflect() -> DefinitionData const*;
       template<class T> requires CT::CustomPointer<T>

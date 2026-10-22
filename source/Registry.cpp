@@ -385,6 +385,31 @@ namespace Langulus::RTTI
       return foundToken->second;
    }
 
+   /// Register an incomplete data                                            
+   ///   @attention assumes token is not yet registered                       
+   ///   @param cppname the C++ type name to register                         
+   ///   @return the newly defined meta data for that name                    
+   auto Registry::RegisterIncompleteData(Token const& cppname) -> DefinitionData& {
+      const ::std::string cppname_s {cppname};
+      LglsAssumeDev(not mMetaDataByCppName.contains(cppname_s),
+         "Data with this name is already registered: ", cppname);
+      
+      LglsAssert(not mMetaTagsByCppName.contains(cppname_s),
+         "Data type already registered as tag: ", cppname);
+      LglsAssert(not mMetaVerbsByCppName.contains(cppname_s),
+         "Data type already registered as verb: ", cppname);
+      LglsAssert(not mMetaConstantsByCppName.contains(cppname_s),
+         "Data type already registered as constant: ", cppname);
+
+      // If reached, then not found, so insert a new definition         
+      auto new_meta = ::std::make_unique<DefinitionData>(cppname);
+      auto meta = new_meta.get();
+
+      // Index by C++ name only                                         
+      mMetaDataByCppName[meta->mCppNameOf] = LglsMov(new_meta);
+      return *meta;
+   }
+
    /// Register a data definition                                             
    ///   @attention assumes token is not yet registered                       
    ///   @param cppname the C++ type name to register                         

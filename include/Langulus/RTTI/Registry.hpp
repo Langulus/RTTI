@@ -37,6 +37,8 @@ namespace Langulus::RTTI
       template<unsigned>           friend struct Inner::MetaVerbStructured_X8;
 
       LANGULUS_API(RTTI)
+      static auto RegisterIncompleteData(Token const& cppname) -> DefinitionData&;
+      LANGULUS_API(RTTI)
       static auto RegisterData(Token const& cppname, Token const& token) -> DefinitionData&;
       LANGULUS_API(RTTI)
       static auto ReserveDataID(DefinitionData const*) -> size_t;
@@ -47,8 +49,8 @@ namespace Langulus::RTTI
       LANGULUS_API(RTTI)
       static auto RegisterVerb(
          Token const& cppname,
-         Token const& token, Token const& tokenRev,
-         Token const& op,    Token const& opRev
+         Token const& token,     Token const& tokenRev,
+         Token const& op,        Token const& opRev
       ) -> DefinitionVerb&;
       
       LANGULUS_API(RTTI)

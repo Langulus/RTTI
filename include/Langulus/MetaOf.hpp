@@ -6,40 +6,21 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-#include <Langulus/CT/ReflectAs.hpp>
+//#include <Langulus/CT/ReflectAs.hpp>
+
 #include "RTTI/MetaData.hpp"
 #include "RTTI/MetaTag.hpp"
 #include "RTTI/MetaConst.hpp"
 #include "RTTI/MetaVerb.hpp"
 
+#include "RTTI/DefinitionData.inl"
+#include "RTTI/DefinitionTag.inl"
+#include "RTTI/DefinitionConst.inl"
+#include "RTTI/DefinitionVerb.inl"
+
 
 namespace Langulus
 {
-   /// Get the meta definition of a type, deducing whether it's a data, verb, 
-   /// or tag. Note: anything can be data, so meta-data is given only if      
-   /// not evaluated to be a tag or verb, which might not be desired. Use one 
-   /// of the alternatives below to explicitly state your intent.             
-   ///   @tparam T type to get meta definition of                             
-   ///   @return the meta definition of the provided type                     
-   template<class T>
-   auto MetaOf() {
-      using DT = Decay<T>;
-      if constexpr (CT::DefineTag<DT>)
-         return RTTI::TMeta {RTTI::DefinitionTag::Reflect<DT>()};
-      else if constexpr (CT::DefineVerb<DT>)
-         return RTTI::VMeta {RTTI::DefinitionVerb::Reflect<DT>()};
-      else
-         return RTTI::DMeta {RTTI::DefinitionData::Reflect<Deref<T>>()};
-   }
-
-   /// Get the meta definition of a constant, like an enum                    
-   ///   @tparam E constant to get meta definition of                         
-   ///   @return the meta definition of the provided constant                 
-   template<auto E>
-   RTTI::CMeta MetaOf() {
-      return RTTI::DefinitionConst::Reflect<E>();
-   }
-
    /// Data definition retrieval.                                             
    /// Some types, like tags/verbs for example, can be represented both as    
    /// DMeta and TMeta/VMeta, and this is useful to state a clear intent.     
@@ -78,6 +59,23 @@ namespace Langulus
    template<auto E>
    RTTI::CMeta MetaConstOf() {
       return RTTI::DefinitionConst::Reflect<E>();
+   }
+
+   /// Get the meta definition of a type, deducing whether it's a data, verb, 
+   /// or tag. Note: anything can be data, so meta-data is given only if      
+   /// not evaluated to be a tag or verb, which might not be desired. Use one 
+   /// of the alternatives above to explicitly state your intent.             
+   ///   @tparam T type to get meta definition of                             
+   ///   @return the meta definition of the provided type                     
+   template<class T>
+   auto MetaOf() {
+      using DT = Decay<T>;
+      if constexpr (CT::DefineTag<DT>)
+         return MetaTagOf<DT>();
+      else if constexpr (CT::DefineVerb<DT>)
+         return MetaVerbOf<DT>();
+      else
+         return MetaDataOf<T>();
    }
 
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)

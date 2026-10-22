@@ -121,12 +121,20 @@ namespace Langulus::RTTI::Inner
    ///                                                                        
    ///   Abstract definition                                                  
    ///                                                                        
+   /// Can be downcasted to DefinitionData, DefinitionVerb, DefinitionTag, or 
+   /// DefinitionConst                                                        
    class Definition {
    protected:
       friend class RTTI::Registry;
       template<class T>
       friend struct MetaNaked;
       
+      // Marks incomplete types. A type is no longer complete, when     
+      // reflected from a translation unit with all the required        
+      // includes available. A type may remain incomplete, if for       
+      // example reflecting some third-party type via pointer.          
+      bool mIncomplete = true;
+
       // Each reflected type has a unique hash based on C++ name        
       const Hash mHash;
 
@@ -176,6 +184,9 @@ namespace Langulus::RTTI::Inner
       ///   @tparam T the type to reflect                                     
       template<class T> LANGULUS(ALWAYS_INLINED)
       void ReflectCommon() {
+         // Mark complete                                               
+         mIncomplete = false;
+
          // Reflected version                                           
          auto v = VersionOf<T>();
          mVersionMajor = v.Major;
