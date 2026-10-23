@@ -707,6 +707,18 @@ namespace Langulus::RTTI::Inner
       }
       return {};
    }
+   /// Get the last concretization for an abstract type                       
+   TEMPLATE()
+   auto ME()::GetMostConcrete() const -> MetaDataStructured_XY {
+      const auto id = Base::GetID();
+      if (id) {
+         auto concrete = *this;
+         while (concrete.GetConcrete())
+            concrete = concrete.GetConcrete();
+         return concrete;
+      }
+      return {};
+   }
    
    /// Get the runtime producer of the type, if any                           
    TEMPLATE()

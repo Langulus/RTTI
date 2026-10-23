@@ -191,6 +191,7 @@ namespace Langulus::RTTI
          auto AddPtr()                const -> MetaDataStructured_XY;
          auto AddConst()              const -> MetaDataStructured_XY;
          auto GetConcrete()           const -> MetaDataStructured_XY;
+         auto GetMostConcrete()       const -> MetaDataStructured_XY;
          auto GetProducer()           const -> MetaDataStructured_XY;
               
          auto GetBases()              const noexcept -> DefinitionData::BaseList const&;
@@ -289,6 +290,7 @@ namespace Langulus::RTTI
          auto AddPtr()                const -> MetaDataNaked;
          auto AddConst()              const -> MetaDataNaked;
          auto GetConcrete()           const -> MetaDataNaked;
+         auto GetMostConcrete()       const -> MetaDataNaked;
          auto GetProducer()           const -> MetaDataNaked;
 
          auto GetBases()              const noexcept -> DefinitionData::BaseList const&;

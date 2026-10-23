@@ -371,6 +371,17 @@ namespace Langulus::RTTI::Inner
          : nullptr;
    }
 
+   /// Get the last concretization for an abstract type                       
+   inline auto MetaDataNaked::GetMostConcrete() const -> MetaDataNaked {
+      if (not mDefinition)
+         return {};
+
+      auto concrete = *this;
+      while (concrete.GetConcrete())
+         concrete = concrete.GetConcrete();
+      return concrete;
+   }
+
    /// Get the runtime producer of the type, if any                           
    inline auto MetaDataNaked::GetProducer() const -> MetaDataNaked {
       if (not mDefinition)
