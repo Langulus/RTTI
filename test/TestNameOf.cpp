@@ -304,7 +304,7 @@ SCENARIO("SuffixOf", "[metadata]") {
    WHEN("Generating a suffix for uint32_t") {
       constexpr auto token = SuffixOf<uint32_t>();
 
-      if constexpr (CT::Same<uint32_t, unsigned int>)
+      if constexpr (Same<uint32_t, unsigned int>)
          REQUIRE(token == "u");
       else
          REQUIRE(token == "u32");
@@ -313,7 +313,7 @@ SCENARIO("SuffixOf", "[metadata]") {
    WHEN("Generating a suffix for uint64_t") {
       constexpr auto token = SuffixOf<uint64_t>();
 
-      if constexpr (CT::Same<uint64_t, unsigned int>)
+      if constexpr (Same<uint64_t, unsigned int>)
          REQUIRE(token == "u");
       else
          REQUIRE(token == "u64");
@@ -332,7 +332,7 @@ SCENARIO("SuffixOf", "[metadata]") {
    WHEN("Generating a suffix for int32_t") {
       constexpr auto token = SuffixOf<int32_t>();
 
-      if constexpr (CT::Same<int32_t, signed int>)
+      if constexpr (Same<int32_t, signed int>)
          REQUIRE(token == "i");
       else
          REQUIRE(token == "i32");
@@ -341,7 +341,7 @@ SCENARIO("SuffixOf", "[metadata]") {
    WHEN("Generating a suffix for int64_t") {
       constexpr auto token = SuffixOf<int64_t>();
 
-      if constexpr (CT::Same<int64_t, signed int>)
+      if constexpr (Same<int64_t, signed int>)
          REQUIRE(token == "i");
       else
          REQUIRE(token == "i64");
@@ -350,7 +350,7 @@ SCENARIO("SuffixOf", "[metadata]") {
    WHEN("Generating a suffix for float") {
       constexpr auto token = SuffixOf<float>();
 
-      if constexpr (CT::Same<float, Real>)
+      if constexpr (Same<float, Real>)
          REQUIRE(token == "");
       else
          REQUIRE(token == "f");
@@ -359,7 +359,7 @@ SCENARIO("SuffixOf", "[metadata]") {
    WHEN("Generating a suffix for double") {
       constexpr auto token = SuffixOf<double>();
 
-      if constexpr (CT::Same<double, Real>)
+      if constexpr (Same<double, Real>)
          REQUIRE(token == "");
       else
          REQUIRE(token == "d");

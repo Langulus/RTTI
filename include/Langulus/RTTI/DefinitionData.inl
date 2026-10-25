@@ -1341,7 +1341,9 @@ namespace Langulus::RTTI
       Base result;
       result.type = Reflect<BASE>();
 
-      if constexpr (CT::DerivedFrom<T, BASE>) {
+      // Notice only built-in bases get to have getBase method          
+      // The imposed bases are just used for grouping types.            
+      if constexpr (::std::derived_from<T, BASE>) {
          if constexpr (CT::VirtuallyDerivedFrom<T, BASE>) {
             // Needs to use slower dynamic_cast when base is virtual    
             result.getBase = [](void* from) noexcept -> void* {

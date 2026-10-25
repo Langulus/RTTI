@@ -36,7 +36,7 @@ TEST_CASE("Testing Retype", "[type navigation]") {
 }
 
 //TODO CT::Complete
-//TODO CT::Same
+//TODO Same
 //TODO CT::Similar
 //TODO CT::Exact
 //TODO CT::SameAsOneOf
