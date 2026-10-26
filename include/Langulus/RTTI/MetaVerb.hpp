@@ -54,6 +54,10 @@ namespace Langulus::RTTI
          constexpr MetaVerbStructured_X8& operator = (DefinitionVerb const*) noexcept;
 
          constexpr bool operator == (const MetaVerbStructured_X8&) const noexcept;
+         
+         constexpr explicit operator Inner::Definition const* () const noexcept {
+            return static_cast<Inner::Definition const*>(GetDefinition());
+         }
 
          auto GetDefinition() const noexcept -> DefinitionVerb const*;
 

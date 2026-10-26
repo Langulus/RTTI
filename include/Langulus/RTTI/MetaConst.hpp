@@ -40,6 +40,10 @@ namespace Langulus::RTTI
          constexpr MetaConstPacked_16& operator = (nullptr_t) noexcept;
          constexpr MetaConstPacked_16& operator = (DefinitionConst const*) noexcept;
 
+         constexpr explicit operator Inner::Definition const* () const noexcept {
+            return static_cast<Inner::Definition const*>(GetDefinition());
+         }
+
          auto GetName()          const noexcept -> Token;
          auto GetInfo()          const noexcept -> Token;
          auto GetCppName()       const noexcept -> Token;
@@ -47,6 +51,7 @@ namespace Langulus::RTTI
          auto GetVersionMajor()  const noexcept -> unsigned;
          auto GetVersionMinor()  const noexcept -> unsigned;
          auto GetBoundaries()    const noexcept -> Definition::BoundarySet const&;
+         auto GetDefinition()    const noexcept -> DefinitionConst const*;
 
          IF_SAFE(explicit operator bool() const noexcept);
 

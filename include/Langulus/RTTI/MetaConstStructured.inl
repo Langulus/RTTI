@@ -83,6 +83,14 @@ namespace Langulus::RTTI::Inner
       return 0;
    }
 
+   /// Get the minor version                                                  
+   inline auto MetaConstPacked_16::GetDefinition() const noexcept -> DefinitionConst const* {
+      const auto id = Base::GetID();
+      if (id)
+         return Registry::GetMetaConstByID(id);
+      return nullptr;
+   }
+
    /// Get the type of the constant                                           
    inline auto MetaConstPacked_16::GetType() const noexcept -> DMeta {
       const auto id = Base::GetID();

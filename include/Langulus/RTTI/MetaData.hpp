@@ -124,6 +124,10 @@ namespace Langulus::RTTI
          constexpr bool IsSame(const MetaDataStructured_XY&) const noexcept;
          constexpr bool operator == (const MetaDataStructured_XY&) const noexcept;
 
+         constexpr explicit operator Inner::Definition const* () const noexcept {
+            return static_cast<Inner::Definition const*>(GetDefinition());
+         }
+
          constexpr auto GetSize()     const noexcept -> size_t;
          auto GetAlignment()          const noexcept -> pot_t;
          auto GetName()               const noexcept -> Token;

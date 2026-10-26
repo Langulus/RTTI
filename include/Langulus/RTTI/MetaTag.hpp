@@ -35,6 +35,10 @@ namespace Langulus::RTTI
          constexpr MetaTagPacked_16& operator = (DefinitionTag const*) noexcept;
          
          constexpr bool operator == (const MetaTagPacked_16&) const noexcept;
+         
+         constexpr explicit operator Inner::Definition const* () const noexcept {
+            return static_cast<Inner::Definition const*>(GetDefinition());
+         }
 
          auto GetName()          const noexcept -> Token;
          auto GetInfo()          const noexcept -> Token;

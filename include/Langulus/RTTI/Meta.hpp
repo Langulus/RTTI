@@ -130,6 +130,10 @@ namespace Langulus::RTTI::Inner
          return mDefinition != nullptr;
       }
 
+      constexpr explicit operator Inner::Definition const* () const noexcept {
+         return static_cast<Inner::Definition const*>(mDefinition);
+      }
+
       constexpr bool operator == (const MetaNaked& rhs) const noexcept {
          return mDefinition == rhs.mDefinition;
       }
