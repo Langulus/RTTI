@@ -65,8 +65,8 @@ namespace Langulus::RTTI
       
       // Calculate the allocation table                                 
       for (size_t bit = 0; bit < sizeof(size_t) * 8u; ++bit) {
-         const size_t threshold = size_t {1} << bit;
-         const size_t elements = threshold / sizeofT;
+         size_t const threshold = size_t {1} << bit;
+         size_t const elements = threshold / sizeofT;
          mAllocationTable[bit] = minElements > elements
             ? minElements : elements;
       }
@@ -193,8 +193,8 @@ namespace Langulus::RTTI
 
       // Calculate the allocation table                                 
       for (size_t bit = 0; bit < sizeof(size_t) * 8u; ++bit) {
-         const size_t threshold = size_t {1} << bit;
-         const size_t elements = threshold / sizeof(void*);
+         size_t const threshold = size_t {1} << bit;
+         size_t const elements = threshold / sizeof(void*);
          mAllocationTable[bit] = minElements > elements ? minElements : elements;
       }
 
@@ -235,8 +235,8 @@ namespace Langulus::RTTI
       
       // Calculate the allocation table                                 
       for (size_t bit = 0; bit < sizeof(size_t) * 8u; ++bit) {
-         const size_t threshold = size_t {1} << bit;
-         const size_t elements = threshold / sizeofT;
+         size_t const threshold = size_t {1} << bit;
+         size_t const elements = threshold / sizeofT;
          mAllocationTable[bit] = minElements > elements ? minElements : elements;
       }
 

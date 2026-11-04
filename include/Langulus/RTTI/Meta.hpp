@@ -47,7 +47,7 @@ namespace Langulus::RTTI::Inner
          size_t id_unprocessed;
          Block id_processed;
 
-         explicit convert(const size_t& t) : id_unprocessed {t} {}
+         explicit convert(size_t const& t) : id_unprocessed {t} {}
          explicit convert(const Block&  t) : id_unprocessed {0} {
             id_processed = t;
          }
