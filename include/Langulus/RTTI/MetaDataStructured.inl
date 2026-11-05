@@ -766,6 +766,17 @@ namespace Langulus::RTTI::Inner
       return fallback;
    }
    
+   /// Get the reflected methods                                              
+   TEMPLATE()
+   auto ME()::GetMethods() const noexcept -> DefinitionData::MethodList const& {
+      const auto id = Base::GetID();
+      if (id)
+         return Registry::GetMetaDataByID(id, sparse, constant)->mCurrentBoundary.mMethods;
+
+      static const DefinitionData::MethodList fallback;
+      return fallback;
+   }
+   
    /// Get the reflected named values                                         
    TEMPLATE()
    auto ME()::GetNamedValues()

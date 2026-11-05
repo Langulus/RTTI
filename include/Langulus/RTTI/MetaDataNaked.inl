@@ -414,7 +414,7 @@ namespace Langulus::RTTI::Inner
       return mDefinition->mCurrentBoundary.mVerbs;
    }
 
-   /// Get the reflected members                                              
+   /// Get the reflected methods                                              
    inline auto MetaDataNaked::GetMembers()
    const noexcept -> DefinitionData::MemberList const& {
       if (not mDefinition) {
@@ -423,6 +423,17 @@ namespace Langulus::RTTI::Inner
       }
 
       return mDefinition->mCurrentBoundary.mMembers;
+   }
+
+   /// Get the reflected members                                              
+   inline auto MetaDataNaked::GetMethods()
+   const noexcept -> DefinitionData::MethodList const& {
+      if (not mDefinition) {
+         static const DefinitionData::MethodList fallback;
+         return fallback;
+      }
+
+      return mDefinition->mCurrentBoundary.mMethods;
    }
 
    /// Get the reflected named values                                         
