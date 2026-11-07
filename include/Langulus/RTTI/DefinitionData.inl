@@ -748,8 +748,17 @@ namespace Langulus::RTTI
       static_assert(CT::Reflectable<T>,
          "Can't reflect data that was explicitly marked unreflectable");
       static_assert(Exact<CT::ReflectedAs<T>, T>,
-         "Data is marked to be reflected as something else, "
-         "make sure this is respected before reaching this function");
+         "Data type " + CppNameOf<T>()
+         + " is marked to be reflected as " + CppNameOf<CT::ReflectedAs<T>>()
+         + ", make sure this is respected before reaching this function"
+      );
+      static_assert(Exact<CT::ReflectedAs<Deptr<T>>, Deptr<T>> or Exact<CT::ReflectedAs<Deptr<T>>, void>,
+         "Underlying pointer type " + CppNameOf<Deptr<T>>()
+         + " is marked to be reflected as " + CppNameOf<CT::ReflectedAs<Deptr<T>>>()
+         + ", make sure this is respected before reaching this function. "
+         "Alternatively, you can mark the underlying type with `using CTTI_ReflectAs = void`, "
+         "as incomplete pointers are always allowed."
+      );
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          // Try to get an already existing definition - the data might  

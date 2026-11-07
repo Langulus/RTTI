@@ -6,7 +6,7 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #pragma once
-//#include <Langulus/CT/ReflectAs.hpp>
+#include <Langulus/CT/Retype.hpp>
 
 #include "RTTI/MetaData.hpp"
 #include "RTTI/MetaTag.hpp"
@@ -31,10 +31,14 @@ namespace Langulus
       if constexpr (::std::is_void_v<T>)
          return {};
       else {
-         using AS = CT::ReflectedAs<ShedDeref<T>>;
-         static_assert(not ::std::is_void_v<AS>,
-            CppNameOf<T>() + " was marked as not reflectable");
-         return RTTI::DefinitionData::Reflect<AS>();
+         using AS = CT::ReflectedAs<Decay<T>>;
+         if constexpr (::std::is_void_v<AS> and ::std::is_pointer_v<T>)
+            return RTTI::DefinitionData::Reflect<Deref<T>>();
+         else {
+            static_assert(not ::std::is_void_v<AS>,
+               CppNameOf<T>() + " was marked as not reflectable");
+            return RTTI::DefinitionData::Reflect<Retype<Deref<T>, AS>>();
+         }
       }
    }
 
