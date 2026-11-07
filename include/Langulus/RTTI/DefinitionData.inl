@@ -605,9 +605,9 @@ namespace Langulus::RTTI
          "Can't reflect volatile type, use Devq before reflection");
       static_assert(not CT::Reference<T>,
          "Can't reflect reference type, use Deref before reflection");
-      static_assert(not CT::DefineTag<T>,
+      static_assert(not CT::DefineTag<Decvq<T>>,
          "Can't reflect tag as data");
-      static_assert(not CT::DefineVerb<T>,
+      static_assert(not CT::DefineVerb<Decvq<T>>,
          "Can't reflect constant as data");
       static_assert(CT::Reflectable<T>,
          "Can't reflect data that was explicitly marked unreflectable");
