@@ -5,13 +5,12 @@
 ///                                                                           
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
-#include "Common.hpp"
+#include <Langulus/Testing/CommonTypes.hpp>
 
 
 ///                                                                           
 /// CT::Abstract                                                              
-///                                                                           
-TEMPLATE_TEST_CASE("Testing CT::Abstract", "[concepts]",
+TEST_CASE_TEMPLATE("Testing CT::Abstract", T,
    PureVirtual,
    ForcedAbstract
 ) {
@@ -21,18 +20,18 @@ TEMPLATE_TEST_CASE("Testing CT::Abstract", "[concepts]",
    static_assert(    CT::Abstract<const T>);
    static_assert(not CT::Abstract<const T*>);
 
-   auto meta1 = MetaData::Of<T>();
+   auto meta1 = MetaDataOf<T>();
    REQUIRE(meta1);
    REQUIRE(meta1->mIsAbstract);
 
-   auto meta2 = MetaData::Of<T*>();
+   auto meta2 = MetaDataOf<T*>();
    REQUIRE(meta2);
    REQUIRE(meta2->mIsAbstract);
 }
 
-TEMPLATE_TEST_CASE("Testing not CT::Abstract", "[concepts]",
+TEST_CASE_TEMPLATE("Testing not CT::Abstract", TestType,
    bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte,
-   ImplicitlyConstructible,
+   EmptyType,
    Destructible,
    AggregateType,
    NonDestructible,
@@ -51,12 +50,12 @@ TEMPLATE_TEST_CASE("Testing not CT::Abstract", "[concepts]",
    static_assert(not CT::Abstract<TestType*>);
 
    if constexpr (CT::Complete<TestType>) {
-      auto meta1 = MetaData::Of<TestType>();
+      auto meta1 = MetaDataOf<TestType>();
       REQUIRE(meta1);
       REQUIRE(not meta1->mIsAbstract);
    }
 
-   auto meta2 = MetaData::Of<TestType*>();
+   auto meta2 = MetaDataOf<TestType*>();
    REQUIRE(meta2);
    REQUIRE(not meta2->mIsAbstract);
 }
@@ -70,30 +69,28 @@ TEMPLATE_TEST_CASE("Testing not CT::Abstract", "[concepts]",
 
 ///                                                                           
 /// CT::Defaultable                                                           
-///                                                                           
-TEMPLATE_TEST_CASE("Testing CT::Defaultable", "[concepts]",
+TEST_CASE_TEMPLATE("Testing CT::Defaultable", T,
    bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte,
-   ImplicitlyConstructible,
+   EmptyType,
    Destructible,
    AggregateType,
    Complex*, ContainsComplex*
 ) {
-   using T = TestType;
    static_assert(CT::Defaultable<T>);
    static_assert(CT::Defaultable<T*>);
    static_assert(CT::Defaultable<const T>);
    static_assert(CT::Defaultable<const T*>);
 
-   auto meta1 = MetaData::Of<T>();
+   auto meta1 = MetaDataOf<T>();
    REQUIRE(meta1);
    REQUIRE(bool(meta1->mDefaultConstructor) == CT::Defaultable<Decay<T>>);
 
-   auto meta2 = MetaData::Of<T*>();
+   auto meta2 = MetaDataOf<T*>();
    REQUIRE(meta2);
    REQUIRE(bool(meta2->mDefaultConstructor) == CT::Defaultable<Decay<T>>);
 }
 
-TEMPLATE_TEST_CASE("Testing not CT::Defaultable", "[concepts]",
+TEST_CASE_TEMPLATE("Testing not CT::Defaultable", TestType,
    NonDestructible,
    PrivatelyConstructible,
    NonIntentConstructible,
@@ -112,12 +109,12 @@ TEMPLATE_TEST_CASE("Testing not CT::Defaultable", "[concepts]",
    static_assert(    CT::Defaultable<TestType*>);
 
    if constexpr (CT::Complete<TestType>) {
-      auto meta1 = MetaData::Of<TestType>();
+      auto meta1 = MetaDataOf<TestType>();
       REQUIRE(meta1);
       REQUIRE_FALSE(meta1->mDefaultConstructor);
    }
 
-   auto meta2 = MetaData::Of<TestType*>();
+   auto meta2 = MetaDataOf<TestType*>();
    REQUIRE(meta2);
    REQUIRE_FALSE(meta2->mDefaultConstructor);
 }
@@ -125,8 +122,7 @@ TEMPLATE_TEST_CASE("Testing not CT::Defaultable", "[concepts]",
 
 ///                                                                           
 /// CT::Destroyable                                                           
-///                                                                           
-TEMPLATE_TEST_CASE("Testing CT::Destroyable<T>", "[concepts]",
+TEST_CASE_TEMPLATE("Testing CT::Destroyable<T>", TestType,
    Destructible,
    Complex,
    ContainsComplex,
@@ -137,17 +133,17 @@ TEMPLATE_TEST_CASE("Testing CT::Destroyable<T>", "[concepts]",
    static_assert(    CT::Destroyable<TestType>);
    static_assert(not CT::Destroyable<TestType*>);
 
-   auto meta1 = MetaData::Of<TestType>();
+   auto meta1 = MetaDataOf<TestType>();
    REQUIRE(meta1);
    REQUIRE(meta1->mDestructor);
 
-   auto meta2 = MetaData::Of<TestType*>();
+   auto meta2 = MetaDataOf<TestType*>();
    REQUIRE(meta2);
    REQUIRE(meta2->mDestructor);
 }
 
-TEMPLATE_TEST_CASE("Testing not CT::Destroyable<T>", "[concepts]",
-   ImplicitlyConstructible,
+TEST_CASE_TEMPLATE("Testing not CT::Destroyable<T>", T,
+   EmptyType,
    NonDestructible,
    PrivatelyConstructible,
    NonIntentConstructible,
@@ -160,17 +156,16 @@ TEMPLATE_TEST_CASE("Testing not CT::Destroyable<T>", "[concepts]",
    Complex*, ContainsComplex*,
    ForcedAbstract
 ) {
-   using T = TestType;
    static_assert(not CT::Destroyable<T>);
    static_assert(not CT::Destroyable<T*>);
 
    if constexpr (CT::Complete<T>) {
-      auto meta1 = MetaData::Of<T>();
+      auto meta1 = MetaDataOf<T>();
       REQUIRE(meta1);
       REQUIRE(bool(meta1->mDestructor) == CT::Destroyable<Decay<T>>);
    }
 
-   auto meta2 = MetaData::Of<T*>();
+   auto meta2 = MetaDataOf<T*>();
    REQUIRE(meta2);
    REQUIRE(bool(meta2->mDestructor) == CT::Destroyable<Decay<T>>);
 }
@@ -178,9 +173,8 @@ TEMPLATE_TEST_CASE("Testing not CT::Destroyable<T>", "[concepts]",
 
 ///                                                                           
 /// CT::POD                                                                   
-///                                                                           
-TEMPLATE_TEST_CASE("Testing CT::POD<T>", "[concepts]",
-   ImplicitlyConstructible,
+TEST_CASE_TEMPLATE("Testing CT::POD<T>", TestType,
+   EmptyType,
    AMeta, TMeta, CMeta, DMeta, VMeta,
    bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte,
    ForcefullyPod,
@@ -189,16 +183,16 @@ TEMPLATE_TEST_CASE("Testing CT::POD<T>", "[concepts]",
    static_assert(CT::POD<TestType>);
    static_assert(CT::POD<TestType*>);
 
-   auto meta1 = MetaData::Of<TestType>();
+   auto meta1 = MetaDataOf<TestType>();
    REQUIRE(meta1);
    REQUIRE(meta1->mIsPOD);
 
-   auto meta2 = MetaData::Of<TestType*>();
+   auto meta2 = MetaDataOf<TestType*>();
    REQUIRE(meta2);
    REQUIRE(meta2->mIsPOD);
 }
 
-TEMPLATE_TEST_CASE("Testing not CT::POD<T>", "[concepts]",
+TEST_CASE_TEMPLATE("Testing not CT::POD<T>", TestType,
    Complex,
    ContainsComplex,
    IncompleteType,
@@ -208,12 +202,12 @@ TEMPLATE_TEST_CASE("Testing not CT::POD<T>", "[concepts]",
    static_assert(    CT::POD<TestType*>);
 
    if constexpr (CT::Complete<TestType>) {
-      auto meta1 = MetaData::Of<TestType>();
+      auto meta1 = MetaDataOf<TestType>();
       REQUIRE(meta1);
       REQUIRE_FALSE(meta1->mIsPOD);
    }
 
-   auto meta2 = MetaData::Of<TestType*>();
+   auto meta2 = MetaDataOf<TestType*>();
    REQUIRE(meta2);
    REQUIRE_FALSE(meta2->mIsPOD);
 }
@@ -222,7 +216,6 @@ TEMPLATE_TEST_CASE("Testing not CT::POD<T>", "[concepts]",
 
 ///                                                                           
 /// CT::Reflectable                                                           
-///                                                                           
 TEST_CASE("Testing CT::Reflectable<T>", "[concepts]") {
    static_assert(    CT::Reflectable<ImplicitlyReflectedData>);
    static_assert(    CT::Reflectable<ImplicitlyReflectedDataWithTraits>);
@@ -252,7 +245,6 @@ TEST_CASE("Testing CT::Reflectable<T>", "[concepts]") {
 
 ///                                                                           
 /// TypeOf                                                                    
-///                                                                           
 TEST_CASE("Testing TypeOf<T>", "[concepts]") {
    static_assert(CT::Exact<TypeOf<ImplicitlyReflectedData>, ImplicitlyReflectedData::Named>);
    static_assert(CT::Exact<TypeOf<ImplicitlyReflectedDataWithTraits>, ImplicitlyReflectedData::Named>);
@@ -268,7 +260,6 @@ TEST_CASE("Testing TypeOf<T>", "[concepts]") {
 
 ///                                                                           
 /// CT::Typed                                                                 
-///                                                                           
 TEST_CASE("Testing CT::Typed", "[concepts]") {
    static_assert(not CT::Typed<bool>);
    static_assert(not CT::Typed<void>);
@@ -290,7 +281,6 @@ TEST_CASE("Testing CT::Typed", "[concepts]") {
 
 ///                                                                           
 /// CT::Untyped                                                               
-///                                                                           
 TEST_CASE("Testing CT::Untyped", "[concepts]") {
    static_assert(    CT::Untyped<bool>);
    static_assert(    CT::Untyped<void>);
@@ -313,7 +303,7 @@ TEST_CASE("Testing CT::Untyped", "[concepts]") {
 //TODO SuffixOf
 
 
-TEMPLATE_TEST_CASE("Testing TypedCast (POD)", "[concepts]",
+TEST_CASE_TEMPLATE("Testing TypedCast (POD)", TestType,
    int, Copied<int>, Referred<int>, Disowned<int>, Cloned<int>
 ) {
    const int* value = new int {656};
@@ -322,7 +312,7 @@ TEMPLATE_TEST_CASE("Testing TypedCast (POD)", "[concepts]",
    delete value;
 }
 
-TEMPLATE_TEST_CASE("Testing TypedCast (non POD)", "[concepts]",
+TEST_CASE_TEMPLATE("Testing TypedCast (non POD)", TestType,
    Complex, Copied<Complex>, Referred<Complex>, Disowned<Complex>, Cloned<Complex>
 ) {
    const int* value = new int {656};

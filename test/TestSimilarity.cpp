@@ -5,7 +5,7 @@
 ///                                                                           
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
-#include "Common.hpp"
+#include <Langulus/Testing/CommonTypes.hpp>
 
 
 /// A freestanding type compatibility check                                   
@@ -22,11 +22,11 @@ bool CastsTo(DMeta from, size_t count) {
    return from->template CastsTo<T>(count);
 }
 
-TEMPLATE_TEST_CASE("Unsigned integer RTTI interpretation", "[metadata]",
+TEST_CASE_TEMPLATE("Unsigned integer RTTI interpretation", TestType,
    uint8_t, uint16_t, uint32_t, uint64_t
 ) {
    GIVEN("An unsigned integer type") {
-      auto meta = MetaData::Of<TestType>();
+      auto meta = MetaDataOf<TestType>();
       REQUIRE(meta != nullptr);
 
       WHEN("Interpreted as another type") {
@@ -59,11 +59,11 @@ TEMPLATE_TEST_CASE("Unsigned integer RTTI interpretation", "[metadata]",
    }
 }
 
-TEMPLATE_TEST_CASE("Signed integer RTTI interpretation", "[metadata]",
+TEST_CASE_TEMPLATE("Signed integer RTTI interpretation", TestType,
    int8_t, int16_t, int32_t, int64_t
 ) {
    GIVEN("A signed integer type") {
-      auto meta = MetaData::Of<TestType>();
+      auto meta = MetaDataOf<TestType>();
       REQUIRE(meta != nullptr);
 
       WHEN("Interpreted as another type") {
@@ -96,11 +96,11 @@ TEMPLATE_TEST_CASE("Signed integer RTTI interpretation", "[metadata]",
    }
 }
 
-TEMPLATE_TEST_CASE("Real number RTTI interpretation", "[metadata]",
+TEST_CASE_TEMPLATE("Real number RTTI interpretation", TestType,
    float, double
 ) {
    GIVEN("A real number type") {
-      auto meta = MetaData::Of<TestType>();
+      auto meta = MetaDataOf<TestType>();
       REQUIRE(meta != nullptr);
 
       WHEN("Interpreted as another type") {
@@ -145,7 +145,7 @@ struct Sequence {
    DMeta metacpcp[count] {MetaDataOf<const T* const*>()...};
 };
 
-TEST_CASE("MetaData::Is", "[is]") {
+TEST_CASE("MetaData::Is") {
    WHEN("MetaData::Is is used to check similarity of complete types") {
       Sequence<N1::Type, N1::Create, N2::Type, N3::type> sequence;
 
@@ -273,7 +273,7 @@ TEST_CASE("MetaData::Is", "[is]") {
    }
 }
 
-TEST_CASE("MetaData::IsSimilar", "[is]") {
+TEST_CASE("MetaData::IsSimilar") {
    static_assert(CT::Similar<void*, const void*>);
    static_assert(CT::Similar<void* const, const void*>);
    static_assert(CT::Similar<void* const, void*>);
@@ -439,7 +439,7 @@ TEST_CASE("MetaData::IsSimilar", "[is]") {
    }
 }
 
-TEST_CASE("MetaData::IsExact", "[is]") {
+TEST_CASE("MetaData::IsExact") {
    WHEN("MetaData::IsExact is used to check similarity of complete types") {
       Sequence<N1::Type, N1::Create, N2::Type, N3::type> sequence;
 

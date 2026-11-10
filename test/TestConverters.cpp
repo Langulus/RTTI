@@ -5,34 +5,35 @@
 ///                                                                           
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
-#include "Common.hpp"
+#include <Langulus/Testing/CommonTypes.hpp>
+#include <Langulus/MetaOf.hpp>
 
 
-TEMPLATE_TEST_CASE("Reflected from/to converters", "[metadata]",
-   (TypePair<ConvertibleData, int       >),
-   (TypePair<ConvertibleData, int const >),
-   (TypePair<ConvertibleData, int const*>),
-   (TypePair<Pi, ConvertibleData>),
-   (TypePair<Pi, ConvertibleData const >),
-   (TypePair<Pi, ConvertibleData const*>),
+TEST_CASE_TEMPLATE("Reflected from/to converters", TestType,
+   Types<ConvertibleData, int       >,
+   Types<ConvertibleData, int const >,
+   Types<ConvertibleData, int const*>,
+   Types<Pi, ConvertibleData>,
+   Types<Pi, ConvertibleData const >,
+   Types<Pi, ConvertibleData const*>,
 
-   (TypePair<CheckingWhatConverterGetsInherited, int       >),
-   (TypePair<CheckingWhatConverterGetsInherited, int const >),
-   (TypePair<CheckingWhatConverterGetsInherited, int const*>),
-   (TypePair<Pi, CheckingWhatConverterGetsInherited>),
-   (TypePair<Pi, CheckingWhatConverterGetsInherited const >),
-   (TypePair<Pi, CheckingWhatConverterGetsInherited const*>)
+   Types<CheckingWhatConverterGetsInherited, int       >,
+   Types<CheckingWhatConverterGetsInherited, int const >,
+   Types<CheckingWhatConverterGetsInherited, int const*>,
+   Types<Pi, CheckingWhatConverterGetsInherited>,
+   Types<Pi, CheckingWhatConverterGetsInherited const >,
+   Types<Pi, CheckingWhatConverterGetsInherited const*>
 ) {
-   using LHS = typename TestType::LHS;
-   using RHS = typename TestType::RHS;
+   using LHS = typename TestType::First;
+   using RHS = typename TestType::Second;
 
    GIVEN("Convertible data") {
       Decay<LHS> lhs;
       Decay<RHS> rhs;
 
-      auto lhsMeta = MetaData::Of<LHS>();
-      auto rhsMeta = MetaData::Of<RHS>();
-      auto converter = lhsMeta->GetConverter(rhsMeta);
+      auto lhsMeta = MetaDataOf<LHS>();
+      auto rhsMeta = MetaDataOf<RHS>();
+      auto converter = lhsMeta.GetMorphism(rhsMeta);
 
       REQUIRE(converter);
       converter(&lhs, &rhs);

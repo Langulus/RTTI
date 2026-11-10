@@ -5,10 +5,10 @@
 ///                                                                           
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
-#include "Common.hpp"
+#include <Langulus/Testing/CommonTypes.hpp>
 
 
-SCENARIO("Comparing different meta types with one another", "[meta]") {
+SCENARIO("Comparing different meta types with one another") {
    GIVEN("Reflected types") {
       const auto dmeta = MetaDataOf<Type>();
       REQUIRE(dmeta);
@@ -47,7 +47,7 @@ SCENARIO("Comparing different meta types with one another", "[meta]") {
    }
 }
 
-SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
+SCENARIO("Testing ambiguous symbols") {
    GIVEN("Reflected types with similar names in different namespaces") {
       const auto n0t = MetaDataOf<Type>();
       const auto n1t = MetaDataOf<N1::Type>();
@@ -125,24 +125,24 @@ SCENARIO("Testing ambiguous symbols", "[ambiguity]") {
 
          auto foundtxt = RTTI::ResolveFileExtension("txt");
          REQUIRE(foundtxt.size() == 2);
-         REQUIRE(foundtxt.contains(MetaData::Of<ImplicitlyReflectedDataWithTraits>()));
-         REQUIRE(foundtxt.contains(MetaData::Of<CheckingWhatGetsInherited>()));
+         REQUIRE(foundtxt.contains(MetaDataOf<ImplicitlyReflectedDataWithTraits>()));
+         REQUIRE(foundtxt.contains(MetaDataOf<CheckingWhatGetsInherited>()));
 
          auto foundpdf = RTTI::ResolveFileExtension("PDF");
          REQUIRE(foundpdf.size() == 2);
-         REQUIRE(foundpdf.contains(MetaData::Of<ImplicitlyReflectedDataWithTraits>()));
-         REQUIRE(foundpdf.contains(MetaData::Of<CheckingWhatGetsInherited>()));
+         REQUIRE(foundpdf.contains(MetaDataOf<ImplicitlyReflectedDataWithTraits>()));
+         REQUIRE(foundpdf.contains(MetaDataOf<CheckingWhatGetsInherited>()));
 
          auto foundase = RTTI::ResolveFileExtension("ase");
          REQUIRE(foundase.size() == 3);
-         REQUIRE(foundase.contains(MetaData::Of<ImplicitlyReflectedData>()));
-         REQUIRE(foundase.contains(MetaData::Of<ConvertibleData>()));
-         REQUIRE(foundase.contains(MetaData::Of<CheckingWhatConverterGetsInherited>()));
+         REQUIRE(foundase.contains(MetaDataOf<ImplicitlyReflectedData>()));
+         REQUIRE(foundase.contains(MetaDataOf<ConvertibleData>()));
+         REQUIRE(foundase.contains(MetaDataOf<CheckingWhatConverterGetsInherited>()));
       }
    }
 }
 
-SCENARIO("Testing operators", "[operators]") {
+SCENARIO("Testing operators") {
    GIVEN("Reflected verb with positive and negative operator") {
       const auto vvv = MetaVerb::Of<Verbs::Create>();
 
@@ -160,9 +160,9 @@ SCENARIO("Testing operators", "[operators]") {
    }
 }
 
-SCENARIO("Testing constants reflected from another translation unit", "[constants]") {
+SCENARIO("Testing constants reflected from another translation unit") {
    GIVEN("ImplicitlyReflectedData") {
-      const auto vvv = MetaData::Of<ImplicitlyReflectedData>();
+      const auto vvv = MetaDataOf<ImplicitlyReflectedData>();
 
       WHEN("Meta is retrieved by constant token") {
          REQUIRE(RTTI::GetMetaConstant("ImplicitlyReflectedData::One"));
@@ -175,7 +175,7 @@ SCENARIO("Testing constants reflected from another translation unit", "[constant
    }
 }
 
-SCENARIO("Modifying a data type at runtime", "[meta]") {
+SCENARIO("Modifying a data type at runtime"") {
    GIVEN("TODO") {
       WHEN("TODO") {
 
