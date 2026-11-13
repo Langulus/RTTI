@@ -36,7 +36,7 @@ namespace Langulus
       if constexpr (::std::is_void_v<T>)
          return {};
       else {
-         return RTTI::DefinitionData::Reflect<CT::ReflectedAs<T>>();
+         return RTTI::DefinitionData::Reflect<CT::ReflectedAs<Deref<T>>>();
          /*using AS = CT::ReflectedAs<Decay<T>>;
          if constexpr (::std::is_void_v<AS> and ::std::is_pointer_v<T>)
             return RTTI::DefinitionData::Reflect<Deref<T>>();
