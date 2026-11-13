@@ -32,7 +32,7 @@ namespace Langulus::RTTI
          union {
             struct {
                bool reversible   : 1;
-               bool contextless  : 1;
+               //bool contextless  : 1;
             };
             uint8_t all {};
          };
@@ -73,10 +73,12 @@ namespace Langulus::RTTI
          auto GetPositiveOperator() const noexcept -> Token;
          auto GetNegativeOperator() const noexcept -> Token;
          auto GetPrecedence()       const noexcept -> float;
-         auto GetContextless()      const noexcept -> DefinitionVerb::FContextless;
+
+         auto GetAble()             const noexcept -> DefinitionVerb::AbleList const&;
+         //auto GetContextless()      const noexcept -> DefinitionVerb::FContextless;
 
          constexpr bool IsReversible()  const noexcept;
-         constexpr bool IsContextless() const noexcept;
+         //constexpr bool IsContextless() const noexcept;
 
          IF_SAFE(explicit operator bool() const noexcept);
       };
@@ -101,10 +103,13 @@ namespace Langulus::RTTI
          auto GetPositiveOperator() const noexcept -> Token;
          auto GetNegativeOperator() const noexcept -> Token;
          auto GetPrecedence()       const noexcept -> float;
-         auto GetContextless()      const noexcept -> DefinitionVerb::FContextless;
+
+         auto GetAble()             const noexcept -> DefinitionVerb::AbleList const&;
+
+         //auto GetContextless()      const noexcept -> DefinitionVerb::FContextless;
 
          constexpr bool IsReversible()  const noexcept;
-         constexpr bool IsContextless() const noexcept;
+         //constexpr bool IsContextless() const noexcept;
       };
    }
 }

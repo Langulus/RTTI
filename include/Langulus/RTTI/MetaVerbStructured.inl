@@ -27,7 +27,7 @@ namespace Langulus::RTTI::Inner
       : Base {d ? d->mID : 0} {
       if (d) {
          reversible = (d->mNameOfReverse != "");
-         contextless = d->mCurrentBoundary.mContextless != nullptr;
+         //contextless = d->mCurrentBoundary.mContextless != nullptr;
       }
    }
 
@@ -45,7 +45,7 @@ namespace Langulus::RTTI::Inner
 
       if (d) {
          reversible = (d->mNameOfReverse != "");
-         contextless = d->mCurrentBoundary.mContextless != nullptr;
+         //contextless = d->mCurrentBoundary.mContextless != nullptr;
       }
       return *this;
    }
@@ -165,13 +165,24 @@ namespace Langulus::RTTI::Inner
       return 0;
    }
 
-   /// Get the contextless execution routine if such was defined              
+   /// Get the list of data types capable of this verb                        
    template<unsigned ID_SIZE>
+   auto MetaVerbStructured_X8<ID_SIZE>::GetAble() const noexcept -> DefinitionVerb::AbleList const& {
+      const auto id = Base::GetID();
+      if (id)
+         return Registry::GetMetaVerbByID(id)->mAble;
+
+      static const DefinitionVerb::AbleList fallback;
+      return fallback;
+   }
+
+   /// Get the contextless execution routine if such was defined              
+   /*template<unsigned ID_SIZE>
    auto MetaVerbStructured_X8<ID_SIZE>::GetContextless() const noexcept -> DefinitionVerb::FContextless {
       return contextless
          ? Registry::GetMetaVerbByID(Base::GetID())->mCurrentBoundary.mContextless
          : nullptr;
-   }
+   }*/
 
    /// Check if the verb has a negative token defined                         
    template<unsigned ID_SIZE>
@@ -180,10 +191,10 @@ namespace Langulus::RTTI::Inner
    }
 
    /// Check if the verb provides a contextless execution routine             
-   template<unsigned ID_SIZE>
+   /*template<unsigned ID_SIZE>
    constexpr bool MetaVerbStructured_X8<ID_SIZE>::IsContextless() const noexcept {
       return contextless;
-   }
+   }*/
 
 #if LANGULUS(SAFE)
    template<unsigned ID_SIZE>

@@ -23,7 +23,6 @@ namespace Langulus::Annies
 {
    struct Many;
    struct Any;
-   //struct HandleDisowned;
    template<class> 
    struct TVerb;
    using Verb = TVerb<void>;

@@ -535,7 +535,8 @@ SCENARIO("A type reflected with all traits") {
    REQUIRE(meta.GetVerbs().size() == 1);
    auto ability = meta.GetVerbs().begin();
    REQUIRE(VMeta(ability->first) == MetaVerbOf<Verbs::Create>());
-   REQUIRE(ability->second != nullptr);
+   REQUIRE(ability->second.binary != nullptr);
+   REQUIRE(ability->second.unary == nullptr);
 
    REQUIRE(meta.GetMembers().size() == 4);
    
@@ -625,10 +626,17 @@ SCENARIO("A type reflected with all traits") {
 
 //TODO reflecting custom pointers
 
+namespace Langulus::Annies
+{
+   template<class> 
+   struct TVerb {};
+}
 
 ///                                                                           
 /// MARK: Verbs                                                               
 SCENARIO("Reflecting a verb") {
+   const DMeta dmeta = MetaDataOf<int>();
+
    {
       const VMeta vmeta = {};
       REQUIRE_FALSE(vmeta);
@@ -653,15 +661,18 @@ SCENARIO("Reflecting a verb") {
       REQUIRE(vmeta.GetPositiveOperator() == " + ");
       REQUIRE(vmeta.GetNegativeOperator() == " - ");
       REQUIRE(vmeta.GetPrecedence() == 5);
+      REQUIRE(vmeta.GetAble().size() == 1);
+      REQUIRE(vmeta.GetAble().contains(dmeta.GetDefinition()));
 
-      Flow::Verb verb;
-      REQUIRE(vmeta.GetContextless()(verb));
+      Annies::Verb verb;
+      int context = 55;
 
-      const DMeta dmeta = MetaDataOf<DMeta>();
-      REQUIRE(dmeta.GetVerbs().at(vdef)(const_cast<DMeta*>(&dmeta), verb));
+      REQUIRE(dmeta.GetVerbs().at(vdef).binary(&context, verb));
+      REQUIRE(dmeta.GetVerbs().at(vdef).unary(verb));
 
       const DMeta dmeta_const = MetaDataOf<const DMeta>();
-      REQUIRE(dmeta_const.GetVerbs().at(vdef)(const_cast<DMeta*>(&dmeta_const), verb));
+      REQUIRE(dmeta_const.GetVerbs().at(vdef).binary(&context, verb));
+      REQUIRE(dmeta_const.GetVerbs().at(vdef).unary(verb));
    }
 }
 

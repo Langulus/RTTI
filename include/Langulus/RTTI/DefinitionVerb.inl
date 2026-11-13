@@ -106,8 +106,8 @@ namespace Langulus::RTTI
       else
          definition.mPrecedence = T::CTTI_DefineVerb::Precedence;
 
-      if constexpr (requires { FContextless {&T::ExecuteContextless}; })
-         definition.mCurrentBoundary.mContextless = &T::ExecuteContextless;
+      /*if constexpr (requires { FContextless {&T::ExecuteContextless}; })
+         definition.mCurrentBoundary.mContextless = &T::ExecuteContextless;*/
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          if (definition.mOperator.size()) {

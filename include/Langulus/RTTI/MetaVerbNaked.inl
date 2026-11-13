@@ -43,12 +43,22 @@ namespace Langulus::RTTI::Inner
       return mDefinition ? mDefinition->mPrecedence : 0;
    }
 
+   /// Get the list of data types capable of this verb                        
+   inline auto MetaVerbNaked::GetAble() const noexcept -> DefinitionVerb::AbleList const& {
+      if (not mDefinition) {
+         static const DefinitionVerb::AbleList fallback;
+         return fallback;
+      }
+
+      return mDefinition->mAble;
+   }
+
    /// Get the contextless execution routine if such was defined              
-   inline auto MetaVerbNaked::GetContextless() const noexcept -> DefinitionVerb::FContextless {
+   /*inline auto MetaVerbNaked::GetContextless() const noexcept -> DefinitionVerb::FContextless {
       if (mDefinition)
          return mDefinition->mCurrentBoundary.mContextless;
       return nullptr;
-   }
+   }*/
 
    /// Check if the verb has a negative token defined                         
    constexpr bool MetaVerbNaked::IsReversible() const noexcept {
@@ -58,9 +68,9 @@ namespace Langulus::RTTI::Inner
    }
 
    /// Check if the verb provides a contextless execution routine             
-   constexpr bool MetaVerbNaked::IsContextless() const noexcept {
+   /*constexpr bool MetaVerbNaked::IsContextless() const noexcept {
       if (mDefinition)
          return mDefinition->mCurrentBoundary.mContextless != nullptr;
       return false;
-   }
+   }*/
 }
