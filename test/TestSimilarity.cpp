@@ -6,20 +6,21 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #include <Langulus/Testing/CommonTypes.hpp>
+#include <Langulus/MetaOf.hpp>
 
 
 /// A freestanding type compatibility check                                   
 /// Purely cosmetic, to avoid typing `template` before member function        
 template<CT::NotVoid T> LANGULUS(INLINED)
 bool CastsTo(DMeta from) {
-   return from->template CastsTo<T, false>();
+   return from.template CastsTo<T, false>();
 }
 
 /// A freestanding type compatibility check                                   
 /// Purely cosmetic, to avoid typing `template` before member function        
 template<CT::NotVoid T> LANGULUS(INLINED)
 bool CastsTo(DMeta from, size_t count) {
-   return from->template CastsTo<T>(count);
+   return from.template CastsTo<T>(count);
 }
 
 TEST_CASE_TEMPLATE("Unsigned integer RTTI interpretation", TestType,

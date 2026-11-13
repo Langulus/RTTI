@@ -6,40 +6,42 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #include <Langulus/Testing/CommonTypes.hpp>
+#include <Langulus/MetaOf.hpp>
 
 
 SCENARIO("Comparing different meta types with one another") {
    GIVEN("Reflected types") {
-      const auto dmeta = MetaDataOf<Type>();
+      const auto dmeta = MetaDataOf<Complex>();
       REQUIRE(dmeta);
 
-      const AMeta a_dmeta = dmeta;
+      const auto a_dmeta = dmeta.GetDefinition();
       REQUIRE(a_dmeta);
       REQUIRE(dmeta == a_dmeta);
 
       const auto vmeta = MetaVerbOf<Verbs::Create>();
       REQUIRE(vmeta);
 
-      const AMeta a_vmeta = vmeta;
+      const auto a_vmeta = vmeta.GetDefinition();
       REQUIRE(a_vmeta);
       REQUIRE(vmeta == a_vmeta);
 
       const auto tmeta = MetaTagOf<Tags::Tag>();
       REQUIRE(tmeta);
 
-      const AMeta a_tmeta = tmeta;
+      const auto a_tmeta = tmeta.GetDefinition();
       REQUIRE(a_tmeta);
       REQUIRE(tmeta == a_tmeta);
 
+      static_assert(    Exact<decltype(a_dmeta), decltype(v_dmeta), decltype(t_dmeta)>);
       static_assert(not CT::Comparable<DMeta, TMeta>);
       static_assert(not CT::Comparable<DMeta, CMeta>);
       static_assert(not CT::Comparable<DMeta, VMeta>);
       static_assert(not CT::Comparable<TMeta, VMeta>);
       static_assert(not CT::Comparable<TMeta, CMeta>);
-      static_assert(    CT::Comparable<DMeta, AMeta>);
-      static_assert(    CT::Comparable<TMeta, AMeta>);
-      static_assert(    CT::Comparable<CMeta, AMeta>);
-      static_assert(    CT::Comparable<VMeta, AMeta>);
+      static_assert(    CT::Comparable<DMeta, decltype(a_dmeta)>);
+      static_assert(    CT::Comparable<TMeta, decltype(a_dmeta)>);
+      static_assert(    CT::Comparable<CMeta, decltype(a_dmeta)>);
+      static_assert(    CT::Comparable<VMeta, decltype(a_dmeta)>);
 
       REQUIRE(a_dmeta != a_vmeta);
       REQUIRE(a_dmeta != a_tmeta);

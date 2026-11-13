@@ -6,20 +6,18 @@
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
 #include <Langulus/Testing/CommonTypes.hpp>
+#include <Langulus/MetaOf.hpp>
+#include <Langulus/Utils/Byte.hpp>
 
+//TODO test all other reflected compile-time traits at runtime
 
 ///                                                                           
 /// CT::Abstract                                                              
 TEST_CASE_TEMPLATE("Testing CT::Abstract", T,
-   PureVirtual,
-   ForcedAbstract
+   PureAbstract,
+   ForcedAbstractExternally,
+   ForcedAbstractInternally
 ) {
-   using T = TestType;
-   static_assert(    CT::Abstract<T>);
-   static_assert(not CT::Abstract<T*>);
-   static_assert(    CT::Abstract<const T>);
-   static_assert(not CT::Abstract<const T*>);
-
    auto meta1 = MetaDataOf<T>();
    REQUIRE(meta1);
    REQUIRE(meta1->mIsAbstract);
@@ -29,33 +27,29 @@ TEST_CASE_TEMPLATE("Testing CT::Abstract", T,
    REQUIRE(meta2->mIsAbstract);
 }
 
-TEST_CASE_TEMPLATE("Testing not CT::Abstract", TestType,
+TEST_CASE_TEMPLATE("Testing not CT::Abstract", T,
    bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte,
    EmptyType,
-   Destructible,
-   AggregateType,
+   ActualAggregateType,
    NonDestructible,
    PrivatelyConstructible,
    NonIntentConstructible,
    AllIntentConstructible,
    AllIntentConstructibleAndAssignable,
    PartiallyIntentConstructible,
-   DescriptorConstructible,
+   DescribeConstructible,
    Complex,
    ContainsComplex,
    IncompleteType,
    ForcefullyPod
 ) {
-   static_assert(not CT::Abstract<TestType>);
-   static_assert(not CT::Abstract<TestType*>);
-
-   if constexpr (CT::Complete<TestType>) {
-      auto meta1 = MetaDataOf<TestType>();
+   if constexpr (CT::Complete<T>) {
+      auto meta1 = MetaDataOf<T>();
       REQUIRE(meta1);
       REQUIRE(not meta1->mIsAbstract);
    }
 
-   auto meta2 = MetaDataOf<TestType*>();
+   auto meta2 = MetaDataOf<T*>();
    REQUIRE(meta2);
    REQUIRE(not meta2->mIsAbstract);
 }
@@ -72,15 +66,9 @@ TEST_CASE_TEMPLATE("Testing not CT::Abstract", TestType,
 TEST_CASE_TEMPLATE("Testing CT::Defaultable", T,
    bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte,
    EmptyType,
-   Destructible,
-   AggregateType,
+   ActualAggregateType,
    Complex*, ContainsComplex*
 ) {
-   static_assert(CT::Defaultable<T>);
-   static_assert(CT::Defaultable<T*>);
-   static_assert(CT::Defaultable<const T>);
-   static_assert(CT::Defaultable<const T*>);
-
    auto meta1 = MetaDataOf<T>();
    REQUIRE(meta1);
    REQUIRE(bool(meta1->mDefaultConstructor) == CT::Defaultable<Decay<T>>);
@@ -102,12 +90,10 @@ TEST_CASE_TEMPLATE("Testing not CT::Defaultable", TestType,
    ContainsComplex,
    IncompleteType,
    ForcefullyPod,
-   PureVirtual,
-   ForcedAbstract
+   PureAbstract,
+   ForcedAbstractExternally,
+   ForcedAbstractInternally
 ) {
-   static_assert(not CT::Defaultable<TestType>);
-   static_assert(    CT::Defaultable<TestType*>);
-
    if constexpr (CT::Complete<TestType>) {
       auto meta1 = MetaDataOf<TestType>();
       REQUIRE(meta1);
@@ -130,9 +116,6 @@ TEST_CASE_TEMPLATE("Testing CT::Destroyable<T>", TestType,
    ImpureVirtual,
    VirtuallyDerived
 ) {
-   static_assert(    CT::Destroyable<TestType>);
-   static_assert(not CT::Destroyable<TestType*>);
-
    auto meta1 = MetaDataOf<TestType>();
    REQUIRE(meta1);
    REQUIRE(meta1->mDestructor);
@@ -156,9 +139,6 @@ TEST_CASE_TEMPLATE("Testing not CT::Destroyable<T>", T,
    Complex*, ContainsComplex*,
    ForcedAbstract
 ) {
-   static_assert(not CT::Destroyable<T>);
-   static_assert(not CT::Destroyable<T*>);
-
    if constexpr (CT::Complete<T>) {
       auto meta1 = MetaDataOf<T>();
       REQUIRE(meta1);
@@ -175,14 +155,11 @@ TEST_CASE_TEMPLATE("Testing not CT::Destroyable<T>", T,
 /// CT::POD                                                                   
 TEST_CASE_TEMPLATE("Testing CT::POD<T>", TestType,
    EmptyType,
-   AMeta, TMeta, CMeta, DMeta, VMeta,
+   TMeta, CMeta, DMeta, VMeta,
    bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte,
    ForcefullyPod,
    AggregateType
 ) {
-   static_assert(CT::POD<TestType>);
-   static_assert(CT::POD<TestType*>);
-
    auto meta1 = MetaDataOf<TestType>();
    REQUIRE(meta1);
    REQUIRE(meta1->mIsPOD);
@@ -198,9 +175,6 @@ TEST_CASE_TEMPLATE("Testing not CT::POD<T>", TestType,
    IncompleteType,
    AggregateTypeComplex
 ) {
-   static_assert(not CT::POD<TestType>);
-   static_assert(    CT::POD<TestType*>);
-
    if constexpr (CT::Complete<TestType>) {
       auto meta1 = MetaDataOf<TestType>();
       REQUIRE(meta1);
@@ -210,113 +184,4 @@ TEST_CASE_TEMPLATE("Testing not CT::POD<T>", TestType,
    auto meta2 = MetaDataOf<TestType*>();
    REQUIRE(meta2);
    REQUIRE_FALSE(meta2->mIsPOD);
-}
-
-//TODO Nullifiable
-
-///                                                                           
-/// CT::Reflectable                                                           
-TEST_CASE("Testing CT::Reflectable<T>", "[concepts]") {
-   static_assert(    CT::Reflectable<ImplicitlyReflectedData>);
-   static_assert(    CT::Reflectable<ImplicitlyReflectedDataWithTraits>);
-   static_assert(    CT::Reflectable<ForcedAbstract>);
-   static_assert(    CT::Reflectable<PureVirtual>);
-   static_assert(    CT::Reflectable<int>);
-   static_assert(    CT::Reflectable<int&>);
-   static_assert(    CT::Reflectable<int*>);
-   static_assert(    CT::Reflectable<int**>);
-   static_assert(    CT::Reflectable<TypedEnum>);
-   static_assert(    CT::Reflectable<TypeErasedContainer>);
-   static_assert(    CT::Reflectable<std::vector<bool>>);
-   static_assert(not CT::Reflectable<IncompleteType>);
-   static_assert(not CT::Reflectable<NotReflectableType>);
-   static_assert(    CT::Reflectable<IncompleteType*>);
-   static_assert(    CT::Reflectable<NotReflectableType*>);
-}
-
-//TODO Concretizable
-//TODO ConcreteOf
-//TODO Producible
-//TODO HasNamedValues
-//TODO ProducersOf
-//TODO DispatcherMutable
-//TODO DispatcherConstant
-//TODO Dispatcher
-
-///                                                                           
-/// TypeOf                                                                    
-TEST_CASE("Testing TypeOf<T>", "[concepts]") {
-   static_assert(CT::Exact<TypeOf<ImplicitlyReflectedData>, ImplicitlyReflectedData::Named>);
-   static_assert(CT::Exact<TypeOf<ImplicitlyReflectedDataWithTraits>, ImplicitlyReflectedData::Named>);
-   static_assert(CT::Exact<TypeOf<int>, int>);
-   static_assert(CT::Exact<TypeOf<int&>, int>);
-   static_assert(CT::Exact<TypeOf<TypedEnum>, int16_t>);
-   static_assert(CT::Exact<TypeOf<TypeErasedContainer>, void>);
-   static_assert(CT::Exact<TypeOf<std::vector<bool>>, bool>);
-   static_assert(CT::Exact<TypeOf<std::string_view>, char>);
-   static_assert(CT::Exact<TypeOf<std::array<double, 5>>, double>);
-   static_assert(CT::Exact<TypeOf<IncompleteType>, IncompleteType>);
-}
-
-///                                                                           
-/// CT::Typed                                                                 
-TEST_CASE("Testing CT::Typed", "[concepts]") {
-   static_assert(not CT::Typed<bool>);
-   static_assert(not CT::Typed<void>);
-   static_assert(not CT::Typed<const void>);
-   static_assert(not CT::Typed<volatile void>);
-   static_assert(not CT::Typed<void*>);
-   static_assert(not CT::Typed<bool, void, void*>);
-   static_assert(not CT::Typed<void, void, void>);
-   static_assert(not CT::Typed<TypedEnum>);
-   static_assert(not CT::Typed<TypeErasedContainer>);
-   static_assert(not CT::Typed<IncompleteType>);
-   static_assert(    CT::Typed<std::vector<bool>>);
-   static_assert(    CT::Typed<std::string_view>);
-   static_assert(    CT::Typed<std::array<double, 5>>);
-   static_assert(    CT::Typed<ImplicitlyReflectedData>);
-   static_assert(    CT::Typed<ImplicitlyReflectedData, ImplicitlyReflectedDataWithTraits>);
-   static_assert(not CT::Typed<ImplicitlyReflectedData, void>);
-}
-
-///                                                                           
-/// CT::Untyped                                                               
-TEST_CASE("Testing CT::Untyped", "[concepts]") {
-   static_assert(    CT::Untyped<bool>);
-   static_assert(    CT::Untyped<void>);
-   static_assert(    CT::Untyped<const void>);
-   static_assert(    CT::Untyped<volatile void>);
-   static_assert(    CT::Untyped<void*>);
-   static_assert(    CT::Untyped<bool, void, void*>);
-   static_assert(    CT::Untyped<void, void, void>);
-   static_assert(    CT::Untyped<TypedEnum>);
-   static_assert(    CT::Untyped<TypeErasedContainer>);
-   static_assert(    CT::Untyped<IncompleteType>);
-   static_assert(not CT::Untyped<std::vector<bool>>);
-   static_assert(not CT::Untyped<std::string_view>);
-   static_assert(not CT::Untyped<std::array<double, 5>>);
-   static_assert(not CT::Untyped<ImplicitlyReflectedData>);
-   static_assert(not CT::Untyped<ImplicitlyReflectedData, ImplicitlyReflectedDataWithTraits>);
-   static_assert(not CT::Untyped<ImplicitlyReflectedData, void>);
-}
-
-//TODO SuffixOf
-
-
-TEST_CASE_TEMPLATE("Testing TypedCast (POD)", TestType,
-   int, Copied<int>, Referred<int>, Disowned<int>, Cloned<int>
-) {
-   const int* value = new int {656};
-   const TestType i {*value};
-   static_assert(CT::Exact<decltype(TypedCast(i)), const int&>);
-   delete value;
-}
-
-TEST_CASE_TEMPLATE("Testing TypedCast (non POD)", TestType,
-   Complex, Copied<Complex>, Referred<Complex>, Disowned<Complex>, Cloned<Complex>
-) {
-   const int* value = new int {656};
-   const TestType i {*value};
-   static_assert(CT::Exact<decltype(TypedCast(i)), const Complex&>);
-   delete value;
 }

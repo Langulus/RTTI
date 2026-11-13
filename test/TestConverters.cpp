@@ -35,7 +35,7 @@ TEST_CASE_TEMPLATE("Reflected from/to converters", TestType,
       auto rhsMeta = MetaDataOf<RHS>();
       auto converter = lhsMeta.GetMorphism(rhsMeta);
 
-      REQUIRE(converter);
-      converter(&lhs, &rhs);
+      REQUIRE(converter.convert);
+      converter.convert(&lhs, &rhs);
    }
 }

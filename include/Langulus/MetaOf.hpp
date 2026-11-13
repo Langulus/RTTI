@@ -21,13 +21,18 @@
 
 namespace Langulus
 {
+   using RTTI::DMeta;
+   using RTTI::TMeta;
+   using RTTI::VMeta;
+   using RTTI::CMeta;
+
    /// Data definition retrieval.                                             
    /// Some types, like tags/verbs for example, can be represented both as    
    /// DMeta and TMeta/VMeta, and this is useful to state a clear intent.     
    ///   @tparam T type to get data definition from                           
    ///   @return the definition                                               
    template<class T>
-   RTTI::DMeta MetaDataOf() {
+   DMeta MetaDataOf() {
       if constexpr (::std::is_void_v<T>)
          return {};
       else {
@@ -48,7 +53,7 @@ namespace Langulus
    ///   @tparam T type to get tag definition from                            
    ///   @return the definition                                               
    template<class T>
-   RTTI::TMeta MetaTagOf() {
+   TMeta MetaTagOf() {
       return RTTI::DefinitionTag::Reflect<Decay<T>>();
    }
 
@@ -58,7 +63,7 @@ namespace Langulus
    ///   @tparam T type to get verb definition from                           
    ///   @return the definition                                               
    template<class T>
-   RTTI::VMeta MetaVerbOf() {
+   VMeta MetaVerbOf() {
       return RTTI::DefinitionVerb::Reflect<Decay<T>>();
    }
 
@@ -66,7 +71,7 @@ namespace Langulus
    ///   @tparam E constant to get definition from                            
    ///   @return the definition                                               
    template<auto E>
-   RTTI::CMeta MetaConstOf() {
+   CMeta MetaConstOf() {
       return RTTI::DefinitionConst::Reflect<E>();
    }
 
@@ -90,43 +95,43 @@ namespace Langulus
 #if LANGULUS_FEATURE(MANAGED_REFLECTION)
    /// Convenience literals for getting meta definitions from token...        
    LANGULUS(INLINED)
-   RTTI::DMeta operator ""_dmeta(const char* token, size_t size) noexcept {
+   DMeta operator ""_dmeta(const char* token, size_t size) noexcept {
       return RTTI::Registry::GetMetaDataByToken(Token {token, size});
    }
 
    LANGULUS(INLINED)
-   RTTI::TMeta operator ""_tmeta(const char* token, size_t size) noexcept {
+   TMeta operator ""_tmeta(const char* token, size_t size) noexcept {
       return RTTI::Registry::GetMetaTagByToken(Token {token, size});
    }
 
    LANGULUS(INLINED)
-   RTTI::CMeta operator ""_cmeta(const char* token, size_t size) noexcept {
+   CMeta operator ""_cmeta(const char* token, size_t size) noexcept {
       return RTTI::Registry::GetMetaConstByToken(Token {token, size});
    }
 
    LANGULUS(INLINED)
-   RTTI::VMeta operator ""_vmeta(const char* token, size_t size) noexcept {
+   VMeta operator ""_vmeta(const char* token, size_t size) noexcept {
       return RTTI::Registry::GetMetaVerbByToken(Token {token, size});
    }
    
    /// ... as well as getting them manually                                   
    LANGULUS(INLINED)
-   RTTI::DMeta MetaDataOf(Token const& token) noexcept {
+   DMeta MetaDataOf(Token const& token) noexcept {
       return RTTI::Registry::GetMetaDataByToken(token);
    }
 
    LANGULUS(INLINED)
-   RTTI::TMeta MetaTagOf(Token const& token) noexcept {
+   TMeta MetaTagOf(Token const& token) noexcept {
       return RTTI::Registry::GetMetaTagByToken(token);
    }
 
    LANGULUS(INLINED)
-   RTTI::VMeta MetaVerbOf(Token const& token) noexcept {
+   VMeta MetaVerbOf(Token const& token) noexcept {
       return RTTI::Registry::GetMetaVerbByToken(token);
    }
 
    LANGULUS(INLINED)
-   RTTI::CMeta MetaConstOf(Token const& token) noexcept {
+   CMeta MetaConstOf(Token const& token) noexcept {
       return RTTI::Registry::GetMetaConstByToken(token);
    }
 #endif
