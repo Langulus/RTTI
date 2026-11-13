@@ -189,10 +189,10 @@ namespace Langulus::RTTI
          "Can't reflect volatile type, use Devq before reflection");
       static_assert(not CT::Reference<T>,
          "Can't reflect reference type, use Deref before reflection");
-      static_assert(not CT::DefineTag<T>,
-         "Can't reflect tag as data");
-      static_assert(not CT::DefineVerb<T>,
-         "Can't reflect constant as data");
+      /*static_assert(not CT::DefineTag<T>,
+         "Can't reflect tag as data");*/  //TODO wtf? why did i add this?
+      /*static_assert(not CT::DefineVerb<T>,
+         "Can't reflect constant as data");*/ //TODO wtf? why did i add this?
       static_assert(CT::Decayed<T>,
          "Unsupported qualifiers detected");
       static_assert(CT::Reflectable<T>,

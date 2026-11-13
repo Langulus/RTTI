@@ -35,6 +35,10 @@ namespace Langulus::RTTI::Inner
       return *this;
    }
 
+   constexpr bool MetaConstPacked_16::operator == (const MetaConstPacked_16& rhs) const noexcept {
+      return Base::operator == (rhs);
+   }
+
    /// Get the name of the constant, the result of NameOf                     
    inline auto MetaConstPacked_16::GetName() const noexcept -> Token {
       const auto id = Base::GetID();

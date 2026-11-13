@@ -40,6 +40,8 @@ namespace Langulus::RTTI
          constexpr MetaConstPacked_16& operator = (nullptr_t) noexcept;
          constexpr MetaConstPacked_16& operator = (DefinitionConst const*) noexcept;
 
+         constexpr bool operator == (const MetaConstPacked_16&) const noexcept;
+
          constexpr explicit operator Inner::Definition const* () const noexcept {
             return static_cast<Inner::Definition const*>(GetDefinition());
          }

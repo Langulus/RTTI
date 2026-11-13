@@ -101,7 +101,6 @@ namespace Langulus::RTTI
          using Structured<PT_SIZE>::dispatcher;
          using Structured<PT_SIZE>::all;
 
-         auto GetDefinition() const noexcept -> DefinitionData const*;
 
       public:
          using CTTI_Abstract = No;
@@ -128,6 +127,7 @@ namespace Langulus::RTTI
             return static_cast<Inner::Definition const*>(GetDefinition());
          }
 
+         auto GetDefinition()         const noexcept -> DefinitionData const*;
          constexpr auto GetSize()     const noexcept -> size_t;
          auto GetAlignment()          const noexcept -> pot_t;
          auto GetName()               const noexcept -> Token;

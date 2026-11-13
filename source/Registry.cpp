@@ -236,7 +236,7 @@ namespace Langulus::RTTI
    ///   @param token the token to search for                                 
    ///   @return the set of associated meta definitions                       
    auto Registry::GetAmbiguousMeta(Token const& token)
-   assumptious -> const MetaSet& {
+   assumptious -> MetaSet const& {
       LglsAssumeUser(not token.contains(' '), "Token shouldn't contain spaces");
       static const MetaSet fallback {};
       const auto foundToken = mMetaAmbiguous.find(Inner::ToLowercase(token));
@@ -376,7 +376,7 @@ namespace Langulus::RTTI
    ///   @param token the file extension to search for                        
    ///   @return all meta definitions associated with the file extension      
    auto Registry::ResolveFileExtension(Token const& token)
-   assumptious -> const MetaSet& {
+   assumptious -> MetaSet const& {
       LglsAssumeUser(not token.contains(' '), "Token shouldn't contain spaces");
       static const MetaSet fallback {};
       const auto foundToken = mFileDatabase.find(Inner::ToLowercase(token));

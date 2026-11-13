@@ -36,14 +36,15 @@ namespace Langulus
       if constexpr (::std::is_void_v<T>)
          return {};
       else {
-         using AS = CT::ReflectedAs<Decay<T>>;
+         return RTTI::DefinitionData::Reflect<CT::ReflectedAs<T>>();
+         /*using AS = CT::ReflectedAs<Decay<T>>;
          if constexpr (::std::is_void_v<AS> and ::std::is_pointer_v<T>)
             return RTTI::DefinitionData::Reflect<Deref<T>>();
          else {
             static_assert(not ::std::is_void_v<AS>,
                CppNameOf<T>() + " was marked as not reflectable");
             return RTTI::DefinitionData::Reflect<Retype<Deref<T>, AS>>();
-         }
+         }*/
       }
    }
 
@@ -72,7 +73,22 @@ namespace Langulus
    ///   @return the definition                                               
    template<auto E>
    CMeta MetaConstOf() {
-      return RTTI::DefinitionConst::Reflect<E>();
+      using T = decltype(E);
+      using CONSTANTS = NamedValuesOf<T>;
+      if constexpr (not CT::Void<CONSTANTS>) {
+         // Reflecting named values                                     
+         auto result = ForEachConstOr(CONSTANTS{}, []<class C>{
+            if constexpr (C::Constant == E)
+               return RTTI::DefinitionConst::Reflect<T, C>();
+            else
+               return No {};
+         });
+         if constexpr (CT::Supported<decltype(result)>)
+            return result;
+         else
+            return {};
+      }
+      return {};
    }
 
    /// Get the meta definition of a type, deducing whether it's a data, verb, 

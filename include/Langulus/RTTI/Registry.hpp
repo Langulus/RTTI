@@ -85,11 +85,11 @@ namespace Langulus::RTTI
       static auto GetMetaConstByToken(Token const&) assumptious -> DefinitionConst const*;
 
       LANGULUS_API(RTTI)
-      static auto GetAmbiguousMeta(Token const&) assumptious -> const MetaSet&;
+      static auto GetAmbiguousMeta(Token const&) assumptious -> MetaSet const&;
       LANGULUS_API(RTTI)
       static auto DisambiguateMeta(Token const&) -> Inner::Definition const*;
       LANGULUS_API(RTTI)
-      static auto ResolveFileExtension(Token const&) assumptious -> const MetaSet&;
+      static auto ResolveFileExtension(Token const&) assumptious -> MetaSet const&;
       LANGULUS_API(RTTI)
       static void UnloadBoundary(Token const&);
 
