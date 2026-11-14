@@ -161,12 +161,10 @@ namespace Langulus::RTTI::Inner
          // Used for packing type ids                                   
          size_t mID IF_SAFE(= 0);
 
-         // Populated from LANGULUS_BOUNDARY on reflection-time         
+         // Populated from LglsBoundary on reflection-time.             
          // Types can be reflected from the point of view of different  
-         // shared libraries. Each new reflection will be applied on the
-         // top of the old one, but overwriting properties only if the  
-         // changes come from the MainBoundary. Once mBoundary becomes  
-         // the MainBoundary, the definition shall never be unregistered
+         // shared libraries, and we have to keep track of all these    
+         // potentially different versions.                             
          public: using BoundarySet = ::std::unordered_set<::std::string>;
          protected: BoundarySet mBoundaries;
       #endif
@@ -178,7 +176,8 @@ namespace Langulus::RTTI::Inner
          , mCppNameOf {cppname} {}
 
       /// Reflect some common type properties, like info and version          
-      ///   @attention must always be inline, so that boundary is relative    
+      ///   @attention must always be inline, so that boundary is relative to 
+      ///      current translation unit                                       
       ///   @attention call this first, so that version is checked before any 
       ///      other changes are made to the type                             
       ///   @tparam T the type to reflect                                     
@@ -192,9 +191,8 @@ namespace Langulus::RTTI::Inner
          mVersionMajor = v.Major;
          mVersionMinor = v.Minor;
          
-         // Save the boundary at time of reflection, but don't even     
-         // bother if it is the main one                                
          #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+            // Save the boundary at time of reflection                  
             mBoundaries.insert(LglsBoundary());
          #endif
 
@@ -204,7 +202,8 @@ namespace Langulus::RTTI::Inner
 
       /// Check whether the definition is in the current boundary, or has     
       /// been reflected from the main one                                    
-      ///   @attention must always be inline, so that boundary is relative    
+      ///   @attention must always be inline, so that boundary is relative to 
+      ///      current translation unit                                       
       LANGULUS(ALWAYS_INLINED)
       bool IsInRelevantBoundary() const noexcept {
          #if LANGULUS_FEATURE(MANAGED_REFLECTION)

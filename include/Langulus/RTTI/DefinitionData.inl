@@ -485,10 +485,10 @@ namespace Langulus::RTTI
          // unregister them and free their dedicated pools when the     
          // shared library is unloaded                                  
          /// @attention this has to be inlined, always                  
-         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         /*#if LANGULUS_FEATURE(MANAGED_REFLECTION) //TODO i'm temporarily disabling this, but there is a slight risk of leftover pointer allocations intermixed with other size-based pools
             if (LglsBoundary() != LglsMainBoundary())
                definition.mPoolTactic = PoolTactic::Type;
-         #endif
+         #endif*/
       #endif
       
       // Calculate the allocation table                                 
@@ -504,58 +504,24 @@ namespace Langulus::RTTI
             );
          });
       }
-
-      using VERBS = GatherAbilitiesOf<T>;
-      if constexpr (not CT::Void<VERBS>) {
-         // Set reflected abilities                                     
-         ForEach(VERBS{}, [&definition]<class V>{
-            static_assert(CT::DefineVerb<V>,
-               "Verb list must contain only verbs");
-            static_assert(CT::Decayed<V>,
-               "Verbs must be fully decayed when listed");
-
-            constexpr bool has_binary_routine = CT::AbleBinary<T, V>;
-            constexpr bool has_unary_routine  = CT::AbleUnary<T, V>;
-            static_assert(has_binary_routine or has_unary_routine,
-               "Implementation lacks both binary and unary routine. "
-               "At least one should be provided"
-            );
-
-            auto verb_definition = const_cast<DefinitionVerb*>(
-               DefinitionVerb::Reflect<V>()
-            );
-
-            Ability ab;
-
-            if constexpr (has_binary_routine) {
-               // Reflect binary ability                                
-               ab.binary = [](void* self, Annies::Verb& verb) -> bool {
-                  auto in = static_cast<T*>(self);
-                  return Langulus::InvokeAbility(*in, reinterpret_cast<V&>(verb));
-               };
-            }
-
-            if constexpr (has_unary_routine) {
-               // Reflect unary ability                                 
-               ab.unary = [](Annies::Verb& verb) -> bool {
-                  return Langulus::InvokeAbilityUnary<T>(reinterpret_cast<V&>(verb));
-               };
-            }
-
-            definition.mCurrentBoundary.mVerbs.emplace(verb_definition, ab);
-            verb_definition->mAble.insert(&definition);
-         });
-      }
    
+      definition.FillVerbs<T>();
       definition.FillMorphisms<T>();
 
       using CONSTANTS = NamedValuesOf<T>;
       if constexpr (not CT::Void<CONSTANTS>) {
          // Reflecting named values                                     
          ForEach(CONSTANTS{}, [&definition]<class C>{
-            definition.mNamedValues.push_back(
-               DefinitionConst::Reflect<T, C>()
-            );
+            try {
+               definition.mNamedValues.push_back(
+                  DefinitionConst::Reflect<T, C>()
+               );
+            }
+            catch(...) {
+               // A constant might raise an exception if it conflicts   
+               // with another registered meta. It should log an error, 
+               // but isn't a reason enough to break the program.       
+            }
          });
       }
 
@@ -667,54 +633,13 @@ namespace Langulus::RTTI
          // unregister them and free their dedicated pools when the     
          // shared library is unloaded                                  
          /// @attention this has to be inlined, always                  
-         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         /*#if LANGULUS_FEATURE(MANAGED_REFLECTION) //TODO i'm temporarily disabling this, but there is a slight risk of leftover pointer allocations intermixed with other size-based pools
             if (LglsBoundary() != LglsMainBoundary())
                definition.mPoolTactic = PoolTactic::Type;
-         #endif
+         #endif*/
       #endif
 
-      using VERBS = GatherAbilitiesOf<T>;
-      if constexpr (not CT::Void<VERBS>) {
-         // Set reflected abilities                                     
-         // These can be different for constant/mutable types           
-         ForEach(VERBS{}, [&definition]<class V>{
-            static_assert(CT::DefineVerb<V>,
-               "Verb list must contain only verbs");
-            static_assert(CT::Decayed<V>,
-               "Verbs must be fully decayed when listed");
-
-            constexpr bool has_binary_routine = CT::AbleBinary<T, V>;
-            constexpr bool has_unary_routine  = CT::AbleUnary<T, V>;
-            static_assert(has_binary_routine or has_unary_routine,
-               "Implementation lacks both binary and unary routine. "
-               "At least one should be provided"
-            );
-
-            auto verb_definition = const_cast<DefinitionVerb*>(
-               DefinitionVerb::Reflect<V>()
-            );
-
-            Ability ab;
-
-            if constexpr (has_binary_routine) {
-               // Reflect binary ability                                
-               ab.binary = [](void* self, Annies::Verb& verb) -> bool {
-                  auto in = static_cast<T*>(self);
-                  return Langulus::InvokeAbility(*in, reinterpret_cast<V&>(verb));
-               };
-            }
-
-            if constexpr (has_unary_routine) {
-               // Reflect unary ability                                 
-               ab.unary = [](Annies::Verb& verb) -> bool {
-                  return Langulus::InvokeAbilityUnary<T>(reinterpret_cast<V&>(verb));
-               };
-            }
-
-            definition.mCurrentBoundary.mVerbs.emplace(verb_definition, ab);
-            verb_definition->mAble.insert(&definition);
-         });
-      }
+      definition.FillVerbs<T>();
 
       #if LANGULUS_FEATURE(MANAGED_REFLECTION)
          LglsVerbose(Info, 
@@ -940,10 +865,10 @@ namespace Langulus::RTTI
          // unregister them and free their dedicated pools when the     
          // shared library is unloaded                                  
          /// @attention this has to be inlined, always                  
-         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         /*#if LANGULUS_FEATURE(MANAGED_REFLECTION) //TODO i'm temporarily disabling this, but there is a slight risk of leftover pointer allocations intermixed with other size-based pools
             if (LglsBoundary() != LglsMainBoundary())
                definition.mPoolTactic = PoolTactic::Type;
-         #endif
+         #endif*/
       #endif
       
       // Calculate the allocation table                                 
@@ -1186,10 +1111,10 @@ namespace Langulus::RTTI
          // unregister them and free their dedicated pools when the     
          // shared library is unloaded                                  
          /// @attention this has to be inlined, always                  
-         #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         /*#if LANGULUS_FEATURE(MANAGED_REFLECTION) //TODO i'm temporarily disabling this, but there is a slight risk of leftover pointer allocations intermixed with other size-based pools
             if (LglsBoundary() != LglsMainBoundary())
                definition.mPoolTactic = PoolTactic::Type;
-         #endif
+         #endif*/
       #endif
       
       // Calculate the allocation table                                 
@@ -1219,6 +1144,52 @@ namespace Langulus::RTTI
          Logger::Cyan, mNameOf
       );
    }*/
+   
+   /// Set reflected abilities                                                
+   template<class T>
+   void DefinitionData::FillVerbs() {
+      // Set reflected abilities                                        
+      ForEach(GatherAbilitiesOf<T>{}, [this]<class V>{
+         static_assert(CT::DefineVerb<V>,
+            "Verb list must contain only verbs");
+         static_assert(CT::Decayed<V>,
+            "Verbs must be fully decayed when listed");
+
+         constexpr bool has_binary_routine = CT::AbleBinary<T, V>;
+         constexpr bool has_unary_routine  = CT::AbleUnary<T, V>;
+
+         /*static_assert(has_binary_routine or has_unary_routine,
+            "Implementation of `" + NameOf<V>() + "` for `" + NameOf<T>() + 
+            "` (" + CppNameOf<T>() + ") lacks both binary and unary routine. "
+            "At least one of those should be provided! See `CT/DefineVerb.hpp`."
+         );*/ // No, some verbs apply only for mutable T, so this is not a failure condition. We just silently ignore lacking candidates.
+
+         Ability ab;
+         if constexpr (has_binary_routine) {
+            // Reflect binary ability                                   
+            ab.binary = [](void* self, Annies::Verb& verb) -> bool {
+               auto in = static_cast<T*>(self);
+               return Langulus::InvokeAbility(*in, reinterpret_cast<V&>(verb));
+            };
+         }
+
+         if constexpr (has_unary_routine) {
+            // Reflect unary ability                                    
+            ab.unary = [](Annies::Verb& verb) -> bool {
+               return Langulus::InvokeAbilityUnary<T>(reinterpret_cast<V&>(verb));
+            };
+         }
+
+         if (ab.binary or ab.unary) {
+            // Register only if valid candidate                         
+            auto verb_definition = const_cast<DefinitionVerb*>(
+               DefinitionVerb::Reflect<V>()
+            );
+            this->mCurrentBoundary.mVerbs.emplace(verb_definition, ab);
+            verb_definition->mAble.insert(this);
+         }
+      });
+   }
    
    /// Set reflected morphisms                                                
    /// @attention morphisms assume that source is initialized,                
@@ -1276,7 +1247,7 @@ namespace Langulus::RTTI
          return &(context->*HANDLE::Handle);
       };
       m.name = HANDLE::Name;
-      m.name = RTTI::FindLastToken(m.name);
+      //m.name = RTTI::FindLastToken(m.name);
 
       // Reflect tags                                                   
       using TAGS = TagsOf<DATA>;

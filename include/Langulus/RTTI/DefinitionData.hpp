@@ -209,8 +209,8 @@ namespace Langulus::RTTI
       };
 
    protected:
-      template<class T>
-      void FillMorphisms();
+      template<class> void FillVerbs();
+      template<class> void FillMorphisms();
 
       using MemberList   = ::std::vector<Member>;
       using MethodList   = ::std::vector<Method>;

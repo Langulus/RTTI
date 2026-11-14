@@ -43,12 +43,14 @@ namespace Langulus::RTTI
             return meta;
 
          //TODO move the name forming to IsolateConstant??
-         std::string token {static_cast<Token>(NameOf<OWNER>())};
-         token += "::";
+         std::string token;
          if constexpr (NAMED_VALUE::Token != "")
             token += NAMED_VALUE::Token;
-         else
+         else {
+            token += static_cast<Token>(NameOf<OWNER>());
+            token += "::";
             token += LastCppNameOf<NAMED_VALUE::Constant>();
+         }
 
          DefinitionConst& definition = meta
             ? const_cast<DefinitionConst&>(*meta)
@@ -66,12 +68,14 @@ namespace Langulus::RTTI
          DefinitionConst& definition = s_definition.emplace(cppname);
 
          //TODO move the name forming to IsolateConstant??
-         std::string token {static_cast<Token>(NameOf<OWNER>())};
-         token += "::";
+         std::string token;
          if constexpr (NAMED_VALUE::Token != "")
             token += NAMED_VALUE::Token;
-         else
+         else {
+            token += static_cast<Token>(NameOf<OWNER>());
+            token += "::";
             token += LastCppNameOf<NAMED_VALUE::Constant>();
+         }
       #endif
 
       //                                                                

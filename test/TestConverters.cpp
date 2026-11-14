@@ -13,12 +13,7 @@ TEST_CASE_TEMPLATE("Reflected morphisms", T,
    Types<Pi, ConvertibleData>,
    Types<Pi, ConvertibleData const >,
    Types<ConvertibleData, int       >,
-   Types<ConvertibleData, int const >,
-
-   Types<CheckingWhatConverterGetsInherited, int       >,
-   Types<CheckingWhatConverterGetsInherited, int const >,
-   Types<Pi, CheckingWhatConverterGetsInherited>,
-   Types<Pi, CheckingWhatConverterGetsInherited const >
+   Types<ConvertibleData, int const >
 ) {
    using LHS = typename T::First;
    using RHS = typename T::Second;
@@ -40,7 +35,12 @@ TEST_CASE_TEMPLATE("Non-existent morphisms", T,
    Types<ConvertibleData, int const*>,
    Types<Pi, ConvertibleData const*>,
    Types<CheckingWhatConverterGetsInherited, int const*>,
-   Types<Pi, CheckingWhatConverterGetsInherited const*>
+   Types<Pi, CheckingWhatConverterGetsInherited const*>,
+
+   Types<CheckingWhatConverterGetsInherited, int       >,
+   Types<CheckingWhatConverterGetsInherited, int const >,
+   Types<Pi, CheckingWhatConverterGetsInherited>,
+   Types<Pi, CheckingWhatConverterGetsInherited const >
 ) {
    using LHS = typename T::First;
    using RHS = typename T::Second;

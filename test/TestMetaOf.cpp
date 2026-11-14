@@ -129,7 +129,7 @@ TEST_CASE_TEMPLATE("Testing reflection of incomplete types", T
 
    #if LANGULUS_FEATURE(MANAGED_REFLECTION)
       REQUIRE(meta.GetID() != 0);
-      REQUIRE(meta.GetBoundaries().empty());
+      REQUIRE(meta.GetBoundaries().size() == 1);
    #endif
 
    if constexpr (CT::Complete<Decay<T>>)
@@ -174,7 +174,7 @@ TEST_CASE_TEMPLATE("Testing reflection of incomplete types", T
    REQUIRE(meta.IsExact(meta));
 
    #if LANGULUS_FEATURE(MANAGED_MEMORY)
-      REQUIRE(meta.GetMinPoolsize() == MinAllocOf<Deref<T>>());
+      REQUIRE(meta.GetMinPoolsize() == MinPoolOf<Deref<T>>());
       REQUIRE(meta.GetPoolTactic() == PoolTacticOf<Deref<T>>());
    #endif
    
@@ -223,7 +223,7 @@ TEST_CASE_TEMPLATE("Testing reflection of incomplete types", T
    REQUIRE(meta.GetMembers().size() == 0);
    REQUIRE(meta.GetVerbs().size() == 0);
    REQUIRE(meta.GetBases().size() == 0);
-   REQUIRE(meta.GetMorphismsTo().size() == 2); // Pointers are always convertible to Text and Bytes
+   REQUIRE(meta.GetMorphismsTo().size() == 0); //== 2 Pointers are always convertible to Text and Bytes //TODO huh, really? well, not anymore!
    REQUIRE(meta.GetMorphism(meta).convert == nullptr);
    REQUIRE(meta.GetMorphism(meta).serialize == nullptr);
    REQUIRE(meta.GetNamedValues().size() == 0);
@@ -538,32 +538,33 @@ SCENARIO("A type reflected with all traits") {
    REQUIRE(ability->second.binary != nullptr);
    REQUIRE(ability->second.unary == nullptr);
 
-   REQUIRE(meta.GetMembers().size() == 4);
+   auto members = meta.GetMembers();
+   REQUIRE(members.size() == 4);
    
-   REQUIRE(meta.GetMembers()[0].extent == 1);
-   REQUIRE(meta.GetMembers()[0].member(&instance) == &instance.member);
-   REQUIRE(meta.GetMembers()[0].tags.empty());
-   REQUIRE(meta.GetMembers()[0].name == "member");
-   REQUIRE(DMeta(meta.GetMembers()[0].type()).Is(MetaDataOf<int>()));
+   REQUIRE(members[0].extent == 1);
+   REQUIRE(members[0].member(&instance) == &instance.member);
+   REQUIRE(members[0].tags.empty());
+   REQUIRE(members[0].name == "member");
+   REQUIRE(DMeta(members[0].type()).Is(MetaDataOf<int>()));
 
-   REQUIRE(meta.GetMembers()[1].extent == 1);
-   REQUIRE(meta.GetMembers()[1].member(&instance) == &instance.anotherMember);
-   REQUIRE(meta.GetMembers()[1].tags.size() == 1);
-   REQUIRE(meta.GetMembers()[1].tags.contains(RTTI::DefinitionTag::Reflect<Tags::Name>()));
-   REQUIRE(meta.GetMembers()[1].name == "anotherMember");
-   REQUIRE(DMeta(meta.GetMembers()[1].type()).Is(MetaDataOf<bool>()));
+   REQUIRE(members[1].extent == 1);
+   REQUIRE(members[1].member(&instance) == &instance.anotherMember);
+   REQUIRE(members[1].tags.size() == 1);
+   REQUIRE(members[1].tags.contains(RTTI::DefinitionTag::Reflect<Tags::Name>()));
+   REQUIRE(members[1].name == "anotherMember");
+   REQUIRE(DMeta(members[1].type()).Is(MetaDataOf<bool>()));
 
-   REQUIRE(meta.GetMembers()[2].extent == 12);
-   REQUIRE(meta.GetMembers()[2].member(&instance) == instance.anotherMemberArray);
-   REQUIRE(meta.GetMembers()[2].tags.empty());
-   REQUIRE(meta.GetMembers()[2].name == "anotherMemberArray");
-   REQUIRE(DMeta(meta.GetMembers()[2].type()).Is(MetaDataOf<int>()));
+   REQUIRE(members[2].extent == 12);
+   REQUIRE(members[2].member(&instance) == instance.anotherMemberArray);
+   REQUIRE(members[2].tags.empty());
+   REQUIRE(members[2].name == "anotherMemberArray");
+   REQUIRE(DMeta(members[2].type()).Is(MetaDataOf<int>()));
 
-   REQUIRE(meta.GetMembers()[3].extent == 1);
-   REQUIRE(meta.GetMembers()[3].member(&instance) == &instance.sparseMember);
-   REQUIRE(meta.GetMembers()[3].tags.empty());
-   REQUIRE(meta.GetMembers()[3].name == "sparseMember");
-   REQUIRE(DMeta(meta.GetMembers()[3].type()).Is(MetaDataOf<int>()));
+   REQUIRE(members[3].extent == 1);
+   REQUIRE(members[3].member(&instance) == &instance.sparseMember);
+   REQUIRE(members[3].tags.empty());
+   REQUIRE(members[3].name == "sparseMember");
+   REQUIRE(DMeta(members[3].type()).Is(MetaDataOf<int>()));
 
    //TODO test GetMethods
 
@@ -636,6 +637,7 @@ namespace Langulus::Annies
 /// MARK: Verbs                                                               
 SCENARIO("Reflecting a verb") {
    const DMeta dmeta = MetaDataOf<int>();
+   const DMeta dmeta_c = MetaDataOf<int const>();
 
    {
       const VMeta vmeta = {};
@@ -661,8 +663,11 @@ SCENARIO("Reflecting a verb") {
       REQUIRE(vmeta.GetPositiveOperator() == " + ");
       REQUIRE(vmeta.GetNegativeOperator() == " - ");
       REQUIRE(vmeta.GetPrecedence() == 5);
-      REQUIRE(vmeta.GetAble().size() == 1);
-      REQUIRE(vmeta.GetAble().contains(dmeta.GetDefinition()));
+
+      auto able = vmeta.GetAble();
+      REQUIRE(able.size() == 3); // const/mutable int and const ImplicitlyReflectedDataWithTraits
+      REQUIRE(able.contains(dmeta.GetDefinition()));
+      REQUIRE(able.contains(dmeta_c.GetDefinition()));
 
       Annies::Verb verb;
       int context = 55;

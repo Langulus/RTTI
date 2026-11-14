@@ -10,14 +10,14 @@
 #include <Langulus/RTTI/DefinitionTag.hpp>
 #include <Langulus/RTTI/DefinitionConst.hpp>
 #include <Langulus/RTTI/DefinitionVerb.hpp>
+#include <Langulus/Logger.hpp>
 #include <ranges>
 
 #if not LANGULUS_FEATURE(MANAGED_REFLECTION)
    #error "This file shouldn't be compiled if MANAGED_REFLECTION is disabled"
 #endif
 
-#if 0
-   #include <Langulus/Logger.hpp>//TODO use the specialized headers for this
+#if 0 //TODO use the specialized headers for this
    #define VERBOSE_SCOPED(...) const auto scope = Logger::VerboseScoped(__VA_ARGS__);
    #define VERBOSE(...) Logger::Verbose(__VA_ARGS__)
 #else
