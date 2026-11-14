@@ -26,7 +26,7 @@ TEST_CASE("Tags") {
       // Testing the tag aspect of the tag                              
       auto meta = MetaTagOf<Tags::Count>();
       REQUIRE(meta);
-      REQUIRE(meta.GetName() == RTTI::Inner::ToLowercase(NameOfTag<Tags::Count>));
+      REQUIRE(meta.GetName() == "count");
       REQUIRE(meta.GetInfo() == InfoOf<Tags::Count>());
       REQUIRE(meta.GetVersionMajor() == 7);
       REQUIRE(meta.GetVersionMinor() == 10);
@@ -36,13 +36,10 @@ TEST_CASE("Tags") {
       // Testing the data aspect of the tag                             
       auto meta = MetaDataOf<Tags::Count>();
       REQUIRE(meta);
-      if constexpr (::std::same_as<T, int>)
-         REQUIRE(meta.GetName() == "Int32");
-      else
-         REQUIRE(meta.GetName() == "String");
+      REQUIRE(meta.GetName() == "Langulus::Tags::Count");
       REQUIRE(meta.GetInfo() == "Used for tagging counters");
-      REQUIRE(meta.GetVersionMajor() == 1);
-      REQUIRE(meta.GetVersionMinor() == 0);
+      REQUIRE(meta.GetVersionMajor() == 7);
+      REQUIRE(meta.GetVersionMinor() == 10);
 
       [[maybe_unused]] Tags::Count instance;
       static_assert(sizeof(::std::string) == sizeof(Tags::Count));

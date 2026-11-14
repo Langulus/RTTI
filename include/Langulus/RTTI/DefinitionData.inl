@@ -115,7 +115,7 @@ namespace Langulus::RTTI
    ///      is populated, once any of the other Reflect routines are called   
    ///      from any translation unit, which has the relevant headers.        
    ///   @tparam T the type to reflect                                        
-   template<class T> requires (not CT::Complete<T>)
+   /*template<class T> requires (not CT::Complete<T>)
    auto DefinitionData::Reflect() -> DefinitionData const* {
       static_assert(not std::is_bounded_array_v<T>,
          "Reflecting a bounded array is forbidden to avoid bloat");
@@ -165,7 +165,7 @@ namespace Langulus::RTTI
             "when MANAGED_REFLECTION is disabled"
          );
       #endif
-   }
+   }*/
 
    /// Reflect or return an already reflected data                            
    ///   @attention when making a shared library and reflecting your types    
@@ -267,6 +267,32 @@ namespace Langulus::RTTI
       definition.mExecutable = CT::Executable<T>;
       definition.mSuffixOf   = SuffixOf<T>();
       definition.mFilesOf    = FilesOf<T>();
+
+      #if LANGULUS_FEATURE(MANAGED_REFLECTION)
+         // Register all file extensions                                
+         if (definition.mFilesOf.size()) {
+            Token const ext = definition.mFilesOf;
+            size_t sequential = 0;
+            for (size_t e = 0; e < ext.size(); ++e) {
+               if (IsSpace(ext[e]) or ext[e] == ',') {
+                  if (sequential) {
+                     Token const lc = ext.substr(e - sequential, sequential);
+                     Registry::RegisterFileExtension(lc, &definition);
+                  }
+
+                  sequential = 0;
+                  continue;
+               }
+
+               ++sequential;
+            }
+
+            if (sequential) {
+               Token const lc = ext.substr(ext.size() - sequential, sequential);
+               Registry::RegisterFileExtension(lc, &definition);
+            }
+         }
+      #endif
 
       // Reflect the concrete type                                      
       if constexpr (CT::Concretizable<T>) {

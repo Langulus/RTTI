@@ -5,12 +5,15 @@
 ///                                                                           
 /// SPDX-License-Identifier: MIT                                              
 ///                                                                           
+#include <Langulus/Core.hpp>
+#if LANGULUS_FEATURE_LOGGING()
+   #include <Langulus/Logger.hpp>
+#endif
 #include <Langulus/RTTI/Registry.hpp>
 #include <Langulus/RTTI/DefinitionData.hpp>
 #include <Langulus/RTTI/DefinitionTag.hpp>
 #include <Langulus/RTTI/DefinitionConst.hpp>
 #include <Langulus/RTTI/DefinitionVerb.hpp>
-#include <Langulus/Logger.hpp>
 #include <ranges>
 
 #if not LANGULUS_FEATURE(MANAGED_REFLECTION)
@@ -31,6 +34,10 @@ namespace Langulus::RTTI
    namespace 
    {
       // Definitions indexed by lowercase reflected name                
+      ///   @attention the owhership of keys in this map is inside the  
+      ///   definitions themselves! It is very important to first       
+      ///   remove a definition from these maps, before destroying the  
+      ///   definition itself!                                          
       template<class T>
       using MetaMap = ::std::unordered_map<Token, T>;
    
@@ -161,14 +168,13 @@ namespace Langulus::RTTI
 
    /// Get an existing verb definition by NameOfVerb/NameOfVerbReverse        
    /// or OperatorOfVerb/OperatorOfVerbReverse                                
-   ///   @attention assumes token doesn't contain spaces                      
    ///   @param token the reflected token of the verb definition              
    ///      you can search by positive, as well as negative token             
    ///   @return the definition, or nullptr if not found                      
    auto Registry::GetMetaVerbByToken(Token const& token)
    assumptious -> DefinitionVerb const* {
-      LglsAssumeUser(not token.contains(' '), "Token shouldn't contain spaces");
-      const auto foundToken = mMetaVerbsByToken.find(Inner::ToLowercase(token));
+      const auto isolated = IsolateOperator(token);
+      const auto foundToken = mMetaVerbsByToken.find(Inner::ToLowercase(isolated));
       if (foundToken == mMetaVerbsByToken.end())
          return nullptr;
       return foundToken->second;
@@ -306,7 +312,7 @@ namespace Langulus::RTTI
          // There's a chance, that one of the symbols matches the       
          // lowercased keyword exactly (1)                              
          auto dmeta = dynamic_cast<DefinitionData const*>(candidate);
-         if (candidate->mNameOfLowercased == lowercased and dmeta)
+         if (dmeta and candidate->mNameOfLowercased == lowercased)
             meta_data_exact_match = dmeta;
 
          if (dmeta) {
@@ -319,9 +325,9 @@ namespace Langulus::RTTI
          }
       }
 
-      // If there are data/tags available, discard verbs/consts (2.a) 
+      // If there are data/tags available, discard verbs/consts (2.a)   
       if (meta_data_encountered and meta_tag_encountered) {
-         // Both data and tags encountered, check first letter (2.b)  
+         // Both data and tags encountered, check first letter (2.b)    
          if (IsLowercase(keyword[0])) {
             if (meta_tag_encountered == 1)
                return meta_tag;
@@ -335,7 +341,7 @@ namespace Langulus::RTTI
          }
       }
       else if (meta_data_encountered == 1) {
-         // No tags, just meta data                                   
+         // No tags, just meta data                                     
          // If it's just one, directly return it (2.a)                  
          return meta_data;
       }
@@ -344,7 +350,7 @@ namespace Langulus::RTTI
          return meta_data_exact_match;
       }
       else if (meta_tag_encountered == 1) {
-         // No data, just meta tags                                   
+         // No data, just meta tags                                     
          // If it's just one, directly return it (2.a)                  
          return meta_tag;
       }
@@ -394,8 +400,8 @@ namespace Langulus::RTTI
       LglsAssumeDev(not mMetaDataByCppName.contains(cppname_s),
          "Data with this name is already registered: ", cppname);
       
-      LglsAssert(not mMetaTagsByCppName.contains(cppname_s),
-         "Data type already registered as tag: ", cppname);
+      /*LglsAssert(not mMetaTagsByCppName.contains(cppname_s),
+         "Data type already registered as tag: ", cppname);*/
       LglsAssert(not mMetaVerbsByCppName.contains(cppname_s),
          "Data type already registered as verb: ", cppname);
       LglsAssert(not mMetaConstantsByCppName.contains(cppname_s),
@@ -420,8 +426,8 @@ namespace Langulus::RTTI
       LglsAssumeDev(not mMetaDataByCppName.contains(cppname_s),
          "Data with this name is already registered: ", cppname);
       
-      LglsAssert(not mMetaTagsByCppName.contains(cppname_s),
-         "Data type already registered as tag: ", cppname);
+      /*LglsAssert(not mMetaTagsByCppName.contains(cppname_s),
+         "Data type already registered as tag: ", cppname);*/
       LglsAssert(not mMetaVerbsByCppName.contains(cppname_s),
          "Data type already registered as verb: ", cppname);
       LglsAssert(not mMetaConstantsByCppName.contains(cppname_s),
@@ -462,7 +468,8 @@ namespace Langulus::RTTI
       // unloaded, the name data remains untouched on the heap          
       mMetaDataByToken[meta->mNameOfLowercased] = meta;
 
-      // Index by last lowercase token                                  
+      // Index by whole & last lowercase token                          
+      mMetaAmbiguous[meta->mNameOfLowercased].insert(meta);
       mMetaAmbiguous[Inner::ToLastToken(meta->mNameOfLowercased)].insert(meta);
       return *meta;
    }
@@ -534,7 +541,8 @@ namespace Langulus::RTTI
       // unloaded, the name data remains untouched on the heap          
       mMetaConstantsByToken[meta->mNameOfLowercased] = meta;
 
-      // Index by last lowercase token                                  
+      // Index by whole & last lowercase token                          
+      mMetaAmbiguous[meta->mNameOfLowercased].insert(meta);
       mMetaAmbiguous[Inner::ToLastToken(meta->mNameOfLowercased)].insert(meta);
       return *meta;
    }
@@ -594,7 +602,8 @@ namespace Langulus::RTTI
       // unloaded, the name data remains untouched on the heap          
       mMetaTagsByToken[meta->mNameOfLowercased] = meta;
 
-      // Index by last lowercase token                                  
+      // Index by whole & last lowercase token                          
+      mMetaAmbiguous[meta->mNameOf].insert(meta);
       mMetaAmbiguous[Inner::ToLastToken(meta->mNameOf)].insert(meta);
       return *meta;
    }
@@ -722,10 +731,16 @@ namespace Langulus::RTTI
       if (not meta->mOperatorReverseStripped.empty())
          mMetaVerbsByToken[meta->mOperatorReverseStripped] = meta;
 
-      // Index by last lowercase token                                  
+      // Index by whole & last lowercase positive token                 
+      mMetaAmbiguous[meta->mNameOf].insert(meta);
       mMetaAmbiguous[Inner::ToLastToken(meta->mNameOf)].insert(meta);
-      if (not meta->mNameOfReverse.empty())
+
+      if (not meta->mNameOfReverse.empty()) {
+         // Index by whole & last lowercase negative token              
+         mMetaAmbiguous[meta->mNameOfReverse].insert(meta);
          mMetaAmbiguous[Inner::ToLastToken(meta->mNameOfReverse)].insert(meta);
+      }
+
       if (not meta->mOperatorStripped.empty())
          mMetaAmbiguous[meta->mOperatorStripped].insert(meta);
       if (not meta->mOperatorReverseStripped.empty())
@@ -734,17 +749,18 @@ namespace Langulus::RTTI
    }
 
    /// Register file extension                                                
-   ///   @param token the file extension token to reserve                     
+   ///   @param token the file extension token to reserve.                    
+   ///      Note: guaranteed to be lowercase at compile-time.                 
    ///   @param type the data to associate file with                          
    void Registry::RegisterFileExtension(Token const& token, DefinitionData* type)
    assumptious {
       LglsAssumeDev(not token.empty(), "Bad file extension");
       LglsAssumeDevAndOptimize(type, "Bad meta data for file extension: ", token);
 
-      const auto lc = Inner::ToLowercase(token);
-      const auto foundToken = mFileDatabase.find(lc);
+      //const auto lc = Inner::ToLowercase(token);
+      const auto foundToken = mFileDatabase.find(token);
       if (foundToken == mFileDatabase.end())
-         mFileDatabase[lc].insert({type});
+         mFileDatabase[token].insert({type});
       else
          foundToken->second.insert(type);
    }

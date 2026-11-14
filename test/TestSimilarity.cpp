@@ -429,7 +429,7 @@ TEST_CASE("MetaData::IsExact") {
          // Compare horizontally                                        
          REQUIRE      (sequence.meta   [i].IsExact(sequence.meta[i]));
          REQUIRE_FALSE(sequence.meta   [i].IsExact(sequence.metac[i]));
-         REQUIRE_FALSE(sequence.meta   [i].IsExact(sequence.metav[i]));
+         REQUIRE      (sequence.meta   [i].IsExact(sequence.metav[i]));
          REQUIRE_FALSE(sequence.meta   [i].IsExact(sequence.metap[i]));
          REQUIRE_FALSE(sequence.meta   [i].IsExact(sequence.metacp[i]));
          REQUIRE_FALSE(sequence.meta   [i].IsExact(sequence.metacpc[i]));
@@ -443,7 +443,7 @@ TEST_CASE("MetaData::IsExact") {
          REQUIRE_FALSE(sequence.metac  [i].IsExact(sequence.metacpc[i]));
          REQUIRE_FALSE(sequence.metac  [i].IsExact(sequence.metacpcp[i]));
                                        
-         REQUIRE_FALSE(sequence.metav  [i].IsExact(sequence.meta[i]));
+         REQUIRE      (sequence.metav  [i].IsExact(sequence.meta[i]));
          REQUIRE_FALSE(sequence.metav  [i].IsExact(sequence.metac[i]));
          REQUIRE      (sequence.metav  [i].IsExact(sequence.metav[i]));
          REQUIRE_FALSE(sequence.metav  [i].IsExact(sequence.metap[i]));

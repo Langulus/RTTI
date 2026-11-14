@@ -26,10 +26,11 @@ TEST_CASE_TEMPLATE("Testing CT::Abstract", T,
 
    auto meta2 = MetaDataOf<T*>();
    REQUIRE(meta2);
-   REQUIRE(meta2.IsAbstract());
+   REQUIRE_FALSE(meta2.IsAbstract());
 }
 
 TEST_CASE_TEMPLATE("Testing not CT::Abstract", T,
+   //IncompleteType, //shouldn't compile
    bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte,
    EmptyType,
    ActualAggregateType,
@@ -42,23 +43,15 @@ TEST_CASE_TEMPLATE("Testing not CT::Abstract", T,
    DescribeConstructible,
    Complex,
    ContainsComplex,
-   IncompleteType,
    ForcefullyPod
 ) {
-   if constexpr (CT::Complete<T>) {
-      auto meta1 = MetaDataOf<T>();
-      REQUIRE(meta1);
-      REQUIRE(not meta1.IsAbstract());
-   }
-   else {
-      auto meta1 = MetaDataOf<T>();
-      REQUIRE(meta1);
-      REQUIRE_THROWS(meta1.IsAbstract());
-   }
+   auto meta1 = MetaDataOf<T>();
+   REQUIRE(meta1);
+   REQUIRE(not meta1.IsAbstract());
 
    auto meta2 = MetaDataOf<T*>();
    REQUIRE(meta2);
-   REQUIRE(not meta2.IsAbstract());
+   REQUIRE_FALSE(meta2.IsAbstract());
 }
 
 //TODO Unallocatable
@@ -70,11 +63,11 @@ TEST_CASE_TEMPLATE("Testing not CT::Abstract", T,
 
 ///                                                                           
 /// CT::Defaultable                                                           
-TEST_CASE_TEMPLATE("Testing CT::Defaultable", T,
-   bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte,
-   EmptyType,
-   ActualAggregateType,
-   Complex*, ContainsComplex*
+TEST_CASE_TEMPLATE("Testing CT::Defaultable", T
+   , bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte
+   , EmptyType
+   , ActualAggregateType
+   , Complex*, ContainsComplex*
 ) {
    auto meta1 = MetaDataOf<T>();
    REQUIRE(meta1);
@@ -85,47 +78,46 @@ TEST_CASE_TEMPLATE("Testing CT::Defaultable", T,
    REQUIRE(meta2.GetDefaultConstructor());
 }
 
-TEST_CASE_TEMPLATE("Testing not CT::Defaultable", T,
-   NonDestructible,
-   PrivatelyConstructible,
-   NonIntentConstructible,
-   AllIntentConstructible,
-   AllIntentConstructibleAndAssignable,
-   PartiallyIntentConstructible,
-   DescribeConstructible,
-   Complex,
-   ContainsComplex,
-   IncompleteType,
-   ForcefullyPod,
-   PureAbstract,
-   ForcedAbstractExternally,
-   ForcedAbstractInternally
+TEST_CASE_TEMPLATE("Testing not CT::Defaultable", T
+   //IncompleteType, //shouldn't compile
+   , PrivatelyConstructible
+   , NonIntentConstructible
+   , AllIntentConstructible
+   , AllIntentConstructibleAndAssignable
+   , PartiallyIntentConstructible
+   , DescribeConstructible
+   , Complex
+   , ContainsComplex
+   , ForcefullyPod
+   , PureAbstract
+   , ForcedAbstractExternally
+   , ForcedAbstractInternally
+   , NonDestructible 
 ) {
-   if constexpr (CT::Complete<T>) {
-      auto meta1 = MetaDataOf<T>();
-      REQUIRE(meta1);
-      REQUIRE_FALSE(meta1.GetDefaultConstructor());
-   }
-   else {
-      auto meta1 = MetaDataOf<T>();
-      REQUIRE(meta1);
-      REQUIRE_THROWS(meta1.GetDefaultConstructor());
-   }
+   auto meta1 = MetaDataOf<T>();
+   REQUIRE(meta1);
+   REQUIRE_FALSE(meta1.GetDefaultConstructor());
 
    auto meta2 = MetaDataOf<T*>();
    REQUIRE(meta2);
-   REQUIRE_FALSE(meta2.GetDefaultConstructor());
+   REQUIRE(meta2.GetDefaultConstructor());
 }
 
 
 ///                                                                           
 /// CT::Destroyable                                                           
-TEST_CASE_TEMPLATE("Testing CT::Destroyable<T>", T,
-   Complex,
-   ContainsComplex,
-   PureAbstract,
-   ImpureVirtual,
-   VirtuallyDerived
+TEST_CASE_TEMPLATE("Testing CT::Destroyable<T>", T
+   //, IncompleteType                     // shouldn't compile
+   //, IncompleteType const               // shouldn't compile
+   //, SheddableType<IncompleteType>      // shouldn't compile
+   //, SheddableType<PureAbstract>        // shouldn't compile
+   //, SheddableType<PureAbstract const>  // shouldn't compile
+   //, SheddableType<PureAbstract const&> // shouldn't compile
+   , Complex
+   , ContainsComplex
+   , PureAbstract
+   , ImpureVirtual
+   , VirtuallyDerived
 ) {
    auto meta1 = MetaDataOf<T>();
    REQUIRE(meta1);
@@ -133,49 +125,44 @@ TEST_CASE_TEMPLATE("Testing CT::Destroyable<T>", T,
 
    auto meta2 = MetaDataOf<T*>();
    REQUIRE(meta2);
-   REQUIRE(meta2.GetDestructor());
+   REQUIRE_FALSE(meta2.GetDestructor());
 }
 
-TEST_CASE_TEMPLATE("Testing not CT::Destroyable<T>", T,
-   EmptyType,
-   NonDestructible,
-   PrivatelyConstructible,
-   NonIntentConstructible,
-   AllIntentConstructible,
-   AllIntentConstructibleAndAssignable,
-   PartiallyIntentConstructible,
-   DescribeConstructible,
-   IncompleteType,
-   bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte,
-   Complex*, ContainsComplex*,
-   ForcedAbstractExternally,
-   ForcedAbstractInternally
+TEST_CASE_TEMPLATE("Testing not CT::Destroyable<T>", T
+   //, IncompleteType                // shouldn't compile
+   //, IncompleteType const          // shouldn't compile
+   //, SheddableType<IncompleteType> // shouldn't compile
+   , EmptyType
+   , NonDestructible
+   , PrivatelyConstructible
+   , NonIntentConstructible
+   , AllIntentConstructible
+   , AllIntentConstructibleAndAssignable
+   , PartiallyIntentConstructible
+   , DescribeConstructible
+   , bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte
+   , Complex*, ContainsComplex*
+   , ForcedAbstractExternally
+   , ForcedAbstractInternally
 ) {
-   if constexpr (CT::Complete<T>) {
-      auto meta1 = MetaDataOf<T>();
-      REQUIRE(meta1);
-      REQUIRE(meta1.GetDestructor());
-   }
-   else {
-      auto meta1 = MetaDataOf<T>();
-      REQUIRE(meta1);
-      REQUIRE_THROWS(meta1.GetDestructor());
-   }
+   auto meta1 = MetaDataOf<T>();
+   REQUIRE(meta1);
+   REQUIRE_FALSE(meta1.GetDestructor());
 
    auto meta2 = MetaDataOf<T*>();
    REQUIRE(meta2);
-   REQUIRE(meta2.GetDestructor());
+   REQUIRE_FALSE(meta2.GetDestructor());
 }
 
 
 ///                                                                           
 /// CT::POD                                                                   
-TEST_CASE_TEMPLATE("Testing CT::POD<T>", T,
-   EmptyType,
-   TMeta, CMeta, DMeta, VMeta,
-   bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte,
-   ForcefullyPod,
-   ActualAggregateType
+TEST_CASE_TEMPLATE("Testing CT::POD<T>", T
+   , EmptyType
+   , TMeta, CMeta, DMeta, VMeta
+   , bool, uint32_t, double, char, wchar_t, char8_t, Langulus::Byte
+   , ForcefullyPod
+   , ActualAggregateType
 ) {
    auto meta1 = MetaDataOf<T>();
    REQUIRE(meta1);
@@ -186,24 +173,17 @@ TEST_CASE_TEMPLATE("Testing CT::POD<T>", T,
    REQUIRE(meta2.IsPOD());
 }
 
-TEST_CASE_TEMPLATE("Testing not CT::POD<T>", T,
-   Complex,
-   ContainsComplex,
-   IncompleteType,
-   AggregateTypeComplex
+TEST_CASE_TEMPLATE("Testing not CT::POD<T>", T
+   //IncompleteType, //shouldn't compile
+   , Complex
+   , ContainsComplex
+   , AggregateTypeComplex
 ) {
-   if constexpr (CT::Complete<T>) {
-      auto meta1 = MetaDataOf<T>();
-      REQUIRE(meta1);
-      REQUIRE_FALSE(meta1.IsPOD());
-   }
-   else {
-      auto meta1 = MetaDataOf<T>();
-      REQUIRE(meta1);
-      REQUIRE_THROWS(meta1.IsPOD());
-   }
+   auto meta1 = MetaDataOf<T>();
+   REQUIRE(meta1);
+   REQUIRE_FALSE(meta1.IsPOD());
 
    auto meta2 = MetaDataOf<T*>();
    REQUIRE(meta2);
-   REQUIRE_FALSE(meta2.IsPOD());
+   REQUIRE(meta2.IsPOD());
 }

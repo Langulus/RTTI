@@ -957,16 +957,22 @@ namespace Langulus::RTTI::Inner
          return true;
 
       if (IsSparse() and other.IsSparse() and advanced and count == 1) {
-         // We're allowed to dynamic_cast in reverse                    
+         // We're allowed to downcast                                   
+         TODO();
       }
 
-      // The base we're searching for can never be binary-compatible    
+      // The base we're searching for can never be binary-compatible,   
+      // so no point in even searching for it.                          
       if (binary_compatible and count * other.GetSize() != GetSize())
          return false;
 
       DefinitionData::Base found;
-      if (GetBase(other, 0, found))
-         return not binary_compatible or found.binaryCompatible;
+      if (count == 1 and GetBase(other, 0, found))
+         return true;
+
+      // Check if type is composed of the desired count of other types  
+      // by checking members and their bases.                           
+      //TODO
 
       // At this point we're pretty sure that types are incompatible    
       return false;

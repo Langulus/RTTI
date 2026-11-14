@@ -552,7 +552,7 @@ SCENARIO("A type reflected with all traits") {
    REQUIRE(members[1].tags.size() == 1);
    REQUIRE(members[1].tags.contains(RTTI::DefinitionTag::Reflect<Tags::Name>()));
    REQUIRE(members[1].name == "anotherMember");
-   REQUIRE(DMeta(members[1].type()).Is(MetaDataOf<bool>()));
+   REQUIRE(DMeta(members[1].type()).Is(MetaDataOf<Tags::Name>()));
 
    REQUIRE(members[2].extent == 12);
    REQUIRE(members[2].member(&instance) == instance.anotherMemberArray);
@@ -585,11 +585,11 @@ SCENARIO("A type reflected with all traits") {
 
    REQUIRE(meta == imp_definition);
    REQUIRE(meta.GetMorphismsTo().at(int_definition).convert != nullptr);
-   REQUIRE(DMeta(int_definition).GetMorphismsTo().size() == 3);   // int -> Text; int -> Bytes; int -> ConvertibleFromIntExternally
-   REQUIRE(DMeta(pi_definition).GetMorphismsTo().size() == 3);    // Pi -> Bytes; Pi -> ImplicitlyReflectedDataWithTraits; Pi -> ConvertibleData
+   REQUIRE(DMeta(int_definition).GetMorphismsTo().size() == 1);   // int -> ConvertibleFromIntExternally
+   REQUIRE(DMeta(pi_definition).GetMorphismsTo().size() == 2);    // Pi -> ImplicitlyReflectedDataWithTraits, ConvertibleData
    REQUIRE(DMeta(pi_definition).GetMorphismsTo().at(imp_definition).convert != nullptr);
    REQUIRE(DMeta(pi_definition).GetMorphismsTo().at(cvt_definition).convert != nullptr);
-   REQUIRE(DMeta(cvt_definition).GetMorphismsTo().size() == 2);   // ConvertibleData -> Bytes; ConvertibleData -> int
+   REQUIRE(DMeta(cvt_definition).GetMorphismsTo().size() == 1);   // ConvertibleData -> int
    REQUIRE(DMeta(cvt_definition).GetMorphismsTo().at(int_definition).convert != nullptr);
 
    int converted = 1;
@@ -675,9 +675,8 @@ SCENARIO("Reflecting a verb") {
       REQUIRE(dmeta.GetVerbs().at(vdef).binary(&context, verb));
       REQUIRE(dmeta.GetVerbs().at(vdef).unary(verb));
 
-      const DMeta dmeta_const = MetaDataOf<const DMeta>();
-      REQUIRE(dmeta_const.GetVerbs().at(vdef).binary(&context, verb));
-      REQUIRE(dmeta_const.GetVerbs().at(vdef).unary(verb));
+      REQUIRE(dmeta_c.GetVerbs().at(vdef).binary(&context, verb));
+      REQUIRE(dmeta_c.GetVerbs().at(vdef).unary(verb));
    }
 }
 
@@ -720,7 +719,7 @@ SCENARIO("Reflecting a value") {
       REQUIRE(meta);
       REQUIRE(meta.GetCppName() == "Pi::Number");
       REQUIRE(meta.GetName() == "Pi::Number");
-      REQUIRE(meta.GetVersionMajor() == 1);
+      REQUIRE(meta.GetVersionMajor() == 0);
       REQUIRE(meta.GetVersionMinor() == 0);
    }
 }

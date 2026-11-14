@@ -336,8 +336,10 @@ namespace Langulus::RTTI
 
       static constexpr Token InvalidName = "nodata";
 
-      template<class T> requires (not CT::Complete<T>)
-      static auto Reflect() -> DefinitionData const*;
+      /*template<class T> requires (not CT::Complete<T>)
+      static auto Reflect() -> DefinitionData const*;*/
+      //TODO turns out we can't reflect incomplete types into some intermediate state, cuz they have to be kept inside DMeta as ID, and this
+      //TODO complicates things significantly... :(
 
       template<class T> requires (CT::Dense<T> and CT::Complete<T> and not ::std::is_const_v<T>)
       static auto Reflect() -> DefinitionData const*;

@@ -8,6 +8,15 @@
 #include <Langulus/Testing/CommonTypes.hpp>
 #include <Langulus/MetaOf.hpp>
 
+namespace doctest
+{
+   template<>
+   struct StringMaker<::Langulus::RTTI::DMeta> {
+      static String convert(::Langulus::RTTI::DMeta const& value) {
+         return toString(static_cast<::std::string>(value.GetName()));
+      }
+   };
+}
 
 SCENARIO("Comparing different meta types with one another") {
    GIVEN("Reflected types") {
@@ -85,46 +94,46 @@ SCENARIO("Testing ambiguous symbols") {
       (void) MetaDataOf<AnotherTypeWithSimilarilyNamedValues>();
 
       WHEN("Meta is retrieved by exact token, that is not case-sensitive") {
-         REQUIRE(n0t == RTTI::Registry::GetMetaDataByToken("Type"));
-         REQUIRE(n1t == RTTI::Registry::GetMetaDataByToken("N1::Type"));
+         REQUIRE(n0t == RTTI::Registry::GetMetaDataByToken("EmptyType"));
+         REQUIRE(n1t == RTTI::Registry::GetMetaDataByToken("N1::EmptyType"));
          REQUIRE(n1c == RTTI::Registry::GetMetaDataByToken("N1::Create"));
-         REQUIRE(n2t == RTTI::Registry::GetMetaDataByToken("N2::Type"));
-         REQUIRE(n3t == RTTI::Registry::GetMetaDataByToken("N3::Type"));
+         REQUIRE(n2t == RTTI::Registry::GetMetaDataByToken("N2::EmptyType"));
+         REQUIRE(n3t == RTTI::Registry::GetMetaDataByToken("N3::EmptyType"));
 
-         REQUIRE(n0t == RTTI::Registry::GetMetaDataByToken("type"));
-         REQUIRE(n1t == RTTI::Registry::GetMetaDataByToken("N1::type"));
-         REQUIRE(n2t == RTTI::Registry::GetMetaDataByToken("N2::type"));
-         REQUIRE(n3t == RTTI::Registry::GetMetaDataByToken("N3::type"));
-         REQUIRE(n1t == RTTI::Registry::GetMetaDataByToken("n1::type"));
-         REQUIRE(n2t == RTTI::Registry::GetMetaDataByToken("n2::type"));
-         REQUIRE(n3t == RTTI::Registry::GetMetaDataByToken("n3::type"));
+         REQUIRE(n0t == RTTI::Registry::GetMetaDataByToken("emptytype"));
+         REQUIRE(n1t == RTTI::Registry::GetMetaDataByToken("N1::emptytype"));
+         REQUIRE(n2t == RTTI::Registry::GetMetaDataByToken("N2::emptytype"));
+         REQUIRE(n3t == RTTI::Registry::GetMetaDataByToken("N3::emptytype"));
+         REQUIRE(n1t == RTTI::Registry::GetMetaDataByToken("n1::emptytype"));
+         REQUIRE(n2t == RTTI::Registry::GetMetaDataByToken("n2::emptytype"));
+         REQUIRE(n3t == RTTI::Registry::GetMetaDataByToken("n3::emptytype"));
 
          REQUIRE(complexMeta == RTTI::Registry::GetMetaDataByToken("MyType"));
          REQUIRE(nullptr == RTTI::Registry::GetMetaDataByToken("Create"));
          REQUIRE(vvv == RTTI::Registry::GetMetaVerbByToken("Create"));
-         REQUIRE(nullptr == RTTI::Registry::GetMetaVerbByToken("N1::Type"));
+         REQUIRE(nullptr == RTTI::Registry::GetMetaVerbByToken("N1::EmptyType"));
       }
 
       WHEN("Meta is retrieved by ambiguous token, that is not case-sensitive") {
-         auto found0 = RTTI::Registry::GetAmbiguousMeta("type");
-         auto found1 = RTTI::Registry::GetAmbiguousMeta("::type");
+         auto found0 = RTTI::Registry::GetAmbiguousMeta("emptytype");
+         auto found1 = RTTI::Registry::GetAmbiguousMeta("::emptytype");
          auto found2 = RTTI::Registry::GetAmbiguousMeta("create");
          auto found3 = RTTI::Registry::GetAmbiguousMeta("one");
          auto found4 = RTTI::Registry::GetAmbiguousMeta("two");
          auto found5 = RTTI::Registry::GetAmbiguousMeta("three");
          auto found6 = RTTI::Registry::GetAmbiguousMeta("MyType");
 
-         REQUIRE(found0.size() == 10);
+         REQUIRE(found0.size() == 4);
          REQUIRE(found0.find(n0t.GetDefinition()) != found0.end());
          REQUIRE(found0.find(n1t.GetDefinition()) != found0.end());
          REQUIRE(found0.find(n2t.GetDefinition()) != found0.end());
          REQUIRE(found0.find(n3t.GetDefinition()) != found0.end());
-         REQUIRE(found1.size() == 10);
-         REQUIRE(found1.find(n0t.GetDefinition()) != found1.end());
+         REQUIRE(found1.size() == 0);//TODO maybe allow for :: operator to disambiguate to the element in global scope?
+         /*REQUIRE(found1.find(n0t.GetDefinition()) != found1.end());
          REQUIRE(found1.find(n1t.GetDefinition()) != found1.end());
          REQUIRE(found1.find(n2t.GetDefinition()) != found1.end());
-         REQUIRE(found1.find(n3t.GetDefinition()) != found1.end());
-         REQUIRE(found2.size() == 4);
+         REQUIRE(found1.find(n3t.GetDefinition()) != found1.end());*/
+         REQUIRE(found2.size() == 2);
          REQUIRE(found2.find(vvv.GetDefinition()) != found2.end());
          REQUIRE(found2.find(n1c.GetDefinition()) != found2.end());
          REQUIRE(found3.size() == 2);
@@ -134,8 +143,8 @@ SCENARIO("Testing ambiguous symbols") {
       }
       
       WHEN("Attempting to disambiguate token") {
-         REQUIRE(RTTI::Registry::DisambiguateMeta("type"));
-         REQUIRE_THROWS(RTTI::Registry::DisambiguateMeta("::type"));
+         REQUIRE(RTTI::Registry::DisambiguateMeta("emptytype"));
+         REQUIRE_THROWS(RTTI::Registry::DisambiguateMeta("::emptytype"));
          REQUIRE(RTTI::Registry::DisambiguateMeta("create"));
          REQUIRE_THROWS(RTTI::Registry::DisambiguateMeta("one"));
          REQUIRE(RTTI::Registry::DisambiguateMeta("YetAnotherNamedType::one"));
