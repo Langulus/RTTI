@@ -11,10 +11,8 @@ if (PROJECT_IS_TOP_LEVEL OR NOT LANGULUS)
    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
    include(LangulusUtilities.cmake)
+   fetch_langulus_module(CT     GIT_TAG wip)
    fetch_langulus_module(Logger GIT_TAG wip)
-   if(LANGULUS_OPTION_PROFILING)
-      fetch_langulus_module(Percist GIT_TAG wip)
-   endif()
 endif()
 
 # Build and install library                                                 
@@ -22,19 +20,15 @@ add_langulus_library(LangulusRTTI
    SOURCES  $<TARGET_OBJECTS:LangulusLogger>
             $<$<BOOL:${LANGULUS_OPTION_MANAGED_REFLECTION}>:source/Registry.cpp source/Boundary.cpp>
             source/DefinitionData.cpp
-            $<TARGET_OBJECTS:LangulusPercist>
 )
 
 target_include_directories(LangulusRTTI
-   PUBLIC   $<TARGET_PROPERTY:LangulusLogger,INTERFACE_INCLUDE_DIRECTORIES>
-            $<TARGET_PROPERTY:LangulusPercist,INTERFACE_INCLUDE_DIRECTORIES>
-            include
+   PUBLIC   include
 )
 
 target_link_libraries(LangulusRTTI
-   PUBLIC   LangulusCore
-            LangulusCT
-            $<TARGET_PROPERTY:LangulusLogger,INTERFACE_LINK_LIBRARIES>
+   PUBLIC   LangulusCT
+            LangulusLogger
 )
 
 target_compile_definitions(LangulusRTTI
