@@ -448,6 +448,45 @@ TEST_CASE_TEMPLATE("Reflecting non-abstract types", T
 }
 
 ///                                                                           
+/// MARK: Pointers                                                            
+TEST_CASE_TEMPLATE("Reflecting pointer types", T
+   , CustomPointerType<int>
+   , PointerType
+   , PointerType2
+   , CustomPointerType<int>*
+) {
+   const DMeta meta = MetaDataOf<T>();
+   REQUIRE(meta != nullptr);
+   REQUIRE(meta.IsDeep() == false);
+   REQUIRE(meta.IsPOD() == true);
+   REQUIRE(meta.IsNullable()  == true);
+   REQUIRE(meta.GetConcrete() == nullptr);
+   REQUIRE(meta.IsAbstract() == false);
+   REQUIRE(meta.IsSparse() == true);
+   REQUIRE(meta.GetSize() == sizeof(T));
+   REQUIRE(meta.GetAlignment() == alignof(T));
+   REQUIRE(meta.GetDeptr() == MetaDataOf<Deptr<T>>());
+   REQUIRE(meta.GetDecvqAll() == MetaDataOf<T>());
+   REQUIRE(meta.GetDecvq() == MetaDataOf<T>());
+}
+
+TEST_CASE_TEMPLATE("Reflecting non-abstract types", T
+   , int
+   , ImpureVirtual
+   , InheritedAbstract1ButPrivate
+   , InheritedAbstractExternally
+) {
+   const DMeta meta = MetaDataOf<T>();
+   REQUIRE(meta != nullptr);
+   REQUIRE(meta.IsAbstract() == false);
+   REQUIRE(meta.IsPOD() == CT::POD<T>);
+   REQUIRE(meta.IsNullable() == CT::Nullable<T>);
+   REQUIRE(meta.GetConcrete() == nullptr);
+   REQUIRE(meta.GetDecvqAll() == MetaDataOf<T>());
+   REQUIRE(meta.GetDecvq() == MetaDataOf<T>());
+}
+
+///                                                                           
 /// MARK: Virtual bases                                                       
 TEST_CASE_TEMPLATE("Reflecting virtual bases", T,
    VirtuallyDerived
