@@ -27,14 +27,14 @@ SCENARIO("Comparing different meta types with one another") {
       REQUIRE(not_abstract_dmeta);
       REQUIRE(dmeta == not_abstract_dmeta);
 
-      const auto vmeta = MetaVerbOf<Verbs::Create>();
+      const auto vmeta = MetaVerbOf<Verbs::TestCreate>();
       REQUIRE(vmeta);
       const auto not_abstract_vmeta = vmeta.GetDefinition();
       const RTTI::Inner::Definition* a_vmeta = not_abstract_vmeta;
       REQUIRE(not_abstract_vmeta);
       REQUIRE(vmeta == not_abstract_vmeta);
 
-      const auto tmeta = MetaTagOf<Tags::Name>();
+      const auto tmeta = MetaTagOf<Tags::TestName>();
       REQUIRE(tmeta);
       const auto not_abstract_tmeta = tmeta.GetDefinition();
       const RTTI::Inner::Definition* a_tmeta = not_abstract_tmeta;
@@ -89,7 +89,7 @@ SCENARIO("Testing ambiguous symbols") {
       const auto n1c = MetaDataOf<N1::Create>();
       const auto n2t = MetaDataOf<N2::EmptyType>();
       const auto n3t = MetaDataOf<N3::emptytype>();
-      const auto vvv = MetaVerbOf<Verbs::Create>();
+      const auto vvv = MetaVerbOf<Verbs::TestCreate>();
       const auto complexMeta = MetaDataOf<ImplicitlyReflectedDataWithTraits>();
       (void) MetaDataOf<AnotherTypeWithSimilarilyNamedValues>();
 
@@ -191,7 +191,7 @@ SCENARIO("Testing ambiguous symbols") {
 
 SCENARIO("Testing operators") {
    GIVEN("Reflected verb with positive and negative operator") {
-      const auto vvv = MetaVerbOf<Verbs::Create>();
+      const auto vvv = MetaVerbOf<Verbs::TestCreate>();
 
       WHEN("Meta is retrieved by operator token, that is not case-sensitive and ignores spaces/tabs/escapes") {
          REQUIRE(vvv == RTTI::Registry::GetMetaVerbByToken("+"));

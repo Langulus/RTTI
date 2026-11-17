@@ -50,12 +50,12 @@ namespace Langulus::RTTI::Inner
    }
 
    /// Reset data ID                                                          
-   TEMPLATE()
+   /*TEMPLATE()
    constexpr auto ME()::operator = (nullptr_t)
    noexcept -> MetaDataStructured_XY& {
       Base::operator = (0);
       return *this;
-   }
+   }*/
 
    /// Reassign data ID                                                       
    TEMPLATE()

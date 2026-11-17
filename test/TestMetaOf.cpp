@@ -325,24 +325,24 @@ SCENARIO("Testing reflection of names") {
       REQUIRE(meta.GetName() == "MyType* const*");
    }
    {
-      const VMeta meta = MetaVerbOf<Verbs::Create>();
+      const VMeta meta = MetaVerbOf<Verbs::TestCreate>();
       REQUIRE(meta);
-      REQUIRE(meta == MetaVerbOf<Verbs::Create*>());
-      REQUIRE(meta == MetaVerbOf<Verbs::Create const>());
-      REQUIRE(meta == MetaVerbOf<Verbs::Create const&>());
-      REQUIRE(meta.GetCppName() == "Langulus::Verbs::Create");
+      REQUIRE(meta == MetaVerbOf<Verbs::TestCreate*>());
+      REQUIRE(meta == MetaVerbOf<Verbs::TestCreate const>());
+      REQUIRE(meta == MetaVerbOf<Verbs::TestCreate const&>());
+      REQUIRE(meta.GetCppName() == "Langulus::Verbs::TestCreate");
       REQUIRE(meta.GetPositiveName() == "create");
       REQUIRE(meta.GetNegativeName() == "destroy");
       REQUIRE(meta.GetPositiveOperator() == " + ");
       REQUIRE(meta.GetNegativeOperator() == " - ");
    }
    {
-      const TMeta meta = MetaTagOf<Tags::Name>();
+      const TMeta meta = MetaTagOf<Tags::TestName>();
       REQUIRE(meta);
-      REQUIRE(meta == MetaTagOf<Tags::Name*>());
-      REQUIRE(meta == MetaTagOf<Tags::Name const>());
-      REQUIRE(meta == MetaTagOf<Tags::Name const&>());
-      REQUIRE(meta.GetCppName() == "Langulus::Tags::Name");
+      REQUIRE(meta == MetaTagOf<Tags::TestName*>());
+      REQUIRE(meta == MetaTagOf<Tags::TestName const>());
+      REQUIRE(meta == MetaTagOf<Tags::TestName const&>());
+      REQUIRE(meta.GetCppName() == "Langulus::Tags::TestName");
       REQUIRE(meta.GetName() == "name");
    }
    {
@@ -573,7 +573,7 @@ SCENARIO("A type reflected with all traits") {
 
    REQUIRE(meta.GetVerbs().size() == 1);
    auto ability = meta.GetVerbs().begin();
-   REQUIRE(VMeta(ability->first) == MetaVerbOf<Verbs::Create>());
+   REQUIRE(VMeta(ability->first) == MetaVerbOf<Verbs::TestCreate>());
    REQUIRE(ability->second.binary != nullptr);
    REQUIRE(ability->second.unary == nullptr);
 
@@ -589,9 +589,9 @@ SCENARIO("A type reflected with all traits") {
    REQUIRE(members[1].extent == 1);
    REQUIRE(members[1].member(&instance) == &instance.anotherMember);
    REQUIRE(members[1].tags.size() == 1);
-   REQUIRE(members[1].tags.contains(RTTI::DefinitionTag::Reflect<Tags::Name>()));
+   REQUIRE(members[1].tags.contains(RTTI::DefinitionTag::Reflect<Tags::TestName>()));
    REQUIRE(members[1].name == "anotherMember");
-   REQUIRE(DMeta(members[1].type()).Is(MetaDataOf<Tags::Name>()));
+   REQUIRE(DMeta(members[1].type()).Is(MetaDataOf<Tags::TestName>()));
 
    REQUIRE(members[2].extent == 12);
    REQUIRE(members[2].member(&instance) == instance.anotherMemberArray);
@@ -691,8 +691,8 @@ SCENARIO("Reflecting a verb") {
       REQUIRE(vmeta.GetPrecedence() == 0);
    }
    {
-      const auto vdef = RTTI::DefinitionVerb::Reflect<Verbs::Create>();
-      const VMeta vmeta = MetaVerbOf<Verbs::Create>();
+      const auto vdef = RTTI::DefinitionVerb::Reflect<Verbs::TestCreate>();
+      const VMeta vmeta = MetaVerbOf<Verbs::TestCreate>();
       REQUIRE(vmeta != nullptr);
       REQUIRE(vmeta.GetPositiveName() == "create");
       REQUIRE(vmeta.GetNegativeName() == "destroy");
@@ -732,7 +732,7 @@ SCENARIO("Reflecting a tag") {
       REQUIRE(meta.GetVersionMinor() == 0);
    }
    {
-      const TMeta meta = MetaTagOf<Tags::Name>();
+      const TMeta meta = MetaTagOf<Tags::TestName>();
 
       REQUIRE(meta != nullptr);
       REQUIRE(meta.GetName() == "name");
