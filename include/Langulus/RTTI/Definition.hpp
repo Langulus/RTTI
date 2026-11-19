@@ -74,19 +74,6 @@ namespace Langulus::RTTI::Inner
          c = Langulus::ToLowercase(c);
       return lc;
    }
-
-   /// Operators are often defined with proper spaces around them for prettier
-   /// logging. This makes sure they are stripped before searching in registry
-   ///   @attention assumes token is ASCII                                    
-   ///   @param token the operator                                            
-   ///   @return the isolated operator token                                  
-   constexpr Token StripSpaces(Token const& token) assumptious {
-      auto l = token.data();
-      auto r = token.data() + token.size();
-      while (l < r and     *l <= 32)   ++l;
-      while (r > l and *(r-1) <= 32)   --r;
-      return token.substr(l - token.data(), r - l);
-   }
       
    /// Get the last, most relevant part of a token that may or may not have   
    /// namespaces in it. Essentially finds last "::" that isn't enclosed in   

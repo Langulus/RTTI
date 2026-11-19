@@ -635,21 +635,21 @@ namespace Langulus::RTTI
          "Verb already registered as tag: ", cppname);
 
       const auto token = Inner::ToLowercase(token_messy);
-      LglsAssert(not token.empty(),
-         "Invalid verb token is not allowed - "
-         "you have equipped your verb (or its base) with an empty CTTI_DefineVerb. "
+      const auto tokenRev = Inner::ToLowercase(tokenRev_messy);//TODO make them lowercase at compile-time
+      /*LglsAssert(token != tokenRev,
+         "Verb can't have the same positive and negative tokens for: ", cppname);*/
+      LglsAssert(not token.empty() and not tokenRev.empty(),
+         "Invalid verb tokens are not allowed - "
+         "you have equipped your verb (or its base) with an invalid CTTI_DefineVerb. "
+         "If you want to disable negative token, just make it the same as the positive. "
          "The verb in question is: ", cppname);
-      
-      const auto tokenRev = Inner::ToLowercase(tokenRev_messy);
-      LglsAssert(token != tokenRev,
-         "Verb can't have the same positive and negative tokens for: ", cppname);
-      
-      LglsAssert(op != opRev or op.empty(),
-         "Verb can't have the same positive and negative operators for: ", cppname);
-      LglsAssert(IsASCII(op),
+
+      /*LglsAssert(op != opRev or op.empty(),
+         "Verb can't have the same positive and negative operators for: ", cppname);*/
+      /*LglsAssert(IsASCII(op),
          "Verb positive operator isn't ASCII for: ", cppname);
       LglsAssert(IsASCII(opRev),
-         "Verb reverse operator isn't ASCII for: ", cppname);
+         "Verb reverse operator isn't ASCII for: ", cppname);*///TODO checked at compile-time, right?
 
       // Make sure scripting token doesn't conflict with other metas    
       // that use a lowercase first letter, such as tags                
@@ -673,8 +673,8 @@ namespace Langulus::RTTI
             mMetaTagsByToken.at(lowercased_token_rev)->mCppNameOf);
       }
 
-      auto lowercased_op = Inner::ToLowercase(op);
-      auto stripped_op = Inner::StripSpaces(lowercased_op);
+      auto lowercased_op = Inner::ToLowercase(op); //TODO make them lowercase at compile-time
+      auto stripped_op = IsolateOperator(lowercased_op);
       if (not stripped_op.empty() and mMetaVerbsByToken.contains(stripped_op)) {
          LglsError("Verb positive operator conflict", " between ", cppname, " and ",
             mMetaVerbsByToken.at(stripped_op)->mCppNameOf);
@@ -685,7 +685,7 @@ namespace Langulus::RTTI
       }
 
       auto lowercased_op_rev = Inner::ToLowercase(opRev);
-      auto stripped_op_rev = Inner::StripSpaces(lowercased_op_rev);
+      auto stripped_op_rev = IsolateOperator(lowercased_op_rev);
       if (not stripped_op_rev.empty() and mMetaVerbsByToken.contains(stripped_op_rev)) {
          LglsError("Verb negative operator conflict", " between ", cppname, " and ",
             mMetaVerbsByToken.at(stripped_op_rev)->mCppNameOf);
@@ -711,8 +711,8 @@ namespace Langulus::RTTI
       meta->mNameOfReverse = LglsMov(lowercased_token_rev);
       meta->mOperator = LglsMov(lowercased_op);
       meta->mOperatorReverse = LglsMov(lowercased_op_rev);
-      meta->mOperatorStripped = Inner::StripSpaces(meta->mOperator);
-      meta->mOperatorReverseStripped = Inner::StripSpaces(meta->mOperatorReverse);
+      meta->mOperatorStripped = IsolateOperator(meta->mOperator);
+      meta->mOperatorReverseStripped = IsolateOperator(meta->mOperatorReverse);
       // Amalgamate all tokens in this one                              
       // Verb disambiguation is a bit more complex                      
       meta->mNameOfLowercased = meta->mNameOf

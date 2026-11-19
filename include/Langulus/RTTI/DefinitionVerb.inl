@@ -52,7 +52,7 @@ namespace Langulus::RTTI
          // have been reflected previously in another shared library    
          const auto cppname = CppNameOf<T>();
          DefinitionVerb const* meta = Registry::GetMetaVerbByCppName(cppname);
-         if (meta and meta->IsInRelevantBoundary())
+         if (meta /*and meta->IsInRelevantBoundary()*/)
             return meta;
          
          const auto verbPos = PositiveNameOfVerb<T>;

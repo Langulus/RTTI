@@ -39,7 +39,7 @@ namespace Langulus::RTTI
          // have been reflected previously in another shared library    
          const auto cppname = CppNameOf<NAMED_VALUE::Constant>();
          DefinitionConst const* meta = Registry::GetMetaConstByCppName(cppname);
-         if (meta and meta->IsInRelevantBoundary())
+         if (meta /*and meta->IsInRelevantBoundary()*/)
             return meta;
 
          //TODO move the name forming to IsolateConstant??

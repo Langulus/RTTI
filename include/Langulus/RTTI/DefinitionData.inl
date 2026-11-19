@@ -228,7 +228,7 @@ namespace Langulus::RTTI
          // Try to get an already existing definition - the data might  
          // have been reflected previously in another shared library    
          DefinitionData const* meta = Registry::GetMetaDataByCppName(cppname);
-         if (meta and meta->IsInRelevantBoundary())
+         if (meta /*and meta->IsInRelevantBoundary()*/)
             return meta;
 
          const auto token = NameOf<T, false>();
@@ -615,7 +615,7 @@ namespace Langulus::RTTI
          // have been reflected previously in another shared library    
          const auto cppname {CppNameOf<Decvq<T>>() + " const"};
          DefinitionData const* meta = Registry::GetMetaDataByCppName(cppname);
-         if (meta and meta->IsInRelevantBoundary())
+         if (meta /*and meta->IsInRelevantBoundary()*/)
             return meta;
       
          const auto token {NameOf<Decvq<T>, false>() + " const"};
@@ -725,7 +725,7 @@ namespace Langulus::RTTI
          if constexpr (CT::Constant<T>) cppname += "* const";
          else cppname += "*";
          meta = Registry::GetMetaDataByCppName(cppname);
-         if (meta and meta->IsInRelevantBoundary())
+         if (meta /*and meta->IsInRelevantBoundary()*/)
             return meta;
 
          token = NameOf<Decvq<Deptr<T>>, false>();
@@ -947,7 +947,7 @@ namespace Langulus::RTTI
          cppname = CppNameOf<Decvq<T>>();
          if constexpr (CT::Constant<T>) cppname += " const";
          meta = Registry::GetMetaDataByCppName(cppname);
-         if (meta and meta->IsInRelevantBoundary())
+         if (meta /*and meta->IsInRelevantBoundary()*/)
             return meta;
 
          token = NameOf<Decvq<T>, false>();
@@ -1211,7 +1211,7 @@ namespace Langulus::RTTI
             auto verb_definition = const_cast<DefinitionVerb*>(
                DefinitionVerb::Reflect<V>()
             );
-            this->mCurrentBoundary.mVerbs.emplace(verb_definition, ab);
+            this->mCurrentBoundary.mVerbs.insert({verb_definition, ab});
             verb_definition->mAble.insert(this);
          }
       });
@@ -1228,14 +1228,21 @@ namespace Langulus::RTTI
          using TO = CT::ReflectedAs<TO_RAW>;
          static_assert(CT::NotVoid<TO>, "Can't convert to a type marked void: " + NameOf<TO_RAW>());
          auto destination_type = const_cast<DefinitionData*>(Reflect<TO>());
-         Morphism morphism;
+         auto found = mCurrentBoundary.mMorphismsTo.find(destination_type);
 
+         Morphism morphism;
          if constexpr (CT::Inner::FindMorphism<T, TO>() >= 0) {
             morphism.convert = [](void* from, void* to) {
                auto fromT = static_cast<ConstAll<T*>>(from);
                auto toT   = static_cast<TO*>(to);
                new (toT) TO {Langulus::Convert<TO>(*fromT)};
             };
+
+            if (found != mCurrentBoundary.mMorphismsTo.end()) {
+               LglsAssumeDevAndBreak(not found->second.convert
+               or found->second.convert == morphism.convert,
+                  "Converter was already reflected");
+            }
          }
          
          if constexpr (CT::Serializer<TO>) {
@@ -1247,9 +1254,20 @@ namespace Langulus::RTTI
                auto conT  = static_cast<typename S::Context*>(context);
                return Langulus::Serialize(*fromT, *toT, conT);
             };
+
+            if (found != mCurrentBoundary.mMorphismsTo.end()) {
+               LglsAssumeDevAndBreak(not found->second.serialize
+               or found->second.serialize == morphism.serialize,
+                  "Serializer was already reflected");
+            }
          }
 
-         mCurrentBoundary.mMorphismsTo.emplace(destination_type, morphism);
+         if (found == mCurrentBoundary.mMorphismsTo.end())
+            mCurrentBoundary.mMorphismsTo.insert({destination_type, morphism});
+         else if (not found->second.convert)
+            found->second.convert = morphism.convert;
+         else if (not found->second.serialize)
+            found->second.serialize = morphism.serialize;
       });
    }
 

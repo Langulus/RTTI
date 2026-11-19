@@ -53,7 +53,7 @@ namespace Langulus::RTTI
          // have been reflected previously in another shared library    
          const auto cppname = CppNameOf<T>();
          DefinitionTag const* meta = Registry::GetMetaTagByCppName(cppname);
-         if (meta and meta->IsInRelevantBoundary())
+         if (meta /*and meta->IsInRelevantBoundary()*/)
             return meta;
 
          const auto token = NameOfTag<T>;
