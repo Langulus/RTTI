@@ -1226,27 +1226,41 @@ namespace Langulus::RTTI
    void DefinitionData::FillMorphisms() {
       ForEach(GatherMorphismsFrom<T>{}, [this]<class TO_RAW>{
          using TO = CT::ReflectedAs<TO_RAW>;
-         static_assert(CT::NotVoid<TO>, "Can't convert to a type marked void: " + NameOf<TO_RAW>());
+         static_assert(CT::NotVoid<TO>,
+            "Can't convert to a type marked void: " + CppNameOf<TO_RAW>());
+            
          auto destination_type = const_cast<DefinitionData*>(Reflect<TO>());
          auto found = mCurrentBoundary.mMorphismsTo.find(destination_type);
 
          Morphism morphism;
-         if constexpr (CT::Inner::FindMorphism<T, TO>() >= 0) {
-            morphism.convert = [](void* from, void* to) {
-               auto fromT = static_cast<ConstAll<T*>>(from);
-               auto toT   = static_cast<TO*>(to);
-               new (toT) TO {Langulus::Convert<TO>(*fromT)};
-            };
+         constexpr int found_ctti = CT::Inner::FindMorphism<T, TO>();
+         if constexpr (found_ctti >= 0) {
+            using M = CTTI::Morphism<T, found_ctti>;
 
-            if (found != mCurrentBoundary.mMorphismsTo.end()) {
-               LglsAssumeDevAndBreak(not found->second.convert
-               or found->second.convert == morphism.convert,
-                  "Converter was already reflected");
+            /// @attention: this check needs to be kept the same as in  
+            /// Langulus::Convert. //TODO there surely is a way to maintain this automatically
+            if constexpr (requires (T from) 
+               { {M::template Convert<TO>(from)} -> ::std::same_as<TO>; }
+            or CT::ConvertibleImplicit<T, TO>
+            or CT::ConvertibleExplicit<T, TO>) {
+               // Conversion as per C++ specification (or custom        
+               // morphism logic) exists.                               
+               morphism.convert = [](void* from, void* to) {
+                  auto fromT = static_cast<ConstAll<T*>>(from);
+                  auto toT   = static_cast<TO*>(to);
+                  new (toT) TO {Langulus::Convert<TO>(*fromT)};
+               };
+
+               if (found != mCurrentBoundary.mMorphismsTo.end()) {
+                  LglsAssumeDevAndBreak(not found->second.convert
+                  or found->second.convert == morphism.convert,
+                     "Converter was already reflected");
+               }
             }
          }
          
          if constexpr (CT::Serializer<TO>) {
-            // Destination type can act as a serializer, too            
+            // Conversion via serialization exists                      
             using S = CTTI::Serializer<TO>;
             morphism.serialize = [](void const* from, void* to, void* context) -> size_t {
                auto fromT = static_cast<ConstAll<T*>>(from);
