@@ -479,7 +479,9 @@ namespace Langulus::RTTI
                auto t2T = static_cast<T const*>(t2);
                return FromOrdering(*t1T, *t2T);
             };
+      }
 
+      if constexpr (CT::ComparableEqual<T, T>) {
          // Generate an equality comparison function                    
          definition.mCurrentBoundary.mComparerEqual =
             [](void const* t1, void const* t2) -> bool {
