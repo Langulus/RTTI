@@ -22,6 +22,7 @@
 namespace Langulus::Annies
 {
    struct Many;
+   struct Neat;
    struct Any;
    template<class> 
    struct TVerb;
@@ -122,7 +123,7 @@ namespace Langulus::RTTI
       using FUnary         = void (*)(void* self);
       using FBinary        = void (*)(void* from, void* to);
       using FSerialize     = size_t (*)(void const* from, void* to, void* context);
-      using FDescribe      = void (*)(void* self, const Annies::Many& describe);
+      using FDescribe      = void (*)(void* self, const Annies::Neat& describe);
       using FCompare       = Compared (*)(const void* lhs, const void* rhs);
       using FCompareEqual  = bool (*)(const void* lhs, const void* rhs);
       using FResolve       = Block /*Annies::HandleDisowned*/ (*)(void* self);
@@ -209,6 +210,8 @@ namespace Langulus::RTTI
       };
 
    protected:
+      friend class DefinitionVerb;
+
       template<class> void FillVerbs();
       template<class> void FillMorphisms();
 

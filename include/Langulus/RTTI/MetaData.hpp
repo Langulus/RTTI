@@ -104,6 +104,8 @@ namespace Langulus::RTTI
 
       public:
          using CTTI_Abstract = No;
+         using CTTI_Named    = Yes<"DMeta">;
+
          using Base = MetaPacked<ID_SIZE>;
 
          constexpr MetaDataStructured_XY() noexcept = default;
@@ -229,6 +231,8 @@ namespace Langulus::RTTI
       /// but most memory-inefficient on 64bit systems                        
       struct MetaDataNaked : MetaNaked<DefinitionData> {
          using CTTI_Abstract = No;
+         using CTTI_Named    = Yes<"DMeta">;
+
          using Base = MetaNaked;
          using Base::Base;
          using Base::operator =;

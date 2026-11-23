@@ -20,6 +20,8 @@ namespace Langulus::RTTI
       #pragma pack(push, 1)
       struct MetaTagPacked_16 : MetaPacked<2> {
          using CTTI_Abstract = No;
+         using CTTI_Named    = Yes<"TMeta">;
+
          using Base = MetaPacked;
 
          constexpr MetaTagPacked_16() noexcept = default;
@@ -61,6 +63,8 @@ namespace Langulus::RTTI
       /// memory-inefficient on 64bit systems.                                
       struct MetaTagNaked : MetaNaked<DefinitionTag> {
          using CTTI_Abstract = No;
+         using CTTI_Named    = Yes<"TMeta">;
+
          using Base = MetaNaked;
          using Base::Base;
          using Base::operator =;

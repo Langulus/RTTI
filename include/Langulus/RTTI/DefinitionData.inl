@@ -1185,13 +1185,7 @@ namespace Langulus::RTTI
 
          constexpr bool has_binary_routine = CT::AbleBinary<T, V>;
          constexpr bool has_unary_routine  = CT::AbleUnary<T, V>;
-
-         /*static_assert(has_binary_routine or has_unary_routine,
-            "Implementation of `" + NameOf<V>() + "` for `" + NameOf<T>() + 
-            "` (" + CppNameOf<T>() + ") lacks both binary and unary routine. "
-            "At least one of those should be provided! See `CT/DefineVerb.hpp`."
-         );*/ // No, some verbs apply only for mutable T, so this is not a failure condition. We just silently ignore lacking candidates.
-
+         
          Ability ab;
          if constexpr (has_binary_routine) {
             // Reflect binary ability                                   
@@ -1211,7 +1205,7 @@ namespace Langulus::RTTI
          if (ab.binary or ab.unary) {
             // Register only if valid candidate                         
             auto verb_definition = const_cast<DefinitionVerb*>(
-               DefinitionVerb::Reflect<V>()
+               DefinitionVerb::Reflect<V>(true)
             );
             this->mCurrentBoundary.mVerbs.insert({verb_definition, ab});
             verb_definition->mAble.insert(this);

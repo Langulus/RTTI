@@ -39,6 +39,8 @@ namespace Langulus::RTTI
          
       public:
          using CTTI_Abstract = No;
+         using CTTI_Named    = Yes<"VMeta">;
+
          using Base = MetaPacked<ID_SIZE>;
 
          constexpr MetaVerbStructured_X8() noexcept = default;
@@ -93,6 +95,8 @@ namespace Langulus::RTTI
       /// memory-inefficient on 64bit systems.                                
       struct MetaVerbNaked : MetaNaked<DefinitionVerb> {
          using CTTI_Abstract = No;
+         using CTTI_Named    = Yes<"VMeta">;
+
          using Base = MetaNaked;
          using Base::Base;
          using Base::operator =;

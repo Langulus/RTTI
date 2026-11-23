@@ -75,7 +75,7 @@ namespace Langulus::RTTI
       static constexpr Token InvalidName = "noverb";
 
       template<CT::Decayed>
-      static auto Reflect() -> DefinitionVerb const*;
+      static auto Reflect(bool registered_by_type = false) -> DefinitionVerb const*;
       
       DefinitionVerb(Token const& cppname) noexcept
          : Definition {cppname} {}

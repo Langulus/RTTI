@@ -7,8 +7,10 @@
 ///                                                                           
 #pragma once
 #include "DefinitionVerb.hpp"
+#include "DefinitionData.hpp"
 #include <Langulus/CT/ReflectAs.hpp>
 #include <Langulus/CT/DefineTag.hpp>
+#include <Langulus/CT/Able.hpp>
 
 #if not LANGULUS_FEATURE(MANAGED_REFLECTION)
    #include <optional>
@@ -32,7 +34,7 @@ namespace Langulus::RTTI
    ///      https://stackoverflow.com/questions/8130602                       
    ///   @tparam T the decayed verb to reflect                                
    template<CT::Decayed T>
-   auto DefinitionVerb::Reflect() -> DefinitionVerb const* {
+   auto DefinitionVerb::Reflect(bool registered_by_type) -> DefinitionVerb const* {
       static_assert(CT::Complete<T>,
          "Can't reflect incomplete verb - "
          "make sure you have included the corresponding headers "
@@ -170,6 +172,42 @@ namespace Langulus::RTTI
             );
          }
       #endif
+
+      if constexpr (requires { typename T::ExtendTypes; }) {
+         if (not registered_by_type) {
+            // Often verbs are reflected a lot later than the types they
+            // extend, so we synchronize those here.                    
+            ForEach(typename T::ExtendTypes {}, [&definition]<class E> {
+               /// @attention maintain this the same as its equivalent  
+               ///   in DefinitionData::FillVerbs                       
+               constexpr bool has_binary_routine = CT::AbleBinary<E, T>;
+               constexpr bool has_unary_routine  = CT::AbleUnary<E, T>;
+               
+               DefinitionData::Ability ab;
+               if constexpr (has_binary_routine) {
+                  // Reflect binary ability                             
+                  ab.binary = [](void* self, Annies::Verb& verb) -> bool {
+                     auto in = static_cast<E*>(self);
+                     return Langulus::InvokeAbility(*in, reinterpret_cast<T&>(verb));
+                  };
+               }
+
+               if constexpr (has_unary_routine) {
+                  // Reflect unary ability                              
+                  ab.unary = [](Annies::Verb& verb) -> bool {
+                     return Langulus::InvokeAbilityUnary<E>(reinterpret_cast<T&>(verb));
+                  };
+               }
+
+               if (ab.binary or ab.unary) {
+                  // Register only if valid candidate                   
+                  auto type_definition = const_cast<DefinitionData*>(DefinitionData::Reflect<E>());
+                  type_definition->mCurrentBoundary.mVerbs.insert({&definition, ab});
+                  definition.mAble.insert(type_definition);
+               }
+            });
+         }
+      }
       
       return &definition;
    }
