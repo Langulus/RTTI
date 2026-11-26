@@ -13,6 +13,7 @@
 #include <Langulus/CT/DefineVerb.hpp>
 #include <Langulus/CT/Defaultable.hpp>
 #include <Langulus/CT/Destroyable.hpp>
+#include <Langulus/CT/Describable.hpp>
 #include <Langulus/CT/Deep.hpp>
 #include <Langulus/CT/Referenced.hpp>
 #include <Langulus/CT/Downcastable.hpp>
@@ -316,6 +317,15 @@ namespace Langulus::RTTI
             [](void* at) noexcept(noexcept(T {})) {
                auto atT = static_cast<T*>(at);
                new (atT) T {};
+            };
+      }
+
+      if constexpr (CT::DescribeConstructible<T>) {
+         // Generate a default constructor                              
+         definition.mCurrentBoundary.mDescribeConstructor =
+            [](void* at, Describe&& d) {
+               auto atT = static_cast<T*>(at);
+               new (atT) T {LglsFwd(d)};
             };
       }
 

@@ -29,6 +29,11 @@ namespace Langulus::Annies
    using Verb = TVerb<void>;
 }
 
+namespace Langulus
+{
+   struct Describe;
+}
+
 namespace Langulus::RTTI
 {
    /// A rudimentary non-owning data block. Very danger, much wow.            
@@ -123,10 +128,10 @@ namespace Langulus::RTTI
       using FUnary         = void (*)(void* self);
       using FBinary        = void (*)(void* from, void* to);
       using FSerialize     = size_t (*)(void const* from, void* to, void* context);
-      using FDescribe      = void (*)(void* self, const Annies::Neat& describe);
+      using FDescribe      = void (*)(void* self, Describe&& describe);
       using FCompare       = Compared (*)(const void* lhs, const void* rhs);
       using FCompareEqual  = bool (*)(const void* lhs, const void* rhs);
-      using FResolve       = Block /*Annies::HandleDisowned*/ (*)(void* self);
+      using FResolve       = Block (*)(void* self);
       using FHash          = Hash (*)(void* self);
       using FReference     = int (*)(void* self, int modifier);
       using FDispatch      = bool (*)(void* self, Annies::Verb& verb);
@@ -237,7 +242,7 @@ namespace Langulus::RTTI
          FUnary mDefaultConstructor = nullptr;
 
          // Constructor by descriptor.                                  
-         // Takes a pointer for a placement-new expression, and a Many. 
+         // Takes a pointer for a placement-new expression, and Describe
          FDescribe mDescribeConstructor = nullptr;
 
          // The refer/copy/disown/clone/move/abandon constructors,      
